@@ -1,77 +1,58 @@
 import React from 'react';
-import { Zap, Wifi, WifiOff, Settings, Upload } from 'lucide-react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import { Zap, Settings, Upload, Wifi, WifiOff } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
-export const Header = ({ onSettingsClick, onImportClick }) => {
-  const { isOffline, settings } = useSales();
+export const Header = () => {
+  const { isOffline, dealership, toggleSetup, toggleImport, isSetupComplete } = useSales();
 
   return (
-    <header className="sticky top-0 z-50 w-full glass-card border-b border-border/50">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        {/* Logo & Brand */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-            <Zap className="w-5 h-5 text-primary" />
+    <header className="sticky top-0 z-50 bg-card/95 ios-blur border-b border-border safe-area-top">
+      <div className="flex items-center justify-between h-14 px-4">
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Zap className="w-4 h-4 text-primary" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-              Closr
-            </span>
-            <span className="text-xs text-muted-foreground hidden sm:block">
-              {settings.dealershipName}
-            </span>
+          <div>
+            <h1 className="font-semibold text-foreground leading-none">Closr</h1>
+            <p className="text-xs text-muted-foreground truncate max-w-[140px]">
+              {dealership.name}
+            </p>
           </div>
         </div>
 
-        {/* Center - Status */}
-        <div className="hidden md:flex items-center gap-2">
-          <Badge 
-            variant={isOffline ? "warning" : "success"} 
-            className="gap-1.5 px-3 py-1"
-          >
+        {/* Status & Actions */}
+        <div className="flex items-center gap-1">
+          {/* Online/Offline indicator */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-secondary text-xs">
             {isOffline ? (
               <>
-                <WifiOff className="w-3 h-3" />
-                <span>Offline Mode</span>
+                <WifiOff className="w-3 h-3 text-warning" />
+                <span className="text-warning font-medium">Offline</span>
               </>
             ) : (
               <>
                 <span className="pulse-dot" />
-                <span>Ready</span>
+                <span className="text-success font-medium">Ready</span>
               </>
             )}
-          </Badge>
-        </div>
-
-        {/* Right - Actions */}
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon-sm"
-            onClick={onImportClick}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Upload className="w-4 h-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon-sm"
-            onClick={onSettingsClick}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
-          
-          {/* Mobile offline indicator */}
-          <div className="md:hidden">
-            {isOffline ? (
-              <WifiOff className="w-4 h-4 text-warning" />
-            ) : (
-              <Wifi className="w-4 h-4 text-success" />
-            )}
           </div>
+
+          {/* Import button */}
+          <button
+            onClick={() => toggleImport(true)}
+            className="ios-btn w-10 h-10 text-muted-foreground hover:text-foreground"
+          >
+            <Upload className="w-5 h-5" />
+          </button>
+
+          {/* Settings button */}
+          <button
+            onClick={() => toggleSetup(true)}
+            className="ios-btn w-10 h-10 text-muted-foreground hover:text-foreground"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </header>

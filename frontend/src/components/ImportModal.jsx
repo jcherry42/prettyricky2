@@ -1,13 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, FileText, Link, X, Check, AlertCircle, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
+import { X, Upload, Link, FileText, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
-export const ImportModal = ({ open, onOpenChange }) => {
-  const { importResponses, importVehicles } = useSales();
+export const ImportModal = () => {
+  const { showImport, toggleImport, setVehicles, setCustomers, setCustomTemplates } = useSales();
   const [activeTab, setActiveTab] = useState('file');
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,25 +27,37 @@ export const ImportModal = ({ open, onOpenChange }) => {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-
-      // Determine data type and import
-      if (data.responses) {
-        importResponses(data.responses);
-        setStatus({ type: 'success', message: `Imported ${Object.keys(data.responses).length} objection categories` });
-      } else if (data.vehicles) {
-        importVehicles(data.vehicles);
-        setStatus({ type: 'success', message: `Imported ${data.vehicles.length} vehicles` });
-      } else if (Array.isArray(data)) {
-        // Assume it's vehicles array
-        importVehicles(data);
-        setStatus({ type: 'success', message: `Imported ${data.length} vehicles` });
+      
+      let imported = [];
+      
+      // Handle different data types
+      if (data.vehicles) {
+        setVehicles(data.vehicles);
+        imported.push(`${data.vehicles.length} vehicles`);
+      }
+      
+      if (data.customers) {
+        setCustomers(data.customers);
+        imported.push(`${data.customers.length} customers`);
+      }
+      
+      if (data.templates) {
+        setCustomTemplates(data.templates);
+        imported.push('custom templates');
+      }
+      
+      if (data.dealership) {
+        // This will be handled by setup
+        imported.push('dealership info');
+      }
+      
+      if (imported.length > 0) {
+        setStatus({ type: 'success', message: `Imported: ${imported.join(', ')}` });
       } else {
-        // Assume it's responses object
-        importResponses(data);
-        setStatus({ type: 'success', message: 'Imported custom responses' });
+        setStatus({ type: 'error', message: 'No recognized data found in file' });
       }
     } catch (err) {
-      setStatus({ type: 'error', message: 'Invalid file format. Please use JSON.' });
+      setStatus({ type: 'error', message: 'Invalid JSON file' });
     } finally {
       setIsLoading(false);
     }
@@ -82,55 +90,75 @@ export const ImportModal = ({ open, onOpenChange }) => {
       if (!response.ok) throw new Error('Failed to fetch');
       
       const data = await response.json();
-
-      if (data.responses) {
-        importResponses(data.responses);
-        setStatus({ type: 'success', message: `Imported ${Object.keys(data.responses).length} objection categories` });
-      } else if (data.vehicles) {
-        importVehicles(data.vehicles);
-        setStatus({ type: 'success', message: `Imported ${data.vehicles.length} vehicles` });
-      } else {
-        importResponses(data);
-        setStatus({ type: 'success', message: 'Imported custom data' });
+      
+      let imported = [];
+      
+      if (data.vehicles) {
+        setVehicles(data.vehicles);
+        imported.push(`${data.vehicles.length} vehicles`);
       }
       
-      setUrl('');
+      if (data.customers) {
+        setCustomers(data.customers);
+        imported.push(`${data.customers.length} customers`);
+      }
+      
+      if (data.templates) {
+        setCustomTemplates(data.templates);
+        imported.push('custom templates');
+      }
+      
+      if (imported.length > 0) {
+        setStatus({ type: 'success', message: `Imported: ${imported.join(', ')}` });
+        setUrl('');
+      } else {
+        setStatus({ type: 'error', message: 'No recognized data found' });
+      }
     } catch (err) {
-      setStatus({ type: 'error', message: 'Failed to import from URL. Check the link and try again.' });
+      setStatus({ type: 'error', message: 'Failed to import from URL' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setStatus({ type: null, message: '' });
-    setUrl('');
-    onOpenChange(false);
-  };
+  if (!showImport) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-display">Import Data</DialogTitle>
-          <DialogDescription>
-            Import custom responses, vehicles, or prospect data from files or URLs.
-          </DialogDescription>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50">
+      <div className="ios-modal w-full max-w-md max-h-[85vh] overflow-hidden animate-slide-up safe-area-bottom">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="font-semibold text-foreground">Import Data</h2>
+          
+          <button
+            onClick={() => { toggleImport(false); setStatus({ type: null, message: '' }); }}
+            className="ios-btn w-8 h-8 text-muted-foreground"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file" className="gap-2">
-              <FileText className="w-4 h-4" />
-              File
-            </TabsTrigger>
-            <TabsTrigger value="url" className="gap-2">
-              <Link className="w-4 h-4" />
-              URL
-            </TabsTrigger>
-          </TabsList>
+        {/* Tabs */}
+        <div className="ios-segment mx-4 mt-4">
+          <button
+            onClick={() => setActiveTab('file')}
+            className={`ios-segment-btn ${activeTab === 'file' ? 'active' : ''}`}
+          >
+            <FileText className="w-4 h-4 inline mr-1.5" />
+            File
+          </button>
+          <button
+            onClick={() => setActiveTab('url')}
+            className={`ios-segment-btn ${activeTab === 'url' ? 'active' : ''}`}
+          >
+            <Link className="w-4 h-4 inline mr-1.5" />
+            URL
+          </button>
+        </div>
 
-          <TabsContent value="file" className="mt-4">
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {activeTab === 'file' && (
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -140,7 +168,7 @@ export const ImportModal = ({ open, onOpenChange }) => {
                 relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed transition-colors
                 ${dragActive 
                   ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                  : 'border-border'
                 }
               `}
             >
@@ -151,7 +179,7 @@ export const ImportModal = ({ open, onOpenChange }) => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
                 dragActive ? 'bg-primary/10' : 'bg-muted'
               }`}>
                 <Upload className={`w-6 h-6 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -159,80 +187,66 @@ export const ImportModal = ({ open, onOpenChange }) => {
               
               <div className="text-center">
                 <p className="font-medium text-foreground">
-                  {dragActive ? 'Drop your file here' : 'Drag & drop or click to upload'}
+                  {dragActive ? 'Drop file here' : 'Tap to upload'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Supports JSON files
+                  JSON files only
                 </p>
               </div>
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="url" className="mt-4 space-y-4">
-            <div className="flex gap-2">
-              <Input
+          {activeTab === 'url' && (
+            <div className="space-y-3">
+              <input
+                type="text"
                 placeholder="https://example.com/data.json"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="flex-1"
+                className="ios-input"
               />
-              <Button 
-                onClick={handleUrlImport} 
+              
+              <button 
+                onClick={handleUrlImport}
                 disabled={!url.trim() || isLoading}
-                variant="glossy"
+                className="ios-btn-primary w-full disabled:opacity-50"
               >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Import'}
-              </Button>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Importing...
+                  </>
+                ) : (
+                  'Import from URL'
+                )}
+              </button>
             </div>
+          )}
+
+          {/* Status message */}
+          {status.type && (
+            <div className={`
+              flex items-center gap-2 p-3 rounded-xl
+              ${status.type === 'success' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}
+            `}>
+              {status.type === 'success' ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                <AlertCircle className="w-4 h-4" />
+              )}
+              <span className="text-sm">{status.message}</span>
+            </div>
+          )}
+
+          {/* Help text */}
+          <div className="p-3 bg-muted/50 rounded-xl">
             <p className="text-xs text-muted-foreground">
-              Enter a direct link to a JSON file containing your custom responses or vehicle data.
+              <span className="font-medium text-foreground">Supported data:</span> Dealership info, inventory (vehicles), customer lists, and custom response templates.
             </p>
-          </TabsContent>
-        </Tabs>
-
-        {/* Status message */}
-        {status.type && (
-          <div className={`
-            flex items-center gap-2 p-3 rounded-lg mt-4
-            ${status.type === 'success' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}
-          `}>
-            {status.type === 'success' ? (
-              <Check className="w-4 h-4" />
-            ) : (
-              <AlertCircle className="w-4 h-4" />
-            )}
-            <span className="text-sm">{status.message}</span>
           </div>
-        )}
-
-        {/* Loading overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-lg">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
-        )}
-
-        {/* Data format help */}
-        <div className="mt-4 p-4 rounded-lg bg-muted/50 border border-border/50">
-          <p className="text-xs font-medium text-foreground mb-2">Expected JSON format:</p>
-          <pre className="text-xs text-muted-foreground overflow-x-auto">
-{`{
-  "responses": {
-    "price": [
-      {
-        "id": "custom-1",
-        "tone": "value",
-        "title": "My Response",
-        "response": "Your text...",
-        "winRate": 75
-      }
-    ]
-  }
-}`}
-          </pre>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
