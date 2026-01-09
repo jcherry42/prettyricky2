@@ -27,6 +27,7 @@ const initialState = {
   vehicles: DEFAULT_VEHICLES,
   customers: DEFAULT_CUSTOMERS,
   customTemplates: {},
+  favorites: [],
   
   // Current selection
   selectedCustomer: null,
@@ -42,6 +43,7 @@ const initialState = {
   showSetup: false,
   showImport: false,
   showTowerTalk: false,
+  showFavorites: false,
   isOffline: !navigator.onLine,
 };
 
@@ -63,6 +65,10 @@ const ACTIONS = {
   TOGGLE_SETUP: 'TOGGLE_SETUP',
   TOGGLE_IMPORT: 'TOGGLE_IMPORT',
   TOGGLE_TOWER_TALK: 'TOGGLE_TOWER_TALK',
+  TOGGLE_FAVORITES: 'TOGGLE_FAVORITES',
+  ADD_FAVORITE: 'ADD_FAVORITE',
+  REMOVE_FAVORITE: 'REMOVE_FAVORITE',
+  SET_FAVORITES: 'SET_FAVORITES',
   SET_OFFLINE: 'SET_OFFLINE',
   LOAD_SAVED_DATA: 'LOAD_SAVED_DATA',
 };
@@ -141,6 +147,23 @@ function salesReducer(state, action) {
       
     case ACTIONS.TOGGLE_TOWER_TALK:
       return { ...state, showTowerTalk: action.payload ?? !state.showTowerTalk };
+    
+    case ACTIONS.TOGGLE_FAVORITES:
+      return { ...state, showFavorites: action.payload ?? !state.showFavorites };
+    
+    case ACTIONS.ADD_FAVORITE:
+      const newFavorites = [...state.favorites, action.payload];
+      saveToStorage(STORAGE_KEYS.FAVORITES, newFavorites);
+      return { ...state, favorites: newFavorites };
+    
+    case ACTIONS.REMOVE_FAVORITE:
+      const filteredFavorites = state.favorites.filter(f => f.id !== action.payload);
+      saveToStorage(STORAGE_KEYS.FAVORITES, filteredFavorites);
+      return { ...state, favorites: filteredFavorites };
+    
+    case ACTIONS.SET_FAVORITES:
+      saveToStorage(STORAGE_KEYS.FAVORITES, action.payload);
+      return { ...state, favorites: action.payload };
       
     case ACTIONS.SET_OFFLINE:
       return { ...state, isOffline: action.payload };
@@ -168,6 +191,7 @@ export function SalesProvider({ children }) {
     const vehicles = loadFromStorage(STORAGE_KEYS.VEHICLES, DEFAULT_VEHICLES);
     const customers = loadFromStorage(STORAGE_KEYS.CUSTOMERS, DEFAULT_CUSTOMERS);
     const customTemplates = loadFromStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, {});
+    const favorites = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
     
     const isSetupComplete = dealership.name !== DEFAULT_DEALERSHIP.name || 
                             salesperson.name !== DEFAULT_SALESPERSON.name;
@@ -181,6 +205,7 @@ export function SalesProvider({ children }) {
         vehicles,
         customers,
         customTemplates,
+        favorites,
         isSetupComplete,
         selectedTone: preferences.defaultTone || 'balanced',
       },
@@ -250,6 +275,20 @@ export function SalesProvider({ children }) {
   const toggleSetup = (value) => dispatch({ type: ACTIONS.TOGGLE_SETUP, payload: value });
   const toggleImport = (value) => dispatch({ type: ACTIONS.TOGGLE_IMPORT, payload: value });
   const toggleTowerTalk = (value) => dispatch({ type: ACTIONS.TOGGLE_TOWER_TALK, payload: value });
+  const toggleFavorites = (value) => dispatch({ type: ACTIONS.TOGGLE_FAVORITES, payload: value });
+  
+  // Favorites actions
+  const addFavorite = (favorite) => {
+    const newFavorite = {
+      id: Date.now().toString(),
+      ...favorite,
+      savedAt: new Date().toISOString(),
+    };
+    dispatch({ type: ACTIONS.ADD_FAVORITE, payload: newFavorite });
+    return newFavorite;
+  };
+  
+  const removeFavorite = (id) => dispatch({ type: ACTIONS.REMOVE_FAVORITE, payload: id });
 
   // Copy to clipboard
   const copyToClipboard = async (text) => {
@@ -289,6 +328,9 @@ export function SalesProvider({ children }) {
     toggleSetup,
     toggleImport,
     toggleTowerTalk,
+    toggleFavorites,
+    addFavorite,
+    removeFavorite,
     copyToClipboard,
     shareToMessages,
     getVehicleById,

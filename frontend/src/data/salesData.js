@@ -795,6 +795,7 @@ export const STORAGE_KEYS = {
   VEHICLES: 'closr_vehicles',
   CUSTOMERS: 'closr_customers',
   CONVERSATION_HISTORY: 'closr_history',
+  FAVORITES: 'closr_favorites',
 };
 
 // Save to local storage
