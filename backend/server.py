@@ -161,6 +161,49 @@ Rules:
         raise HTTPException(status_code=500, detail=f"Failed to generate response: {str(e)}")
 
 
+# Import from URL endpoint - bypasses CORS by fetching server-side
+@api_router.post("/import-url", response_model=ImportUrlResponse)
+async def import_from_url(request: ImportUrlRequest):
+    try:
+        url = request.url.strip()
+        if not url:
+            return ImportUrlResponse(success=False, error="URL is required")
+        
+        # Validate URL format
+        if not url.startswith(('http://', 'https://')):
+            return ImportUrlResponse(success=False, error="Invalid URL format. Must start with http:// or https://")
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            
+            # Try to parse as JSON
+            try:
+                data = response.json()
+            except:
+                return ImportUrlResponse(success=False, error="URL did not return valid JSON")
+            
+            # Validate that it contains expected data
+            has_data = any(key in data for key in ['vehicles', 'customers', 'templates', 'dealership'])
+            if not has_data:
+                return ImportUrlResponse(
+                    success=False, 
+                    error="No recognized data found. Expected: vehicles, customers, templates, or dealership"
+                )
+            
+            return ImportUrlResponse(success=True, data=data)
+            
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP error fetching URL: {str(e)}")
+        return ImportUrlResponse(success=False, error=f"Failed to fetch URL: HTTP {e.response.status_code}")
+    except httpx.RequestError as e:
+        logger.error(f"Request error fetching URL: {str(e)}")
+        return ImportUrlResponse(success=False, error="Failed to connect to URL. Check that it's accessible.")
+    except Exception as e:
+        logger.error(f"Import URL error: {str(e)}")
+        return ImportUrlResponse(success=False, error=f"Import failed: {str(e)}")
+
+
 # Include the router in the main app AFTER all routes are defined
 app.include_router(api_router)
 
