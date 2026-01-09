@@ -137,6 +137,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED: Prospect dropdown opens correctly showing Alex Martinez (Hot), Sarah Johnson (Warm), and Michael Chen (Warm) with proper status badges. Selection works and updates right panel with detailed prospect information including phone, email, vehicle interest, and trade-in details."
+      - working: true
+        agent: "testing"
+        comment: "✅ iOS RE-TEST PASSED: Customer selection working perfectly on iPhone viewport. All 3 customers (Alex Martinez-Hot, Sarah Johnson-Warm, Michael Chen-Warm) found with proper status badges. Search functionality tested and working - can search by name. Selection updates interface correctly."
 
   - task: "Objection Handler - Chips appear after prospect selection with indicator dots"
     implemented: true
