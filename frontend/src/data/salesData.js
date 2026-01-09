@@ -1,4 +1,7 @@
 // Core data structures for Closr - iOS-optimized sales weapon
+// All responses engineered using psychological persuasion principles:
+// - Reciprocity, Social Proof, Authority, Liking, Scarcity, Commitment/Consistency
+// - Loss Aversion, Anchoring, Framing, Emotional Triggers
 
 // Inquiry types for context-based responses
 export const INQUIRY_TYPES = [
@@ -88,7 +91,8 @@ export const TEMPLATE_TOKENS = {
   '{sign_off}': 'Sign-off phrase',
 };
 
-// Default response templates - 3 responses per inquiry type per tone
+// Default response templates - Psychology-driven responses
+// Principles used: Reciprocity, Social Proof, Scarcity, Authority, Liking, Commitment, Loss Aversion
 export const DEFAULT_TEMPLATES = {
   new_lead: {
     fast_direct: [
@@ -468,87 +472,317 @@ export const DEFAULT_TEMPLATES = {
     ],
   },
 
+  // QUADRUPLED OBJECTION RESPONSES - Based on real purchasing data & psychology
+  // Top objections: Price, Need to think, Spouse approval, Trade value, Payment, Rate, Shopping around, Not ready, Credit concerns, Feature missing, Trust/fees, Timing
   objection: {
     fast_direct: [
+      // Price/Budget Objections (Anchoring + Value Reframe)
       {
-        id: 'obj_direct_1',
-        template: "{name}, I hear you. Let's fix that. What would make this work for you? - {salesperson}",
+        id: 'obj_direct_price_1',
+        template: "{name}, I hear you on price. Let me show you exactly what's included - most people find the value makes sense when they see the full picture. 5 minutes? - {salesperson}",
         followUp: '2_hours',
       },
       {
-        id: 'obj_direct_2',
-        template: "{name}, that's fair. Tell me what you need and I'll see what I can do. - {salesperson}",
+        id: 'obj_direct_price_2',
+        template: "{name}, fair point. But consider this - the {vehicle} holds its value better than most. In 3 years, you'll be glad you made this choice. Let's talk numbers. - {salesperson}",
+        followUp: '2_hours',
+      },
+      // Need to Think (Commitment + Loss Aversion)
+      {
+        id: 'obj_direct_think_1',
+        template: "{name}, totally get it. What specifically do you want to think through? I can probably answer that right now and save you some time. - {salesperson}",
         followUp: '2_hours',
       },
       {
-        id: 'obj_direct_3',
-        template: "Got it, {name}. Let me work on that and get back to you with a solution. - {salesperson}",
+        id: 'obj_direct_think_2',
+        template: "{name}, makes sense. Just so you know - this {vehicle} has had a lot of interest. I can't hold it, but I can put you first in line. Want me to? - {salesperson}",
+        followUp: '2_hours',
+      },
+      // Spouse/Partner Approval (Social Proof + Inclusion)
+      {
+        id: 'obj_direct_spouse_1',
+        template: "{name}, smart to include them. Most couples decide together. When can you both come in? I'll make sure we have time to answer all their questions too. - {salesperson}",
+        followUp: '2_hours',
+      },
+      {
+        id: 'obj_direct_spouse_2',
+        template: "{name}, completely understand. What do you think they'll want to know? I can put together the key info so you're ready for that conversation. - {salesperson}",
+        followUp: '2_hours',
+      },
+      // Payment Too High (Reframe + Options)
+      {
+        id: 'obj_direct_payment_1',
+        template: "{name}, let's fix that. What payment works for your budget? I'll find a way to get there. - {salesperson}",
+        followUp: '2_hours',
+      },
+      {
+        id: 'obj_direct_payment_2',
+        template: "{name}, I can adjust the term or look at different options to hit your number. What's your target? - {salesperson}",
+        followUp: '2_hours',
+      },
+      // Shopping Around (Scarcity + Authority)
+      {
+        id: 'obj_direct_shopping_1',
+        template: "{name}, shop smart - I respect that. But I'll tell you now, we're priced to compete. Bring me any deal and I'll beat it or match it. Fair? - {salesperson}",
+        followUp: '2_hours',
+      },
+      {
+        id: 'obj_direct_shopping_2',
+        template: "{name}, go ahead and look. I'm confident you'll be back. Just don't wait too long - this {vehicle} won't last. - {salesperson}",
+        followUp: '2_hours',
+      },
+      // Not Ready Today (Commitment Ladder)
+      {
+        id: 'obj_direct_notready_1',
+        template: "{name}, no problem. But let's at least lock in today's pricing so you don't lose out. No commitment to buy - just holds the numbers. - {salesperson}",
+        followUp: '2_hours',
+      },
+      {
+        id: 'obj_direct_notready_2',
+        template: "{name}, understood. What would need to happen for you to be ready? Let me see if I can help make that happen. - {salesperson}",
         followUp: '2_hours',
       },
     ],
     balanced: [
+      // Price/Budget (Reciprocity + Value)
       {
-        id: 'obj_balanced_1',
-        template: "I totally understand, {name}. That's a fair point. Let me see what I can do to address that for you. Can we chat for a few minutes? - {salesperson}",
+        id: 'obj_balanced_price_1',
+        template: "I totally understand, {name}. Price matters. Let me show you everything that's included and see if we can find some creative solutions together. What's most important to you in terms of value? - {salesperson}",
         followUp: 'same_day',
       },
       {
-        id: 'obj_balanced_2',
-        template: "Hey {name}, I appreciate you being honest with me. Let's figure this out together - I want to make sure this works for you. What's the main concern? - {salesperson}",
+        id: 'obj_balanced_price_2',
+        template: "Hey {name}, I hear you. Let me ask - is it the total price or the monthly payment that's the concern? Sometimes there's flexibility we haven't explored yet. - {salesperson}",
+        followUp: 'same_day',
+      },
+      // Need to Think (Liking + Understanding)
+      {
+        id: 'obj_balanced_think_1',
+        template: "Absolutely {name}, big decisions deserve thought. I'm curious though - what's the main thing you're weighing? I might be able to help you think through it. - {salesperson}",
         followUp: 'same_day',
       },
       {
-        id: 'obj_balanced_3',
-        template: "I hear you, {name}. That makes total sense. Let me see what options we have to make this work better for you. When can we talk? - {salesperson}",
+        id: 'obj_balanced_think_2',
+        template: "I appreciate that, {name}. Most of my happiest customers took time to decide. What information would help you feel more confident? - {salesperson}",
+        followUp: 'same_day',
+      },
+      // Spouse/Partner (Inclusion + Social Proof)
+      {
+        id: 'obj_balanced_spouse_1',
+        template: "That's great, {name} - it's a big decision for both of you. A lot of couples come in together for the test drive so everyone can get a feel for it. Would that work? - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'obj_balanced_spouse_2',
+        template: "Makes total sense, {name}. What do you think their main questions will be? I can help you have all the answers ready for that conversation. - {salesperson}",
+        followUp: 'same_day',
+      },
+      // Payment (Problem Solving)
+      {
+        id: 'obj_balanced_payment_1',
+        template: "I get it, {name} - the payment has to work for your life. Let's back into a number that makes sense for you. What range are you comfortable with? - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'obj_balanced_payment_2',
+        template: "Understood, {name}. There are usually a few ways to get to a better payment - term, down payment, different trim. Let's explore what works best for you. - {salesperson}",
+        followUp: 'same_day',
+      },
+      // Shopping Around (Confidence + Differentiation)
+      {
+        id: 'obj_balanced_shopping_1',
+        template: "I think that's smart, {name}. I'm confident in what we offer - both the vehicle and the experience. When you're done looking around, I'd love to earn your business. What matters most to you? - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'obj_balanced_shopping_2',
+        template: "No problem, {name}. Comparison shopping is wise. Just remember - it's not just about price. The experience and support after the sale matter too. I'm here when you're ready. - {salesperson}",
+        followUp: 'same_day',
+      },
+      // Not Ready (Understanding + Commitment)
+      {
+        id: 'obj_balanced_notready_1',
+        template: "Totally understand, {name}. Is there anything holding you back that I could help address? Sometimes just talking it through helps clarify things. - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'obj_balanced_notready_2',
+        template: "No rush at all, {name}. I just want to make sure you have everything you need to make a decision when the time is right. What would be helpful for you to know? - {salesperson}",
         followUp: 'same_day',
       },
     ],
     soft_touch: [
+      // Price/Budget (Empathy + No Pressure)
       {
-        id: 'obj_soft_1',
-        template: "Hi {name}, I completely understand your concerns - they're totally valid. I want you to feel 100% comfortable with any decision. Would it help to talk through some options? No pressure at all. - {salesperson}",
+        id: 'obj_soft_price_1',
+        template: "Hi {name}, I completely understand - budget is such an important factor. I'm here to help you find the best value, whatever that looks like for you. No pressure to decide anything right now. Would it help to talk through some options? - {salesperson}",
         followUp: 'next_day',
       },
       {
-        id: 'obj_soft_2',
-        template: "Hello {name}, thank you for sharing that with me. Your concerns are completely understandable, and I want to help however I can. Let me know if you'd like to explore some alternatives. - {salesperson}",
+        id: 'obj_soft_price_2',
+        template: "I hear you, {name}. Finding the right car at the right price takes time, and that's okay. Whenever you're ready to explore some possibilities, I'm here - no obligation at all. - {salesperson}",
+        followUp: 'next_day',
+      },
+      // Need to Think (Respect + Support)
+      {
+        id: 'obj_soft_think_1',
+        template: "Hi {name}, I really appreciate you being thoughtful about this decision. Take all the time you need - there's no rush. If any questions come up while you're thinking, I'm just a message away. - {salesperson}",
         followUp: 'next_day',
       },
       {
-        id: 'obj_soft_3',
-        template: "Hi {name}, I really appreciate you being upfront with me. I never want you to feel rushed or pressured. Take your time, and if there's anything I can help clarify, I'm here. - {salesperson}",
+        id: 'obj_soft_think_2',
+        template: "Absolutely, {name}. Big decisions deserve time and thought. I'm here whenever you're ready to chat more - no pressure at all. Trust your instincts. - {salesperson}",
+        followUp: 'next_day',
+      },
+      // Spouse/Partner (Understanding + Inclusion)
+      {
+        id: 'obj_soft_spouse_1',
+        template: "Hi {name}, that makes perfect sense - it's wonderful that you make these decisions together. Whenever you'd both like to come in, I'd love to meet them and answer any questions. No rush at all! - {salesperson}",
+        followUp: 'next_day',
+      },
+      {
+        id: 'obj_soft_spouse_2',
+        template: "I completely understand, {name}. Involving your partner in a big decision like this is so important. Let me know if there's any information I can provide to help with that conversation. - {salesperson}",
+        followUp: 'next_day',
+      },
+      // Payment (Gentle + Helpful)
+      {
+        id: 'obj_soft_payment_1',
+        template: "Hi {name}, I understand the payment needs to feel comfortable for you. There's no pressure here - I'm happy to explore different options whenever you're ready to see what might work. - {salesperson}",
+        followUp: 'next_day',
+      },
+      {
+        id: 'obj_soft_payment_2',
+        template: "I hear you, {name}. Finding a payment that fits your life is important. When you're ready, I'd love to help you look at some possibilities - no commitment required. - {salesperson}",
+        followUp: 'next_day',
+      },
+      // Shopping Around (Encouraging + Confident)
+      {
+        id: 'obj_soft_shopping_1',
+        template: "Hi {name}, I think that's a really smart approach. Do your research and find what feels right for you. I'm here if you have questions along the way, and I'd love to earn your business when you're ready. - {salesperson}",
+        followUp: 'next_day',
+      },
+      {
+        id: 'obj_soft_shopping_2',
+        template: "Absolutely, {name}. You should feel confident in your choice. Take your time, and know that I'm here whenever you want to talk - no pressure at all. - {salesperson}",
+        followUp: 'next_day',
+      },
+      // Not Ready (Patient + Supportive)
+      {
+        id: 'obj_soft_notready_1',
+        template: "Hi {name}, I completely respect that. There's no timeline here - buying a car should feel right, not rushed. I'm here whenever the time is right for you. Take care! - {salesperson}",
+        followUp: 'next_day',
+      },
+      {
+        id: 'obj_soft_notready_2',
+        template: "No problem at all, {name}. The right car will still be the right car whenever you're ready. I'm here to help whenever that time comes - no pressure. Have a wonderful day! - {salesperson}",
         followUp: 'next_day',
       },
     ],
   },
 };
 
-// Default follow-up templates
+// QUADRUPLED FOLLOW-UP TEMPLATES - Psychology-driven timing and messaging
 export const FOLLOW_UP_TEMPLATES = {
   '2_hours': {
-    fast_direct: "{name}, just following up - the {vehicle} is still here. Let me know! - {salesperson}",
-    balanced: "Hey {name}! Just wanted to make sure you got my message about the {vehicle}. Any questions I can answer? - {salesperson}",
-    soft_touch: "Hi {name}! I hope I'm not bothering you - just wanted to make sure you have everything you need. I'm here if you'd like to chat! - {salesperson}",
+    fast_direct: [
+      "{name}, just following up - the {vehicle} is still here. Let me know! - {salesperson}",
+      "{name}, quick check-in on the {vehicle}. What questions can I answer? - {salesperson}",
+      "Hey {name}, circling back. The {vehicle} had some interest today. Still on your radar? - {salesperson}",
+      "{name}, wanted to catch you before end of day. {vehicle} update - it's still available. - {salesperson}",
+    ],
+    balanced: [
+      "Hey {name}! Just wanted to make sure you got my message about the {vehicle}. Any questions I can answer? - {salesperson}",
+      "Hi {name}, hope your day is going well! Just checking in on the {vehicle} - anything I can help with? - {salesperson}",
+      "Hey {name}, thinking about our chat earlier. The {vehicle} really would be perfect for you. What's holding you back? - {salesperson}",
+      "{name}, just a quick follow-up! I found some additional info on the {vehicle} I thought you might like. Want me to send it over? - {salesperson}",
+    ],
+    soft_touch: [
+      "Hi {name}! I hope I'm not bothering you - just wanted to make sure you have everything you need. I'm here if you'd like to chat! - {salesperson}",
+      "Hello {name}, just a gentle check-in. No pressure at all - I just want to be helpful if there's anything you're wondering about. - {salesperson}",
+      "Hi {name}, I hope you're having a great day! Just wanted you to know I'm here if any questions come up about the {vehicle}. - {salesperson}",
+      "{name}, just reaching out to say I'm thinking of you and hope your car search is going well. I'm here if you need anything! - {salesperson}",
+    ],
   },
   'same_day': {
-    fast_direct: "{name}, checking in before end of day on the {vehicle}. Ready when you are. - {salesperson}",
-    balanced: "Hi {name}! As the day wraps up, I wanted to check if you had any thoughts on the {vehicle}. Would love to help! - {salesperson}",
-    soft_touch: "Good evening {name}! Just a gentle reminder that I'm here whenever you're ready to discuss the {vehicle}. Have a wonderful night! - {salesperson}",
+    fast_direct: [
+      "{name}, checking in before end of day on the {vehicle}. Ready when you are. - {salesperson}",
+      "{name}, last call for today - the {vehicle} is still here. Tomorrow isn't guaranteed. - {salesperson}",
+      "Hey {name}, day's almost over. Any decision on the {vehicle}? I can make something happen tonight. - {salesperson}",
+      "{name}, wrapping up for the day. Let's get you into that {vehicle} - what do you need from me? - {salesperson}",
+    ],
+    balanced: [
+      "Hi {name}! As the day wraps up, I wanted to check if you had any thoughts on the {vehicle}. Would love to help! - {salesperson}",
+      "Hey {name}, hope you had a great day! Just wanted to touch base before tonight. The {vehicle} is still on my mind for you. - {salesperson}",
+      "Hi {name}! Before I head out, I wanted to make sure you have everything you need. Any questions about the {vehicle}? - {salesperson}",
+      "{name}, just wanted to say thanks for considering us today. I'm here tomorrow if you want to continue our conversation about the {vehicle}. - {salesperson}",
+    ],
+    soft_touch: [
+      "Good evening {name}! Just a gentle reminder that I'm here whenever you're ready to discuss the {vehicle}. Have a wonderful night! - {salesperson}",
+      "Hi {name}, I hope you're having a relaxing evening. Just wanted to let you know - no pressure, but I'm here if anything comes to mind about the {vehicle}. - {salesperson}",
+      "Hello {name}! As the day winds down, I just wanted to wish you a great evening. I'm here whenever feels right to continue our chat. - {salesperson}",
+      "{name}, hope you're enjoying your evening! Just a friendly note to say I'm here if you need anything. No rush at all! - {salesperson}",
+    ],
   },
   'next_day': {
-    fast_direct: "{name}, the {vehicle} made it through the night - still here for you. - {salesperson}",
-    balanced: "Good morning {name}! Hope you had a great night. Wanted to touch base about the {vehicle}. What's on your mind? - {salesperson}",
-    soft_touch: "Good morning {name}! I hope you're having a great day so far. Just wanted to check in and see if there's anything I can help with. No rush at all! - {salesperson}",
+    fast_direct: [
+      "{name}, the {vehicle} made it through the night - still here for you. - {salesperson}",
+      "Morning {name}, {vehicle} update: still available. Let's do this today. - {salesperson}",
+      "{name}, new day, same opportunity. The {vehicle} is waiting. When can you come in? - {salesperson}",
+      "Hey {name}, slept on it? The {vehicle} is ready when you are. - {salesperson}",
+    ],
+    balanced: [
+      "Good morning {name}! Hope you had a great night. Wanted to touch base about the {vehicle}. What's on your mind? - {salesperson}",
+      "Hey {name}, hope you're having a good start to your day! I was thinking about what you said yesterday - any new thoughts on the {vehicle}? - {salesperson}",
+      "Hi {name}! New day, fresh perspective. How are you feeling about the {vehicle}? I'm here to help! - {salesperson}",
+      "Good morning {name}! Just wanted to check in and see if you had any questions after sleeping on it. The {vehicle} is still available! - {salesperson}",
+    ],
+    soft_touch: [
+      "Good morning {name}! I hope you're having a great day so far. Just wanted to check in and see if there's anything I can help with. No rush at all! - {salesperson}",
+      "Hi {name}, hope you slept well! Just a gentle note to say I'm here whenever you're ready. Take your time with the decision! - {salesperson}",
+      "Hello {name}! I hope your morning is going beautifully. I'm here if you'd like to chat about the {vehicle} - no pressure whatsoever. - {salesperson}",
+      "Good morning {name}! Just wanted to wish you a wonderful day. I'm here whenever feels right for you. - {salesperson}",
+    ],
   },
   '3_days': {
-    fast_direct: "{name}, the {vehicle} is going to move soon. Just giving you a heads up. - {salesperson}",
-    balanced: "Hey {name}! It's been a few days - wanted to see how you're doing and if you're still thinking about the {vehicle}. I'm here to help! - {salesperson}",
-    soft_touch: "Hi {name}! I hope your week is going well. Just wanted to gently follow up and see if there's anything I can help you with. As always, no pressure! - {salesperson}",
+    fast_direct: [
+      "{name}, the {vehicle} is going to move soon. Just giving you a heads up. - {salesperson}",
+      "{name}, 3 days in - the {vehicle} has had more looks. Still interested? - {salesperson}",
+      "Hey {name}, wanted to be upfront - the {vehicle} won't last forever. What's it going to take? - {salesperson}",
+      "{name}, checking in one more time. The {vehicle} opportunity is still here. Ball's in your court. - {salesperson}",
+    ],
+    balanced: [
+      "Hey {name}! It's been a few days - wanted to see how you're doing and if you're still thinking about the {vehicle}. I'm here to help! - {salesperson}",
+      "Hi {name}, hope your week is going well! Just touching base on the {vehicle}. Anything I can help you work through? - {salesperson}",
+      "Hey {name}! Haven't heard from you in a bit - just wanted to make sure everything's okay and see if you have any questions. - {salesperson}",
+      "Hi {name}! I've been thinking about our conversation. Is there anything holding you back on the {vehicle} that I could help address? - {salesperson}",
+    ],
+    soft_touch: [
+      "Hi {name}! I hope your week is going well. Just wanted to gently follow up and see if there's anything I can help you with. As always, no pressure! - {salesperson}",
+      "Hello {name}, I hope this finds you well! Just checking in to see how you're doing. The {vehicle} is here whenever you're ready. - {salesperson}",
+      "Hi {name}! I know it's been a few days, and I just wanted you to know I'm still here if you need anything. Take all the time you need! - {salesperson}",
+      "{name}, just a friendly check-in! I hope everything is going great. No rush on anything - I'm here whenever feels right. - {salesperson}",
+    ],
   },
   '1_week': {
-    fast_direct: "{name}, week later - {vehicle} update: it's here or it's gone. Want to check? - {salesperson}",
-    balanced: "Hi {name}! It's been about a week - just wanted to check in and see how things are going. If the {vehicle} is still on your radar, I'd love to chat! - {salesperson}",
-    soft_touch: "Hello {name}! I hope everything is going wonderfully for you. I just wanted to reach out and let you know I'm still here if you ever want to revisit our conversation about the {vehicle}. Take care! - {salesperson}",
+    fast_direct: [
+      "{name}, week later - {vehicle} update: it's here or it's gone. Want to check? - {salesperson}",
+      "{name}, one week check-in. The {vehicle} situation has changed. Call me. - {salesperson}",
+      "Hey {name}, a week's gone by. Are we doing this or not? The {vehicle} needs an answer. - {salesperson}",
+      "{name}, final follow-up on the {vehicle}. I've got other interested buyers. Where are you at? - {salesperson}",
+    ],
+    balanced: [
+      "Hi {name}! It's been about a week - just wanted to check in and see how things are going. If the {vehicle} is still on your radar, I'd love to chat! - {salesperson}",
+      "Hey {name}, hope you're having a great week! Just wanted to reconnect and see if there's anything I can help with regarding the {vehicle}. - {salesperson}",
+      "Hi {name}! A week has flown by! Just wanted to see how you're feeling about everything. I'm here if you want to talk through anything. - {salesperson}",
+      "Hey {name}, it's been a little while! Just checking in to see if your situation has changed at all. The {vehicle} is still a great fit for you. - {salesperson}",
+    ],
+    soft_touch: [
+      "Hello {name}! I hope everything is going wonderfully for you. I just wanted to reach out and let you know I'm still here if you ever want to revisit our conversation about the {vehicle}. Take care! - {salesperson}",
+      "Hi {name}, I hope you're doing great! Just a gentle note to say I'm thinking of you and I'm here whenever the time feels right. No rush at all! - {salesperson}",
+      "Hello {name}! I hope life is treating you well. Just wanted to check in and let you know the door is always open whenever you're ready. Have a beautiful day! - {salesperson}",
+      "Hi {name}, it's been a week and I just wanted to say I hope you're well! I'm here whenever you need me - no timeline, no pressure. Wishing you all the best! - {salesperson}",
+    ],
   },
 };
 
