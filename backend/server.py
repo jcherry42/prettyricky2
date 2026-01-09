@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+import httpx
 
 
 ROOT_DIR = Path(__file__).parent
@@ -52,6 +53,15 @@ class TowerTalkRequest(BaseModel):
 
 class TowerTalkResponse(BaseModel):
     response: str
+
+# Import URL Models
+class ImportUrlRequest(BaseModel):
+    url: str
+
+class ImportUrlResponse(BaseModel):
+    success: bool
+    data: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
 
 
 # API Routes
