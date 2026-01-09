@@ -9,29 +9,14 @@ const iconMap = {
   'heart': Heart,
 };
 
-const colorMap = {
-  'accent': {
-    active: 'bg-accent text-accent-foreground',
-    inactive: 'text-accent',
-  },
-  'primary': {
-    active: 'bg-primary text-primary-foreground',
-    inactive: 'text-primary',
-  },
-  'success': {
-    active: 'bg-success text-success-foreground',
-    inactive: 'text-success',
-  },
-};
-
 export const ToneSelector = () => {
   const { selectedTone, selectTone, selectedCustomer, selectedInquiryType } = useSales();
 
   if (!selectedCustomer || !selectedInquiryType) return null;
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-sm font-medium text-muted-foreground px-1">
+    <div className="space-y-3 animate-fade-in">
+      <h2 className="text-sm font-semibold text-muted-foreground px-1">
         Select your approach
       </h2>
       
@@ -39,19 +24,25 @@ export const ToneSelector = () => {
         {RESPONSE_TONES.map((tone) => {
           const Icon = iconMap[tone.icon] || Users;
           const isActive = selectedTone === tone.id;
-          const colors = colorMap[tone.color] || colorMap.primary;
+          
+          // Determine active class based on tone type
+          let activeClass = '';
+          if (isActive) {
+            if (tone.id === 'fast_direct') activeClass = 'active-direct';
+            else if (tone.id === 'balanced') activeClass = 'active-balanced';
+            else if (tone.id === 'soft_touch') activeClass = 'active-soft';
+          }
           
           return (
             <button
               key={tone.id}
               onClick={() => selectTone(tone.id)}
-              className={`
-                tone-btn
-                ${isActive ? colors.active : 'text-muted-foreground'}
-              `}
+              className={`tone-btn ${activeClass}`}
             >
-              <Icon className={`w-5 h-5 ${isActive ? '' : colors.inactive}`} />
-              <span className="text-xs font-medium">{tone.shortLabel}</span>
+              <Icon className={`tone-icon w-5 h-5 ${isActive ? '' : tone.id === 'fast_direct' ? 'text-accent' : tone.id === 'balanced' ? 'text-primary' : 'text-success'}`} />
+              <span className={`tone-label text-xs font-semibold ${isActive ? '' : 'text-muted-foreground'}`}>
+                {tone.shortLabel}
+              </span>
             </button>
           );
         })}

@@ -83,37 +83,42 @@ export const TowerTalkModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm">
       <div className="bottom-sheet w-full max-w-lg max-h-[85vh] overflow-hidden animate-slide-up">
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-10 h-1 rounded-full bg-border" />
+        </div>
+        
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-tower/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-tower" />
+        <div className="flex items-center justify-between px-5 pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl icon-bg-tower flex items-center justify-center">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Tower Talk</h2>
+              <h2 className="font-bold text-foreground">Tower Talk</h2>
               <p className="text-xs text-muted-foreground">AI-powered personalized response</p>
             </div>
           </div>
           
           <button
             onClick={handleClose}
-            className="ios-btn w-8 h-8 text-muted-foreground"
+            className="ios-btn w-9 h-9 bg-muted/50 rounded-full text-muted-foreground hover:text-foreground"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 overflow-y-auto max-h-[60vh] hide-scrollbar">
+        <div className="p-5 space-y-4 overflow-y-auto max-h-[60vh] hide-scrollbar">
           {/* Context summary */}
           {selectedCustomer && (
-            <div className="p-3 bg-muted/50 rounded-xl text-sm">
+            <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 text-sm">
               <p className="text-muted-foreground">
-                Generating for <span className="text-foreground font-medium">{selectedCustomer.name}</span>
+                Generating for <span className="text-primary font-semibold">{selectedCustomer.name}</span>
                 {selectedVehicle && (
-                  <> interested in <span className="text-foreground font-medium">
+                  <> interested in <span className="text-primary font-semibold">
                     {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
                   </span></>
                 )}
@@ -123,14 +128,14 @@ export const TowerTalkModal = () => {
 
           {/* Situation input */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-sm font-semibold text-foreground">
               Describe the situation
             </label>
             <textarea
               value={situation}
               onChange={(e) => setSituation(e.target.value)}
               placeholder="e.g., Customer mentioned they just had a baby and need more space. They're comparing to a Honda Pilot at another dealer..."
-              className="ios-input min-h-[100px] resize-none"
+              className="ios-input min-h-[120px] resize-none"
               rows={4}
             />
           </div>
@@ -143,12 +148,12 @@ export const TowerTalkModal = () => {
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
                 Generating...
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-5 h-5" />
                 Generate Response
               </>
             )}
@@ -156,28 +161,28 @@ export const TowerTalkModal = () => {
 
           {/* Error message */}
           {error && (
-            <div className="p-3 bg-destructive/10 text-destructive rounded-xl text-sm">
+            <div className="p-4 bg-destructive/10 text-destructive rounded-xl text-sm border border-destructive/20">
               {error}
             </div>
           )}
 
           {/* Generated response */}
           {response && (
-            <div className="space-y-3 animate-fade-in">
-              <div className="p-4 bg-tower/5 border border-tower/20 rounded-xl">
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+            <div className="space-y-4 animate-fade-in">
+              <div className="p-5 bg-gradient-to-br from-tower/10 to-tower/5 border border-tower/20 rounded-xl">
+                <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap">
                   {response}
                 </p>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2.5">
                 <button
                   onClick={handleCopy}
                   className={`
-                    ios-btn flex-1 text-sm gap-2
+                    ios-btn flex-1 text-sm gap-2 font-semibold
                     ${copied 
-                      ? 'bg-success text-success-foreground' 
-                      : 'bg-secondary text-secondary-foreground'
+                      ? 'ios-btn-success' 
+                      : 'ios-btn-secondary'
                     }
                   `}
                 >
