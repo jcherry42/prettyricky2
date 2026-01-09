@@ -1,84 +1,153 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import {
-  defaultObjectionTypes,
-  defaultResponses,
-  defaultVehicles,
-  defaultProspects,
   STORAGE_KEYS,
   loadFromStorage,
   saveToStorage,
+  DEFAULT_TEMPLATES,
+  DEFAULT_VEHICLES,
+  DEFAULT_CUSTOMERS,
+  DEFAULT_DEALERSHIP,
+  DEFAULT_SALESPERSON,
+  DEFAULT_PREFERENCES,
+  processTemplate,
+  buildContext,
+  getResponses,
+  FOLLOW_UP_TEMPLATES,
 } from '../data/salesData';
 
 // Initial state
 const initialState = {
-  objectionTypes: defaultObjectionTypes,
-  responses: defaultResponses,
-  vehicles: defaultVehicles,
-  prospects: defaultProspects,
-  selectedProspect: null,
-  selectedObjection: null,
+  // Setup
+  dealership: DEFAULT_DEALERSHIP,
+  salesperson: DEFAULT_SALESPERSON,
+  preferences: DEFAULT_PREFERENCES,
+  isSetupComplete: false,
+  
+  // Data
+  vehicles: DEFAULT_VEHICLES,
+  customers: DEFAULT_CUSTOMERS,
+  customTemplates: {},
+  
+  // Current selection
+  selectedCustomer: null,
+  selectedVehicle: null,
+  selectedInquiryType: null,
+  selectedTone: 'balanced',
+  
+  // Generated responses
+  currentResponses: [],
   selectedResponse: null,
-  searchQuery: '',
+  
+  // UI state
+  showSetup: false,
+  showImport: false,
+  showTowerTalk: false,
   isOffline: !navigator.onLine,
-  settings: {
-    dealershipName: 'AutoMax Dealership',
-    repName: 'Sales Rep',
-    defaultTerm: 60,
-    defaultDownPayment: 10,
-  },
 };
 
 // Action types
 const ACTIONS = {
-  SET_PROSPECT: 'SET_PROSPECT',
-  SET_OBJECTION: 'SET_OBJECTION',
-  SET_RESPONSE: 'SET_RESPONSE',
-  SET_SEARCH: 'SET_SEARCH',
-  UPDATE_PROSPECT: 'UPDATE_PROSPECT',
-  ADD_PROSPECT: 'ADD_PROSPECT',
+  SET_DEALERSHIP: 'SET_DEALERSHIP',
+  SET_SALESPERSON: 'SET_SALESPERSON',
+  SET_PREFERENCES: 'SET_PREFERENCES',
+  SET_SETUP_COMPLETE: 'SET_SETUP_COMPLETE',
+  SET_VEHICLES: 'SET_VEHICLES',
+  SET_CUSTOMERS: 'SET_CUSTOMERS',
+  SET_CUSTOM_TEMPLATES: 'SET_CUSTOM_TEMPLATES',
+  SELECT_CUSTOMER: 'SELECT_CUSTOMER',
+  SELECT_VEHICLE: 'SELECT_VEHICLE',
+  SELECT_INQUIRY_TYPE: 'SELECT_INQUIRY_TYPE',
+  SELECT_TONE: 'SELECT_TONE',
+  SET_RESPONSES: 'SET_RESPONSES',
+  SELECT_RESPONSE: 'SELECT_RESPONSE',
+  TOGGLE_SETUP: 'TOGGLE_SETUP',
+  TOGGLE_IMPORT: 'TOGGLE_IMPORT',
+  TOGGLE_TOWER_TALK: 'TOGGLE_TOWER_TALK',
   SET_OFFLINE: 'SET_OFFLINE',
-  LOAD_CUSTOM_DATA: 'LOAD_CUSTOM_DATA',
-  UPDATE_SETTINGS: 'UPDATE_SETTINGS',
-  IMPORT_RESPONSES: 'IMPORT_RESPONSES',
-  IMPORT_VEHICLES: 'IMPORT_VEHICLES',
+  LOAD_SAVED_DATA: 'LOAD_SAVED_DATA',
 };
 
 // Reducer
 function salesReducer(state, action) {
   switch (action.type) {
-    case ACTIONS.SET_PROSPECT:
-      return { ...state, selectedProspect: action.payload, selectedObjection: null, selectedResponse: null };
-    case ACTIONS.SET_OBJECTION:
-      return { ...state, selectedObjection: action.payload, selectedResponse: null };
-    case ACTIONS.SET_RESPONSE:
+    case ACTIONS.SET_DEALERSHIP:
+      saveToStorage(STORAGE_KEYS.DEALERSHIP_SETUP, action.payload);
+      return { ...state, dealership: action.payload };
+      
+    case ACTIONS.SET_SALESPERSON:
+      saveToStorage(STORAGE_KEYS.SALESPERSON_SETUP, action.payload);
+      return { ...state, salesperson: action.payload };
+      
+    case ACTIONS.SET_PREFERENCES:
+      saveToStorage(STORAGE_KEYS.USER_PREFERENCES, action.payload);
+      return { ...state, preferences: action.payload };
+      
+    case ACTIONS.SET_SETUP_COMPLETE:
+      return { ...state, isSetupComplete: action.payload };
+      
+    case ACTIONS.SET_VEHICLES:
+      saveToStorage(STORAGE_KEYS.VEHICLES, action.payload);
+      return { ...state, vehicles: action.payload };
+      
+    case ACTIONS.SET_CUSTOMERS:
+      saveToStorage(STORAGE_KEYS.CUSTOMERS, action.payload);
+      return { ...state, customers: action.payload };
+      
+    case ACTIONS.SET_CUSTOM_TEMPLATES:
+      saveToStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, action.payload);
+      return { ...state, customTemplates: action.payload };
+      
+    case ACTIONS.SELECT_CUSTOMER:
+      const customer = action.payload;
+      const vehicle = customer?.vehicleInterest ? 
+        state.vehicles.find(v => v.id === customer.vehicleInterest) : null;
+      return { 
+        ...state, 
+        selectedCustomer: customer,
+        selectedVehicle: vehicle,
+        selectedInquiryType: null,
+        currentResponses: [],
+        selectedResponse: null,
+      };
+      
+    case ACTIONS.SELECT_VEHICLE:
+      return { ...state, selectedVehicle: action.payload };
+      
+    case ACTIONS.SELECT_INQUIRY_TYPE:
+      return { 
+        ...state, 
+        selectedInquiryType: action.payload,
+        selectedResponse: null,
+      };
+      
+    case ACTIONS.SELECT_TONE:
+      return { 
+        ...state, 
+        selectedTone: action.payload,
+        selectedResponse: null,
+      };
+      
+    case ACTIONS.SET_RESPONSES:
+      return { ...state, currentResponses: action.payload };
+      
+    case ACTIONS.SELECT_RESPONSE:
       return { ...state, selectedResponse: action.payload };
-    case ACTIONS.SET_SEARCH:
-      return { ...state, searchQuery: action.payload };
-    case ACTIONS.UPDATE_PROSPECT:
-      const updatedProspects = state.prospects.map(p =>
-        p.id === action.payload.id ? { ...p, ...action.payload } : p
-      );
-      saveToStorage(STORAGE_KEYS.PROSPECTS, updatedProspects);
-      return { ...state, prospects: updatedProspects };
-    case ACTIONS.ADD_PROSPECT:
-      const newProspects = [...state.prospects, action.payload];
-      saveToStorage(STORAGE_KEYS.PROSPECTS, newProspects);
-      return { ...state, prospects: newProspects };
+      
+    case ACTIONS.TOGGLE_SETUP:
+      return { ...state, showSetup: action.payload ?? !state.showSetup };
+      
+    case ACTIONS.TOGGLE_IMPORT:
+      return { ...state, showImport: action.payload ?? !state.showImport };
+      
+    case ACTIONS.TOGGLE_TOWER_TALK:
+      return { ...state, showTowerTalk: action.payload ?? !state.showTowerTalk };
+      
     case ACTIONS.SET_OFFLINE:
       return { ...state, isOffline: action.payload };
-    case ACTIONS.LOAD_CUSTOM_DATA:
+      
+    case ACTIONS.LOAD_SAVED_DATA:
       return { ...state, ...action.payload };
-    case ACTIONS.UPDATE_SETTINGS:
-      const newSettings = { ...state.settings, ...action.payload };
-      saveToStorage(STORAGE_KEYS.SETTINGS, newSettings);
-      return { ...state, settings: newSettings };
-    case ACTIONS.IMPORT_RESPONSES:
-      const mergedResponses = { ...state.responses, ...action.payload };
-      saveToStorage(STORAGE_KEYS.CUSTOM_RESPONSES, mergedResponses);
-      return { ...state, responses: mergedResponses };
-    case ACTIONS.IMPORT_VEHICLES:
-      saveToStorage(STORAGE_KEYS.CUSTOM_VEHICLES, action.payload);
-      return { ...state, vehicles: action.payload };
+      
     default:
       return state;
   }
@@ -91,22 +160,31 @@ const SalesContext = createContext(null);
 export function SalesProvider({ children }) {
   const [state, dispatch] = useReducer(salesReducer, initialState);
 
-  // Load custom data from storage on mount
+  // Load saved data on mount
   useEffect(() => {
-    const customResponses = loadFromStorage(STORAGE_KEYS.CUSTOM_RESPONSES);
-    const customVehicles = loadFromStorage(STORAGE_KEYS.CUSTOM_VEHICLES);
-    const savedProspects = loadFromStorage(STORAGE_KEYS.PROSPECTS);
-    const savedSettings = loadFromStorage(STORAGE_KEYS.SETTINGS);
-
-    const loadedData = {};
-    if (customResponses) loadedData.responses = { ...defaultResponses, ...customResponses };
-    if (customVehicles) loadedData.vehicles = customVehicles;
-    if (savedProspects) loadedData.prospects = savedProspects;
-    if (savedSettings) loadedData.settings = { ...initialState.settings, ...savedSettings };
-
-    if (Object.keys(loadedData).length > 0) {
-      dispatch({ type: ACTIONS.LOAD_CUSTOM_DATA, payload: loadedData });
-    }
+    const dealership = loadFromStorage(STORAGE_KEYS.DEALERSHIP_SETUP, DEFAULT_DEALERSHIP);
+    const salesperson = loadFromStorage(STORAGE_KEYS.SALESPERSON_SETUP, DEFAULT_SALESPERSON);
+    const preferences = loadFromStorage(STORAGE_KEYS.USER_PREFERENCES, DEFAULT_PREFERENCES);
+    const vehicles = loadFromStorage(STORAGE_KEYS.VEHICLES, DEFAULT_VEHICLES);
+    const customers = loadFromStorage(STORAGE_KEYS.CUSTOMERS, DEFAULT_CUSTOMERS);
+    const customTemplates = loadFromStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, {});
+    
+    const isSetupComplete = dealership.name !== DEFAULT_DEALERSHIP.name || 
+                            salesperson.name !== DEFAULT_SALESPERSON.name;
+    
+    dispatch({
+      type: ACTIONS.LOAD_SAVED_DATA,
+      payload: {
+        dealership,
+        salesperson,
+        preferences,
+        vehicles,
+        customers,
+        customTemplates,
+        isSetupComplete,
+        selectedTone: preferences.defaultTone || 'balanced',
+      },
+    });
   }, []);
 
   // Listen for online/offline status
@@ -123,71 +201,89 @@ export function SalesProvider({ children }) {
     };
   }, []);
 
+  // Generate responses when inquiry type or tone changes
+  useEffect(() => {
+    if (state.selectedInquiryType && state.selectedCustomer) {
+      const templates = getResponses(state.selectedInquiryType, state.selectedTone, state.customTemplates);
+      const context = buildContext(
+        state.selectedCustomer,
+        state.selectedVehicle,
+        state.dealership,
+        state.salesperson,
+        state.preferences
+      );
+      
+      const processed = templates.map(t => ({
+        ...t,
+        text: processTemplate(t.template, context),
+        followUpText: t.followUp ? 
+          processTemplate(FOLLOW_UP_TEMPLATES[t.followUp]?.[state.selectedTone] || '', context) : null,
+      }));
+      
+      dispatch({ type: ACTIONS.SET_RESPONSES, payload: processed });
+    }
+  }, [state.selectedInquiryType, state.selectedTone, state.selectedCustomer, state.selectedVehicle, state.dealership, state.salesperson, state.preferences, state.customTemplates]);
+
   // Actions
-  const selectProspect = (prospect) => {
-    dispatch({ type: ACTIONS.SET_PROSPECT, payload: prospect });
+  const setDealership = (data) => dispatch({ type: ACTIONS.SET_DEALERSHIP, payload: data });
+  const setSalesperson = (data) => dispatch({ type: ACTIONS.SET_SALESPERSON, payload: data });
+  const setPreferences = (data) => dispatch({ type: ACTIONS.SET_PREFERENCES, payload: data });
+  const setSetupComplete = (value) => dispatch({ type: ACTIONS.SET_SETUP_COMPLETE, payload: value });
+  const setVehicles = (data) => dispatch({ type: ACTIONS.SET_VEHICLES, payload: data });
+  const setCustomers = (data) => dispatch({ type: ACTIONS.SET_CUSTOMERS, payload: data });
+  const setCustomTemplates = (data) => dispatch({ type: ACTIONS.SET_CUSTOM_TEMPLATES, payload: data });
+  
+  const selectCustomer = (customer) => dispatch({ type: ACTIONS.SELECT_CUSTOMER, payload: customer });
+  const selectVehicle = (vehicle) => dispatch({ type: ACTIONS.SELECT_VEHICLE, payload: vehicle });
+  const selectInquiryType = (type) => dispatch({ type: ACTIONS.SELECT_INQUIRY_TYPE, payload: type });
+  const selectTone = (tone) => dispatch({ type: ACTIONS.SELECT_TONE, payload: tone });
+  const selectResponse = (response) => dispatch({ type: ACTIONS.SELECT_RESPONSE, payload: response });
+  
+  const toggleSetup = (value) => dispatch({ type: ACTIONS.TOGGLE_SETUP, payload: value });
+  const toggleImport = (value) => dispatch({ type: ACTIONS.TOGGLE_IMPORT, payload: value });
+  const toggleTowerTalk = (value) => dispatch({ type: ACTIONS.TOGGLE_TOWER_TALK, payload: value });
+
+  // Copy to clipboard
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      return false;
+    }
   };
 
-  const selectObjection = (objection) => {
-    dispatch({ type: ACTIONS.SET_OBJECTION, payload: objection });
+  // Share via iMessage (iOS native)
+  const shareToMessages = async (text) => {
+    // Use SMS URL scheme for iOS
+    const smsUrl = `sms:${state.selectedCustomer?.phone || ''}&body=${encodeURIComponent(text)}`;
+    window.location.href = smsUrl;
   };
 
-  const selectResponse = (response) => {
-    dispatch({ type: ACTIONS.SET_RESPONSE, payload: response });
-  };
-
-  const setSearch = (query) => {
-    dispatch({ type: ACTIONS.SET_SEARCH, payload: query });
-  };
-
-  const updateProspect = (prospectData) => {
-    dispatch({ type: ACTIONS.UPDATE_PROSPECT, payload: prospectData });
-  };
-
-  const addProspect = (prospect) => {
-    const newProspect = {
-      ...prospect,
-      id: `p${Date.now()}`,
-      lastContact: 'Just now',
-      objections: [],
-    };
-    dispatch({ type: ACTIONS.ADD_PROSPECT, payload: newProspect });
-    return newProspect;
-  };
-
-  const updateSettings = (settings) => {
-    dispatch({ type: ACTIONS.UPDATE_SETTINGS, payload: settings });
-  };
-
-  const importResponses = (responses) => {
-    dispatch({ type: ACTIONS.IMPORT_RESPONSES, payload: responses });
-  };
-
-  const importVehicles = (vehicles) => {
-    dispatch({ type: ACTIONS.IMPORT_VEHICLES, payload: vehicles });
-  };
-
-  const getVehicleById = (vehicleId) => {
-    return state.vehicles.find(v => v.id === vehicleId);
-  };
-
-  const getResponsesForObjection = (objectionId) => {
-    return state.responses[objectionId] || [];
-  };
+  // Get vehicle by ID
+  const getVehicleById = (id) => state.vehicles.find(v => v.id === id);
 
   const value = {
     ...state,
-    selectProspect,
-    selectObjection,
+    setDealership,
+    setSalesperson,
+    setPreferences,
+    setSetupComplete,
+    setVehicles,
+    setCustomers,
+    setCustomTemplates,
+    selectCustomer,
+    selectVehicle,
+    selectInquiryType,
+    selectTone,
     selectResponse,
-    setSearch,
-    updateProspect,
-    addProspect,
-    updateSettings,
-    importResponses,
-    importVehicles,
+    toggleSetup,
+    toggleImport,
+    toggleTowerTalk,
+    copyToClipboard,
+    shareToMessages,
     getVehicleById,
-    getResponsesForObjection,
   };
 
   return (
