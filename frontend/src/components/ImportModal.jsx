@@ -30,7 +30,6 @@ export const ImportModal = () => {
       
       let imported = [];
       
-      // Handle different data types
       if (data.vehicles) {
         setVehicles(data.vehicles);
         imported.push(`${data.vehicles.length} vehicles`);
@@ -44,11 +43,6 @@ export const ImportModal = () => {
       if (data.templates) {
         setCustomTemplates(data.templates);
         imported.push('custom templates');
-      }
-      
-      if (data.dealership) {
-        // This will be handled by setup
-        imported.push('dealership info');
       }
       
       if (imported.length > 0) {
@@ -124,22 +118,22 @@ export const ImportModal = () => {
   if (!showImport) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="ios-modal w-full max-w-md max-h-[85vh] overflow-hidden animate-slide-up safe-area-bottom">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">Import Data</h2>
+        <div className="flex items-center justify-between p-5 border-b border-border/50">
+          <h2 className="font-bold text-lg text-foreground">Import Data</h2>
           
           <button
             onClick={() => { toggleImport(false); setStatus({ type: null, message: '' }); }}
-            className="ios-btn w-8 h-8 text-muted-foreground"
+            className="ios-btn w-9 h-9 bg-muted/50 rounded-full text-muted-foreground"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="ios-segment mx-4 mt-4">
+        <div className="ios-segment mx-5 mt-4">
           <button
             onClick={() => setActiveTab('file')}
             className={`ios-segment-btn ${activeTab === 'file' ? 'active' : ''}`}
@@ -157,7 +151,7 @@ export const ImportModal = () => {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-5 space-y-4">
           {activeTab === 'file' && (
             <div
               onDragEnter={handleDrag}
@@ -165,10 +159,10 @@ export const ImportModal = () => {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               className={`
-                relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed transition-colors
+                relative flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-dashed transition-all
                 ${dragActive 
                   ? 'border-primary bg-primary/5' 
-                  : 'border-border'
+                  : 'border-border/50 bg-gradient-to-br from-muted/30 to-muted/10'
                 }
               `}
             >
@@ -179,14 +173,14 @@ export const ImportModal = () => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                dragActive ? 'bg-primary/10' : 'bg-muted'
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
+                dragActive ? 'icon-bg-primary scale-110' : 'bg-muted/50'
               }`}>
-                <Upload className={`w-6 h-6 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Upload className={`w-7 h-7 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
               
               <div className="text-center">
-                <p className="font-medium text-foreground">
+                <p className="font-semibold text-foreground">
                   {dragActive ? 'Drop file here' : 'Tap to upload'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -197,7 +191,7 @@ export const ImportModal = () => {
           )}
 
           {activeTab === 'url' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <input
                 type="text"
                 placeholder="https://example.com/data.json"
@@ -213,7 +207,7 @@ export const ImportModal = () => {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     Importing...
                   </>
                 ) : (
@@ -226,22 +220,25 @@ export const ImportModal = () => {
           {/* Status message */}
           {status.type && (
             <div className={`
-              flex items-center gap-2 p-3 rounded-xl
-              ${status.type === 'success' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}
+              flex items-center gap-3 p-4 rounded-xl
+              ${status.type === 'success' 
+                ? 'bg-gradient-to-br from-success/15 to-success/5 text-success border border-success/20' 
+                : 'bg-gradient-to-br from-destructive/15 to-destructive/5 text-destructive border border-destructive/20'
+              }
             `}>
               {status.type === 'success' ? (
-                <Check className="w-4 h-4" />
+                <Check className="w-5 h-5" />
               ) : (
-                <AlertCircle className="w-4 h-4" />
+                <AlertCircle className="w-5 h-5" />
               )}
-              <span className="text-sm">{status.message}</span>
+              <span className="text-sm font-medium">{status.message}</span>
             </div>
           )}
 
           {/* Help text */}
-          <div className="p-3 bg-muted/50 rounded-xl">
+          <div className="p-4 bg-gradient-to-br from-muted/50 to-muted/20 rounded-xl border border-border/30">
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Supported data:</span> Dealership info, inventory (vehicles), customer lists, and custom response templates.
+              <span className="font-semibold text-foreground">Supported data:</span> Dealership info, inventory (vehicles), customer lists, and custom response templates.
             </p>
           </div>
         </div>
