@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { X, Upload, Link, FileText, Check, AlertCircle, Loader2 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
 export const ImportModal = () => {
   const { showImport, toggleImport, setVehicles, setCustomers, setCustomTemplates } = useSales();
   const [activeTab, setActiveTab] = useState('file');
@@ -80,11 +82,21 @@ export const ImportModal = () => {
     setStatus({ type: null, message: '' });
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch');
+      // Use backend to fetch URL (bypasses CORS)
+      const response = await fetch(`${BACKEND_URL}/api/import-url`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      });
       
-      const data = await response.json();
+      const result = await response.json();
       
+      if (!result.success) {
+        setStatus({ type: 'error', message: result.error || 'Failed to import from URL' });
+        return;
+      }
+      
+      const data = result.data;
       let imported = [];
       
       if (data.vehicles) {
@@ -109,7 +121,8 @@ export const ImportModal = () => {
         setStatus({ type: 'error', message: 'No recognized data found' });
       }
     } catch (err) {
-      setStatus({ type: 'error', message: 'Failed to import from URL' });
+      console.error('Import error:', err);
+      setStatus({ type: 'error', message: 'Failed to import from URL. Please check the URL and try again.' });
     } finally {
       setIsLoading(false);
     }
