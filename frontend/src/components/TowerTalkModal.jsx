@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Loader2, Sparkles, Copy, Check, MessageSquare } from 'lucide-react';
+import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -14,6 +15,7 @@ export const TowerTalkModal = () => {
     salesperson,
     copyToClipboard,
     shareToMessages,
+    addFavorite,
   } = useSales();
   
   const [situation, setSituation] = useState('');
@@ -21,6 +23,7 @@ export const TowerTalkModal = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   if (!showTowerTalk) return null;
 
@@ -75,11 +78,29 @@ export const TowerTalkModal = () => {
     shareToMessages(response);
   };
 
+  const handleSaveToFavorites = () => {
+    const customerName = selectedCustomer?.firstName || selectedCustomer?.name?.split(' ')[0] || null;
+    const vehicle = selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : null;
+    
+    addFavorite({
+      response,
+      situation,
+      customerName,
+      vehicle,
+    });
+    
+    setIsSaved(true);
+    toast.success('Saved to Favorites!', {
+      description: 'Access your saved responses anytime',
+    });
+  };
+
   const handleClose = () => {
     toggleTowerTalk(false);
     setSituation('');
     setResponse('');
     setError('');
+    setIsSaved(false);
   };
 
   return (
@@ -169,8 +190,24 @@ export const TowerTalkModal = () => {
           {/* Generated response */}
           {response && (
             <div className="space-y-4 animate-fade-in">
-              <div className="p-5 bg-gradient-to-br from-tower/10 to-tower/5 border border-tower/20 rounded-xl">
-                <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap">
+              <div className="p-5 bg-gradient-to-br from-tower/10 to-tower/5 border border-tower/20 rounded-xl relative">
+                {/* Save to favorites button */}
+                <button
+                  onClick={handleSaveToFavorites}
+                  disabled={isSaved}
+                  className={`
+                    absolute top-3 right-3 ios-btn w-9 h-9 rounded-full
+                    ${isSaved 
+                      ? 'bg-pink-500/20 text-pink-500' 
+                      : 'bg-muted/50 text-muted-foreground hover:text-pink-500 hover:bg-pink-500/10'
+                    }
+                  `}
+                  data-testid="save-to-favorites-btn"
+                >
+                  <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                </button>
+                
+                <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap pr-10">
                   {response}
                 </p>
               </div>
