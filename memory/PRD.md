@@ -85,12 +85,13 @@ A separate, on-demand AI-powered feature accessed via a red "Tower Talk" button:
 7. **Follow-up Templates** - Quadrupled with timing suggestions
 8. **Setup Modal** - Dealership and salesperson preferences
 9. **Tower Talk AI Feature** - Fully functional AI-powered personalized responses
+10. **Favorites Feature** - Save, view, copy, send, and delete AI-generated responses (persisted to localStorage)
 
 ### 🔄 Upcoming Tasks (P1)
 - **Data Import**: Allow dealership, inventory, and customer data import via files or hyperlinks
 
 ### 📋 Future Tasks (P2/P3)
-- **Persist User Preferences**: Save settings to localStorage
+- **Persist User Preferences**: Save dealership/salesperson settings to localStorage (partially done - favorites already persisted)
 - **Offline Capability**: Service workers for app shell and data caching (Tower Talk remains online-only)
 - **iMessage Integration**: Investigate deeper integration beyond `sms:` URI scheme
 
