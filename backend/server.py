@@ -70,6 +70,80 @@ async def get_status_checks():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Tower Talk - AI Request Model
+class TowerTalkRequest(BaseModel):
+    situation: str
+    context: Dict[str, Any]
+
+class TowerTalkResponse(BaseModel):
+    response: str
+
+# Tower Talk endpoint for AI-generated personalized responses
+@api_router.post("/tower-talk", response_model=TowerTalkResponse)
+async def tower_talk(request: TowerTalkRequest):
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        # Build the context-aware prompt
+        ctx = request.context
+        customer_name = ctx.get('customerName', 'the customer')
+        vehicle = ctx.get('vehicle', 'the vehicle')
+        vehicle_price = ctx.get('vehiclePrice', '')
+        trade_in = ctx.get('tradeIn')
+        dealership = ctx.get('dealershipName', 'our dealership')
+        salesperson = ctx.get('salespersonName', 'the sales rep')
+        style = ctx.get('salespersonStyle', 'friendly')
+        
+        # Map style to tone guidance
+        style_guidance = {
+            'straight_shooter': 'Be direct and honest. Get to the point quickly while remaining professional.',
+            'friendly': 'Be warm, personable, and conversational. Build rapport while being helpful.',
+            'professional': 'Be polished and formal. Maintain a business-like tone while being approachable.',
+        }
+        
+        tone_guide = style_guidance.get(style, style_guidance['friendly'])
+        
+        system_message = f"""You are an expert automotive sales consultant helping craft personalized messages.
+
+Your personality: {tone_guide}
+
+Context:
+- You work at {dealership}
+- Your name is {salesperson}
+- Customer: {customer_name}
+- Vehicle of interest: {vehicle} {f'at {vehicle_price}' if vehicle_price else ''}
+{f'- Customer has trade-in: {trade_in}' if trade_in else ''}
+
+Rules:
+1. Write a SINGLE message ready to send via text/iMessage
+2. Keep it conversational and human - NOT salesy or pushy
+3. Address the specific situation described
+4. Be concise (2-4 sentences max)
+5. Sign off with just the salesperson's first name
+6. DO NOT use emojis
+7. DO NOT include any brackets or placeholders
+8. Make it feel genuine and helpful"""
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"tower-talk-{uuid.uuid4()}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4.1-mini")
+        
+        user_message = UserMessage(
+            text=f"Situation: {request.situation}\n\nWrite a personalized message for this situation."
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        return TowerTalkResponse(response=response.strip())
+        
+    except Exception as e:
+        logger.error(f"Tower Talk error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate response")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
