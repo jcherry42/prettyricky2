@@ -155,6 +155,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED: After selecting Alex Martinez, objection chips appear correctly (Price, Competitor, Payment, Trade-In, Interest Rate, Timing, Features, Warranty). Known objections for the prospect show red indicator dots on Price and Competitor chips as expected."
+      - working: true
+        agent: "testing"
+        comment: "✅ iOS RE-TEST PASSED: Inquiry Type Grid working perfectly. All 8 inquiry types found and displayed in grid format: New Lead, Price Question, Availability, Trade-In, Financing, Test Drive, Follow Up, Objection. Tap functionality working - selected New Lead successfully with proper highlighting."
 
   - task: "Response Cards - Responses appear when objection selected with copy buttons"
     implemented: true
