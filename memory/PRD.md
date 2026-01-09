@@ -117,6 +117,7 @@ A separate, on-demand AI-powered feature accessed via a red "Tower Talk" button:
 
 ### API Endpoints
 - `POST /api/tower-talk` - AI-powered personalized response generation
+- `POST /api/import-url` - Fetch and parse JSON data from external URLs (bypasses CORS)
 
 ---
 
