@@ -213,12 +213,20 @@ export function SalesProvider({ children }) {
         state.preferences
       );
       
-      const processed = templates.map(t => ({
-        ...t,
-        text: processTemplate(t.template, context),
-        followUpText: t.followUp ? 
-          processTemplate(FOLLOW_UP_TEMPLATES[t.followUp]?.[state.selectedTone] || '', context) : null,
-      }));
+      const processed = templates.map((t, index) => {
+        // Get follow-up templates for this timing
+        const followUpTemplates = t.followUp ? FOLLOW_UP_TEMPLATES[t.followUp]?.[state.selectedTone] : null;
+        // Pick a follow-up based on the response index (cycles through available follow-ups)
+        const followUpTemplate = Array.isArray(followUpTemplates) 
+          ? followUpTemplates[index % followUpTemplates.length]
+          : followUpTemplates;
+        
+        return {
+          ...t,
+          text: processTemplate(t.template, context),
+          followUpText: followUpTemplate ? processTemplate(followUpTemplate, context) : null,
+        };
+      });
       
       dispatch({ type: ACTIONS.SET_RESPONSES, payload: processed });
     }
