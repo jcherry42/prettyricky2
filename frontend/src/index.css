@@ -6,101 +6,119 @@
 
 @layer base {
     :root {
-        /* iOS-inspired color system */
-        --primary: 207 90% 54%;
+        /* Vibrant color palette */
+        --primary: 210 100% 52%;
         --primary-foreground: 0 0% 100%;
-        --primary-soft: 207 80% 96%;
+        --primary-soft: 210 100% 95%;
+        --primary-glow: 210 100% 60%;
         
         --secondary: 240 5% 96%;
         --secondary-foreground: 240 6% 10%;
         
-        /* Accent - Coral for action items */
-        --accent: 12 90% 55%;
+        /* Vibrant coral accent */
+        --accent: 4 90% 58%;
         --accent-foreground: 0 0% 100%;
-        --accent-soft: 12 85% 95%;
+        --accent-soft: 4 85% 95%;
+        --accent-glow: 4 90% 65%;
         
-        /* Success - iOS green */
-        --success: 142 70% 45%;
+        /* Success - Vibrant teal */
+        --success: 168 76% 42%;
         --success-foreground: 0 0% 100%;
-        --success-soft: 142 60% 94%;
+        --success-soft: 168 70% 94%;
         
-        /* Warning - iOS orange */
+        /* Warning - Warm amber */
         --warning: 38 95% 50%;
-        --warning-foreground: 0 0% 100%;
+        --warning-foreground: 0 0% 10%;
         --warning-soft: 38 90% 94%;
         
-        /* iOS Background colors */
-        --background: 0 0% 98%;
-        --foreground: 240 6% 10%;
+        /* Hot status - Pink/magenta */
+        --hot: 340 82% 52%;
+        --hot-soft: 340 80% 95%;
         
-        /* Card - Pure white for iOS cards */
+        /* Backgrounds with subtle color */
+        --background: 220 30% 97%;
+        --background-gradient-start: 220 40% 98%;
+        --background-gradient-end: 200 50% 96%;
+        --foreground: 222 47% 11%;
+        
+        /* Glass cards */
         --card: 0 0% 100%;
-        --card-foreground: 240 6% 10%;
+        --card-foreground: 222 47% 11%;
+        --glass-bg: 0 0% 100% / 0.7;
+        --glass-border: 0 0% 100% / 0.5;
         
-        /* Muted - iOS gray backgrounds */
-        --muted: 240 5% 96%;
-        --muted-foreground: 240 4% 46%;
+        /* Muted with color tint */
+        --muted: 220 20% 96%;
+        --muted-foreground: 220 10% 46%;
         
         /* Borders */
-        --border: 240 6% 90%;
-        --input: 240 6% 90%;
-        --ring: 207 90% 54%;
+        --border: 220 20% 88%;
+        --input: 220 20% 92%;
+        --ring: 210 100% 52%;
         
         /* Popover */
         --popover: 0 0% 100%;
-        --popover-foreground: 240 6% 10%;
+        --popover-foreground: 222 47% 11%;
         
-        /* Destructive - iOS red */
+        /* Destructive */
         --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
         
-        /* Tower Talk - Deep red */
-        --tower: 0 72% 51%;
+        /* Tower Talk - Deep rich red */
+        --tower: 0 72% 50%;
         --tower-foreground: 0 0% 100%;
+        --tower-glow: 0 72% 60%;
         
-        --radius: 0.875rem;
+        --radius: 1rem;
         
-        /* iOS-style shadows */
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-        --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
-        --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
-        --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
+        /* Glassmorphism shadows */
+        --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.08);
+        --shadow-glass-lg: 0 12px 48px rgba(31, 38, 135, 0.12);
+        --shadow-glow-primary: 0 4px 24px hsl(210 100% 52% / 0.25);
+        --shadow-glow-accent: 0 4px 24px hsl(4 90% 58% / 0.25);
+        --shadow-glow-success: 0 4px 24px hsl(168 76% 42% / 0.25);
+        --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
         
-        /* Transitions */
-        --transition-fast: 150ms ease;
-        --transition-smooth: 250ms ease;
+        /* Noise texture for glass effect */
+        --noise-opacity: 0.02;
     }
     
     .dark {
-        --primary: 207 90% 60%;
+        --primary: 210 100% 60%;
         --primary-foreground: 0 0% 100%;
-        --primary-soft: 207 40% 20%;
+        --primary-soft: 210 50% 20%;
         
-        --secondary: 240 6% 15%;
-        --secondary-foreground: 240 5% 96%;
+        --secondary: 222 30% 18%;
+        --secondary-foreground: 220 15% 95%;
         
-        --accent: 12 90% 60%;
+        --accent: 4 90% 62%;
         --accent-foreground: 0 0% 100%;
         
-        --success: 142 70% 50%;
+        --success: 168 70% 50%;
         --warning: 38 95% 55%;
+        --hot: 340 85% 60%;
         
-        --background: 240 6% 7%;
-        --foreground: 240 5% 96%;
+        --background: 222 35% 8%;
+        --foreground: 220 15% 95%;
         
-        --card: 240 6% 12%;
-        --card-foreground: 240 5% 96%;
+        --card: 222 30% 12%;
+        --card-foreground: 220 15% 95%;
+        --glass-bg: 222 30% 12% / 0.7;
+        --glass-border: 220 20% 25% / 0.5;
         
-        --muted: 240 5% 18%;
-        --muted-foreground: 240 4% 60%;
+        --muted: 222 25% 16%;
+        --muted-foreground: 220 10% 60%;
         
-        --border: 240 5% 20%;
-        --input: 240 5% 20%;
+        --border: 222 20% 22%;
+        --input: 222 20% 20%;
         
-        --popover: 240 6% 10%;
-        --popover-foreground: 240 5% 96%;
+        --popover: 222 30% 10%;
+        --popover-foreground: 220 15% 95%;
         
         --tower: 0 72% 55%;
+        
+        --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+        --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
     }
 }
 
@@ -112,21 +130,25 @@
     
     html {
         -webkit-text-size-adjust: 100%;
-        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     }
     
     body {
-        @apply bg-background text-foreground antialiased;
+        @apply text-foreground antialiased;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(
+            165deg,
+            hsl(var(--background-gradient-start)) 0%,
+            hsl(var(--background-gradient-end)) 50%,
+            hsl(220 35% 95%) 100%
+        );
+        background-attachment: fixed;
+        min-height: 100vh;
     }
     
     h1, h2, h3, h4, h5, h6 {
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     }
     
-    /* iOS safe areas */
     .safe-area-top {
         padding-top: env(safe-area-inset-top, 0);
     }
@@ -137,28 +159,55 @@
 }
 
 @layer components {
-    /* iOS-style card */
-    .ios-card {
-        @apply bg-card rounded-2xl;
+    /* Glass card effect */
+    .glass-card {
+        background: linear-gradient(
+            135deg,
+            hsl(var(--glass-bg)),
+            hsl(0 0% 100% / 0.85)
+        );
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid hsl(var(--glass-border));
         box-shadow: var(--shadow-card);
+        @apply rounded-2xl;
     }
     
-    /* iOS-style list item (tap target) */
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.4),
+            rgba(255, 255, 255, 0.1)
+        );
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+    
+    /* iOS-style list item */
     .ios-list-item {
-        @apply relative flex items-center gap-3 px-4 py-3.5 bg-card;
-        min-height: 44px;
+        @apply relative flex items-center gap-3 px-4 py-3.5;
+        min-height: 52px;
         -webkit-touch-callout: none;
+        transition: background-color 0.15s ease;
     }
     
     .ios-list-item:active {
-        @apply bg-muted/50;
+        background: hsl(var(--primary) / 0.08);
     }
     
     /* iOS-style button */
     .ios-btn {
         @apply inline-flex items-center justify-center font-medium rounded-xl transition-all;
-        min-height: 44px;
-        min-width: 44px;
+        min-height: 48px;
+        min-width: 48px;
         -webkit-touch-callout: none;
     }
     
@@ -167,128 +216,255 @@
         opacity: 0.9;
     }
     
-    /* iOS-style primary button */
+    /* Primary button with glow */
     .ios-btn-primary {
-        @apply ios-btn bg-primary text-primary-foreground px-6;
-    }
-    
-    /* iOS-style secondary button */
-    .ios-btn-secondary {
-        @apply ios-btn bg-secondary text-secondary-foreground px-6;
-    }
-    
-    /* iOS-style accent button */
-    .ios-btn-accent {
-        @apply ios-btn bg-accent text-accent-foreground px-6;
-    }
-    
-    /* Tower Talk red button */
-    .ios-btn-tower {
         @apply ios-btn px-6 font-semibold;
-        background: linear-gradient(180deg, hsl(0 72% 55%), hsl(0 72% 45%));
+        background: linear-gradient(
+            135deg,
+            hsl(var(--primary)),
+            hsl(var(--primary-glow))
+        );
+        color: hsl(var(--primary-foreground));
+        box-shadow: var(--shadow-glow-primary), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    
+    .ios-btn-primary:active {
+        box-shadow: 0 2px 12px hsl(var(--primary) / 0.3);
+    }
+    
+    /* Secondary button - glass style */
+    .ios-btn-secondary {
+        @apply ios-btn px-6;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid hsl(var(--border));
+        color: hsl(var(--foreground));
+    }
+    
+    .ios-btn-secondary:active {
+        background: hsl(var(--muted));
+    }
+    
+    /* Accent button with glow */
+    .ios-btn-accent {
+        @apply ios-btn px-6 font-semibold;
+        background: linear-gradient(
+            135deg,
+            hsl(var(--accent)),
+            hsl(var(--accent-glow))
+        );
+        color: hsl(var(--accent-foreground));
+        box-shadow: var(--shadow-glow-accent), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    
+    /* Success button */
+    .ios-btn-success {
+        @apply ios-btn px-6 font-semibold;
+        background: linear-gradient(
+            135deg,
+            hsl(var(--success)),
+            hsl(168 76% 50%)
+        );
+        color: hsl(var(--success-foreground));
+        box-shadow: var(--shadow-glow-success), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    
+    /* Tower Talk button - Rich red glass effect */
+    .ios-btn-tower {
+        @apply ios-btn px-6 font-bold tracking-wide;
+        background: linear-gradient(
+            135deg,
+            hsl(var(--tower)),
+            hsl(var(--tower-glow))
+        );
         color: white;
-        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+        box-shadow: 
+            0 4px 24px hsl(var(--tower) / 0.4),
+            0 0 0 1px hsl(var(--tower) / 0.2) inset,
+            inset 0 1px 0 rgba(255,255,255,0.25);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
     
     .ios-btn-tower:active {
-        box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 2px 12px hsl(var(--tower) / 0.4);
     }
     
-    /* iOS-style chip/tag */
-    .ios-chip {
-        @apply inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium;
-        min-height: 36px;
-        -webkit-touch-callout: none;
-        transition: background-color var(--transition-fast), color var(--transition-fast);
-    }
-    
-    .ios-chip-default {
-        @apply ios-chip bg-secondary text-secondary-foreground;
-    }
-    
-    .ios-chip-default:active,
-    .ios-chip-default.active {
-        @apply bg-primary text-primary-foreground;
-    }
-    
-    /* iOS-style input */
+    /* iOS-style input with glass */
     .ios-input {
-        @apply w-full px-4 py-3 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground;
-        min-height: 44px;
-        font-size: 16px; /* Prevents iOS zoom on focus */
+        @apply w-full px-4 py-3 rounded-xl text-foreground placeholder:text-muted-foreground;
+        min-height: 48px;
+        font-size: 16px;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid hsl(var(--border));
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
     
     .ios-input:focus {
-        @apply outline-none ring-2 ring-primary/30 bg-card;
+        @apply outline-none;
+        border-color: hsl(var(--primary));
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
     }
     
-    /* iOS-style segment control */
+    /* Glass segment control */
     .ios-segment {
-        @apply flex p-1 bg-secondary rounded-xl;
+        @apply flex p-1.5 rounded-2xl;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid hsl(var(--glass-border));
     }
     
     .ios-segment-btn {
-        @apply flex-1 py-2 px-3 rounded-lg text-sm font-medium text-muted-foreground transition-all;
-        min-height: 36px;
+        @apply flex-1 py-2.5 px-3 rounded-xl text-sm font-medium text-muted-foreground transition-all;
+        min-height: 40px;
     }
     
     .ios-segment-btn.active {
-        @apply bg-card text-foreground shadow-sm;
+        background: hsl(var(--card));
+        color: hsl(var(--foreground));
+        box-shadow: var(--shadow-glass);
     }
     
-    /* Response card */
-    .response-card {
-        @apply ios-card p-4 transition-all;
+    /* Inquiry type card - colorful glass */
+    .inquiry-card {
+        @apply flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl transition-all;
+        min-height: 76px;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid hsl(var(--glass-border));
     }
     
-    .response-card.selected {
-        @apply ring-2 ring-primary;
+    .inquiry-card:active {
+        transform: scale(0.97);
     }
     
-    .response-card:active {
-        @apply bg-muted/30;
+    .inquiry-card.active {
+        background: linear-gradient(
+            135deg,
+            hsl(var(--primary)),
+            hsl(var(--primary-glow))
+        );
+        border-color: transparent;
+        box-shadow: var(--shadow-glow-primary);
     }
     
-    /* Tone selector */
+    .inquiry-card.active .inquiry-icon,
+    .inquiry-card.active .inquiry-label {
+        color: white;
+    }
+    
+    /* Tone button - colorful states */
     .tone-btn {
-        @apply flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl transition-all;
-        min-height: 70px;
-    }
-    
-    .tone-btn.active {
-        @apply bg-card shadow-md;
+        @apply flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl transition-all;
+        min-height: 72px;
     }
     
     .tone-btn:active {
         transform: scale(0.97);
     }
     
-    /* iOS-style separator */
-    .ios-separator {
-        @apply h-px bg-border ml-4;
+    .tone-btn.active-direct {
+        background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-glow)));
+        box-shadow: var(--shadow-glow-accent);
     }
     
-    /* Status badge */
+    .tone-btn.active-direct .tone-icon,
+    .tone-btn.active-direct .tone-label {
+        color: white;
+    }
+    
+    .tone-btn.active-balanced {
+        background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+        box-shadow: var(--shadow-glow-primary);
+    }
+    
+    .tone-btn.active-balanced .tone-icon,
+    .tone-btn.active-balanced .tone-label {
+        color: white;
+    }
+    
+    .tone-btn.active-soft {
+        background: linear-gradient(135deg, hsl(var(--success)), hsl(168 76% 50%));
+        box-shadow: var(--shadow-glow-success);
+    }
+    
+    .tone-btn.active-soft .tone-icon,
+    .tone-btn.active-soft .tone-label {
+        color: white;
+    }
+    
+    /* Response card - glass with color accent */
+    .response-card {
+        @apply relative overflow-hidden p-5 rounded-2xl transition-all;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid hsl(var(--glass-border));
+        box-shadow: var(--shadow-glass);
+    }
+    
+    .response-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+        border-radius: 2px 2px 0 0;
+    }
+    
+    .response-card.selected {
+        border-color: hsl(var(--primary));
+        box-shadow: var(--shadow-glow-primary);
+    }
+    
+    .response-card:active {
+        background: hsl(0 0% 100% / 0.9);
+    }
+    
+    /* Status badges - vibrant colors */
     .status-hot {
-        @apply bg-accent/15 text-accent;
+        background: linear-gradient(135deg, hsl(var(--hot) / 0.15), hsl(var(--hot) / 0.1));
+        color: hsl(var(--hot));
+        border: 1px solid hsl(var(--hot) / 0.3);
     }
     
     .status-warm {
-        @apply bg-warning/15 text-warning;
+        background: linear-gradient(135deg, hsl(var(--warning) / 0.15), hsl(var(--warning) / 0.1));
+        color: hsl(var(--warning));
+        border: 1px solid hsl(var(--warning) / 0.3);
     }
     
     .status-cold {
-        @apply bg-muted text-muted-foreground;
+        background: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+        border: 1px solid hsl(var(--border));
+    }
+    
+    /* Header glass effect */
+    .header-glass {
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-bottom: 1px solid hsl(var(--glass-border));
     }
     
     /* Pulse animation */
     .pulse-dot {
-        @apply relative inline-block w-2 h-2 rounded-full bg-success;
+        @apply relative inline-block w-2 h-2 rounded-full;
+        background: hsl(var(--success));
+        box-shadow: 0 0 8px hsl(var(--success));
     }
     
     .pulse-dot::after {
         content: '';
-        @apply absolute inset-0 rounded-full bg-success;
+        @apply absolute inset-0 rounded-full;
+        background: hsl(var(--success));
         animation: pulse-ring 1.5s ease-out infinite;
     }
     
@@ -297,19 +473,44 @@
         100% { transform: scale(2.5); opacity: 0; }
     }
     
-    /* Bottom sheet style */
+    /* Bottom sheet - glass */
     .bottom-sheet {
-        @apply fixed inset-x-0 bottom-0 bg-card rounded-t-3xl shadow-lg;
+        @apply fixed inset-x-0 bottom-0 rounded-t-3xl;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid hsl(var(--glass-border));
+        border-bottom: none;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
         padding-bottom: env(safe-area-inset-bottom, 16px);
     }
     
-    /* iOS-style modal */
+    /* Modal glass */
     .ios-modal {
-        @apply bg-card rounded-2xl overflow-hidden;
+        @apply overflow-hidden rounded-3xl;
+        background: hsl(var(--glass-bg));
+        backdrop-filter: blur(24px) saturate(180%);
+        -webkit-backdrop-filter: blur(24px) saturate(180%);
+        border: 1px solid hsl(var(--glass-border));
+        box-shadow: var(--shadow-glass-lg);
         max-height: 90vh;
     }
     
-    /* Custom scrollbar - hidden for iOS feel */
+    /* Customer card - enhanced */
+    .customer-card {
+        @apply relative overflow-hidden;
+        background: linear-gradient(
+            135deg,
+            hsl(0 0% 100% / 0.9),
+            hsl(var(--glass-bg))
+        );
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid hsl(var(--glass-border));
+        box-shadow: var(--shadow-card);
+    }
+    
+    /* Hide scrollbar */
     .hide-scrollbar::-webkit-scrollbar {
         display: none;
     }
@@ -318,6 +519,27 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+    
+    /* Colorful icon backgrounds */
+    .icon-bg-primary {
+        background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05));
+        color: hsl(var(--primary));
+    }
+    
+    .icon-bg-accent {
+        background: linear-gradient(135deg, hsl(var(--accent) / 0.15), hsl(var(--accent) / 0.05));
+        color: hsl(var(--accent));
+    }
+    
+    .icon-bg-success {
+        background: linear-gradient(135deg, hsl(var(--success) / 0.15), hsl(var(--success) / 0.05));
+        color: hsl(var(--success));
+    }
+    
+    .icon-bg-tower {
+        background: linear-gradient(135deg, hsl(var(--tower) / 0.15), hsl(var(--tower) / 0.05));
+        color: hsl(var(--tower));
+    }
 }
 
 @layer utilities {
@@ -325,24 +547,17 @@
         text-wrap: balance;
     }
     
-    /* iOS-style blur */
-    .ios-blur {
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-    }
-    
-    /* Animation utilities */
     .animate-slide-up {
-        animation: slide-up 0.3s ease-out;
+        animation: slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1);
     }
     
     @keyframes slide-up {
-        from { opacity: 0; transform: translateY(16px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
     .animate-fade-in {
-        animation: fade-in 0.2s ease-out;
+        animation: fade-in 0.25s ease-out;
     }
     
     @keyframes fade-in {
@@ -351,12 +566,18 @@
     }
     
     .animate-scale-in {
-        animation: scale-in 0.2s ease;
+        animation: scale-in 0.25s cubic-bezier(0.32, 0.72, 0, 1);
     }
     
     @keyframes scale-in {
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
+    }
+    
+    /* Gradient text */
+    .gradient-text {
+        @apply bg-clip-text text-transparent;
+        background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
     }
 }
 
