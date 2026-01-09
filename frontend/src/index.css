@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=SF+Pro+Text:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,234 +6,282 @@
 
 @layer base {
     :root {
-        /* Core brand - Sleek teal/cyan with warmth */
-        --primary: 187 85% 43%;
+        /* iOS-inspired color system */
+        --primary: 207 90% 54%;
         --primary-foreground: 0 0% 100%;
-        --primary-glow: 187 90% 55%;
-        --primary-soft: 187 60% 92%;
+        --primary-soft: 207 80% 96%;
         
-        /* Secondary - Warm charcoal for professional touch */
-        --secondary: 220 13% 18%;
-        --secondary-foreground: 0 0% 98%;
+        --secondary: 240 5% 96%;
+        --secondary-foreground: 240 6% 10%;
         
-        /* Accent - Vibrant coral for CTAs and highlights */
-        --accent: 12 90% 62%;
+        /* Accent - Coral for action items */
+        --accent: 12 90% 55%;
         --accent-foreground: 0 0% 100%;
         --accent-soft: 12 85% 95%;
         
-        /* Success states */
-        --success: 158 64% 42%;
+        /* Success - iOS green */
+        --success: 142 70% 45%;
         --success-foreground: 0 0% 100%;
-        --success-soft: 158 50% 92%;
+        --success-soft: 142 60% 94%;
         
-        /* Warning states */
-        --warning: 38 92% 50%;
-        --warning-foreground: 0 0% 10%;
-        --warning-soft: 38 90% 92%;
+        /* Warning - iOS orange */
+        --warning: 38 95% 50%;
+        --warning-foreground: 0 0% 100%;
+        --warning-soft: 38 90% 94%;
         
-        /* Backgrounds - Light, clean, glossy */
-        --background: 210 20% 98%;
-        --foreground: 220 13% 18%;
+        /* iOS Background colors */
+        --background: 0 0% 98%;
+        --foreground: 240 6% 10%;
         
-        /* Cards with glass effect */
+        /* Card - Pure white for iOS cards */
         --card: 0 0% 100%;
-        --card-foreground: 220 13% 18%;
-        --card-glass: 0 0% 100% / 0.85;
+        --card-foreground: 240 6% 10%;
         
-        /* Muted tones */
-        --muted: 210 15% 95%;
-        --muted-foreground: 220 10% 45%;
+        /* Muted - iOS gray backgrounds */
+        --muted: 240 5% 96%;
+        --muted-foreground: 240 4% 46%;
         
-        /* Borders and inputs */
-        --border: 210 15% 90%;
-        --input: 210 15% 92%;
-        --ring: 187 85% 43%;
+        /* Borders */
+        --border: 240 6% 90%;
+        --input: 240 6% 90%;
+        --ring: 207 90% 54%;
         
         /* Popover */
         --popover: 0 0% 100%;
-        --popover-foreground: 220 13% 18%;
+        --popover-foreground: 240 6% 10%;
         
-        /* Destructive */
+        /* Destructive - iOS red */
         --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 98%;
+        --destructive-foreground: 0 0% 100%;
         
-        /* Chart colors */
-        --chart-1: 187 85% 43%;
-        --chart-2: 158 64% 42%;
-        --chart-3: 12 90% 62%;
-        --chart-4: 38 92% 50%;
-        --chart-5: 262 83% 58%;
+        /* Tower Talk - Deep red */
+        --tower: 0 72% 51%;
+        --tower-foreground: 0 0% 100%;
         
-        /* Sizing */
-        --radius: 0.75rem;
+        --radius: 0.875rem;
         
-        /* Custom gradients */
-        --gradient-primary: linear-gradient(135deg, hsl(187 85% 43%), hsl(187 90% 55%));
-        --gradient-hero: linear-gradient(180deg, hsl(210 20% 98%) 0%, hsl(187 60% 96%) 100%);
-        --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 15% 98%) 100%);
-        --gradient-accent: linear-gradient(135deg, hsl(12 90% 62%), hsl(25 95% 65%));
-        --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.75));
+        /* iOS-style shadows */
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+        --shadow-card: 0 2px 8px rgba(0,0,0,0.08);
         
-        /* Shadows */
-        --shadow-sm: 0 1px 2px 0 hsl(220 13% 18% / 0.03);
-        --shadow-md: 0 4px 12px -2px hsl(220 13% 18% / 0.08);
-        --shadow-lg: 0 12px 32px -8px hsl(220 13% 18% / 0.12);
-        --shadow-glow: 0 0 24px hsl(187 85% 43% / 0.25);
-        --shadow-card: 0 2px 16px -4px hsl(220 13% 18% / 0.1), 0 0 0 1px hsl(210 15% 90% / 0.5);
-        
-        /* Animations */
-        --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        /* Transitions */
+        --transition-fast: 150ms ease;
+        --transition-smooth: 250ms ease;
     }
     
     .dark {
-        --primary: 187 90% 55%;
-        --primary-foreground: 220 13% 10%;
-        --primary-glow: 187 95% 65%;
-        --primary-soft: 187 40% 20%;
+        --primary: 207 90% 60%;
+        --primary-foreground: 0 0% 100%;
+        --primary-soft: 207 40% 20%;
         
-        --secondary: 210 15% 85%;
-        --secondary-foreground: 220 13% 10%;
+        --secondary: 240 6% 15%;
+        --secondary-foreground: 240 5% 96%;
         
-        --accent: 12 90% 65%;
+        --accent: 12 90% 60%;
         --accent-foreground: 0 0% 100%;
-        --accent-soft: 12 40% 20%;
         
-        --success: 158 70% 50%;
-        --success-foreground: 0 0% 10%;
-        --success-soft: 158 30% 18%;
-        
+        --success: 142 70% 50%;
         --warning: 38 95% 55%;
-        --warning-foreground: 0 0% 10%;
-        --warning-soft: 38 30% 18%;
         
-        --background: 220 15% 8%;
-        --foreground: 210 15% 95%;
+        --background: 240 6% 7%;
+        --foreground: 240 5% 96%;
         
-        --card: 220 15% 12%;
-        --card-foreground: 210 15% 95%;
-        --card-glass: 220 15% 12% / 0.85;
+        --card: 240 6% 12%;
+        --card-foreground: 240 5% 96%;
         
-        --muted: 220 12% 15%;
-        --muted-foreground: 210 10% 60%;
+        --muted: 240 5% 18%;
+        --muted-foreground: 240 4% 60%;
         
-        --border: 220 12% 20%;
-        --input: 220 12% 18%;
-        --ring: 187 90% 55%;
+        --border: 240 5% 20%;
+        --input: 240 5% 20%;
         
-        --popover: 220 15% 10%;
-        --popover-foreground: 210 15% 95%;
+        --popover: 240 6% 10%;
+        --popover-foreground: 240 5% 96%;
         
-        --destructive: 0 75% 55%;
-        --destructive-foreground: 0 0% 98%;
-        
-        --gradient-primary: linear-gradient(135deg, hsl(187 90% 55%), hsl(187 95% 65%));
-        --gradient-hero: linear-gradient(180deg, hsl(220 15% 8%) 0%, hsl(220 20% 12%) 100%);
-        --gradient-card: linear-gradient(145deg, hsl(220 15% 14%) 0%, hsl(220 15% 10%) 100%);
-        --gradient-glass: linear-gradient(135deg, rgba(30,35,45,0.95), rgba(25,30,40,0.75));
-        
-        --shadow-card: 0 2px 16px -4px hsl(0 0% 0% / 0.4), 0 0 0 1px hsl(220 12% 20% / 0.5);
+        --tower: 0 72% 55%;
     }
 }
 
 @layer base {
     * {
         @apply border-border;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    html {
+        -webkit-text-size-adjust: 100%;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     }
     
     body {
         @apply bg-background text-foreground antialiased;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
     
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* iOS safe areas */
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top, 0);
+    }
+    
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 0);
     }
 }
 
 @layer components {
-    /* Glass card effect */
-    .glass-card {
-        @apply bg-card/85 backdrop-blur-xl border border-border/50;
+    /* iOS-style card */
+    .ios-card {
+        @apply bg-card rounded-2xl;
         box-shadow: var(--shadow-card);
     }
     
-    /* Glossy button effect */
-    .glossy-btn {
-        background: var(--gradient-primary);
-        @apply text-primary-foreground font-medium;
-        box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.2);
+    /* iOS-style list item (tap target) */
+    .ios-list-item {
+        @apply relative flex items-center gap-3 px-4 py-3.5 bg-card;
+        min-height: 44px;
+        -webkit-touch-callout: none;
     }
     
-    .glossy-btn:hover {
-        box-shadow: var(--shadow-lg), var(--shadow-glow), inset 0 1px 0 rgba(255,255,255,0.25);
+    .ios-list-item:active {
+        @apply bg-muted/50;
     }
     
-    /* Accent button */
-    .accent-btn {
-        background: var(--gradient-accent);
-        @apply text-accent-foreground font-medium;
-        box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.2);
+    /* iOS-style button */
+    .ios-btn {
+        @apply inline-flex items-center justify-center font-medium rounded-xl transition-all;
+        min-height: 44px;
+        min-width: 44px;
+        -webkit-touch-callout: none;
     }
     
-    .accent-btn:hover {
-        box-shadow: var(--shadow-lg), 0 0 24px hsl(var(--accent) / 0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+    .ios-btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
     }
     
-    /* Status pills */
-    .status-hot {
-        @apply bg-accent/15 text-accent border border-accent/30;
+    /* iOS-style primary button */
+    .ios-btn-primary {
+        @apply ios-btn bg-primary text-primary-foreground px-6;
     }
     
-    .status-warm {
-        @apply bg-warning/15 text-warning border border-warning/30;
+    /* iOS-style secondary button */
+    .ios-btn-secondary {
+        @apply ios-btn bg-secondary text-secondary-foreground px-6;
     }
     
-    .status-cold {
-        @apply bg-muted text-muted-foreground border border-border;
+    /* iOS-style accent button */
+    .ios-btn-accent {
+        @apply ios-btn bg-accent text-accent-foreground px-6;
     }
     
-    .status-sold {
-        @apply bg-success/15 text-success border border-success/30;
+    /* Tower Talk red button */
+    .ios-btn-tower {
+        @apply ios-btn px-6 font-semibold;
+        background: linear-gradient(180deg, hsl(0 72% 55%), hsl(0 72% 45%));
+        color: white;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
     }
     
-    /* Objection type chips */
-    .chip {
-        @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer select-none;
-        @apply bg-muted text-muted-foreground border border-transparent;
-        transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+    .ios-btn-tower:active {
+        box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
     }
     
-    .chip:hover {
-        @apply bg-primary/10 text-primary border-primary/20;
+    /* iOS-style chip/tag */
+    .ios-chip {
+        @apply inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium;
+        min-height: 36px;
+        -webkit-touch-callout: none;
+        transition: background-color var(--transition-fast), color var(--transition-fast);
     }
     
-    .chip.active {
-        @apply bg-primary text-primary-foreground border-primary;
+    .ios-chip-default {
+        @apply ios-chip bg-secondary text-secondary-foreground;
+    }
+    
+    .ios-chip-default:active,
+    .ios-chip-default.active {
+        @apply bg-primary text-primary-foreground;
+    }
+    
+    /* iOS-style input */
+    .ios-input {
+        @apply w-full px-4 py-3 rounded-xl bg-secondary text-foreground placeholder:text-muted-foreground;
+        min-height: 44px;
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+    
+    .ios-input:focus {
+        @apply outline-none ring-2 ring-primary/30 bg-card;
+    }
+    
+    /* iOS-style segment control */
+    .ios-segment {
+        @apply flex p-1 bg-secondary rounded-xl;
+    }
+    
+    .ios-segment-btn {
+        @apply flex-1 py-2 px-3 rounded-lg text-sm font-medium text-muted-foreground transition-all;
+        min-height: 36px;
+    }
+    
+    .ios-segment-btn.active {
+        @apply bg-card text-foreground shadow-sm;
     }
     
     /* Response card */
     .response-card {
-        @apply relative overflow-hidden rounded-xl p-5;
-        background: var(--gradient-card);
-        box-shadow: var(--shadow-card);
+        @apply ios-card p-4 transition-all;
     }
     
-    .response-card::before {
-        content: '';
-        @apply absolute top-0 left-0 right-0 h-px;
-        background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
+    .response-card.selected {
+        @apply ring-2 ring-primary;
     }
     
-    /* Keyboard shortcut badge */
-    .kbd {
-        @apply inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded text-xs font-medium;
-        @apply bg-muted text-muted-foreground border border-border;
-        font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+    .response-card:active {
+        @apply bg-muted/30;
     }
     
-    /* Pulse animation for live indicators */
+    /* Tone selector */
+    .tone-btn {
+        @apply flex-1 flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-xl transition-all;
+        min-height: 70px;
+    }
+    
+    .tone-btn.active {
+        @apply bg-card shadow-md;
+    }
+    
+    .tone-btn:active {
+        transform: scale(0.97);
+    }
+    
+    /* iOS-style separator */
+    .ios-separator {
+        @apply h-px bg-border ml-4;
+    }
+    
+    /* Status badge */
+    .status-hot {
+        @apply bg-accent/15 text-accent;
+    }
+    
+    .status-warm {
+        @apply bg-warning/15 text-warning;
+    }
+    
+    .status-cold {
+        @apply bg-muted text-muted-foreground;
+    }
+    
+    /* Pulse animation */
     .pulse-dot {
         @apply relative inline-block w-2 h-2 rounded-full bg-success;
     }
@@ -249,22 +297,26 @@
         100% { transform: scale(2.5); opacity: 0; }
     }
     
-    /* Smooth scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+    /* Bottom sheet style */
+    .bottom-sheet {
+        @apply fixed inset-x-0 bottom-0 bg-card rounded-t-3xl shadow-lg;
+        padding-bottom: env(safe-area-inset-bottom, 16px);
     }
     
-    .custom-scrollbar::-webkit-scrollbar-track {
-        @apply bg-transparent;
+    /* iOS-style modal */
+    .ios-modal {
+        @apply bg-card rounded-2xl overflow-hidden;
+        max-height: 90vh;
     }
     
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-border rounded-full;
+    /* Custom scrollbar - hidden for iOS feel */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
     }
     
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        @apply bg-muted-foreground/40;
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 }
 
@@ -273,21 +325,19 @@
         text-wrap: balance;
     }
     
-    .gradient-text {
-        @apply bg-clip-text text-transparent;
-        background-image: var(--gradient-primary);
+    /* iOS-style blur */
+    .ios-blur {
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
     }
     
-    .shadow-glow {
-        box-shadow: var(--shadow-glow);
-    }
-    
+    /* Animation utilities */
     .animate-slide-up {
         animation: slide-up 0.3s ease-out;
     }
     
     @keyframes slide-up {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(16px); }
         to { opacity: 1; transform: translateY(0); }
     }
     
@@ -301,7 +351,7 @@
     }
     
     .animate-scale-in {
-        animation: scale-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: scale-in 0.2s ease;
     }
     
     @keyframes scale-in {
@@ -315,30 +365,11 @@
     [data-debug-wrapper="true"] {
         display: contents !important;
     }
+}
 
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
+/* iOS keyboard push fix */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .keyboard-aware {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
     }
 }
