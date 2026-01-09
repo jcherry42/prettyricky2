@@ -119,6 +119,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASSED: App loads successfully with Closr branding in header, Ready status indicator with green badge, and prospect selector showing 'Select a prospect to get started' message. All core UI elements render correctly."
+      - working: true
+        agent: "testing"
+        comment: "✅ iOS RE-TEST PASSED: Verified on iPhone viewport (390x844). Closr branding clearly visible in header, Ready status indicator with green badge working, Select Customer card properly displayed with tap-friendly interface."
 
   - task: "Prospect Selection - Dropdown functionality with prospects list and selection"
     implemented: true
