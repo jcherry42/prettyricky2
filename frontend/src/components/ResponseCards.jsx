@@ -114,7 +114,7 @@ export const ResponseCards = () => {
           No Responses Yet
         </h3>
         <p className="text-sm text-muted-foreground max-w-xs">
-          Import custom responses or add them via the settings to handle "{selectedObjection.label}" objections.
+          Import custom responses or add them via the settings to handle &ldquo;{selectedObjection.label}&rdquo; objections.
         </p>
       </div>
     );
