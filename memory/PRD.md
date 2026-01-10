@@ -316,6 +316,26 @@ POST /api/webhooks/{id}/rotate            - Rotate credentials
 │       ├── csv_parser.py
 │       ├── json_parser.py
 │       └── google_sheets.py
+├── integrations/               # NEW - CRM Integration Layer
+│   ├── __init__.py
+│   ├── base.py                 # BaseAdapter, AdapterRegistry, AuthConfig
+│   ├── generic_rest.py         # GenericRestAdapter with mock support
+│   ├── manager.py              # IntegrationManager (CRUD, sync, health)
+│   ├── mock_data.py            # Realistic test data generator
+│   ├── sync_engine.py          # Data sync orchestration
+│   ├── health.py               # Health monitoring
+│   ├── connectors/
+│   │   ├── vinsolutions.py
+│   │   ├── dealersocket.py
+│   │   ├── elead.py
+│   │   ├── cdk.py
+│   │   ├── dealertrack.py
+│   │   ├── reynolds.py
+│   │   └── promax.py
+│   └── webhooks/
+│       ├── receiver.py         # Legacy receiver
+│       ├── fortified_receiver.py  # Multi-auth webhook handler
+│       └── handlers.py
 └── repositories/
     ├── base.py                 # Repository pattern
     ├── customer_repo.py
@@ -330,11 +350,13 @@ POST /api/webhooks/{id}/rotate            - Rotate credentials
 ├── context/SalesContext.js     # State + theme/supercharged actions
 ├── data/salesData.js           # Mock data / templates
 └── components/
-    ├── Header.jsx              # Theme + Supercharg'd toggle buttons
+    ├── Header.jsx              # Theme + Supercharg'd + Health Status
     ├── ImportModal.jsx         # Data import wizard + template downloads
     ├── TowerTalkModal.jsx      # AI responses with translation
     ├── ResponseCards.jsx       # Response display with language toggle
+    ├── VSModal.jsx             # -VS- Battle Cards
     ├── FavoritesModal.jsx
+    ├── IntegrationHealthStatus.jsx  # NEW - CRM health display
     └── ...
 ```
 
@@ -343,6 +365,9 @@ Collections:
 - `customers` - Imported customer data
 - `vehicles` - Imported vehicle inventory
 - `data_sources` - Source configurations and health
+- `integrations` - CRM integration configurations (NEW)
+- `webhooks` - Webhook endpoint configurations (NEW)
+- `webhook_events` - Received webhook events (NEW)
 
 ---
 
