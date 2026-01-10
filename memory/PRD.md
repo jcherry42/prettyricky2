@@ -30,6 +30,18 @@ AI-powered personalized response generation using Emergent LLM (GPT-4.1-mini)
 ### 4. Favorites Feature ✅
 Save, view, and reuse effective AI-generated responses
 
+### 5. Dark/Light Mode Theme ✅ (NEW - Jan 10, 2026)
+- Chrome-style toggle button with sun/moon icon
+- Persists to localStorage as 'closr_theme'
+- Tinted glass UI effects for both themes
+
+### 6. Supercharg'd Mode ✅ (NEW - Jan 10, 2026)
+- Animated flames toggle button with EN/ES label
+- Real-time English/Spanish translation
+- Bilingual Tower Talk responses
+- Language toggle for each response card
+- Persists to localStorage as 'closr_supercharged'
+
 ---
 
 ## Data Integration Architecture ✅ IMPLEMENTED
@@ -41,6 +53,7 @@ CRM-agnostic data integration system with:
 - **Scheduled Refresh**: Mon-Sat at 10:00 AM ET
 - **Manual Refresh**: On-demand refresh capability
 - **Health Monitoring**: Tracks source health and failures
+- **Downloadable Templates**: CSV templates for customers and vehicles
 
 ### Supported Data Fields
 
@@ -77,6 +90,8 @@ Auto-recognizes 150+ field name variations:
 
 ### API Endpoints
 ```
+POST /api/tower-talk         - AI response generation
+POST /api/translate          - English/Spanish translation (Supercharg'd)
 POST /api/import/preview     - Preview import with detected mappings
 POST /api/import/url         - One-time import from URL
 POST /api/import/file        - Upload file import
@@ -93,6 +108,9 @@ GET  /api/customers/stats    - Customer statistics by status
 GET  /api/vehicles           - List vehicles (with search, filter)
 GET  /api/vehicles/stats     - Inventory statistics
 GET  /api/health             - System health check
+
+GET  /templates/customers_template.csv - Download customers import template
+GET  /templates/vehicles_template.csv  - Download vehicles import template
 ```
 
 ---
@@ -100,24 +118,30 @@ GET  /api/health             - System health check
 ## UI/UX Design
 
 ### Luxury Automotive Theme ✅
-A premium dark theme inspired by high-end automotive interiors:
+A premium theme inspired by high-end automotive interiors:
 
 **Materials & Textures:**
 - **Carbon Fiber**: Woven pattern for headers and selector backgrounds
 - **Wood Grain**: Dark walnut-inspired card backgrounds
 - **Brushed Steel**: Secondary buttons and status indicators
+- **Tinted Glass**: Glassmorphism effects with backdrop blur
 
 **Ambient Lighting:**
 - **Gold/Amber**: Primary accent color, selected states, luxury feel
 - **Blue**: Secondary accent for "Direct" tone
 - **Green**: Success states and "Ready" indicator
 - **Red**: Tower Talk feature and error states
+- **Orange**: Supercharg'd mode active state
 
 **Key Design Elements:**
 - Subtle gradients and inset shadows for depth
 - Pulsing ambient glow animations
 - Chrome accent lines on headers
 - Warm color temperature overall
+
+**Theme Modes:**
+- **Dark Mode**: Deep carbon, wood grain, and amber accents
+- **Light Mode**: Cream/tan leather with gold accents
 
 ---
 
@@ -137,9 +161,14 @@ A premium dark theme inspired by high-end automotive interiors:
 11. CRM-Agnostic Data Integration
 12. **Offline Capability (Service Worker + PWA)**
 13. **Enhanced iMessage Integration (Web Share API)**
+14. **Dark/Light Mode Theme Switcher** (NEW)
+15. **Supercharg'd Mode - Bilingual Translation** (NEW)
+16. **User Preferences Persistence** (NEW)
+17. **Downloadable Import Templates** (NEW)
 
 ### 📋 Future Tasks
 - Database-backed customer conversation history
+- Add Categories to Favorites (e.g., "Price Negotiation", "Follow-ups")
 
 ---
 
@@ -171,11 +200,14 @@ A premium dark theme inspired by high-end automotive interiors:
 ### Frontend (`/app/frontend/src/`)
 ```
 ├── App.js
-├── context/SalesContext.js
+├── index.css                   # Luxury theme with dark/light modes
+├── context/SalesContext.js     # State + theme/supercharged actions
 ├── data/salesData.js           # Mock data / templates
 └── components/
-    ├── ImportModal.jsx         # Data import wizard
-    ├── TowerTalkModal.jsx
+    ├── Header.jsx              # Theme + Supercharg'd toggle buttons
+    ├── ImportModal.jsx         # Data import wizard + template downloads
+    ├── TowerTalkModal.jsx      # AI responses with translation
+    ├── ResponseCards.jsx       # Response display with language toggle
     ├── FavoritesModal.jsx
     └── ...
 ```
@@ -192,12 +224,11 @@ Collections:
 - FastAPI, Motor (MongoDB async)
 - APScheduler (scheduled jobs)
 - httpx (async HTTP)
-- emergentintegrations (LLM)
+- emergentintegrations (LLM + Translation)
 - React, Tailwind CSS, shadcn/ui
 
 ---
 
 ## Known Limitations
-- Offline mode not yet implemented
-- iMessage uses basic `sms:` URI
 - Google Sheets must be publicly shared
+- Translation uses LLM (may have slight latency)
