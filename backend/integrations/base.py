@@ -426,6 +426,12 @@ class AdapterConfig:
     # Custom settings per adapter
     custom_settings: Dict[str, Any] = field(default_factory=dict)
     
+    # Mock mode for testing without real CRM credentials
+    mock_mode: bool = False
+    mock_customer_count: int = 50
+    mock_vehicle_count: int = 100
+    mock_seed: Optional[int] = None  # For reproducible test data
+    
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage"""
         return {
@@ -439,6 +445,7 @@ class AdapterConfig:
             "data_type": self.data_type,
             "page_size": self.page_size,
             "is_active": self.is_active,
+            "mock_mode": self.mock_mode,
             "created_at": self.created_at.isoformat(),
             "last_sync_at": self.last_sync_at.isoformat() if self.last_sync_at else None,
         }
