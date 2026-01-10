@@ -52,9 +52,7 @@ export const TowerTalkModal = () => {
         body: JSON.stringify({ situation, context }),
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to generate response');
-      }
+      if (!res.ok) throw new Error('Failed to generate response');
 
       const data = await res.json();
       setResponse(data.response);
@@ -82,17 +80,10 @@ export const TowerTalkModal = () => {
     const customerName = selectedCustomer?.firstName || selectedCustomer?.name?.split(' ')[0] || null;
     const vehicle = selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : null;
     
-    addFavorite({
-      response,
-      situation,
-      customerName,
-      vehicle,
-    });
+    addFavorite({ response, situation, customerName, vehicle });
     
     setIsSaved(true);
-    toast.success('Saved to Favorites!', {
-      description: 'Access your saved responses anytime',
-    });
+    toast.success('Saved to Favorites!');
   };
 
   const handleClose = () => {
@@ -104,30 +95,34 @@ export const TowerTalkModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bottom-sheet w-full max-w-lg max-h-[85vh] overflow-hidden animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'hsla(0, 0%, 0%, 0.6)', backdropFilter: 'blur(8px)' }}>
+      <div className="modal-luxury w-full max-w-lg max-h-[85vh] overflow-hidden animate-slide-up">
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-border" />
+          <div className="modal-handle" />
         </div>
         
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-4 border-b border-border/50">
+        {/* Header with red ambient */}
+        <div className="flex items-center justify-between px-5 pb-4" style={{ borderBottom: '1px solid hsla(0, 50%, 30%, 0.3)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl icon-bg-tower flex items-center justify-center">
-              <Sparkles className="w-5 h-5" />
+            <div 
+              className="w-11 h-11 rounded-xl flex items-center justify-center ambient-red"
+              style={{ background: 'linear-gradient(135deg, hsla(0, 70%, 45%, 1) 0%, hsla(0, 80%, 35%, 1) 100%)' }}
+            >
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-foreground">Tower Talk</h2>
-              <p className="text-xs text-muted-foreground">AI-powered personalized response</p>
+              <h2 className="font-bold text-lg text-foreground">Tower Talk</h2>
+              <p className="text-xs text-muted-foreground">AI-powered response</p>
             </div>
           </div>
           
           <button
             onClick={handleClose}
-            className="ios-btn w-9 h-9 bg-muted/50 rounded-full text-muted-foreground hover:text-foreground"
+            className="btn-icon"
+            data-testid="close-tower-talk"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
 
@@ -135,13 +130,25 @@ export const TowerTalkModal = () => {
         <div className="p-5 space-y-4 overflow-y-auto max-h-[60vh] hide-scrollbar">
           {/* Context summary */}
           {selectedCustomer && (
-            <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20 text-sm">
+            <div 
+              className="p-4 rounded-xl text-sm"
+              style={{
+                background: 'linear-gradient(135deg, hsla(0, 40%, 25%, 0.15) 0%, hsla(0, 30%, 20%, 0.1) 100%)',
+                border: '1px solid hsla(0, 50%, 40%, 0.2)'
+              }}
+            >
               <p className="text-muted-foreground">
-                Generating for <span className="text-primary font-semibold">{selectedCustomer.name}</span>
+                Generating for{' '}
+                <span style={{ color: 'hsla(0, 70%, 65%, 1)' }} className="font-semibold">
+                  {selectedCustomer.name || `${selectedCustomer.firstName} ${selectedCustomer.lastName || ''}`.trim()}
+                </span>
                 {selectedVehicle && (
-                  <> interested in <span className="text-primary font-semibold">
-                    {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
-                  </span></>
+                  <>
+                    {' '}interested in{' '}
+                    <span style={{ color: 'hsla(0, 70%, 65%, 1)' }} className="font-semibold">
+                      {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
+                    </span>
+                  </>
                 )}
               </p>
             </div>
@@ -155,9 +162,10 @@ export const TowerTalkModal = () => {
             <textarea
               value={situation}
               onChange={(e) => setSituation(e.target.value)}
-              placeholder="e.g., Customer mentioned they just had a baby and need more space. They're comparing to a Honda Pilot at another dealer..."
-              className="ios-input min-h-[120px] resize-none"
+              placeholder="e.g., Customer mentioned they just had a baby and need more space..."
+              className="input-luxury min-h-[120px] resize-none"
               rows={4}
+              data-testid="tower-talk-input"
             />
           </div>
 
@@ -165,7 +173,8 @@ export const TowerTalkModal = () => {
           <button
             onClick={handleGenerate}
             disabled={!situation.trim() || isLoading}
-            className="ios-btn-tower w-full disabled:opacity-50"
+            className="btn-tower w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
+            data-testid="generate-response-btn"
           >
             {isLoading ? (
               <>
@@ -182,7 +191,14 @@ export const TowerTalkModal = () => {
 
           {/* Error message */}
           {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-xl text-sm border border-destructive/20">
+            <div 
+              className="p-4 rounded-xl text-sm"
+              style={{
+                background: 'hsla(0, 70%, 40%, 0.15)',
+                border: '1px solid hsla(0, 70%, 50%, 0.3)',
+                color: 'hsla(0, 80%, 70%, 1)'
+              }}
+            >
               {error}
             </div>
           )}
@@ -190,38 +206,46 @@ export const TowerTalkModal = () => {
           {/* Generated response */}
           {response && (
             <div className="space-y-4 animate-fade-in">
-              <div className="p-5 bg-gradient-to-br from-tower/10 to-tower/5 border border-tower/20 rounded-xl relative">
+              <div 
+                className="p-5 rounded-xl relative"
+                style={{
+                  background: 'linear-gradient(135deg, hsla(0, 30%, 18%, 0.3) 0%, hsla(0, 25%, 12%, 0.25) 100%)',
+                  border: '1px solid hsla(0, 40%, 35%, 0.3)'
+                }}
+              >
                 {/* Save to favorites button */}
                 <button
                   onClick={handleSaveToFavorites}
                   disabled={isSaved}
-                  className={`
-                    absolute top-3 right-3 ios-btn w-9 h-9 rounded-full
-                    ${isSaved 
-                      ? 'bg-pink-500/20 text-pink-500' 
-                      : 'bg-muted/50 text-muted-foreground hover:text-pink-500 hover:bg-pink-500/10'
-                    }
-                  `}
+                  className="absolute top-3 right-3 btn-icon w-9 h-9"
+                  style={isSaved ? {
+                    background: 'hsla(0, 70%, 50%, 0.2)',
+                    borderColor: 'hsla(0, 70%, 50%, 0.3)',
+                  } : {}}
                   data-testid="save-to-favorites-btn"
                 >
-                  <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                  <Heart 
+                    className="w-4 h-4" 
+                    style={{ color: isSaved ? 'hsla(0, 70%, 60%, 1)' : 'hsla(220, 10%, 50%, 1)' }}
+                    fill={isSaved ? 'hsla(0, 70%, 60%, 1)' : 'none'}
+                  />
                 </button>
                 
-                <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap pr-10">
+                <p className="text-[15px] text-foreground leading-relaxed pr-10 whitespace-pre-wrap">
                   {response}
                 </p>
               </div>
               
-              <div className="flex gap-2.5">
+              <div className="flex gap-2">
                 <button
                   onClick={handleCopy}
-                  className={`
-                    ios-btn flex-1 text-sm gap-2 font-semibold
-                    ${copied 
-                      ? 'ios-btn-success' 
-                      : 'ios-btn-secondary'
-                    }
-                  `}
+                  className="btn-steel flex-1 flex items-center justify-center gap-2"
+                  style={copied ? {
+                    background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
+                    borderColor: 'hsla(145, 60%, 45%, 0.4)',
+                    color: 'hsla(145, 70%, 60%, 1)',
+                  } : {}}
+                  data-testid="copy-tower-talk-response"
                 >
                   {copied ? (
                     <>
@@ -238,7 +262,8 @@ export const TowerTalkModal = () => {
                 
                 <button
                   onClick={handleSend}
-                  className="ios-btn-primary flex-1 text-sm gap-2"
+                  className="btn-luxury flex-1 flex items-center justify-center gap-2"
+                  data-testid="send-tower-talk-response"
                 >
                   <MessageSquare className="w-4 h-4" />
                   iMessage
