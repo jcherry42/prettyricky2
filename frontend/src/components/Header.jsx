@@ -86,6 +86,17 @@ export const Header = () => {
             </div>
           </button>
 
+          {/* VS Battle Card button */}
+          <button
+            onClick={() => toggleVS(true)}
+            className="btn-vs-header"
+            data-testid="open-vs-btn"
+            title="VS Battle Cards"
+          >
+            <Swords className="w-4 h-4" />
+            <span className="text-[9px] font-black">VS</span>
+          </button>
+
           {/* Favorites button */}
           <button
             onClick={() => toggleFavorites(true)}
