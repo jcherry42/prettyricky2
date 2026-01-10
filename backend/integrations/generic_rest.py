@@ -643,7 +643,11 @@ class GenericRestAdapter(BaseAdapter):
         cursor: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> FetchResult:
-        """Fetch customers from the API"""
+        """Fetch customers from the API (or mock data if mock_mode enabled)"""
+        # Check for mock mode
+        if self.config.mock_mode:
+            return await self._fetch_mock_customers(limit)
+        
         return await self._fetch_paginated(
             self.customers_endpoint,
             "customers",
@@ -658,7 +662,11 @@ class GenericRestAdapter(BaseAdapter):
         cursor: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> FetchResult:
-        """Fetch vehicles from the API"""
+        """Fetch vehicles from the API (or mock data if mock_mode enabled)"""
+        # Check for mock mode
+        if self.config.mock_mode:
+            return await self._fetch_mock_vehicles(limit)
+        
         return await self._fetch_paginated(
             self.vehicles_endpoint,
             "vehicles",
@@ -667,8 +675,89 @@ class GenericRestAdapter(BaseAdapter):
             limit=limit,
         )
     
+    async def _fetch_mock_customers(self, limit: Optional[int] = None) -> FetchResult:
+        """Generate mock customer data for testing"""
+        from .mock_data import get_mock_customers
+        import asyncio
+        
+        start_time = datetime.now(timezone.utc)
+        count = limit or self.config.mock_customer_count
+        
+        # Simulate network delay
+        await asyncio.sleep(0.1)
+        
+        records = get_mock_customers(count, seed=self.config.mock_seed)
+        
+        # Normalize records through standard pipeline
+        normalized = []
+        for record in records:
+            try:
+                normalized.append(self.normalize_record(record, "customers", self.config.id))
+            except Exception as e:
+                logger.warning(f"Failed to normalize mock record: {e}")
+        
+        result = FetchResult(
+            success=True,
+            records=normalized,
+            total_records=len(normalized),
+            pages_fetched=1,
+            started_at=start_time,
+            completed_at=datetime.now(timezone.utc),
+            fetch_duration_ms=int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000),
+        )
+        result.add_warning("Using mock data - not connected to real CRM")
+        
+        self.health.status = ConnectionStatus.HEALTHY
+        self.health.record_success(result.fetch_duration_ms)
+        
+        logger.info(f"Generated {len(normalized)} mock customers for {self.config.name}")
+        return result
+    
+    async def _fetch_mock_vehicles(self, limit: Optional[int] = None) -> FetchResult:
+        """Generate mock vehicle data for testing"""
+        from .mock_data import get_mock_vehicles
+        import asyncio
+        
+        start_time = datetime.now(timezone.utc)
+        count = limit or self.config.mock_vehicle_count
+        
+        # Simulate network delay
+        await asyncio.sleep(0.1)
+        
+        records = get_mock_vehicles(count, seed=self.config.mock_seed)
+        
+        # Normalize records through standard pipeline
+        normalized = []
+        for record in records:
+            try:
+                normalized.append(self.normalize_record(record, "vehicles", self.config.id))
+            except Exception as e:
+                logger.warning(f"Failed to normalize mock record: {e}")
+        
+        result = FetchResult(
+            success=True,
+            records=normalized,
+            total_records=len(normalized),
+            pages_fetched=1,
+            started_at=start_time,
+            completed_at=datetime.now(timezone.utc),
+            fetch_duration_ms=int((datetime.now(timezone.utc) - start_time).total_seconds() * 1000),
+        )
+        result.add_warning("Using mock data - not connected to real CRM")
+        
+        self.health.status = ConnectionStatus.HEALTHY
+        self.health.record_success(result.fetch_duration_ms)
+        
+        logger.info(f"Generated {len(normalized)} mock vehicles for {self.config.name}")
+        return result
+    
     async def test_connection(self) -> Tuple[bool, str]:
         """Test connection to the API"""
+        # Mock mode always succeeds
+        if self.config.mock_mode:
+            self.health.status = ConnectionStatus.HEALTHY
+            return True, "Mock mode enabled - connection test simulated successfully"
+        
         try:
             # Try to fetch a single record
             endpoint = self.customers_endpoint
@@ -708,5 +797,6 @@ class GenericRestAdapter(BaseAdapter):
                 "customers_path": "Endpoint path for customers (default: /customers)",
                 "vehicles_path": "Endpoint path for vehicles (default: /vehicles)",
                 "records_path": "JSON path to records in response (default: data)",
+                "mock_mode": "Enable mock data for testing (default: false)",
             },
         }
