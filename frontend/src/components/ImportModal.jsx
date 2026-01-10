@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock, Download, Plug, Settings, TestTube, Zap, ChevronRight, ToggleLeft, ToggleRight, Plus, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock, Download, Plug, Settings, TestTube, Zap, ChevronRight, ToggleLeft, ToggleRight, Plus, CheckCircle, XCircle, AlertTriangle, Wand2 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
+import { ConnectionWizard } from './ConnectionWizard';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -12,6 +13,7 @@ const CRMIntegrationPanel = () => {
   const [healthSummary, setHealthSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddNew, setShowAddNew] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
   
   // New integration form state
