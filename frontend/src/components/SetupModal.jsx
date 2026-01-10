@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Building2, User, Sliders } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { APPOINTMENT_PHRASES, SALESPERSON_STYLES, RESPONSE_TONES } from '../data/salesData';
+import { toast } from 'sonner';
 
 export const SetupModal = () => {
   const { 
@@ -28,6 +29,21 @@ export const SetupModal = () => {
     defaultTone: preferences.defaultTone,
     signOff: preferences.signOff,
   });
+
+  // Sync form data when context values change (on load from localStorage)
+  useEffect(() => {
+    setFormData({
+      dealershipName: dealership.name,
+      dealershipAddress: dealership.address,
+      dealershipHours: dealership.hours,
+      appointmentPhrase: dealership.appointmentPhrase,
+      salespersonName: salesperson.name,
+      salespersonTitle: salesperson.title,
+      salespersonStyle: salesperson.style,
+      defaultTone: preferences.defaultTone,
+      signOff: preferences.signOff,
+    });
+  }, [dealership, salesperson, preferences]);
 
   if (!showSetup) return null;
 
@@ -56,6 +72,7 @@ export const SetupModal = () => {
     
     setSetupComplete(true);
     toggleSetup(false);
+    toast.success('Settings saved successfully!');
   };
 
   const canProceed = () => {
