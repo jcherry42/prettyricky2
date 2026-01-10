@@ -313,7 +313,6 @@
 
 .header-luxury {
   @apply texture-carbon backdrop-blur-xl;
-  background: hsla(220, 10%, 8%, 0.95);
   border-bottom: 1px solid hsla(220, 8%, 20%, 0.5);
   box-shadow: 
     0 4px 20px hsla(0, 0%, 0%, 0.3),
@@ -972,12 +971,12 @@
 }
 
 .dark .header-luxury {
-  background: hsla(220, 10%, 8%, 0.85);
+  background: hsla(220, 10%, 8%, 0.92) !important;
 }
 
-:root:not(.dark) .header-luxury {
-  background: hsla(30, 15%, 95%, 0.9);
-  border-bottom-color: hsla(30, 10%, 80%, 0.5);
+html:not(.dark) .header-luxury {
+  background: hsla(35, 25%, 92%, 0.95) !important;
+  border-bottom-color: hsla(30, 12%, 78%, 0.6);
 }
 
 /* Modal glass treatment */
