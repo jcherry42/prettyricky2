@@ -97,30 +97,49 @@ GET  /api/health             - System health check
 
 ---
 
+## UI/UX Design
+
+### Luxury Automotive Theme ✅
+A premium dark theme inspired by high-end automotive interiors:
+
+**Materials & Textures:**
+- **Carbon Fiber**: Woven pattern for headers and selector backgrounds
+- **Wood Grain**: Dark walnut-inspired card backgrounds
+- **Brushed Steel**: Secondary buttons and status indicators
+
+**Ambient Lighting:**
+- **Gold/Amber**: Primary accent color, selected states, luxury feel
+- **Blue**: Secondary accent for "Direct" tone
+- **Green**: Success states and "Ready" indicator
+- **Red**: Tower Talk feature and error states
+
+**Key Design Elements:**
+- Subtle gradients and inset shadows for depth
+- Pulsing ambient glow animations
+- Chrome accent lines on headers
+- Warm color temperature overall
+
+---
+
 ## Implementation Status
 
 ### ✅ Completed Features (as of Jan 10, 2026)
-1. iOS-Optimized UI with colorful glassmorphism
+1. iOS-Optimized UI with **Luxury Automotive Design**
 2. Customer/Prospect Selector
 3. Inquiry Type Selector (8 types)
-4. Tone Selector (3 tones)
+4. Tone Selector (3 tones with ambient lighting)
 5. Response Cards with copy/iMessage
 6. Objection Handling (quadrupled responses)
 7. Follow-up Templates with timing
 8. Setup Modal (dealership/salesperson)
 9. Tower Talk AI Feature
 10. Favorites Feature (localStorage persistence)
-11. **CRM-Agnostic Data Integration**:
-    - Smart field mapping
-    - CSV, JSON, Google Sheets support
-    - Scheduled refresh (Mon-Sat 10 AM)
-    - Data source management UI
-    - Phone/email/VIN validation
-    - MongoDB persistence
+11. CRM-Agnostic Data Integration
+12. **Offline Capability (Service Worker + PWA)**
+13. **Enhanced iMessage Integration (Web Share API)**
 
 ### 📋 Future Tasks
-- **Offline Capability**: Service workers (P2)
-- **Deeper iMessage Integration**: Beyond `sms:` URI (P3)
+- Database-backed customer conversation history
 
 ---
 
