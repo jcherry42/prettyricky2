@@ -63,7 +63,7 @@ FIELD_ALIASES = {
     "phone": ["phone", "phone_number", "phonenumber", "mobile", "cell", "telephone", "tel", "contact_phone", "primary_phone", "cell_phone", "mobile_phone"],
     "email": ["email", "email_address", "emailaddress", "e_mail", "contact_email", "primary_email"],
     "vehicle_of_interest": ["vehicle_of_interest", "vehicleofinterest", "interested_vehicle", "vehicle_interest", "voi", "interest", "desired_vehicle", "looking_for"],
-    "status": ["status", "lead_status", "leadstatus", "customer_status", "stage", "lead_stage"],
+    "status": ["status", "lead_status", "leadstatus", "customer_status", "stage", "lead_stage", "availability", "available", "inventory_status", "vehicle_status", "condition"],
     "address": ["address", "street", "street_address", "address1", "address_1", "line1"],
     "city": ["city", "town"],
     "state": ["state", "province", "region"],
@@ -87,7 +87,6 @@ FIELD_ALIASES = {
     "fuel_type": ["fuel_type", "fueltype", "fuel", "gas_type"],
     "drivetrain": ["drivetrain", "drive_train", "drive_type", "drivetype", "drive", "awd", "fwd", "rwd", "4wd"],
     "body_style": ["body_style", "bodystyle", "body_type", "bodytype", "body", "vehicle_type", "style"],
-    "status": ["status", "availability", "available", "inventory_status", "vehicle_status", "condition"],
 }
 
 
