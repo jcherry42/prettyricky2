@@ -444,7 +444,3 @@ class ProfileManager:
             if not existing:
                 await self.create_profile(profile)
                 logger.info(f"Created built-in profile: {profile.name}")
-
-
-# Type alias for cleaner imports
-from typing import Tuple
