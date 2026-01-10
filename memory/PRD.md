@@ -214,8 +214,9 @@ A premium theme inspired by high-end automotive interiors:
 19. **Voice Output - Read Aloud**
 20. **Quick Response Shortcuts**
 21. **-VS- Battle Cards**
-22. **Production-Grade CRM Integration Layer** (NEW - Jan 10, 2026)
-23. **Integration Health Status on Frontend** (NEW - Jan 10, 2026)
+22. **Production-Grade CRM Integration Layer** (Jan 10, 2026)
+23. **Integration Health Status on Frontend** (Jan 10, 2026)
+24. **CRM Integration Settings Panel** (Jan 10, 2026)
 
 ### 📋 Upcoming Tasks (P1)
 - Add Categories to Favorites (e.g., "Price Negotiation", "Follow-ups")
