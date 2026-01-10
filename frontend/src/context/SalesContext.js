@@ -52,6 +52,10 @@ const initialState = {
   showTowerTalk: false,
   showFavorites: false,
   isOffline: !navigator.onLine,
+  
+  // Theme & Modes
+  theme: 'dark',  // 'light' or 'dark'
+  supercharged: false,  // Supercharg'd translation mode
 };
 
 // Action types
@@ -78,6 +82,8 @@ const ACTIONS = {
   SET_FAVORITES: 'SET_FAVORITES',
   SET_OFFLINE: 'SET_OFFLINE',
   LOAD_SAVED_DATA: 'LOAD_SAVED_DATA',
+  SET_THEME: 'SET_THEME',
+  SET_SUPERCHARGED: 'SET_SUPERCHARGED',
 };
 
 // Reducer
