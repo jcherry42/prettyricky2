@@ -625,6 +625,283 @@ async def vehicle_stats(source_id: Optional[str] = None):
     return await vehicle_repo.get_inventory_summary(source_id)
 
 
+# ============== CRM INTEGRATIONS ==============
+
+# Import integration modules
+from integrations import IntegrationManager
+from integrations.webhooks import FortifiedWebhookReceiver, WebhookAuthMethod
+
+# Initialize managers
+integration_manager = IntegrationManager(db)
+webhook_receiver = FortifiedWebhookReceiver(db)
+
+
+# Integration Request Models
+class CreateIntegrationRequest(BaseModel):
+    name: str
+    adapter_type: str
+    base_url: str = ""
+    auth_config: Dict[str, Any] = Field(default_factory=dict)
+    data_type: str = "customers"
+    field_mappings: Optional[Dict[str, str]] = None
+    mock_mode: bool = False
+
+class UpdateIntegrationRequest(BaseModel):
+    name: Optional[str] = None
+    base_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    mock_mode: Optional[bool] = None
+    auth_config: Optional[Dict[str, Any]] = None
+    field_mappings: Optional[Dict[str, str]] = None
+
+class RegisterWebhookRequest(BaseModel):
+    integration_id: str
+    name: str
+    auth_method: str = "hmac_sha256"
+    enabled_events: Optional[List[str]] = None
+
+
+@api_router.get("/integrations/adapters")
+async def list_available_adapters():
+    """List all available CRM adapter types"""
+    return {
+        "adapters": integration_manager.list_available_adapters()
+    }
+
+@api_router.get("/integrations/adapters/{adapter_type}")
+async def get_adapter_setup(adapter_type: str):
+    """Get setup instructions for an adapter type"""
+    instructions = integration_manager.get_adapter_setup_instructions(adapter_type)
+    if not instructions:
+        raise HTTPException(status_code=404, detail="Adapter type not found")
+    return instructions
+
+@api_router.get("/integrations")
+async def list_integrations(active_only: bool = False, adapter_type: Optional[str] = None):
+    """List all configured integrations"""
+    integrations = await integration_manager.list_integrations(
+        active_only=active_only,
+        adapter_type=adapter_type
+    )
+    return {"integrations": integrations}
+
+@api_router.post("/integrations")
+async def create_integration(request: CreateIntegrationRequest):
+    """Create a new CRM integration"""
+    try:
+        integration_id = await integration_manager.create_integration(
+            name=request.name,
+            adapter_type=request.adapter_type,
+            base_url=request.base_url,
+            auth_config=request.auth_config,
+            data_type=request.data_type,
+            field_mappings=request.field_mappings,
+            mock_mode=request.mock_mode,
+        )
+        return {
+            "success": True,
+            "integration_id": integration_id,
+            "message": f"Integration '{request.name}' created successfully"
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Failed to create integration: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/integrations/health")
+async def get_integrations_health():
+    """Get health status of all integrations"""
+    return await integration_manager.get_health_summary()
+
+@api_router.get("/integrations/{integration_id}")
+async def get_integration(integration_id: str):
+    """Get integration details"""
+    integration = await integration_manager.get_integration(integration_id)
+    if not integration:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    return integration
+
+@api_router.get("/integrations/{integration_id}/health")
+async def get_integration_health(integration_id: str):
+    """Get detailed health for a specific integration"""
+    health = await integration_manager.get_integration_health(integration_id)
+    if "error" in health:
+        raise HTTPException(status_code=404, detail=health["error"])
+    return health
+
+@api_router.patch("/integrations/{integration_id}")
+async def update_integration(integration_id: str, request: UpdateIntegrationRequest):
+    """Update integration configuration"""
+    updates = {k: v for k, v in request.model_dump().items() if v is not None}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    success = await integration_manager.update_integration(integration_id, updates)
+    if not success:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    
+    return {"success": True}
+
+@api_router.delete("/integrations/{integration_id}")
+async def delete_integration(integration_id: str):
+    """Delete an integration"""
+    success = await integration_manager.delete_integration(integration_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    return {"success": True}
+
+@api_router.post("/integrations/{integration_id}/test")
+async def test_integration_connection(integration_id: str):
+    """Test connection to the CRM"""
+    result = await integration_manager.test_connection(integration_id)
+    return result
+
+@api_router.post("/integrations/{integration_id}/sync")
+async def sync_integration(integration_id: str, full_sync: bool = False):
+    """Trigger a data sync from the CRM"""
+    result = await integration_manager.sync_integration(integration_id, full_sync=full_sync)
+    return {
+        "success": result.success,
+        "records_fetched": result.total_records,
+        "pages_fetched": result.pages_fetched,
+        "duration_ms": result.fetch_duration_ms,
+        "errors": result.errors[:10] if result.errors else [],
+        "warnings": result.warnings[:10] if result.warnings else [],
+    }
+
+@api_router.post("/integrations/{integration_id}/toggle-mock")
+async def toggle_integration_mock_mode(integration_id: str, enabled: bool):
+    """Toggle mock mode for an integration"""
+    success = await integration_manager.toggle_mock_mode(integration_id, enabled)
+    if not success:
+        raise HTTPException(status_code=404, detail="Integration not found")
+    return {"success": True, "mock_mode": enabled}
+
+
+# ============== WEBHOOKS ==============
+
+@api_router.get("/webhooks")
+async def list_webhooks(integration_id: Optional[str] = None, active_only: bool = False):
+    """List all webhooks"""
+    webhooks = await webhook_receiver.list_webhooks(
+        integration_id=integration_id,
+        active_only=active_only
+    )
+    return {"webhooks": webhooks}
+
+@api_router.post("/webhooks")
+async def register_webhook(request: RegisterWebhookRequest):
+    """Register a new webhook endpoint"""
+    try:
+        auth_method = WebhookAuthMethod(request.auth_method)
+    except ValueError:
+        auth_method = WebhookAuthMethod.HMAC_SHA256
+    
+    config = await webhook_receiver.register_webhook(
+        integration_id=request.integration_id,
+        name=request.name,
+        auth_method=auth_method,
+        enabled_events=request.enabled_events,
+    )
+    
+    return {
+        "success": True,
+        "webhook_id": config.id,
+        "endpoint_url": f"/api/webhooks/{config.id}/receive",
+        "credentials": {
+            "hmac_secret": config.auth.hmac_secret,
+            "api_key": config.auth.api_key,
+            "signature_header": config.auth.signature_header,
+        }
+    }
+
+@api_router.get("/webhooks/{webhook_id}")
+async def get_webhook(webhook_id: str):
+    """Get webhook details"""
+    config = await webhook_receiver.get_webhook(webhook_id)
+    if not config:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    
+    return {
+        "id": config.id,
+        "name": config.name,
+        "integration_id": config.integration_id,
+        "auth_method": config.auth.method.value,
+        "is_active": config.is_active,
+        "events_received": config.events_received,
+        "events_processed": config.events_processed,
+        "last_event_at": config.last_event_at.isoformat() if config.last_event_at else None,
+    }
+
+@api_router.get("/webhooks/{webhook_id}/stats")
+async def get_webhook_stats(webhook_id: str):
+    """Get detailed webhook statistics"""
+    return await webhook_receiver.get_webhook_stats(webhook_id)
+
+@api_router.delete("/webhooks/{webhook_id}")
+async def delete_webhook(webhook_id: str):
+    """Delete a webhook"""
+    success = await webhook_receiver.delete_webhook(webhook_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+    return {"success": True}
+
+@api_router.post("/webhooks/{webhook_id}/rotate")
+async def rotate_webhook_credentials(webhook_id: str):
+    """Rotate webhook credentials"""
+    new_creds = await webhook_receiver.rotate_credentials(webhook_id)
+    return {
+        "success": True,
+        "credentials": new_creds
+    }
+
+@api_router.post("/webhooks/{webhook_id}/receive")
+async def receive_webhook(
+    webhook_id: str,
+    request: Dict[str, Any] = None,
+):
+    """
+    Receive and process a webhook event
+    
+    This is the endpoint CRMs will POST to with event data.
+    """
+    from fastapi import Request
+    # Note: In a real implementation, we'd get raw body and headers from Request object
+    # For now, we'll handle the JSON body directly
+    
+    # Convert request body to bytes for signature verification
+    import json
+    payload = json.dumps(request or {}).encode('utf-8')
+    
+    result = await webhook_receiver.receive_event(
+        webhook_id=webhook_id,
+        payload=payload,
+        headers={},  # Would come from Request.headers in production
+        source_ip=None,  # Would come from Request.client.host
+    )
+    
+    if not result.get("success"):
+        status_code = result.get("code", 400)
+        raise HTTPException(status_code=status_code, detail=result.get("error"))
+    
+    return result
+
+@api_router.get("/webhooks/{webhook_id}/events")
+async def get_webhook_events(
+    webhook_id: str,
+    status: Optional[str] = None,
+    limit: int = 50
+):
+    """Get recent events for a webhook"""
+    events = await webhook_receiver.get_events(
+        webhook_id=webhook_id,
+        status=status,
+        limit=limit
+    )
+    return {"events": events}
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 app.include_router(api_router)
