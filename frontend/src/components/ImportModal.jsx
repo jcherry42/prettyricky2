@@ -858,7 +858,7 @@ export const ImportModal = () => {
                   data-testid="url-input"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Google Sheets must be shared as "Anyone with link"
+                  Google Sheets must be shared as &quot;Anyone with link&quot;
                 </p>
               </div>
 
