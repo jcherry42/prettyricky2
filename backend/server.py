@@ -1,16 +1,35 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+"""
+Closr API Server
+Sales automation tool with CRM-agnostic data integration
+"""
+
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from contextlib import asynccontextmanager
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
+
+# LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-import httpx
+
+# Data Integration
+from data_integration import (
+    ImportProcessor,
+    DataSourceConfig,
+    DataSourceType,
+    RefreshSchedule,
+    init_scheduler,
+    get_scheduler,
+    shutdown_scheduler,
+)
+from repositories import CustomerRepository, VehicleRepository, DataSourceRepository
 
 
 ROOT_DIR = Path(__file__).parent
@@ -28,25 +47,51 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Repositories
+customer_repo = CustomerRepository(db)
+vehicle_repo = VehicleRepository(db)
+source_repo = DataSourceRepository(db)
 
-# Create a router with the /api prefix
+# Import processor
+import_processor = ImportProcessor()
+
+
+# ============== LIFESPAN ==============
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan - startup and shutdown"""
+    # Startup
+    logger.info("Starting Closr API server...")
+    
+    # Initialize repositories
+    await customer_repo.create_indexes()
+    await vehicle_repo.create_indexes()
+    await source_repo.create_indexes()
+    
+    # Initialize scheduler
+    await init_scheduler(db)
+    
+    logger.info("Server startup complete")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down...")
+    shutdown_scheduler()
+    client.close()
+    logger.info("Shutdown complete")
+
+
+# Create app with lifespan
+app = FastAPI(lifespan=lifespan)
+
+# Create API router
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+# ============== REQUEST/RESPONSE MODELS ==============
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Tower Talk Models
 class TowerTalkRequest(BaseModel):
     situation: str
     context: Dict[str, Any]
@@ -54,53 +99,64 @@ class TowerTalkRequest(BaseModel):
 class TowerTalkResponse(BaseModel):
     response: str
 
-# Import URL Models
 class ImportUrlRequest(BaseModel):
     url: str
+    data_type: str = "customers"
+    custom_mapping: Optional[Dict[str, str]] = None
 
-class ImportUrlResponse(BaseModel):
-    success: bool
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+class ImportPreviewRequest(BaseModel):
+    content: str
+    format: str = "csv"
+    data_type: str = "customers"
+
+class CreateDataSourceRequest(BaseModel):
+    name: str
+    type: str  # "url" or "google_sheets"
+    url: str
+    data_type: str = "customers"
+    refresh_schedule: str = "weekdays_10am"
+
+class UpdateDataSourceRequest(BaseModel):
+    name: Optional[str] = None
+    url: Optional[str] = None
+    is_active: Optional[bool] = None
+    refresh_schedule: Optional[str] = None
+    field_mapping_overrides: Optional[Dict[str, str]] = None
 
 
-# API Routes
+# ============== HEALTH & STATUS ==============
+
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Closr API", "version": "2.0.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    scheduler = get_scheduler()
+    scheduler_status = scheduler.get_status() if scheduler else {"isRunning": False}
     
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    source_health = await source_repo.get_health_summary()
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "scheduler": scheduler_status,
+        "dataSources": source_health
+    }
 
 
-# Tower Talk endpoint for AI-generated personalized responses
+# ============== TOWER TALK (AI) ==============
+
 @api_router.post("/tower-talk", response_model=TowerTalkResponse)
 async def tower_talk(request: TowerTalkRequest):
+    """Generate AI-powered personalized sales message"""
     try:
         api_key = os.environ.get('EMERGENT_LLM_KEY')
         if not api_key:
             logger.error("EMERGENT_LLM_KEY not found in environment")
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Build the context-aware prompt
         ctx = request.context
         customer_name = ctx.get('customerName', 'the customer')
         vehicle = ctx.get('vehicle', 'the vehicle')
@@ -110,7 +166,6 @@ async def tower_talk(request: TowerTalkRequest):
         salesperson = ctx.get('salespersonName', 'the sales rep')
         style = ctx.get('salespersonStyle', 'friendly')
         
-        # Map style to tone guidance
         style_guidance = {
             'straight_shooter': 'Be direct and honest. Get to the point quickly while remaining professional.',
             'friendly': 'Be warm, personable, and conversational. Build rapport while being helpful.',
@@ -161,53 +216,327 @@ Rules:
         raise HTTPException(status_code=500, detail=f"Failed to generate response: {str(e)}")
 
 
-# Import from URL endpoint - bypasses CORS by fetching server-side
-@api_router.post("/import-url", response_model=ImportUrlResponse)
-async def import_from_url(request: ImportUrlRequest):
+# ============== DATA IMPORT ==============
+
+@api_router.post("/import/preview")
+async def preview_import(request: ImportPreviewRequest):
+    """
+    Preview import - detect mappings and show sample data
+    without committing to database
+    """
     try:
-        url = request.url.strip()
-        if not url:
-            return ImportUrlResponse(success=False, error="URL is required")
+        result = await import_processor.preview_import(
+            request.content,
+            request.format,
+            request.data_type
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Preview error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/import/url")
+async def import_from_url(request: ImportUrlRequest):
+    """Import data from a URL (JSON, CSV, or Google Sheets)"""
+    try:
+        result = await import_processor.import_from_url(
+            request.url,
+            request.data_type,
+            request.custom_mapping
+        )
         
-        # Validate URL format
-        if not url.startswith(('http://', 'https://')):
-            return ImportUrlResponse(success=False, error="Invalid URL format. Must start with http:// or https://")
-        
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url)
-            response.raise_for_status()
-            
-            # Try to parse as JSON
-            try:
-                data = response.json()
-            except:
-                return ImportUrlResponse(success=False, error="URL did not return valid JSON")
-            
-            # Validate that it contains expected data
-            has_data = any(key in data for key in ['vehicles', 'customers', 'templates', 'dealership'])
-            if not has_data:
-                return ImportUrlResponse(
-                    success=False, 
-                    error="No recognized data found. Expected: vehicles, customers, templates, or dealership"
+        if result.success:
+            # Store in database (without source_id for direct imports)
+            if request.data_type == 'customers':
+                stats = await customer_repo.upsert_from_import(
+                    result.customers,
+                    source_id="direct_import"
+                )
+            else:
+                stats = await vehicle_repo.upsert_from_import(
+                    result.vehicles,
+                    source_id="direct_import"
                 )
             
-            return ImportUrlResponse(success=True, data=data)
+            return {
+                "success": True,
+                "stats": {
+                    "total": result.total_rows,
+                    "imported": result.imported_count,
+                    "inserted": stats.get('inserted', 0),
+                    "updated": stats.get('updated', 0),
+                    "skipped": result.skipped_count
+                },
+                "mappings": [m.model_dump() for m in result.detected_mappings],
+                "errors": result.errors[:10],
+                "warnings": result.warnings[:10]
+            }
+        else:
+            return {
+                "success": False,
+                "errors": result.errors,
+                "warnings": result.warnings
+            }
             
-    except httpx.HTTPStatusError as e:
-        logger.error(f"HTTP error fetching URL: {str(e)}")
-        return ImportUrlResponse(success=False, error=f"Failed to fetch URL: HTTP {e.response.status_code}")
-    except httpx.RequestError as e:
-        logger.error(f"Request error fetching URL: {str(e)}")
-        return ImportUrlResponse(success=False, error="Failed to connect to URL. Check that it's accessible.")
     except Exception as e:
-        logger.error(f"Import URL error: {str(e)}")
-        return ImportUrlResponse(success=False, error=f"Import failed: {str(e)}")
+        logger.error(f"Import error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.post("/import/file")
+async def import_from_file(
+    file: UploadFile = File(...),
+    data_type: str = Form("customers")
+):
+    """Import data from uploaded file"""
+    try:
+        content = await file.read()
+        content_str = content.decode('utf-8')
+        
+        # Detect format from filename
+        filename = file.filename.lower() if file.filename else ""
+        if filename.endswith('.json'):
+            format = 'json'
+        else:
+            format = 'csv'
+        
+        result = await import_processor.import_from_content(
+            content_str,
+            format,
+            data_type
+        )
+        
+        if result.success:
+            if data_type == 'customers':
+                stats = await customer_repo.upsert_from_import(
+                    result.customers,
+                    source_id="file_upload"
+                )
+            else:
+                stats = await vehicle_repo.upsert_from_import(
+                    result.vehicles,
+                    source_id="file_upload"
+                )
+            
+            return {
+                "success": True,
+                "filename": file.filename,
+                "stats": {
+                    "total": result.total_rows,
+                    "imported": result.imported_count,
+                    "inserted": stats.get('inserted', 0),
+                    "updated": stats.get('updated', 0),
+                    "skipped": result.skipped_count
+                },
+                "mappings": [m.model_dump() for m in result.detected_mappings],
+                "errors": result.errors[:10]
+            }
+        else:
+            return {
+                "success": False,
+                "errors": result.errors
+            }
+            
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File encoding not supported. Please use UTF-8.")
+    except Exception as e:
+        logger.error(f"File import error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-# Include the router in the main app AFTER all routes are defined
+# ============== DATA SOURCES ==============
+
+@api_router.get("/data-sources")
+async def list_data_sources():
+    """List all configured data sources"""
+    sources = await source_repo.find_many(sort=[("name", 1)])
+    
+    scheduler = get_scheduler()
+    next_refresh = scheduler.get_next_scheduled_refresh() if scheduler else None
+    
+    return {
+        "sources": source_repo.to_frontend_format(sources),
+        "schedulerStatus": {
+            "nextRefresh": next_refresh.isoformat() if next_refresh else None,
+            "schedule": "Mon-Sat 10:00 AM ET"
+        }
+    }
+
+@api_router.post("/data-sources")
+async def create_data_source(request: CreateDataSourceRequest):
+    """Create a new data source"""
+    try:
+        # Map string type to enum
+        source_type = DataSourceType.GOOGLE_SHEETS if 'google' in request.type.lower() else DataSourceType.URL
+        schedule = RefreshSchedule(request.refresh_schedule) if request.refresh_schedule else RefreshSchedule.WEEKDAYS_10AM
+        
+        config = DataSourceConfig(
+            name=request.name,
+            type=source_type,
+            url=request.url,
+            data_type=request.data_type,
+            refresh_schedule=schedule
+        )
+        
+        source_id = await source_repo.create_source(config)
+        
+        # Trigger initial import
+        scheduler = get_scheduler()
+        if scheduler:
+            result = await scheduler.manual_refresh(source_id)
+            return {
+                "success": True,
+                "sourceId": source_id,
+                "initialImport": result
+            }
+        
+        return {"success": True, "sourceId": source_id}
+        
+    except Exception as e:
+        logger.error(f"Create source error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@api_router.get("/data-sources/{source_id}")
+async def get_data_source(source_id: str):
+    """Get data source details"""
+    source = await source_repo.find_by_id(source_id)
+    if not source:
+        raise HTTPException(status_code=404, detail="Data source not found")
+    
+    return source_repo.to_frontend_format([source])[0]
+
+@api_router.patch("/data-sources/{source_id}")
+async def update_data_source(source_id: str, request: UpdateDataSourceRequest):
+    """Update data source configuration"""
+    updates = {k: v for k, v in request.model_dump().items() if v is not None}
+    
+    if not updates:
+        raise HTTPException(status_code=400, detail="No updates provided")
+    
+    success = await source_repo.update_one(source_id, updates)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="Data source not found")
+    
+    return {"success": True}
+
+@api_router.delete("/data-sources/{source_id}")
+async def delete_data_source(source_id: str):
+    """Delete data source and its imported data"""
+    source = await source_repo.find_by_id(source_id)
+    if not source:
+        raise HTTPException(status_code=404, detail="Data source not found")
+    
+    # Delete associated data
+    data_type = source.get('data_type', 'customers')
+    if data_type == 'customers':
+        await customer_repo.delete_by_source(source_id)
+    else:
+        await vehicle_repo.delete_by_source(source_id)
+    
+    # Delete source config
+    await source_repo.delete_one(source_id)
+    
+    return {"success": True}
+
+@api_router.post("/data-sources/{source_id}/refresh")
+async def refresh_data_source(source_id: str):
+    """Manually trigger refresh for a data source"""
+    scheduler = get_scheduler()
+    if not scheduler:
+        raise HTTPException(status_code=500, detail="Scheduler not initialized")
+    
+    result = await scheduler.manual_refresh(source_id)
+    return result
+
+@api_router.post("/data-sources/refresh-all")
+async def refresh_all_sources():
+    """Trigger refresh for all active sources"""
+    scheduler = get_scheduler()
+    if not scheduler:
+        raise HTTPException(status_code=500, detail="Scheduler not initialized")
+    
+    result = await scheduler.refresh_all_now()
+    return result
+
+
+# ============== CUSTOMERS ==============
+
+@api_router.get("/customers")
+async def list_customers(
+    status: Optional[str] = None,
+    source_id: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0
+):
+    """List customers with optional filters"""
+    if search:
+        customers = await customer_repo.search(search, limit)
+    elif status:
+        from data_integration.models import LeadStatus
+        customers = await customer_repo.find_by_status(
+            LeadStatus(status),
+            limit=limit,
+            skip=skip
+        )
+    elif source_id:
+        customers = await customer_repo.find_by_source(source_id, limit, skip)
+    else:
+        customers = await customer_repo.find_many(limit=limit, skip=skip)
+    
+    return {
+        "customers": customer_repo.to_frontend_format(customers),
+        "count": len(customers)
+    }
+
+@api_router.get("/customers/stats")
+async def customer_stats(source_id: Optional[str] = None):
+    """Get customer statistics"""
+    counts = await customer_repo.get_status_counts(source_id)
+    total = await customer_repo.count({"source_id": source_id} if source_id else {})
+    
+    return {
+        "total": total,
+        "byStatus": counts
+    }
+
+
+# ============== VEHICLES ==============
+
+@api_router.get("/vehicles")
+async def list_vehicles(
+    is_new: Optional[bool] = None,
+    source_id: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0,
+    summary: bool = False
+):
+    """List vehicles with optional filters"""
+    if search:
+        vehicles = await vehicle_repo.search(search, limit)
+    elif source_id:
+        vehicles = await vehicle_repo.find_by_source(source_id, limit, skip)
+    elif is_new is not None:
+        vehicles = await vehicle_repo.find_available(is_new, limit, skip)
+    else:
+        vehicles = await vehicle_repo.find_many(limit=limit, skip=skip)
+    
+    return {
+        "vehicles": vehicle_repo.to_frontend_format(vehicles, summary=summary),
+        "count": len(vehicles)
+    }
+
+@api_router.get("/vehicles/stats")
+async def vehicle_stats(source_id: Optional[str] = None):
+    """Get vehicle inventory statistics"""
+    return await vehicle_repo.get_inventory_summary(source_id)
+
+
+# ============== ROUTER & MIDDLEWARE ==============
+
 app.include_router(api_router)
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -215,7 +544,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
