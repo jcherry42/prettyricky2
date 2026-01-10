@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Square } from 'lucide-react';
+import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
@@ -25,6 +25,9 @@ const translateText = async (text, sourceLang = 'auto', targetLang = 'es') => {
 // Check if browser supports speech recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const isSpeechSupported = !!SpeechRecognition;
+
+// Check if browser supports speech synthesis
+const isSpeechSynthesisSupported = 'speechSynthesis' in window;
 
 export const TowerTalkModal = () => {
   const { 
@@ -54,6 +57,10 @@ export const TowerTalkModal = () => {
   const [isListening, setIsListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState('');
   const recognitionRef = useRef(null);
+  
+  // Voice output state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const utteranceRef = useRef(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -164,14 +171,101 @@ export const TowerTalkModal = () => {
     }
   }, [isListening, supercharged]);
 
+  // Voice output functions
+  const speakText = useCallback((text, lang = 'en-US') => {
+    if (!isSpeechSynthesisSupported) {
+      toast.error('Text-to-speech not supported', {
+        description: 'Your browser does not support speech synthesis'
+      });
+      return;
+    }
+
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Try to find a good voice for the language
+    const voices = window.speechSynthesis.getVoices();
+    const langPrefix = lang.split('-')[0];
+    const preferredVoice = voices.find(v => 
+      v.lang.startsWith(langPrefix) && (v.name.includes('Enhanced') || v.name.includes('Premium') || v.localService)
+    ) || voices.find(v => v.lang.startsWith(langPrefix));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+    };
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+    
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event);
+      setIsSpeaking(false);
+      if (event.error !== 'canceled') {
+        toast.error('Could not read aloud');
+      }
+    };
+    
+    utteranceRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const toggleSpeech = useCallback(() => {
+    if (isSpeaking) {
+      // Stop speaking
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    } else {
+      // Start speaking
+      const textToSpeak = showTranslated && translatedResponse ? translatedResponse : response;
+      const lang = showTranslated ? 'es-ES' : 'en-US';
+      speakText(textToSpeak, lang);
+      toast.success('Reading aloud...', {
+        description: showTranslated ? 'En español' : 'In English'
+      });
+    }
+  }, [isSpeaking, showTranslated, translatedResponse, response, speakText]);
+
   // Cleanup on modal close
   useEffect(() => {
-    if (!showTowerTalk && recognitionRef.current) {
-      recognitionRef.current.abort();
+    if (!showTowerTalk) {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+      window.speechSynthesis.cancel();
       setIsListening(false);
+      setIsSpeaking(false);
       setInterimTranscript('');
     }
   }, [showTowerTalk]);
+
+  // Stop speaking when language changes
+  useEffect(() => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, [showTranslated]);
+
+  // Load voices (needed for some browsers)
+  useEffect(() => {
+    if (isSpeechSynthesisSupported) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
 
   if (!showTowerTalk) return null;
 
@@ -184,6 +278,10 @@ export const TowerTalkModal = () => {
       setIsListening(false);
       setInterimTranscript('');
     }
+    
+    // Stop any speech
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
     
     setIsLoading(true);
     setError('');
@@ -274,7 +372,11 @@ export const TowerTalkModal = () => {
     if (recognitionRef.current) {
       recognitionRef.current.abort();
     }
+    // Stop voice output
+    window.speechSynthesis.cancel();
+    
     setIsListening(false);
+    setIsSpeaking(false);
     setInterimTranscript('');
     
     toggleTowerTalk(false);
@@ -491,46 +593,69 @@ export const TowerTalkModal = () => {
                   border: '1px solid hsla(0, 40%, 35%, 0.3)'
                 }}
               >
-                {/* Language toggle for Supercharg'd mode */}
-                {supercharged && translatedResponse && (
+                {/* Top action buttons row */}
+                <div className="absolute top-3 right-3 flex items-center gap-1">
+                  {/* Read Aloud Button */}
+                  {isSpeechSynthesisSupported && (
+                    <button
+                      onClick={toggleSpeech}
+                      className={`btn-icon w-9 h-9 ${isSpeaking ? 'speaking-active' : ''}`}
+                      style={isSpeaking ? {
+                        background: 'hsla(145, 60%, 40%, 0.25)',
+                        borderColor: 'hsla(145, 70%, 50%, 0.4)',
+                      } : {}}
+                      data-testid="read-aloud-btn"
+                      title={isSpeaking ? 'Stop reading' : 'Read aloud'}
+                    >
+                      {isSpeaking ? (
+                        <VolumeX className="w-4 h-4" style={{ color: 'hsla(145, 70%, 55%, 1)' }} />
+                      ) : (
+                        <Volume2 className="w-4 h-4" style={{ color: 'hsla(220, 10%, 50%, 1)' }} />
+                      )}
+                    </button>
+                  )}
+                  
+                  {/* Language toggle for Supercharg'd mode */}
+                  {supercharged && translatedResponse && (
+                    <button
+                      onClick={toggleLanguage}
+                      className="btn-icon w-9 h-9"
+                      style={{
+                        background: showTranslated 
+                          ? 'hsla(25, 100%, 50%, 0.2)' 
+                          : 'hsla(220, 10%, 15%, 0.8)',
+                        borderColor: showTranslated 
+                          ? 'hsla(25, 100%, 50%, 0.3)' 
+                          : 'hsla(220, 8%, 25%, 0.5)',
+                      }}
+                      data-testid="toggle-language-btn"
+                      title={showTranslated ? 'Show English' : 'Show Spanish'}
+                    >
+                      <Languages 
+                        className="w-4 h-4" 
+                        style={{ color: showTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(220, 10%, 50%, 1)' }}
+                      />
+                    </button>
+                  )}
+
+                  {/* Save to favorites button */}
                   <button
-                    onClick={toggleLanguage}
-                    className="absolute top-3 right-12 btn-icon w-9 h-9"
-                    style={{
-                      background: showTranslated 
-                        ? 'hsla(25, 100%, 50%, 0.2)' 
-                        : 'hsla(220, 10%, 15%, 0.8)',
-                      borderColor: showTranslated 
-                        ? 'hsla(25, 100%, 50%, 0.3)' 
-                        : 'hsla(220, 8%, 25%, 0.5)',
-                    }}
-                    data-testid="toggle-language-btn"
-                    title={showTranslated ? 'Show English' : 'Show Spanish'}
+                    onClick={handleSaveToFavorites}
+                    disabled={isSaved}
+                    className="btn-icon w-9 h-9"
+                    style={isSaved ? {
+                      background: 'hsla(0, 70%, 50%, 0.2)',
+                      borderColor: 'hsla(0, 70%, 50%, 0.3)',
+                    } : {}}
+                    data-testid="save-to-favorites-btn"
                   >
-                    <Languages 
+                    <Heart 
                       className="w-4 h-4" 
-                      style={{ color: showTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(220, 10%, 50%, 1)' }}
+                      style={{ color: isSaved ? 'hsla(0, 70%, 60%, 1)' : 'hsla(220, 10%, 50%, 1)' }}
+                      fill={isSaved ? 'hsla(0, 70%, 60%, 1)' : 'none'}
                     />
                   </button>
-                )}
-
-                {/* Save to favorites button */}
-                <button
-                  onClick={handleSaveToFavorites}
-                  disabled={isSaved}
-                  className="absolute top-3 right-3 btn-icon w-9 h-9"
-                  style={isSaved ? {
-                    background: 'hsla(0, 70%, 50%, 0.2)',
-                    borderColor: 'hsla(0, 70%, 50%, 0.3)',
-                  } : {}}
-                  data-testid="save-to-favorites-btn"
-                >
-                  <Heart 
-                    className="w-4 h-4" 
-                    style={{ color: isSaved ? 'hsla(0, 70%, 60%, 1)' : 'hsla(220, 10%, 50%, 1)' }}
-                    fill={isSaved ? 'hsla(0, 70%, 60%, 1)' : 'none'}
-                  />
-                </button>
+                </div>
                 
                 {/* Language indicator */}
                 {supercharged && translatedResponse && (
@@ -547,7 +672,23 @@ export const TowerTalkModal = () => {
                   </div>
                 )}
                 
-                <p className="text-[15px] text-foreground leading-relaxed pr-20 whitespace-pre-wrap">
+                {/* Speaking indicator */}
+                {isSpeaking && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="speaking-indicator">
+                      <span className="speaking-bar" />
+                      <span className="speaking-bar" style={{ animationDelay: '0.1s' }} />
+                      <span className="speaking-bar" style={{ animationDelay: '0.2s' }} />
+                      <span className="speaking-bar" style={{ animationDelay: '0.3s' }} />
+                      <span className="speaking-bar" style={{ animationDelay: '0.4s' }} />
+                    </div>
+                    <span className="text-[10px] font-medium" style={{ color: 'hsla(145, 70%, 55%, 1)' }}>
+                      Reading aloud...
+                    </span>
+                  </div>
+                )}
+                
+                <p className="text-[15px] text-foreground leading-relaxed pr-28 whitespace-pre-wrap">
                   {displayedResponse}
                 </p>
               </div>
