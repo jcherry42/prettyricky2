@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock } from 'lucide-react';
+import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock, Download } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
@@ -541,9 +541,31 @@ export const ImportModal = () => {
 
         {/* Smart Mapping Info */}
         <div className="px-5 py-3 border-t border-border/50 bg-muted/20">
-          <p className="text-xs text-muted-foreground text-center">
-            🧠 Auto-detects field mappings from any CRM export
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Auto-detects field mappings from any CRM export
+            </p>
+            <div className="flex items-center gap-2">
+              <a
+                href="/templates/customers_template.csv"
+                download="customers_template.csv"
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                onClick={() => toast.success('Customers template downloaded!')}
+              >
+                <Download className="w-3 h-3" />
+                Customers
+              </a>
+              <a
+                href="/templates/vehicles_template.csv"
+                download="vehicles_template.csv"
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                onClick={() => toast.success('Vehicles template downloaded!')}
+              >
+                <Download className="w-3 h-3" />
+                Vehicles
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
