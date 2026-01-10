@@ -688,6 +688,227 @@ async def get_adapter_setup(adapter_type: str):
         raise HTTPException(status_code=404, detail="Adapter type not found")
     return instructions
 
+
+# ============== FIELD DISCOVERY ==============
+
+from integrations.field_discovery import get_discovery_service, CUSTOMER_SCHEMA, VEHICLE_SCHEMA
+
+class DiscoverFieldsRequest(BaseModel):
+    base_url: str
+    endpoint: str
+    auth_config: Dict[str, Any] = Field(default_factory=dict)
+    data_type: str = "customers"
+
+class DiscoverFromSampleRequest(BaseModel):
+    sample_json: str
+    data_type: str = "customers"
+
+@api_router.post("/integrations/discover-fields")
+async def discover_fields_from_api(request: DiscoverFieldsRequest):
+    """
+    Discover fields by fetching a sample from an API
+    
+    Auto-detects available fields and suggests mappings to our schema.
+    """
+    discovery = get_discovery_service()
+    result = await discovery.discover_from_api(
+        base_url=request.base_url,
+        endpoint=request.endpoint,
+        auth_config=request.auth_config,
+        data_type=request.data_type,
+    )
+    
+    return {
+        "success": result.success,
+        "data_type": result.data_type,
+        "discovered_fields": [
+            {
+                "source_name": f.source_name,
+                "source_path": f.source_path,
+                "sample_value": f.sample_value,
+                "inferred_type": f.inferred_type,
+                "suggested_mapping": f.suggested_mapping,
+                "confidence": f.confidence,
+                "is_mapped": f.is_mapped,
+            }
+            for f in result.discovered_fields
+        ],
+        "sample_record": result.sample_record,
+        "unmapped_required": result.unmapped_required,
+        "errors": result.errors,
+        "warnings": result.warnings,
+    }
+
+@api_router.post("/integrations/discover-fields/sample")
+async def discover_fields_from_sample(request: DiscoverFromSampleRequest):
+    """
+    Discover fields from a manually pasted JSON sample
+    
+    For APIs behind firewalls or when auto-fetch isn't possible.
+    """
+    discovery = get_discovery_service()
+    result = discovery.discover_from_sample(
+        sample_json=request.sample_json,
+        data_type=request.data_type,
+    )
+    
+    return {
+        "success": result.success,
+        "data_type": result.data_type,
+        "discovered_fields": [
+            {
+                "source_name": f.source_name,
+                "source_path": f.source_path,
+                "sample_value": f.sample_value,
+                "inferred_type": f.inferred_type,
+                "suggested_mapping": f.suggested_mapping,
+                "confidence": f.confidence,
+                "is_mapped": f.is_mapped,
+            }
+            for f in result.discovered_fields
+        ],
+        "sample_record": result.sample_record,
+        "unmapped_required": result.unmapped_required,
+        "errors": result.errors,
+        "warnings": result.warnings,
+    }
+
+@api_router.get("/integrations/schema/{data_type}")
+async def get_target_schema(data_type: str):
+    """Get the target schema for mapping fields"""
+    if data_type == "customers":
+        return {"schema": CUSTOMER_SCHEMA, "required": ["name", "phone"]}
+    elif data_type == "vehicles":
+        return {"schema": VEHICLE_SCHEMA, "required": ["year", "make", "model"]}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid data_type. Use 'customers' or 'vehicles'")
+
+
+# ============== INTEGRATION PROFILES ==============
+
+from integrations.profiles import ProfileManager, IntegrationProfile
+
+profile_manager = ProfileManager(db)
+
+class CreateProfileRequest(BaseModel):
+    name: str
+    description: str = ""
+    adapter_type: str = "generic_rest"
+    base_url: str = ""
+    auth_method: str = "api_key"
+    customers_endpoint: str = "/customers"
+    vehicles_endpoint: str = "/vehicles"
+    customer_mappings: Dict[str, str] = Field(default_factory=dict)
+    vehicle_mappings: Dict[str, str] = Field(default_factory=dict)
+    pagination_type: str = "offset"
+    page_size: int = 100
+    records_path: str = "data"
+    is_public: bool = False
+    tags: List[str] = Field(default_factory=list)
+
+class ImportProfileRequest(BaseModel):
+    json_data: str
+    override_name: Optional[str] = None
+
+@api_router.get("/integration-profiles")
+async def list_profiles(
+    adapter_type: Optional[str] = None,
+    public_only: bool = False,
+    tags: Optional[str] = None,
+    limit: int = 50
+):
+    """List available integration profiles"""
+    tag_list = tags.split(",") if tags else None
+    profiles = await profile_manager.list_profiles(
+        adapter_type=adapter_type,
+        public_only=public_only,
+        tags=tag_list,
+        limit=limit
+    )
+    return {"profiles": profiles}
+
+@api_router.post("/integration-profiles")
+async def create_profile(request: CreateProfileRequest):
+    """Create a new integration profile"""
+    import uuid
+    
+    profile = IntegrationProfile(
+        id=str(uuid.uuid4()),
+        name=request.name,
+        description=request.description,
+        adapter_type=request.adapter_type,
+        base_url=request.base_url,
+        auth_method=request.auth_method,
+        customers_endpoint=request.customers_endpoint,
+        vehicles_endpoint=request.vehicles_endpoint,
+        customer_mappings=request.customer_mappings,
+        vehicle_mappings=request.vehicle_mappings,
+        pagination_type=request.pagination_type,
+        page_size=request.page_size,
+        records_path=request.records_path,
+        is_public=request.is_public,
+        tags=request.tags,
+    )
+    
+    profile_id = await profile_manager.create_profile(profile)
+    return {"success": True, "profile_id": profile_id, "message": f"Profile '{request.name}' created"}
+
+@api_router.get("/integration-profiles/{profile_id}")
+async def get_profile(profile_id: str):
+    """Get a profile by ID"""
+    profile = await profile_manager.get_profile(profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile.to_dict()
+
+@api_router.get("/integration-profiles/{profile_id}/export")
+async def export_profile(profile_id: str):
+    """Export a profile as JSON"""
+    json_data = await profile_manager.export_profile(profile_id)
+    if not json_data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"json": json_data}
+
+@api_router.post("/integration-profiles/import")
+async def import_profile(request: ImportProfileRequest):
+    """Import a profile from JSON"""
+    success, message, profile_id = await profile_manager.import_profile(
+        json_data=request.json_data,
+        override_name=request.override_name
+    )
+    
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    
+    return {"success": True, "message": message, "profile_id": profile_id}
+
+@api_router.delete("/integration-profiles/{profile_id}")
+async def delete_profile(profile_id: str):
+    """Delete a profile"""
+    # Prevent deletion of built-in profiles
+    if profile_id.startswith("builtin_"):
+        raise HTTPException(status_code=400, detail="Cannot delete built-in profiles")
+    
+    success = await profile_manager.delete_profile(profile_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"success": True}
+
+@api_router.patch("/integration-profiles/{profile_id}")
+async def update_profile(profile_id: str, updates: Dict[str, Any]):
+    """Update a profile"""
+    # Prevent modification of built-in profiles
+    if profile_id.startswith("builtin_"):
+        raise HTTPException(status_code=400, detail="Cannot modify built-in profiles")
+    
+    success = await profile_manager.update_profile(profile_id, updates)
+    if not success:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return {"success": True}
+
+
+# ============== INTEGRATIONS CRUD ==============
+
 @api_router.get("/integrations")
 async def list_integrations(active_only: bool = False, adapter_type: Optional[str] = None):
     """List all configured integrations"""
