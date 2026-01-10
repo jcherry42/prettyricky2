@@ -10,146 +10,175 @@ Build a "sales weapon" for automotive sales reps that is:
 ## Platform
 iOS optimized web application with tap-selectable inputs
 
+---
+
 ## Core Functionality
 
 ### 1. Context-Based Response Generator (Rule-Based)
 A structured decision tree (NOT a free-form chatbot) that:
 - Takes input: `inquiry type`, `vehicle`, and `tone`
-- Outputs: 3 pre-structured, tokenized responses (`[name]`, `[vehicle]`, etc.)
+- Outputs: 3 pre-structured, tokenized responses
 
 ### 2. Response Categories (Tones)
 - **Fast & Direct**: Quick, no-nonsense responses
 - **Balanced/Relational**: Friendly, rapport-building
 - **Soft Touch/Appointment Focused**: Gentle, low-pressure
 
-### 3. Inquiry Types
-- New Lead
-- Price Question
-- Availability
-- Trade-In
-- Financing
-- Test Drive
-- Follow Up
-- Objection
+### 3. Tower Talk (AI Feature) ✅
+AI-powered personalized response generation using Emergent LLM (GPT-4.1-mini)
 
-### 4. Objection Handling
-Quadrupled list of responses for common sales objections, based on:
-- Real-world sales data
-- Cialdini's principles of persuasion
-- Behavioral psychology techniques
+### 4. Favorites Feature ✅
+Save, view, and reuse effective AI-generated responses
 
-### 5. Follow-ups
-Quadrupled list of follow-up message templates with static timing suggestions:
-- 2 Hours
-- Next Day
-- 3 Days
-- 1 Week
+---
 
-### 6. Tower Talk (AI Feature) ✅ IMPLEMENTED
-A separate, on-demand AI-powered feature accessed via a red "Tower Talk" button:
-- Uses Emergent LLM (GPT-4.1-mini) backend
-- Generates deeper, more personal approaches for unique situations
-- Passes customer context (name, vehicle, dealership info, salesperson style)
+## Data Integration Architecture ✅ IMPLEMENTED
 
-## User Preferences (Customization)
+### Overview
+CRM-agnostic data integration system with:
+- **Smart Field Mapping**: Auto-detects field names with confidence scores
+- **Multiple Formats**: CSV, JSON, Google Sheets
+- **Scheduled Refresh**: Mon-Sat at 10:00 AM ET
+- **Manual Refresh**: On-demand refresh capability
+- **Health Monitoring**: Tracks source health and failures
 
-### Dealership Settings
-- Name
+### Supported Data Fields
+
+**Customers (Must-have)**:
+- First Name, Last Name (or Full Name)
+- Phone (required, validated)
+- Email (validated)
+- Vehicle of Interest
+- Lead Status (hot/warm/cold/new/sold/lost)
 - Address
-- Hours
-- Appointment phrasing preference ("come in" vs. "stop by")
 
-### Salesperson Settings
-- Name
-- Title (optional)
-- Personal style: "Straight Shooter," "Friendly," "Professional"
+**Customers (Nice-to-have)**:
+- Notes
+- Current Vehicle
+- Trade-in Info
 
-## UI/UX Requirements
-- Modern, colorful design ✅
-- Glasslike texture (glassmorphism) ✅
-- iOS native functions:
-  - Copy to clipboard ✅
-  - Button to open iMessage ✅
+**Vehicles**:
+- Year, Make, Model (required)
+- Trim, VIN, Stock Number
+- Price, MSRP
+- Mileage, Colors, Transmission, Engine
+- Status (available/sold/pending)
+
+### Smart Field Mapper
+Auto-recognizes 150+ field name variations:
+- `first_name`, `firstname`, `fname`, `First Name` → `first_name`
+- `phone`, `phone_number`, `cell`, `mobile` → `phone`
+- Returns confidence scores (0.0-1.0) for each mapping
+
+### Refresh Schedule
+- **Automatic**: Mon-Sat at 10:00 AM ET
+- **Manual**: Via UI "Refresh" button
+- **Retry Logic**: 3 retries with exponential backoff
+
+### API Endpoints
+```
+POST /api/import/preview     - Preview import with detected mappings
+POST /api/import/url         - One-time import from URL
+POST /api/import/file        - Upload file import
+
+GET  /api/data-sources       - List configured sources
+POST /api/data-sources       - Create new source
+GET  /api/data-sources/:id   - Get source details
+PATCH /api/data-sources/:id  - Update source config
+DELETE /api/data-sources/:id - Delete source and data
+POST /api/data-sources/:id/refresh - Manual refresh
+
+GET  /api/customers          - List customers (with search, filter)
+GET  /api/customers/stats    - Customer statistics by status
+GET  /api/vehicles           - List vehicles (with search, filter)
+GET  /api/vehicles/stats     - Inventory statistics
+GET  /api/health             - System health check
+```
 
 ---
 
 ## Implementation Status
 
-### ✅ Completed Features (as of Jan 9, 2026)
-1. **iOS-Optimized UI** - Colorful glassmorphism design with tap-selectable inputs
-2. **Customer Selector** - Select from prospect list with lead status indicators
-3. **Inquiry Type Selector** - 8 inquiry types with icons
-4. **Tone Selector** - 3 tones (Fast & Direct, Balanced, Soft Touch)
-5. **Response Cards** - 3 tokenized responses per selection with copy/iMessage buttons
-6. **Objection Handling** - Quadrupled responses with persuasion psychology (12 per tone)
-7. **Follow-up Templates** - Quadrupled with timing suggestions
-8. **Setup Modal** - Dealership and salesperson preferences
-9. **Tower Talk AI Feature** - Fully functional AI-powered personalized responses
-10. **Favorites Feature** - Save, view, copy, send, and delete AI-generated responses (persisted to localStorage)
+### ✅ Completed Features (as of Jan 10, 2026)
+1. iOS-Optimized UI with colorful glassmorphism
+2. Customer/Prospect Selector
+3. Inquiry Type Selector (8 types)
+4. Tone Selector (3 tones)
+5. Response Cards with copy/iMessage
+6. Objection Handling (quadrupled responses)
+7. Follow-up Templates with timing
+8. Setup Modal (dealership/salesperson)
+9. Tower Talk AI Feature
+10. Favorites Feature (localStorage persistence)
+11. **CRM-Agnostic Data Integration**:
+    - Smart field mapping
+    - CSV, JSON, Google Sheets support
+    - Scheduled refresh (Mon-Sat 10 AM)
+    - Data source management UI
+    - Phone/email/VIN validation
+    - MongoDB persistence
 
-### 🔄 Upcoming Tasks (P1)
-- **Data Import**: Allow dealership, inventory, and customer data import via files or hyperlinks
-
-### 📋 Future Tasks (P2/P3)
-- **Persist User Preferences**: Save dealership/salesperson settings to localStorage (partially done - favorites already persisted)
-- **Offline Capability**: Service workers for app shell and data caching (Tower Talk remains online-only)
-- **iMessage Integration**: Investigate deeper integration beyond `sms:` URI scheme
+### 📋 Future Tasks
+- **Offline Capability**: Service workers (P2)
+- **Deeper iMessage Integration**: Beyond `sms:` URI (P3)
 
 ---
 
 ## Technical Architecture
 
-### Frontend
-- React 18
-- Tailwind CSS
-- shadcn/ui components
-- React Context API for state management
+### Backend (`/app/backend/`)
+```
+├── server.py                    # FastAPI main server
+├── data_integration/
+│   ├── __init__.py
+│   ├── models.py               # Pydantic models
+│   ├── field_mapper.py         # Smart field detection
+│   ├── validators.py           # Phone, email, VIN validation
+│   ├── processor.py            # Import orchestration
+│   ├── scheduler.py            # APScheduler for refresh
+│   ├── exceptions.py           # Custom exceptions
+│   └── parsers/
+│       ├── base.py
+│       ├── csv_parser.py
+│       ├── json_parser.py
+│       └── google_sheets.py
+└── repositories/
+    ├── base.py                 # Repository pattern
+    ├── customer_repo.py
+    ├── vehicle_repo.py
+    └── data_source_repo.py
+```
 
-### Backend
-- Python FastAPI
-- MongoDB (configured but not actively used yet)
-- emergentintegrations library for LLM
+### Frontend (`/app/frontend/src/`)
+```
+├── App.js
+├── context/SalesContext.js
+├── data/salesData.js           # Mock data / templates
+└── components/
+    ├── ImportModal.jsx         # Data import wizard
+    ├── TowerTalkModal.jsx
+    ├── FavoritesModal.jsx
+    └── ...
+```
 
-### Key Files
-- `/app/frontend/src/data/salesData.js` - Mock database with all templates
-- `/app/frontend/src/context/SalesContext.js` - Global state management
-- `/app/backend/server.py` - FastAPI server with Tower Talk endpoint
-
-### API Endpoints
-- `POST /api/tower-talk` - AI-powered personalized response generation
-- `POST /api/import-url` - Fetch and parse JSON data from external URLs (bypasses CORS)
+### Database (MongoDB)
+Collections:
+- `customers` - Imported customer data
+- `vehicles` - Imported vehicle inventory
+- `data_sources` - Source configurations and health
 
 ---
 
-## Data Model (Current - Mocked)
-
-### Customer
-```javascript
-{
-  id: string,
-  name: string,
-  vehicle: string,
-  phone: string,
-  email: string,
-  status: 'hot' | 'warm' | 'cold',
-  tradeIn: string | null,
-  notes: string
-}
-```
-
-### Response Template
-```javascript
-{
-  type: string,          // inquiry type
-  tone: string,          // fast | balanced | soft
-  templates: string[]    // array of 3 tokenized responses
-}
-```
+## Key Dependencies
+- FastAPI, Motor (MongoDB async)
+- APScheduler (scheduled jobs)
+- httpx (async HTTP)
+- emergentintegrations (LLM)
+- React, Tailwind CSS, shadcn/ui
 
 ---
 
 ## Known Limitations
-- All data is currently mocked in `salesData.js`
-- No persistent storage (settings reset on refresh)
-- No offline support yet
-- iMessage integration uses basic `sms:` URI scheme
+- Offline mode not yet implemented
+- iMessage uses basic `sms:` URI
+- Google Sheets must be publicly shared
