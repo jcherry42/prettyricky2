@@ -232,7 +232,7 @@ export const TowerTalkModal = () => {
             >
               <Flame className="w-4 h-4" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
               <span style={{ color: 'hsla(35, 100%, 65%, 1)' }}>
-                Supercharg'd: Type in English or Spanish - responses will be in both languages
+                Supercharg&apos;d: Type in English or Spanish - responses will be in both languages
               </span>
             </div>
           )}

@@ -72,8 +72,11 @@ export const ResponseCards = () => {
   // Reset translations when supercharged mode is turned off
   useEffect(() => {
     if (!supercharged) {
-      setTranslations({});
-      setShowSpanish({});
+      // Use callback to avoid re-render issues
+      setTimeout(() => {
+        setTranslations({});
+        setShowSpanish({});
+      }, 0);
     }
   }, [supercharged]);
 

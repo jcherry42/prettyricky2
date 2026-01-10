@@ -32,7 +32,8 @@ export const SetupModal = () => {
 
   // Sync form data when context values change (on load from localStorage)
   useEffect(() => {
-    setFormData({
+    // Use callback to avoid re-render cascade
+    const newFormData = {
       dealershipName: dealership.name,
       dealershipAddress: dealership.address,
       dealershipHours: dealership.hours,
@@ -42,8 +43,12 @@ export const SetupModal = () => {
       salespersonStyle: salesperson.style,
       defaultTone: preferences.defaultTone,
       signOff: preferences.signOff,
-    });
-  }, [dealership, salesperson, preferences]);
+    };
+    // Only update if modal is shown to avoid unnecessary renders
+    if (showSetup) {
+      setFormData(newFormData);
+    }
+  }, [showSetup, dealership, salesperson, preferences]);
 
   if (!showSetup) return null;
 
