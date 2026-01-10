@@ -50,6 +50,14 @@ Save, view, and reuse effective AI-generated responses
 - Works in English and Spanish (adapts to Supercharg'd mode)
 - Visual feedback with pulsing animation when listening
 
+### 8. Voice Output (Read Aloud) ✅ (NEW - Jan 10, 2026)
+- Speaker button on AI-generated responses
+- Uses Web Speech API (SpeechSynthesis)
+- Reads response in correct language (English or Spanish based on toggle)
+- Visual feedback with animated audio bars when speaking
+- Tap to start/stop reading
+- Truly hands-free operation for sales reps on the move
+
 ---
 
 ## Data Integration Architecture ✅ IMPLEMENTED
@@ -174,6 +182,7 @@ A premium theme inspired by high-end automotive interiors:
 16. **User Preferences Persistence** (NEW)
 17. **Downloadable Import Templates** (NEW)
 18. **Voice Input for Tower Talk** (NEW)
+19. **Voice Output - Read Aloud** (NEW)
 
 ### 📋 Future Tasks
 - Database-backed customer conversation history
