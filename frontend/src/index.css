@@ -1121,3 +1121,122 @@ html:not(.dark) .tone-pill.active {
     box-shadow: 0 0 15px hsla(30, 100%, 50%, 0.4);
   }
 }
+
+/* ============================================
+   VOICE INPUT STYLES
+   ============================================ */
+
+/* Voice Input Button */
+.voice-input-btn {
+  @apply flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 relative overflow-hidden;
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 18%, 0.9) 0%,
+    hsla(220, 10%, 14%, 0.95) 100%
+  );
+  border: 1px solid hsla(220, 8%, 28%, 0.5);
+  color: hsla(220, 10%, 60%, 1);
+}
+
+.voice-input-btn:hover {
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 22%, 0.95) 0%,
+    hsla(220, 10%, 18%, 0.98) 100%
+  );
+  border-color: hsla(0, 70%, 50%, 0.3);
+  color: hsla(0, 70%, 65%, 1);
+}
+
+.voice-input-btn.active {
+  background: linear-gradient(180deg, 
+    hsla(0, 70%, 40%, 0.9) 0%,
+    hsla(0, 75%, 35%, 0.95) 100%
+  );
+  border-color: hsla(0, 80%, 55%, 0.5);
+  color: white;
+  box-shadow: 
+    0 0 20px hsla(0, 100%, 50%, 0.3),
+    0 0 40px hsla(0, 100%, 50%, 0.15);
+}
+
+/* Voice Pulse Animation */
+.voice-pulse {
+  @apply absolute inset-0;
+  animation: voice-pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.voice-pulse::before {
+  content: '';
+  @apply absolute inset-0 rounded-lg;
+  background: hsla(0, 100%, 50%, 0.3);
+}
+
+@keyframes voice-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+/* Voice Input Active State for Textarea */
+.input-luxury.voice-active {
+  border-color: hsla(0, 70%, 50%, 0.5) !important;
+  box-shadow: 
+    inset 0 2px 4px hsla(20, 30%, 5%, 0.3),
+    0 0 20px hsla(0, 100%, 50%, 0.15) !important;
+}
+
+/* Voice Indicator Dots */
+.voice-indicator {
+  @apply flex items-center gap-1;
+}
+
+.voice-dot {
+  @apply w-1.5 h-1.5 rounded-full;
+  background: hsla(0, 80%, 55%, 1);
+  animation: voice-dot-bounce 1s ease-in-out infinite;
+}
+
+@keyframes voice-dot-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Light mode voice button adjustments */
+html:not(.dark) .voice-input-btn {
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 92%, 0.95) 0%,
+    hsla(220, 10%, 88%, 0.98) 100%
+  );
+  border-color: hsla(220, 8%, 78%, 0.5);
+  color: hsla(220, 10%, 40%, 1);
+}
+
+html:not(.dark) .voice-input-btn:hover {
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 88%, 0.98) 0%,
+    hsla(220, 10%, 84%, 1) 100%
+  );
+  color: hsla(0, 70%, 45%, 1);
+}
+
+html:not(.dark) .voice-input-btn.active {
+  background: linear-gradient(180deg, 
+    hsla(0, 70%, 55%, 0.9) 0%,
+    hsla(0, 75%, 50%, 0.95) 100%
+  );
+  color: white;
+}
