@@ -14,6 +14,13 @@ import {
   getResponses,
   FOLLOW_UP_TEMPLATES,
 } from '../data/salesData';
+import {
+  shareMessage,
+  openMessages,
+  copyToClipboard as copyUtil,
+  isOnline,
+  cacheForOffline,
+} from '../utils/messaging';
 
 // Initial state
 const initialState = {
@@ -290,22 +297,25 @@ export function SalesProvider({ children }) {
   
   const removeFavorite = (id) => dispatch({ type: ACTIONS.REMOVE_FAVORITE, payload: id });
 
-  // Copy to clipboard
+  // Copy to clipboard with enhanced fallback
   const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (err) {
-      console.error('Failed to copy:', err);
-      return false;
-    }
+    const result = await copyUtil(text);
+    return result.success;
   };
 
-  // Share via iMessage (iOS native)
+  // Share via Messages with Web Share API fallback
   const shareToMessages = async (text) => {
-    // Use SMS URL scheme for iOS
-    const smsUrl = `sms:${state.selectedCustomer?.phone || ''}&body=${encodeURIComponent(text)}`;
-    window.location.href = smsUrl;
+    const customerPhone = state.selectedCustomer?.phone;
+    const customerName = state.selectedCustomer?.name || state.selectedCustomer?.firstName;
+    
+    const result = await shareMessage(text, customerPhone, customerName);
+    return result.success;
+  };
+
+  // Direct open Messages app
+  const sendToMessages = (text, phone = null) => {
+    const targetPhone = phone || state.selectedCustomer?.phone;
+    return openMessages(text, targetPhone);
   };
 
   // Get vehicle by ID
@@ -333,6 +343,7 @@ export function SalesProvider({ children }) {
     removeFavorite,
     copyToClipboard,
     shareToMessages,
+    sendToMessages,
     getVehicleById,
   };
 
