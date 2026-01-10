@@ -985,11 +985,11 @@ html:not(.dark) .header-luxury {
 }
 
 .dark .modal-luxury {
-  background: hsla(20, 12%, 10%, 0.92);
+  background: hsla(20, 12%, 10%, 0.95) !important;
 }
 
-:root:not(.dark) .modal-luxury {
-  background: hsla(35, 20%, 96%, 0.95);
+html:not(.dark) .modal-luxury {
+  background: hsla(35, 25%, 96%, 0.95) !important;
   border-top-color: hsla(35, 15%, 80%, 0.5);
 }
 
