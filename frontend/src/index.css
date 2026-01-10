@@ -898,3 +898,227 @@
   background: hsla(40, 70%, 50%, 0.3);
   color: inherit;
 }
+
+/* ============================================
+   TINTED GLASS / GLASSMORPHISM
+   ============================================ */
+
+/* Tinted Glass Base */
+.glass {
+  @apply backdrop-blur-xl;
+  background: hsla(var(--card) / 0.7);
+  border: 1px solid hsla(var(--border) / 0.3);
+  box-shadow: 
+    0 4px 30px hsla(0, 0%, 0%, 0.1),
+    inset 0 1px 0 hsla(255, 255%, 255%, 0.05);
+}
+
+.glass-dark {
+  @apply backdrop-blur-xl;
+  background: hsla(220, 15%, 8%, 0.75);
+  border: 1px solid hsla(220, 10%, 20%, 0.4);
+  box-shadow: 
+    0 8px 32px hsla(0, 0%, 0%, 0.3),
+    inset 0 1px 0 hsla(255, 255%, 255%, 0.03);
+}
+
+.glass-warm {
+  @apply backdrop-blur-xl;
+  background: hsla(25, 20%, 12%, 0.8);
+  border: 1px solid hsla(35, 30%, 25%, 0.4);
+  box-shadow: 
+    0 8px 32px hsla(20, 30%, 5%, 0.4),
+    inset 0 1px 0 hsla(40, 40%, 40%, 0.05);
+}
+
+/* Global glass tint overlay - Applied to main containers */
+.bg-background {
+  position: relative;
+}
+
+/* Tinted glass cards */
+.card-glass {
+  @apply rounded-xl overflow-hidden backdrop-blur-lg;
+  background: hsla(20, 12%, 10%, 0.65);
+  border: 1px solid hsla(40, 30%, 25%, 0.25);
+  box-shadow: 
+    0 8px 32px hsla(0, 0%, 0%, 0.2),
+    inset 0 1px 0 hsla(40, 40%, 50%, 0.05),
+    inset 0 0 60px hsla(40, 30%, 20%, 0.05);
+}
+
+/* Light mode glass adjustments */
+:root:not(.dark) .glass,
+:root:not(.dark) .glass-dark,
+:root:not(.dark) .glass-warm {
+  background: hsla(30, 15%, 95%, 0.7);
+  border-color: hsla(30, 10%, 80%, 0.5);
+  box-shadow: 
+    0 4px 30px hsla(0, 0%, 0%, 0.05),
+    inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
+}
+
+:root:not(.dark) .card-glass {
+  background: hsla(35, 20%, 96%, 0.75);
+  border-color: hsla(35, 15%, 85%, 0.5);
+  box-shadow: 
+    0 4px 20px hsla(20, 30%, 30%, 0.08),
+    inset 0 1px 0 hsla(0, 0%, 100%, 0.6);
+}
+
+/* Header glass treatment */
+.header-luxury {
+  @apply backdrop-blur-xl;
+}
+
+.dark .header-luxury {
+  background: hsla(220, 10%, 8%, 0.85);
+}
+
+:root:not(.dark) .header-luxury {
+  background: hsla(30, 15%, 95%, 0.9);
+  border-bottom-color: hsla(30, 10%, 80%, 0.5);
+}
+
+/* Modal glass treatment */
+.modal-luxury {
+  @apply backdrop-blur-xl;
+}
+
+.dark .modal-luxury {
+  background: hsla(20, 12%, 10%, 0.92);
+}
+
+:root:not(.dark) .modal-luxury {
+  background: hsla(35, 20%, 96%, 0.95);
+  border-top-color: hsla(35, 15%, 80%, 0.5);
+}
+
+/* Response card glass */
+.response-card {
+  @apply backdrop-blur-md;
+}
+
+.dark .response-card {
+  background: hsla(20, 12%, 11%, 0.75);
+}
+
+:root:not(.dark) .response-card {
+  background: hsla(35, 25%, 97%, 0.85);
+  border-color: hsla(30, 15%, 85%, 0.6);
+}
+
+/* Selector button glass */
+.selector-btn {
+  @apply backdrop-blur-md;
+}
+
+.dark .selector-btn {
+  background: hsla(20, 12%, 12%, 0.8);
+}
+
+:root:not(.dark) .selector-btn {
+  background: hsla(35, 20%, 96%, 0.85);
+  border-color: hsla(30, 12%, 82%, 0.5);
+}
+
+/* Status indicator glass */
+.status-indicator {
+  @apply backdrop-blur-sm;
+}
+
+/* Input glass styling */
+.dark .input-luxury {
+  background: hsla(20, 12%, 8%, 0.75);
+}
+
+:root:not(.dark) .input-luxury {
+  background: hsla(35, 25%, 98%, 0.9);
+  border-color: hsla(30, 12%, 80%, 0.5);
+  color: hsla(20, 20%, 15%, 1);
+}
+
+:root:not(.dark) .input-luxury::placeholder {
+  color: hsla(25, 10%, 55%, 1);
+}
+
+/* Light mode button adjustments */
+:root:not(.dark) .btn-icon {
+  background: hsla(220, 10%, 92%, 0.9);
+  border-color: hsla(220, 8%, 80%, 0.5);
+}
+
+:root:not(.dark) .btn-icon:hover {
+  background: hsla(220, 10%, 88%, 0.95);
+}
+
+:root:not(.dark) .btn-icon .text-muted-foreground {
+  color: hsla(220, 15%, 40%, 1);
+}
+
+:root:not(.dark) .btn-steel {
+  background: linear-gradient(180deg,
+    hsla(220, 8%, 85%, 1) 0%,
+    hsla(220, 8%, 78%, 1) 100%
+  );
+  color: hsla(220, 15%, 25%, 1);
+  border-color: hsla(220, 8%, 70%, 0.5);
+}
+
+:root:not(.dark) .btn-supercharged {
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 90%, 0.95) 0%,
+    hsla(220, 10%, 85%, 0.98) 100%
+  );
+  border-color: hsla(220, 8%, 75%, 0.5);
+}
+
+:root:not(.dark) .btn-supercharged .supercharged-label {
+  color: hsla(220, 10%, 40%, 1);
+}
+
+:root:not(.dark) .btn-supercharged.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 100%, 85%, 0.95) 0%,
+    hsla(15, 100%, 80%, 0.98) 100%
+  );
+  border-color: hsla(25, 100%, 50%, 0.5);
+}
+
+:root:not(.dark) .btn-supercharged.active .supercharged-label {
+  color: hsla(15, 100%, 35%, 1);
+}
+
+/* Tone pill light mode */
+:root:not(.dark) .tone-pill {
+  background: hsla(220, 10%, 92%, 0.9);
+  border-color: hsla(220, 8%, 82%, 0.5);
+  color: hsla(220, 10%, 35%, 1);
+}
+
+:root:not(.dark) .tone-pill.active {
+  background: linear-gradient(180deg,
+    hsla(35, 60%, 90%, 0.9) 0%,
+    hsla(35, 60%, 85%, 0.85) 100%
+  );
+  border-color: hsla(40, 70%, 50%, 0.5);
+  color: hsla(35, 80%, 30%, 1);
+}
+
+/* Supercharg'd indicator badge */
+.supercharged-badge {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider;
+  background: linear-gradient(135deg, hsla(25, 100%, 50%, 0.2) 0%, hsla(35, 100%, 45%, 0.15) 100%);
+  color: hsla(35, 100%, 60%, 1);
+  border: 1px solid hsla(30, 100%, 50%, 0.3);
+  animation: supercharged-glow 2s ease-in-out infinite;
+}
+
+@keyframes supercharged-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsla(30, 100%, 50%, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 15px hsla(30, 100%, 50%, 0.4);
+  }
+}
