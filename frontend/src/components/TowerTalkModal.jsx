@@ -1,9 +1,61 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Volume2, VolumeX, Zap } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Quick Response Shortcuts - Common objections and situations
+const QUICK_SHORTCUTS = [
+  { 
+    id: 'price_high', 
+    label: 'Price Too High', 
+    icon: '💰',
+    situation: 'Customer says the price is too high and wants a better deal',
+  },
+  { 
+    id: 'need_think', 
+    label: 'Need to Think', 
+    icon: '🤔',
+    situation: 'Customer says they need to think about it and will come back later',
+  },
+  { 
+    id: 'trade_in', 
+    label: 'Trade-In Value', 
+    icon: '🔄',
+    situation: 'Customer is unhappy with the trade-in value offered for their current vehicle',
+  },
+  { 
+    id: 'competitor', 
+    label: 'Better Deal Elsewhere', 
+    icon: '🏷️',
+    situation: 'Customer says they found a better deal at another dealership',
+  },
+  { 
+    id: 'payment', 
+    label: 'Payment Too High', 
+    icon: '📊',
+    situation: 'Customer says the monthly payment is more than they can afford',
+  },
+  { 
+    id: 'spouse', 
+    label: 'Check with Spouse', 
+    icon: '💑',
+    situation: 'Customer says they need to check with their spouse before making a decision',
+  },
+  { 
+    id: 'features', 
+    label: 'Missing Features', 
+    icon: '⚙️',
+    situation: 'Customer is interested but the vehicle is missing some features they wanted',
+  },
+  { 
+    id: 'timing', 
+    label: 'Not Ready Yet', 
+    icon: '⏰',
+    situation: 'Customer says they are just looking and not ready to buy right now',
+  },
+];
 
 // Translation helper
 const translateText = async (text, sourceLang = 'auto', targetLang = 'es') => {
@@ -52,6 +104,7 @@ export const TowerTalkModal = () => {
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showTranslated, setShowTranslated] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(true);
   
   // Voice input state
   const [isListening, setIsListening] = useState(false);
@@ -60,7 +113,6 @@ export const TowerTalkModal = () => {
   
   // Voice output state
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -69,7 +121,6 @@ export const TowerTalkModal = () => {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    // Support both English and Spanish for Supercharg'd mode
     recognition.lang = supercharged ? 'es-US' : 'en-US';
     
     recognition.onresult = (event) => {
@@ -107,7 +158,6 @@ export const TowerTalkModal = () => {
     };
 
     recognition.onend = () => {
-      // Auto-restart if still supposed to be listening
       if (isListening && recognitionRef.current) {
         try {
           recognitionRef.current.start();
@@ -130,7 +180,6 @@ export const TowerTalkModal = () => {
     };
   }, [showTowerTalk, supercharged, isListening]);
 
-  // Update language when supercharged mode changes
   useEffect(() => {
     if (recognitionRef.current && !isListening) {
       recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
@@ -146,17 +195,14 @@ export const TowerTalkModal = () => {
     }
 
     if (isListening) {
-      // Stop listening
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
       setIsListening(false);
       setInterimTranscript('');
     } else {
-      // Start listening
       if (recognitionRef.current) {
         try {
-          // Update language before starting
           recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
           recognitionRef.current.start();
           setIsListening(true);
@@ -180,16 +226,14 @@ export const TowerTalkModal = () => {
       return;
     }
 
-    // Stop any current speech
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
-    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.rate = 0.95;
     utterance.pitch = 1;
     utterance.volume = 1;
     
-    // Try to find a good voice for the language
     const voices = window.speechSynthesis.getVoices();
     const langPrefix = lang.split('-')[0];
     const preferredVoice = voices.find(v => 
@@ -200,14 +244,8 @@ export const TowerTalkModal = () => {
       utterance.voice = preferredVoice;
     }
     
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-    };
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-    };
-    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = (event) => {
       console.error('Speech synthesis error:', event);
       setIsSpeaking(false);
@@ -216,17 +254,14 @@ export const TowerTalkModal = () => {
       }
     };
     
-    utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
   }, []);
 
   const toggleSpeech = useCallback(() => {
     if (isSpeaking) {
-      // Stop speaking
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     } else {
-      // Start speaking
       const textToSpeak = showTranslated && translatedResponse ? translatedResponse : response;
       const lang = showTranslated ? 'es-ES' : 'en-US';
       speakText(textToSpeak, lang);
@@ -249,7 +284,6 @@ export const TowerTalkModal = () => {
     }
   }, [showTowerTalk]);
 
-  // Stop speaking when language changes
   useEffect(() => {
     if (isSpeaking) {
       window.speechSynthesis.cancel();
@@ -257,7 +291,6 @@ export const TowerTalkModal = () => {
     }
   }, [showTranslated]);
 
-  // Load voices (needed for some browsers)
   useEffect(() => {
     if (isSpeechSynthesisSupported) {
       window.speechSynthesis.getVoices();
@@ -267,10 +300,18 @@ export const TowerTalkModal = () => {
     }
   }, []);
 
+  // Hide shortcuts when user starts typing
+  useEffect(() => {
+    if (situation.trim()) {
+      setShowShortcuts(false);
+    }
+  }, [situation]);
+
   if (!showTowerTalk) return null;
 
-  const handleGenerate = async () => {
-    if (!situation.trim()) return;
+  const handleGenerate = async (customSituation = null) => {
+    const situationText = customSituation || situation;
+    if (!situationText.trim()) return;
     
     // Stop voice input if active
     if (isListening && recognitionRef.current) {
@@ -283,19 +324,24 @@ export const TowerTalkModal = () => {
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
     
+    // Update situation if using shortcut
+    if (customSituation) {
+      setSituation(customSituation);
+    }
+    
     setIsLoading(true);
     setError('');
     setResponse('');
     setTranslatedResponse('');
     setShowTranslated(false);
+    setShowShortcuts(false);
 
     try {
-      let situationToSend = situation;
+      let situationToSend = situationText;
       
-      // If Supercharg'd mode is active, translate Spanish input to English for the AI
       if (supercharged) {
         setIsTranslating(true);
-        const translated = await translateText(situation, 'auto', 'en');
+        const translated = await translateText(situationText, 'auto', 'en');
         if (translated) {
           situationToSend = translated;
         }
@@ -324,7 +370,6 @@ export const TowerTalkModal = () => {
       const data = await res.json();
       setResponse(data.response);
 
-      // If Supercharg'd mode is active, also translate the response to Spanish
       if (supercharged) {
         setIsTranslating(true);
         const translatedResp = await translateText(data.response, 'en', 'es');
@@ -340,6 +385,14 @@ export const TowerTalkModal = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleShortcutClick = (shortcut) => {
+    // Instant generation with the shortcut
+    handleGenerate(shortcut.situation);
+    toast.success(`Quick: ${shortcut.label}`, {
+      description: 'Generating response...'
+    });
   };
 
   const handleCopy = async () => {
@@ -368,11 +421,9 @@ export const TowerTalkModal = () => {
   };
 
   const handleClose = () => {
-    // Stop voice input
     if (recognitionRef.current) {
       recognitionRef.current.abort();
     }
-    // Stop voice output
     window.speechSynthesis.cancel();
     
     setIsListening(false);
@@ -386,6 +437,7 @@ export const TowerTalkModal = () => {
     setError('');
     setIsSaved(false);
     setShowTranslated(false);
+    setShowShortcuts(true);
   };
 
   const toggleLanguage = () => {
@@ -464,6 +516,34 @@ export const TowerTalkModal = () => {
             </div>
           )}
 
+          {/* Quick Response Shortcuts */}
+          {showShortcuts && !isLoading && !response && (
+            <div className="space-y-2 animate-fade-in">
+              <div className="flex items-center gap-2 px-1">
+                <Zap className="w-3.5 h-3.5" style={{ color: 'hsla(45, 100%, 55%, 1)' }} />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Quick Responses
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_SHORTCUTS.map((shortcut) => (
+                  <button
+                    key={shortcut.id}
+                    onClick={() => handleShortcutClick(shortcut)}
+                    className="quick-shortcut-btn"
+                    data-testid={`shortcut-${shortcut.id}`}
+                  >
+                    <span className="shortcut-icon">{shortcut.icon}</span>
+                    <span className="shortcut-label">{shortcut.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground text-center mt-2">
+                Tap for instant AI response • Or type below for custom situations
+              </p>
+            </div>
+          )}
+
           {/* Supercharg'd mode hint */}
           {supercharged && (
             <div 
@@ -514,7 +594,6 @@ export const TowerTalkModal = () => {
               <textarea
                 value={situation + (interimTranscript ? (situation ? ' ' : '') + interimTranscript : '')}
                 onChange={(e) => {
-                  // Only update if not currently receiving voice input
                   if (!interimTranscript) {
                     setSituation(e.target.value);
                   }
@@ -523,8 +602,8 @@ export const TowerTalkModal = () => {
                   ? "e.g., El cliente mencionó que acaba de tener un bebé... / Customer mentioned they just had a baby..."
                   : "e.g., Customer mentioned they just had a baby and need more space..."
                 }
-                className={`input-luxury min-h-[120px] resize-none ${isListening ? 'voice-active' : ''}`}
-                rows={4}
+                className={`input-luxury min-h-[100px] resize-none ${isListening ? 'voice-active' : ''}`}
+                rows={3}
                 data-testid="tower-talk-input"
               />
               
@@ -551,7 +630,7 @@ export const TowerTalkModal = () => {
 
           {/* Generate button */}
           <button
-            onClick={handleGenerate}
+            onClick={() => handleGenerate()}
             disabled={!situation.trim() || isLoading}
             className="btn-tower w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50"
             data-testid="generate-response-btn"
@@ -726,6 +805,21 @@ export const TowerTalkModal = () => {
                   iMessage
                 </button>
               </div>
+              
+              {/* New Response button */}
+              <button
+                onClick={() => {
+                  setResponse('');
+                  setTranslatedResponse('');
+                  setSituation('');
+                  setIsSaved(false);
+                  setShowShortcuts(true);
+                }}
+                className="w-full py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                data-testid="new-response-btn"
+              >
+                ← New Response
+              </button>
             </div>
           )}
         </div>
