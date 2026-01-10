@@ -227,6 +227,87 @@ Rules:
         raise HTTPException(status_code=500, detail=f"Failed to generate response: {str(e)}")
 
 
+# ============== SUPERCHARG'D TRANSLATION ==============
+
+@api_router.post("/translate", response_model=TranslateResponse)
+async def translate_text(request: TranslateRequest):
+    """
+    Translate text between English and Spanish (Supercharg'd mode)
+    Supports auto-detection of source language
+    """
+    try:
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        text = request.text.strip()
+        if not text:
+            return TranslateResponse(translated_text="", detected_lang=None)
+        
+        # Determine translation direction
+        if request.source_lang == "auto":
+            # Auto-detect: ask LLM to detect and translate
+            system_message = """You are a professional translator specializing in English and Spanish.
+Your task is to:
+1. Detect if the input is English or Spanish
+2. Translate it to the OTHER language
+3. Return ONLY the translation, nothing else
+
+Rules:
+- If input is English, translate to Spanish
+- If input is Spanish, translate to English
+- Maintain the same tone and style
+- Keep proper names unchanged
+- Preserve any specific automotive/sales terminology appropriately"""
+            
+            prompt = f"Translate this text (detect language automatically):\n\n{text}"
+        else:
+            # Explicit direction
+            source = "English" if request.source_lang == "en" else "Spanish"
+            target = "Spanish" if request.target_lang == "es" else "English"
+            
+            system_message = f"""You are a professional translator specializing in English and Spanish.
+Translate the following text from {source} to {target}.
+Return ONLY the translation, nothing else.
+
+Rules:
+- Maintain the same tone and style
+- Keep proper names unchanged
+- Preserve automotive/sales terminology appropriately"""
+            
+            prompt = text
+        
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"translate-{uuid.uuid4()}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4.1-mini")
+        
+        user_message = UserMessage(text=prompt)
+        translated = await chat.send_message(user_message)
+        
+        # Detect which language it was (simple heuristic based on output)
+        detected = None
+        if request.source_lang == "auto":
+            # If output has Spanish characters/patterns, input was likely English
+            spanish_indicators = ['á', 'é', 'í', 'ó', 'ú', 'ñ', '¿', '¡']
+            if any(c in translated.lower() for c in spanish_indicators):
+                detected = "en"  # Input was English, output is Spanish
+            else:
+                detected = "es"  # Input was Spanish, output is English
+        
+        return TranslateResponse(
+            translated_text=translated.strip(),
+            detected_lang=detected
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Translation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
+
+
 # ============== DATA IMPORT ==============
 
 @api_router.post("/import/preview")
