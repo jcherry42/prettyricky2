@@ -217,9 +217,13 @@ A premium theme inspired by high-end automotive interiors:
 22. **Production-Grade CRM Integration Layer** (Jan 10, 2026)
 23. **Integration Health Status on Frontend** (Jan 10, 2026)
 24. **CRM Integration Settings Panel** (Jan 10, 2026)
+25. **Open API System - Field Discovery Service** (Jan 10, 2026)
+26. **Integration Profiles (Save/Export/Import)** (Jan 10, 2026)
+27. **Connection Wizard (4-Step Setup)** (Jan 10, 2026)
 
 ### 📋 Upcoming Tasks (P1)
 - Add Categories to Favorites (e.g., "Price Negotiation", "Follow-ups")
+- OpenAPI/Swagger Spec Import (Phase 3 - auto-generate config from spec)
 
 ### 📋 Future Tasks (P2/P3)
 - Database-backed customer conversation history
