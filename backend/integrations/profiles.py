@@ -5,7 +5,7 @@ Save, load, export/import CRM connection configurations
 
 import logging
 import json
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 import uuid
