@@ -220,6 +220,17 @@ export function SalesProvider({ children }) {
     const customTemplates = loadFromStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, {});
     const favorites = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
     
+    // Load theme preference
+    const savedTheme = localStorage.getItem('closr_theme') || 'dark';
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Load supercharged mode
+    const savedSupercharged = localStorage.getItem('closr_supercharged') === 'true';
+    
     const isSetupComplete = dealership.name !== DEFAULT_DEALERSHIP.name || 
                             salesperson.name !== DEFAULT_SALESPERSON.name;
     
@@ -235,6 +246,8 @@ export function SalesProvider({ children }) {
         favorites,
         isSetupComplete,
         selectedTone: preferences.defaultTone || 'balanced',
+        theme: savedTheme,
+        supercharged: savedSupercharged,
       },
     });
   }, []);
