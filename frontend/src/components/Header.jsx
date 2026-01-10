@@ -1,9 +1,20 @@
 import React from 'react';
-import { Zap, Settings, Upload, Heart } from 'lucide-react';
+import { Zap, Settings, Upload, Heart, Sun, Moon, Flame } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
 export const Header = () => {
-  const { isOffline, dealership, toggleSetup, toggleImport, toggleFavorites, favorites } = useSales();
+  const { 
+    isOffline, 
+    dealership, 
+    toggleSetup, 
+    toggleImport, 
+    toggleFavorites, 
+    favorites,
+    theme,
+    supercharged,
+    toggleTheme,
+    toggleSuperchargedMode,
+  } = useSales();
 
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
@@ -40,6 +51,39 @@ export const Header = () => {
               </>
             )}
           </div>
+
+          {/* Supercharg'd Mode Toggle - Animated Flames */}
+          <button
+            onClick={toggleSuperchargedMode}
+            className={`btn-supercharged relative ${supercharged ? 'active' : ''}`}
+            data-testid="toggle-supercharged-btn"
+            title={supercharged ? "Supercharg'd Mode ON" : "Enable Supercharg'd Mode"}
+          >
+            <div className={`flames-container ${supercharged ? 'active' : ''}`}>
+              <Flame className="flame flame-1" />
+              <Flame className="flame flame-2" />
+              <Flame className="flame flame-3" />
+            </div>
+            <span className="supercharged-label">
+              {supercharged ? 'ES' : 'EN'}
+            </span>
+          </button>
+
+          {/* Theme Toggle - Chrome Button */}
+          <button
+            onClick={toggleTheme}
+            className="btn-chrome"
+            data-testid="toggle-theme-btn"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            <div className="chrome-inner">
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </div>
+          </button>
 
           {/* Favorites button */}
           <button
