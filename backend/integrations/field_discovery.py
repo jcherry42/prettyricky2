@@ -172,7 +172,6 @@ class FieldDiscoveryService:
             result.success = True
             
             # Check for unmapped required fields
-            schema = CUSTOMER_SCHEMA if data_type == "customers" else VEHICLE_SCHEMA
             required = REQUIRED_CUSTOMER_FIELDS if data_type == "customers" else REQUIRED_VEHICLE_FIELDS
             
             mapped_targets = {f.suggested_mapping for f in result.discovered_fields if f.suggested_mapping}
