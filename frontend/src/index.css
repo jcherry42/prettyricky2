@@ -150,18 +150,18 @@
   background: 
     linear-gradient(90deg, 
       transparent 0%, 
-      hsla(28, 35%, 20%, 0.03) 20%,
+      hsl(var(--wood-light) / 0.03) 20%,
       transparent 40%,
-      hsla(28, 35%, 20%, 0.02) 60%,
+      hsl(var(--wood-light) / 0.02) 60%,
       transparent 80%,
-      hsla(28, 35%, 20%, 0.03) 100%
+      hsl(var(--wood-light) / 0.03) 100%
     ),
     linear-gradient(180deg,
-      hsla(20, 30%, 12%, 1) 0%,
-      hsla(25, 32%, 14%, 1) 25%,
-      hsla(20, 28%, 11%, 1) 50%,
-      hsla(22, 30%, 13%, 1) 75%,
-      hsla(20, 30%, 12%, 1) 100%
+      hsl(var(--wood-dark)) 0%,
+      hsl(var(--wood-light)) 25%,
+      hsl(var(--wood-dark)) 50%,
+      hsl(var(--wood-light)) 75%,
+      hsl(var(--wood-dark)) 100%
     );
   background-size: 100px 100%, 100% 100%;
 }
@@ -171,17 +171,17 @@
   background:
     repeating-linear-gradient(
       45deg,
-      hsla(220, 10%, 6%, 1) 0px,
-      hsla(220, 10%, 6%, 1) 2px,
-      hsla(220, 10%, 10%, 1) 2px,
-      hsla(220, 10%, 10%, 1) 4px
+      hsl(var(--carbon)) 0px,
+      hsl(var(--carbon)) 2px,
+      hsl(var(--carbon) / 0.7) 2px,
+      hsl(var(--carbon) / 0.7) 4px
     ),
     repeating-linear-gradient(
       -45deg,
-      hsla(220, 10%, 6%, 1) 0px,
-      hsla(220, 10%, 6%, 1) 2px,
-      hsla(220, 10%, 10%, 1) 2px,
-      hsla(220, 10%, 10%, 1) 4px
+      hsl(var(--carbon)) 0px,
+      hsl(var(--carbon)) 2px,
+      hsl(var(--carbon) / 0.7) 2px,
+      hsl(var(--carbon) / 0.7) 4px
     );
   background-size: 8px 8px;
 }
@@ -190,21 +190,21 @@
 .texture-steel {
   background: 
     linear-gradient(90deg,
-      hsla(220, 5%, 30%, 0.3) 0%,
-      hsla(220, 5%, 40%, 0.1) 10%,
-      hsla(220, 5%, 35%, 0.2) 20%,
-      hsla(220, 5%, 40%, 0.1) 30%,
-      hsla(220, 5%, 30%, 0.3) 40%,
-      hsla(220, 5%, 40%, 0.1) 50%,
-      hsla(220, 5%, 35%, 0.2) 60%,
-      hsla(220, 5%, 40%, 0.1) 70%,
-      hsla(220, 5%, 30%, 0.3) 80%,
-      hsla(220, 5%, 40%, 0.1) 90%,
-      hsla(220, 5%, 30%, 0.3) 100%
+      hsl(var(--steel) / 0.3) 0%,
+      hsl(var(--steel-highlight) / 0.1) 10%,
+      hsl(var(--steel) / 0.2) 20%,
+      hsl(var(--steel-highlight) / 0.1) 30%,
+      hsl(var(--steel) / 0.3) 40%,
+      hsl(var(--steel-highlight) / 0.1) 50%,
+      hsl(var(--steel) / 0.2) 60%,
+      hsl(var(--steel-highlight) / 0.1) 70%,
+      hsl(var(--steel) / 0.3) 80%,
+      hsl(var(--steel-highlight) / 0.1) 90%,
+      hsl(var(--steel) / 0.3) 100%
     ),
     linear-gradient(180deg,
-      hsla(220, 8%, 25%, 1) 0%,
-      hsla(220, 8%, 30%, 1) 100%
+      hsl(var(--steel)) 0%,
+      hsl(var(--steel-highlight) / 0.5) 100%
     );
 }
 
