@@ -788,6 +788,160 @@ async def get_target_schema(data_type: str):
         raise HTTPException(status_code=400, detail="Invalid data_type. Use 'customers' or 'vehicles'")
 
 
+# ============== OPENAPI SPEC IMPORT ==============
+
+from integrations.openapi_parser import get_openapi_parser
+
+class ParseOpenAPIRequest(BaseModel):
+    spec_content: Optional[str] = None
+    spec_url: Optional[str] = None
+
+@api_router.post("/integrations/parse-openapi")
+async def parse_openapi_spec(request: ParseOpenAPIRequest):
+    """
+    Parse an OpenAPI/Swagger spec and generate integration configuration
+    
+    Provide either spec_content (JSON/YAML string) or spec_url (URL to fetch spec)
+    """
+    parser = get_openapi_parser()
+    
+    if request.spec_url:
+        result = await parser.parse_from_url(request.spec_url)
+    elif request.spec_content:
+        result = parser.parse_from_string(request.spec_content)
+    else:
+        raise HTTPException(status_code=400, detail="Provide either spec_content or spec_url")
+    
+    if not result.success:
+        return {
+            "success": False,
+            "errors": result.errors,
+            "warnings": result.warnings,
+        }
+    
+    # Generate profile config
+    profile_config = parser.generate_profile_config(result)
+    
+    return {
+        "success": True,
+        "spec_version": result.spec_version,
+        "api_info": {
+            "title": result.title,
+            "description": result.description,
+            "version": result.version,
+        },
+        "base_url": result.base_url,
+        "servers": result.servers,
+        "auth_methods": [
+            {
+                "method": auth.method,
+                "location": auth.location,
+                "name": auth.name,
+            }
+            for auth in result.auth_methods
+        ],
+        "endpoints": [
+            {
+                "path": ep.path,
+                "method": ep.method,
+                "summary": ep.summary,
+                "data_type": ep.data_type,
+                "confidence": ep.confidence,
+                "tags": ep.tags,
+            }
+            for ep in result.endpoints[:20]  # Limit to 20 endpoints
+        ],
+        "suggested_config": profile_config,
+        "customers_endpoint": {
+            "path": result.customers_endpoint.path if result.customers_endpoint else None,
+            "confidence": result.customers_endpoint.confidence if result.customers_endpoint else 0,
+        },
+        "vehicles_endpoint": {
+            "path": result.vehicles_endpoint.path if result.vehicles_endpoint else None,
+            "confidence": result.vehicles_endpoint.confidence if result.vehicles_endpoint else 0,
+        },
+        "warnings": result.warnings,
+    }
+
+
+# ============== SMART FIELD SUGGEST ==============
+
+from integrations.smart_suggest import get_smart_suggest_service
+
+class SmartSuggestRequest(BaseModel):
+    unmapped_fields: List[Dict[str, Any]]
+    data_type: str = "customers"
+    use_ai: bool = True
+
+class AnalyzeSampleRequest(BaseModel):
+    sample_record: Dict[str, Any]
+    data_type: str = "customers"
+
+@api_router.post("/integrations/smart-suggest")
+async def smart_suggest_mappings(request: SmartSuggestRequest):
+    """
+    Get AI-powered field mapping suggestions
+    
+    Uses pattern detection and LLM analysis to suggest mappings
+    for fields that couldn't be auto-mapped.
+    """
+    service = get_smart_suggest_service()
+    result = await service.suggest_mappings(
+        unmapped_fields=request.unmapped_fields,
+        data_type=request.data_type,
+        use_ai=request.use_ai
+    )
+    
+    return {
+        "success": result.success,
+        "suggestions": [
+            {
+                "source_field": s.source_field,
+                "sample_value": s.sample_value,
+                "suggested_target": s.suggested_target,
+                "confidence": s.confidence,
+                "reason": s.reason,
+                "pattern_detected": s.pattern_detected,
+            }
+            for s in result.suggestions
+        ],
+        "unmapped_fields": result.unmapped_fields,
+        "errors": result.errors,
+    }
+
+@api_router.post("/integrations/analyze-sample")
+async def analyze_sample_record(request: AnalyzeSampleRequest):
+    """
+    Analyze a complete sample record and suggest all mappings
+    
+    Combines auto-detection, pattern matching, and AI analysis
+    for comprehensive field mapping suggestions.
+    """
+    service = get_smart_suggest_service()
+    result = await service.analyze_sample_record(
+        record=request.sample_record,
+        data_type=request.data_type
+    )
+    
+    return {
+        "success": result.success,
+        "suggestions": [
+            {
+                "source_field": s.source_field,
+                "sample_value": s.sample_value,
+                "suggested_target": s.suggested_target,
+                "confidence": s.confidence,
+                "reason": s.reason,
+                "pattern_detected": s.pattern_detected,
+            }
+            for s in result.suggestions
+        ],
+        "unmapped_fields": result.unmapped_fields,
+        "ai_analysis": result.ai_analysis,
+        "errors": result.errors,
+    }
+
+
 # ============== INTEGRATION PROFILES ==============
 
 from integrations.profiles import ProfileManager, IntegrationProfile
