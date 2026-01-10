@@ -330,6 +330,16 @@ export function SalesProvider({ children }) {
   
   const removeFavorite = (id) => dispatch({ type: ACTIONS.REMOVE_FAVORITE, payload: id });
 
+  // Theme & Supercharg'd actions
+  const toggleTheme = () => {
+    const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+    dispatch({ type: ACTIONS.SET_THEME, payload: newTheme });
+  };
+
+  const toggleSuperchargedMode = () => {
+    dispatch({ type: ACTIONS.SET_SUPERCHARGED, payload: !state.supercharged });
+  };
+
   // Copy to clipboard with enhanced fallback
   const copyToClipboard = async (text) => {
     const result = await copyUtil(text);
@@ -378,6 +388,8 @@ export function SalesProvider({ children }) {
     shareToMessages,
     sendToMessages,
     getVehicleById,
+    toggleTheme,
+    toggleSuperchargedMode,
   };
 
   return (
