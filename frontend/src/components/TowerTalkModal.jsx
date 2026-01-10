@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Square } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
@@ -21,6 +21,10 @@ const translateText = async (text, sourceLang = 'auto', targetLang = 'es') => {
     return null;
   }
 };
+
+// Check if browser supports speech recognition
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const isSpeechSupported = !!SpeechRecognition;
 
 export const TowerTalkModal = () => {
   const { 
@@ -45,11 +49,141 @@ export const TowerTalkModal = () => {
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [showTranslated, setShowTranslated] = useState(false);
+  
+  // Voice input state
+  const [isListening, setIsListening] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const recognitionRef = useRef(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (!isSpeechSupported || !showTowerTalk) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    // Support both English and Spanish for Supercharg'd mode
+    recognition.lang = supercharged ? 'es-US' : 'en-US';
+    
+    recognition.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+      
+      if (final) {
+        setSituation(prev => prev + (prev ? ' ' : '') + final);
+      }
+      setInterimTranscript(interim);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed') {
+        toast.error('Microphone access denied', {
+          description: 'Please enable microphone permissions'
+        });
+      } else if (event.error !== 'aborted') {
+        toast.error('Voice input error', {
+          description: 'Please try again'
+        });
+      }
+      setIsListening(false);
+      setInterimTranscript('');
+    };
+
+    recognition.onend = () => {
+      // Auto-restart if still supposed to be listening
+      if (isListening && recognitionRef.current) {
+        try {
+          recognitionRef.current.start();
+        } catch (e) {
+          setIsListening(false);
+        }
+      } else {
+        setIsListening(false);
+      }
+      setInterimTranscript('');
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+        recognitionRef.current = null;
+      }
+    };
+  }, [showTowerTalk, supercharged, isListening]);
+
+  // Update language when supercharged mode changes
+  useEffect(() => {
+    if (recognitionRef.current && !isListening) {
+      recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
+    }
+  }, [supercharged, isListening]);
+
+  const toggleVoiceInput = useCallback(() => {
+    if (!isSpeechSupported) {
+      toast.error('Voice input not supported', {
+        description: 'Your browser does not support speech recognition'
+      });
+      return;
+    }
+
+    if (isListening) {
+      // Stop listening
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      setInterimTranscript('');
+    } else {
+      // Start listening
+      if (recognitionRef.current) {
+        try {
+          // Update language before starting
+          recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
+          recognitionRef.current.start();
+          setIsListening(true);
+          toast.success('Listening...', {
+            description: supercharged ? 'Speak in English or Spanish' : 'Speak now'
+          });
+        } catch (e) {
+          console.error('Failed to start recognition:', e);
+          toast.error('Could not start voice input');
+        }
+      }
+    }
+  }, [isListening, supercharged]);
+
+  // Cleanup on modal close
+  useEffect(() => {
+    if (!showTowerTalk && recognitionRef.current) {
+      recognitionRef.current.abort();
+      setIsListening(false);
+      setInterimTranscript('');
+    }
+  }, [showTowerTalk]);
 
   if (!showTowerTalk) return null;
 
   const handleGenerate = async () => {
     if (!situation.trim()) return;
+    
+    // Stop voice input if active
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      setInterimTranscript('');
+    }
     
     setIsLoading(true);
     setError('');
@@ -136,6 +270,13 @@ export const TowerTalkModal = () => {
   };
 
   const handleClose = () => {
+    // Stop voice input
+    if (recognitionRef.current) {
+      recognitionRef.current.abort();
+    }
+    setIsListening(false);
+    setInterimTranscript('');
+    
     toggleTowerTalk(false);
     setSituation('');
     setResponse('');
@@ -232,27 +373,78 @@ export const TowerTalkModal = () => {
             >
               <Flame className="w-4 h-4" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
               <span style={{ color: 'hsla(35, 100%, 65%, 1)' }}>
-                Supercharg&apos;d: Type in English or Spanish - responses will be in both languages
+                Supercharg&apos;d: Type or speak in English or Spanish
               </span>
             </div>
           )}
 
-          {/* Situation input */}
+          {/* Situation input with voice */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-foreground">
-              Describe the situation {supercharged && <span className="text-muted-foreground font-normal">(EN/ES)</span>}
-            </label>
-            <textarea
-              value={situation}
-              onChange={(e) => setSituation(e.target.value)}
-              placeholder={supercharged 
-                ? "e.g., El cliente mencionó que acaba de tener un bebé... / Customer mentioned they just had a baby..."
-                : "e.g., Customer mentioned they just had a baby and need more space..."
-              }
-              className="input-luxury min-h-[120px] resize-none"
-              rows={4}
-              data-testid="tower-talk-input"
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-foreground">
+                Describe the situation {supercharged && <span className="text-muted-foreground font-normal">(EN/ES)</span>}
+              </label>
+              
+              {/* Voice Input Button */}
+              {isSpeechSupported && (
+                <button
+                  onClick={toggleVoiceInput}
+                  className={`voice-input-btn ${isListening ? 'active' : ''}`}
+                  data-testid="voice-input-btn"
+                  title={isListening ? 'Stop listening' : 'Start voice input'}
+                >
+                  {isListening ? (
+                    <>
+                      <div className="voice-pulse" />
+                      <MicOff className="w-4 h-4 relative z-10" />
+                    </>
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                  <span className="text-[10px] font-medium ml-1">
+                    {isListening ? 'Stop' : 'Voice'}
+                  </span>
+                </button>
+              )}
+            </div>
+            
+            <div className="relative">
+              <textarea
+                value={situation + (interimTranscript ? (situation ? ' ' : '') + interimTranscript : '')}
+                onChange={(e) => {
+                  // Only update if not currently receiving voice input
+                  if (!interimTranscript) {
+                    setSituation(e.target.value);
+                  }
+                }}
+                placeholder={supercharged 
+                  ? "e.g., El cliente mencionó que acaba de tener un bebé... / Customer mentioned they just had a baby..."
+                  : "e.g., Customer mentioned they just had a baby and need more space..."
+                }
+                className={`input-luxury min-h-[120px] resize-none ${isListening ? 'voice-active' : ''}`}
+                rows={4}
+                data-testid="tower-talk-input"
+              />
+              
+              {/* Voice listening indicator */}
+              {isListening && (
+                <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                  <div className="voice-indicator">
+                    <span className="voice-dot" />
+                    <span className="voice-dot" style={{ animationDelay: '0.2s' }} />
+                    <span className="voice-dot" style={{ animationDelay: '0.4s' }} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Listening...</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Interim transcript preview */}
+            {interimTranscript && (
+              <p className="text-xs text-muted-foreground italic px-1">
+                Hearing: &ldquo;{interimTranscript}&rdquo;
+              </p>
+            )}
           </div>
 
           {/* Generate button */}
