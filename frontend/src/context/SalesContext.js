@@ -321,6 +321,7 @@ export function SalesProvider({ children }) {
   const toggleImport = (value) => dispatch({ type: ACTIONS.TOGGLE_IMPORT, payload: value });
   const toggleTowerTalk = (value) => dispatch({ type: ACTIONS.TOGGLE_TOWER_TALK, payload: value });
   const toggleFavorites = (value) => dispatch({ type: ACTIONS.TOGGLE_FAVORITES, payload: value });
+  const toggleVS = (value) => dispatch({ type: ACTIONS.TOGGLE_VS, payload: value });
   
   // Favorites actions
   const addFavorite = (favorite) => {
