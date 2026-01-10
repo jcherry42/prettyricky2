@@ -124,6 +124,17 @@ class UpdateDataSourceRequest(BaseModel):
     field_mapping_overrides: Optional[Dict[str, str]] = None
 
 
+# Supercharg'd Translation Models
+class TranslateRequest(BaseModel):
+    text: str
+    source_lang: str = "auto"  # "auto", "en", "es"
+    target_lang: str = "es"    # "en", "es"
+
+class TranslateResponse(BaseModel):
+    translated_text: str
+    detected_lang: Optional[str] = None
+
+
 # ============== HEALTH & STATUS ==============
 
 @api_router.get("/")
