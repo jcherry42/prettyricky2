@@ -10,6 +10,7 @@ import { TowerTalkModal } from './components/TowerTalkModal';
 import { SetupModal } from './components/SetupModal';
 import { ImportModal } from './components/ImportModal';
 import { FavoritesModal } from './components/FavoritesModal';
+import { VSModal } from './components/VSModal';
 import { Toaster } from './components/ui/sonner';
 
 function AppContent() {
@@ -51,6 +52,7 @@ function AppContent() {
       <ImportModal />
       <TowerTalkModal />
       <FavoritesModal />
+      <VSModal />
       
       {/* Toast notifications */}
       <Toaster position="top-center" />
