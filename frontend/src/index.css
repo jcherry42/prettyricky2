@@ -1278,3 +1278,74 @@ html:not(.dark) .voice-input-btn.active {
     height: 12px;
   }
 }
+
+/* ============================================
+   QUICK SHORTCUT BUTTONS
+   ============================================ */
+
+.quick-shortcut-btn {
+  @apply flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-all duration-200;
+  background: linear-gradient(135deg, 
+    hsla(220, 12%, 14%, 0.9) 0%,
+    hsla(220, 10%, 11%, 0.95) 100%
+  );
+  border: 1px solid hsla(220, 10%, 22%, 0.5);
+}
+
+.quick-shortcut-btn:hover {
+  background: linear-gradient(135deg, 
+    hsla(220, 12%, 18%, 0.95) 0%,
+    hsla(220, 10%, 14%, 0.98) 100%
+  );
+  border-color: hsla(45, 70%, 50%, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsla(0, 0%, 0%, 0.2);
+}
+
+.quick-shortcut-btn:active {
+  transform: translateY(0);
+}
+
+.quick-shortcut-btn .shortcut-icon {
+  @apply text-base;
+  filter: grayscale(0.2);
+}
+
+.quick-shortcut-btn:hover .shortcut-icon {
+  filter: grayscale(0);
+  transform: scale(1.1);
+}
+
+.quick-shortcut-btn .shortcut-label {
+  @apply text-xs font-medium;
+  color: hsla(220, 10%, 70%, 1);
+}
+
+.quick-shortcut-btn:hover .shortcut-label {
+  color: hsla(45, 80%, 70%, 1);
+}
+
+/* Light mode quick shortcuts */
+html:not(.dark) .quick-shortcut-btn {
+  background: linear-gradient(135deg, 
+    hsla(35, 20%, 94%, 0.95) 0%,
+    hsla(35, 15%, 90%, 0.98) 100%
+  );
+  border-color: hsla(35, 15%, 82%, 0.6);
+}
+
+html:not(.dark) .quick-shortcut-btn:hover {
+  background: linear-gradient(135deg, 
+    hsla(35, 25%, 96%, 0.98) 0%,
+    hsla(35, 20%, 92%, 1) 100%
+  );
+  border-color: hsla(35, 60%, 55%, 0.5);
+}
+
+html:not(.dark) .quick-shortcut-btn .shortcut-label {
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .quick-shortcut-btn:hover .shortcut-label {
+  color: hsla(35, 80%, 35%, 1);
+}
