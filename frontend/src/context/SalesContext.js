@@ -180,6 +180,20 @@ function salesReducer(state, action) {
       
     case ACTIONS.SET_OFFLINE:
       return { ...state, isOffline: action.payload };
+    
+    case ACTIONS.SET_THEME:
+      localStorage.setItem('closr_theme', action.payload);
+      // Apply theme to document
+      if (action.payload === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return { ...state, theme: action.payload };
+    
+    case ACTIONS.SET_SUPERCHARGED:
+      localStorage.setItem('closr_supercharged', action.payload ? 'true' : 'false');
+      return { ...state, supercharged: action.payload };
       
     case ACTIONS.LOAD_SAVED_DATA:
       return { ...state, ...action.payload };
