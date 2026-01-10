@@ -10,13 +10,6 @@ Includes:
 - DealerTrack (Cox Automotive)
 - Reynolds & Reynolds
 - ProMax Unlimited
-- Tekion
-- PBS Systems
-- AutoMate DMS
-- Frazer DMS
-- Wayne Reaves
-- AutoManager
-- DealerCenter
 """
 
 from .vinsolutions import VinSolutionsAdapter
@@ -26,10 +19,6 @@ from .cdk import CDKAdapter
 from .dealertrack import DealerTrackAdapter
 from .reynolds import ReynoldsAdapter
 from .promax import ProMaxAdapter
-from .tekion import TekionAdapter
-from .pbs import PBSAdapter
-from .automate import AutoMateAdapter
-from .frazer import FrazerAdapter
 
 __all__ = [
     # Tier 1 - Major Players
@@ -42,12 +31,6 @@ __all__ = [
     
     # Tier 2 - Popular
     'ProMaxAdapter',
-    'TekionAdapter',
-    'PBSAdapter',
-    
-    # Tier 3 - Specialized
-    'AutoMateAdapter',
-    'FrazerAdapter',
 ]
 
 # Connector metadata for UI
@@ -57,65 +40,63 @@ CONNECTORS = {
         "vendor": "Cox Automotive",
         "tier": 1,
         "description": "Full-featured CRM with lead management, inventory, and desking",
+        "authMethods": ["api_key", "oauth2"],
+        "logo": "vinsolutions",
     },
     "dealersocket": {
         "name": "DealerSocket CRM",
         "vendor": "Solera",
         "tier": 1,
         "description": "Comprehensive CRM with equity mining and service scheduling",
+        "authMethods": ["api_key", "oauth2"],
+        "logo": "dealersocket",
     },
     "elead": {
         "name": "elead CRM",
         "vendor": "CDK Global",
         "tier": 1,
         "description": "Lead scoring, customer database, and desking tools",
+        "authMethods": ["api_key"],
+        "logo": "elead",
     },
     "cdk": {
         "name": "CDK Drive / CDK Global",
         "vendor": "CDK Global",
         "tier": 1,
         "description": "Enterprise DMS with full dealership management",
+        "authMethods": ["oauth2"],
+        "logo": "cdk",
     },
     "dealertrack": {
         "name": "DealerTrack DMS",
         "vendor": "Cox Automotive",
         "tier": 1,
         "description": "DMS with F&I and credit application processing",
+        "authMethods": ["oauth2"],
+        "logo": "dealertrack",
     },
     "reynolds": {
         "name": "Reynolds & Reynolds ERA-IGNITE",
         "vendor": "Reynolds & Reynolds",
         "tier": 1,
         "description": "Full DMS with document management and compliance",
+        "authMethods": ["api_key"],
+        "logo": "reynolds",
     },
     "promax": {
         "name": "ProMax Unlimited",
         "vendor": "ProMax",
         "tier": 2,
         "description": "CRM, desking, and F&I in one platform",
+        "authMethods": ["api_key"],
+        "logo": "promax",
     },
-    "tekion": {
-        "name": "Tekion Automotive Retail Cloud",
-        "vendor": "Tekion",
-        "tier": 2,
-        "description": "Modern cloud-native DMS and CRM platform",
-    },
-    "pbs": {
-        "name": "PBS Systems DMS",
-        "vendor": "PBS Systems",
-        "tier": 2,
-        "description": "Canadian and US dealer management system",
-    },
-    "automate": {
-        "name": "AutoMate DMS",
-        "vendor": "Auto/Mate",
+    "generic_rest": {
+        "name": "Generic REST API",
+        "vendor": "Custom",
         "tier": 3,
-        "description": "Independent dealer management system",
-    },
-    "frazer": {
-        "name": "Frazer DMS",
-        "vendor": "Frazer Computing",
-        "tier": 3,
-        "description": "BHPH and independent dealer management",
+        "description": "Connect to any REST API with configurable endpoints",
+        "authMethods": ["api_key", "bearer_token", "basic_auth", "oauth2", "custom_header"],
+        "logo": "api",
     },
 }
