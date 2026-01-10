@@ -1,6 +1,7 @@
 import React from 'react';
 import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
 export const Header = () => {
   const { 
@@ -38,6 +39,9 @@ export const Header = () => {
 
         {/* Status & Actions */}
         <div className="flex items-center gap-2">
+          {/* CRM Integration Health Status */}
+          <IntegrationHealthStatus compact={true} />
+
           {/* Online/Offline indicator */}
           <div className="status-indicator">
             {isOffline ? (
