@@ -1240,3 +1240,41 @@ html:not(.dark) .voice-input-btn.active {
   );
   color: white;
 }
+
+/* ============================================
+   VOICE OUTPUT / SPEAKING STYLES
+   ============================================ */
+
+/* Speaking Active Button */
+.btn-icon.speaking-active {
+  animation: speaking-pulse 1s ease-in-out infinite;
+}
+
+@keyframes speaking-pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px hsla(145, 70%, 50%, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px hsla(145, 70%, 50%, 0.5);
+  }
+}
+
+/* Speaking Indicator Bars */
+.speaking-indicator {
+  @apply flex items-end gap-0.5 h-3;
+}
+
+.speaking-bar {
+  @apply w-0.5 rounded-full;
+  background: hsla(145, 70%, 55%, 1);
+  animation: speaking-bar-bounce 0.8s ease-in-out infinite;
+}
+
+@keyframes speaking-bar-bounce {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 12px;
+  }
+}
