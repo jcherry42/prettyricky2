@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Upload, Heart, Sun, Moon, Flame } from 'lucide-react';
+import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
 export const Header = () => {
@@ -8,7 +8,8 @@ export const Header = () => {
     dealership, 
     toggleSetup, 
     toggleImport, 
-    toggleFavorites, 
+    toggleFavorites,
+    toggleVS,
     favorites,
     theme,
     supercharged,
