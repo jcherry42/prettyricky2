@@ -756,7 +756,8 @@ export const ImportModal = () => {
           {[
             { id: 'quick', label: 'Quick Import', icon: Upload },
             { id: 'url', label: 'URL / Sheet', icon: Link },
-            { id: 'sources', label: 'Sources', icon: RefreshCw }
+            { id: 'sources', label: 'Sources', icon: RefreshCw },
+            { id: 'crm', label: 'CRM', icon: Plug }
           ].map(tab => (
             <button
               key={tab.id}
