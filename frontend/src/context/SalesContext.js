@@ -51,6 +51,7 @@ const initialState = {
   showImport: false,
   showTowerTalk: false,
   showFavorites: false,
+  showVS: false,  // VS Battle Card mode
   isOffline: !navigator.onLine,
   
   // Theme & Modes
@@ -77,6 +78,7 @@ const ACTIONS = {
   TOGGLE_IMPORT: 'TOGGLE_IMPORT',
   TOGGLE_TOWER_TALK: 'TOGGLE_TOWER_TALK',
   TOGGLE_FAVORITES: 'TOGGLE_FAVORITES',
+  TOGGLE_VS: 'TOGGLE_VS',
   ADD_FAVORITE: 'ADD_FAVORITE',
   REMOVE_FAVORITE: 'REMOVE_FAVORITE',
   SET_FAVORITES: 'SET_FAVORITES',
@@ -163,6 +165,9 @@ function salesReducer(state, action) {
     
     case ACTIONS.TOGGLE_FAVORITES:
       return { ...state, showFavorites: action.payload ?? !state.showFavorites };
+    
+    case ACTIONS.TOGGLE_VS:
+      return { ...state, showVS: action.payload ?? !state.showVS };
     
     case ACTIONS.ADD_FAVORITE:
       const newFavorites = [...state.favorites, action.payload];
