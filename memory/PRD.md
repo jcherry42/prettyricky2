@@ -42,6 +42,14 @@ Save, view, and reuse effective AI-generated responses
 - Language toggle for each response card
 - Persists to localStorage as 'closr_supercharged'
 
+### 7. Voice Input for Tower Talk ✅ (NEW - Jan 10, 2026)
+- Microphone button in Tower Talk modal
+- Uses Web Speech API (SpeechRecognition)
+- Supports continuous speech input
+- Real-time transcript display
+- Works in English and Spanish (adapts to Supercharg'd mode)
+- Visual feedback with pulsing animation when listening
+
 ---
 
 ## Data Integration Architecture ✅ IMPLEMENTED
@@ -165,6 +173,7 @@ A premium theme inspired by high-end automotive interiors:
 15. **Supercharg'd Mode - Bilingual Translation** (NEW)
 16. **User Preferences Persistence** (NEW)
 17. **Downloadable Import Templates** (NEW)
+18. **Voice Input for Tower Talk** (NEW)
 
 ### 📋 Future Tasks
 - Database-backed customer conversation history
