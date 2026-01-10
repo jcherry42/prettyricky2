@@ -227,16 +227,37 @@ const CRMIntegrationPanel = () => {
         </div>
       )}
 
-      {/* Add New Button */}
+      {/* Add New Buttons */}
       {!showAddNew && (
-        <button
-          onClick={() => setShowAddNew(true)}
-          className="w-full py-3 px-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
-          data-testid="add-integration-btn"
-        >
-          <Plus className="w-5 h-5" />
-          Add CRM Integration
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowWizard(true)}
+            className="flex-1 py-3 px-4 bg-primary/10 hover:bg-primary/20 border border-primary/30 rounded-xl text-primary transition-colors flex items-center justify-center gap-2"
+            data-testid="open-wizard-btn"
+          >
+            <Wand2 className="w-5 h-5" />
+            Connection Wizard
+          </button>
+          <button
+            onClick={() => setShowAddNew(true)}
+            className="flex-1 py-3 px-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+            data-testid="add-integration-btn"
+          >
+            <Plus className="w-5 h-5" />
+            Quick Add
+          </button>
+        </div>
+      )}
+      
+      {/* Connection Wizard Modal */}
+      {showWizard && (
+        <ConnectionWizard 
+          onClose={() => setShowWizard(false)}
+          onSuccess={() => {
+            setShowWizard(false);
+            loadData();
+          }}
+        />
       )}
 
       {/* Add New Form */}
