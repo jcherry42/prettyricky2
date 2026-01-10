@@ -69,6 +69,18 @@ async def lifespan(app: FastAPI):
     await vehicle_repo.create_indexes()
     await source_repo.create_indexes()
     
+    # Initialize integration layer
+    from integrations import IntegrationManager
+    from integrations.webhooks import FortifiedWebhookReceiver
+    
+    integration_mgr = IntegrationManager(db)
+    webhook_recv = FortifiedWebhookReceiver(db)
+    
+    await integration_mgr.create_indexes()
+    await webhook_recv.create_indexes()
+    
+    logger.info("Integration layer initialized")
+    
     # Initialize scheduler
     await init_scheduler(db)
     
