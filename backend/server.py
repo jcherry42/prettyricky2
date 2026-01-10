@@ -72,12 +72,16 @@ async def lifespan(app: FastAPI):
     # Initialize integration layer
     from integrations import IntegrationManager
     from integrations.webhooks import FortifiedWebhookReceiver
+    from integrations.profiles import ProfileManager
     
     integration_mgr = IntegrationManager(db)
     webhook_recv = FortifiedWebhookReceiver(db)
+    profile_mgr = ProfileManager(db)
     
     await integration_mgr.create_indexes()
     await webhook_recv.create_indexes()
+    await profile_mgr.create_indexes()
+    await profile_mgr.ensure_builtin_profiles()
     
     logger.info("Integration layer initialized")
     
