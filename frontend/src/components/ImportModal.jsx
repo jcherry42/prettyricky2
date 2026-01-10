@@ -899,7 +899,7 @@ export const ImportModal = () => {
                   <Database className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="text-muted-foreground">No data sources configured</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Import via URL and click "Schedule" to add
+                    Import via URL and click &quot;Schedule&quot; to add
                   </p>
                 </div>
               ) : (
