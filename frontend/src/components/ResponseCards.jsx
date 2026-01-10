@@ -44,9 +44,9 @@ export const ResponseCards = () => {
   };
 
   return (
-    <div className="space-y-3 animate-fade-in">
-      <h2 className="text-sm font-semibold text-muted-foreground px-1">
-        Your responses
+    <div className="space-y-4 animate-fade-in">
+      <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+        Generated Responses
       </h2>
       
       <div className="space-y-3">
@@ -61,15 +61,26 @@ export const ResponseCards = () => {
             <div
               key={response.id}
               onClick={() => selectResponse(response)}
-              className={`response-card ${isSelected ? 'selected' : ''}`}
+              className="response-card p-5 cursor-pointer"
+              data-testid={`response-card-${index}`}
             >
               {/* Response header */}
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                <span 
+                  className="text-xs font-bold uppercase tracking-wider"
+                  style={{ color: 'hsla(40, 60%, 55%, 1)' }}
+                >
                   Response {index + 1}
                 </span>
                 {followUpRule && (
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+                  <span 
+                    className="flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full"
+                    style={{
+                      background: 'hsla(220, 10%, 15%, 0.8)',
+                      color: 'hsla(220, 10%, 60%, 1)',
+                      border: '1px solid hsla(220, 8%, 25%, 0.5)'
+                    }}
+                  >
                     <Clock className="w-3 h-3" />
                     {followUpRule.label}
                   </span>
@@ -77,21 +88,21 @@ export const ResponseCards = () => {
               </div>
               
               {/* Response text */}
-              <p className="text-[15px] text-foreground leading-relaxed mb-4">
+              <p className="text-[15px] text-foreground leading-relaxed mb-5">
                 {response.text}
               </p>
               
               {/* Action buttons */}
-              <div className="flex gap-2.5">
+              <div className="flex gap-2">
                 <button
                   onClick={(e) => handleCopy(response, e)}
-                  className={`
-                    ios-btn flex-1 text-sm gap-2 font-semibold
-                    ${isCopied 
-                      ? 'ios-btn-success' 
-                      : 'ios-btn-secondary'
-                    }
-                  `}
+                  className="btn-steel flex-1 flex items-center justify-center gap-2"
+                  style={isCopied ? {
+                    background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
+                    borderColor: 'hsla(145, 60%, 45%, 0.4)',
+                    color: 'hsla(145, 70%, 60%, 1)',
+                  } : {}}
+                  data-testid={`copy-response-${index}`}
                 >
                   {isCopied ? (
                     <>
@@ -108,7 +119,8 @@ export const ResponseCards = () => {
                 
                 <button
                   onClick={(e) => handleSendMessage(response, e)}
-                  className="ios-btn-primary flex-1 text-sm gap-2"
+                  className="btn-luxury flex-1 flex items-center justify-center gap-2"
+                  data-testid={`send-response-${index}`}
                 >
                   <MessageSquare className="w-4 h-4" />
                   iMessage
@@ -117,7 +129,7 @@ export const ResponseCards = () => {
               
               {/* Follow-up section */}
               {response.followUpText && (
-                <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="mt-5 pt-4" style={{ borderTop: '1px solid hsla(30, 15%, 18%, 0.5)' }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -129,27 +141,32 @@ export const ResponseCards = () => {
                       Follow-up ({followUpRule?.label})
                     </span>
                     {isFollowUpExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-primary" />
+                      <ChevronUp className="w-4 h-4" style={{ color: 'hsla(40, 70%, 55%, 1)' }} />
                     ) : (
                       <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                     )}
                   </button>
                   
                   {isFollowUpExpanded && (
-                    <div className="mt-3 p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 animate-fade-in">
+                    <div 
+                      className="mt-3 p-4 rounded-xl animate-fade-in"
+                      style={{
+                        background: 'linear-gradient(135deg, hsla(35, 40%, 20%, 0.2) 0%, hsla(25, 30%, 15%, 0.15) 100%)',
+                        border: '1px solid hsla(40, 40%, 30%, 0.25)'
+                      }}
+                    >
                       <p className="text-sm text-foreground leading-relaxed mb-3">
                         {response.followUpText}
                       </p>
                       
                       <button
                         onClick={(e) => handleCopyFollowUp(response, e)}
-                        className={`
-                          ios-btn w-full text-xs gap-1.5 font-semibold
-                          ${isFollowUpCopied 
-                            ? 'ios-btn-success' 
-                            : 'ios-btn-secondary'
-                          }
-                        `}
+                        className="btn-steel w-full py-2 text-xs flex items-center justify-center gap-1.5"
+                        style={isFollowUpCopied ? {
+                          background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
+                          borderColor: 'hsla(145, 60%, 45%, 0.4)',
+                          color: 'hsla(145, 70%, 60%, 1)',
+                        } : {}}
                       >
                         {isFollowUpCopied ? (
                           <>
