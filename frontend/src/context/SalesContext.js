@@ -388,6 +388,7 @@ export function SalesProvider({ children }) {
     toggleImport,
     toggleTowerTalk,
     toggleFavorites,
+    toggleVS,
     addFavorite,
     removeFavorite,
     copyToClipboard,
