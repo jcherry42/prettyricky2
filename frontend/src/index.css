@@ -462,6 +462,24 @@
   transform: scale(0.98);
 }
 
+/* VS Header Button */
+.btn-vs-header {
+  @apply flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-all duration-200;
+  background: linear-gradient(135deg, hsla(280, 60%, 35%, 0.9) 0%, hsla(320, 70%, 30%, 0.85) 100%);
+  border: 1px solid hsla(280, 50%, 45%, 0.5);
+  color: white;
+}
+
+.btn-vs-header:hover {
+  background: linear-gradient(135deg, hsla(280, 65%, 40%, 0.95) 0%, hsla(320, 75%, 35%, 0.9) 100%);
+  transform: scale(1.05);
+  box-shadow: 0 0 20px hsla(300, 100%, 50%, 0.3);
+}
+
+.btn-vs-header:active {
+  transform: scale(0.98);
+}
+
 /* Supercharg'd Button - Animated Flames */
 .btn-supercharged {
   @apply relative w-12 h-10 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
