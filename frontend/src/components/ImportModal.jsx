@@ -778,7 +778,7 @@ export const ImportModal = () => {
         {/* Content */}
         <div className="p-5 space-y-4 overflow-y-auto max-h-[55vh] hide-scrollbar">
           {/* Data Type Selector */}
-          {activeTab !== 'sources' && (
+          {activeTab !== 'sources' && activeTab !== 'crm' && (
             <div className="flex gap-2 p-1 bg-muted/30 rounded-lg">
               {['customers', 'vehicles'].map(type => (
                 <button
@@ -794,6 +794,11 @@ export const ImportModal = () => {
                 </button>
               ))}
             </div>
+          )}
+
+          {/* CRM Integration Tab */}
+          {activeTab === 'crm' && (
+            <CRMIntegrationPanel />
           )}
 
           {/* Quick Import Tab */}
