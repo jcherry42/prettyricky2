@@ -425,6 +425,141 @@
   box-shadow: 0 0 15px hsla(40, 100%, 50%, 0.1);
 }
 
+/* Chrome Button - Theme Toggle */
+.btn-chrome {
+  @apply relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
+  background: linear-gradient(145deg, 
+    hsla(220, 15%, 75%, 1) 0%,
+    hsla(220, 10%, 55%, 1) 50%,
+    hsla(220, 15%, 70%, 1) 100%
+  );
+  border: 1px solid hsla(220, 10%, 80%, 0.5);
+  box-shadow: 
+    0 2px 8px hsla(0, 0%, 0%, 0.3),
+    inset 0 1px 0 hsla(0, 0%, 100%, 0.4),
+    inset 0 -1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+.btn-chrome .chrome-inner {
+  @apply flex items-center justify-center;
+  color: hsla(220, 20%, 20%, 1);
+  filter: drop-shadow(0 1px 1px hsla(0, 0%, 100%, 0.3));
+}
+
+.btn-chrome:hover {
+  background: linear-gradient(145deg, 
+    hsla(220, 15%, 80%, 1) 0%,
+    hsla(220, 10%, 60%, 1) 50%,
+    hsla(220, 15%, 75%, 1) 100%
+  );
+  transform: scale(1.05);
+  box-shadow: 
+    0 4px 12px hsla(0, 0%, 0%, 0.4),
+    inset 0 1px 0 hsla(0, 0%, 100%, 0.5),
+    inset 0 -1px 0 hsla(0, 0%, 0%, 0.2);
+}
+
+.btn-chrome:active {
+  transform: scale(0.98);
+}
+
+/* Supercharg'd Button - Animated Flames */
+.btn-supercharged {
+  @apply relative w-12 h-10 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 15%, 0.9) 0%,
+    hsla(220, 10%, 10%, 0.95) 100%
+  );
+  border: 1px solid hsla(220, 8%, 25%, 0.5);
+}
+
+.btn-supercharged .supercharged-label {
+  @apply text-xs font-bold z-10 relative;
+  color: hsla(220, 10%, 60%, 1);
+}
+
+.btn-supercharged.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 100%, 20%, 0.95) 0%,
+    hsla(15, 100%, 15%, 0.98) 100%
+  );
+  border-color: hsla(25, 100%, 50%, 0.5);
+  box-shadow: 
+    0 0 20px hsla(25, 100%, 50%, 0.3),
+    0 0 40px hsla(15, 100%, 50%, 0.15);
+}
+
+.btn-supercharged.active .supercharged-label {
+  color: hsla(45, 100%, 70%, 1);
+  text-shadow: 0 0 10px hsla(45, 100%, 50%, 0.5);
+}
+
+/* Flames Container */
+.flames-container {
+  @apply absolute inset-0 flex items-end justify-center overflow-hidden;
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.flames-container.active {
+  opacity: 1;
+}
+
+.flames-container .flame {
+  @apply absolute;
+  color: hsla(25, 100%, 50%, 0.8);
+  filter: drop-shadow(0 0 4px hsla(25, 100%, 50%, 0.5));
+}
+
+.flames-container.active .flame {
+  color: hsla(35, 100%, 55%, 1);
+  filter: drop-shadow(0 0 8px hsla(35, 100%, 50%, 0.8));
+}
+
+.flame-1 {
+  width: 14px;
+  height: 14px;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: flame-dance 0.4s ease-in-out infinite alternate;
+}
+
+.flame-2 {
+  width: 10px;
+  height: 10px;
+  bottom: 0px;
+  left: 8px;
+  animation: flame-dance 0.35s ease-in-out infinite alternate-reverse;
+}
+
+.flame-3 {
+  width: 10px;
+  height: 10px;
+  bottom: 0px;
+  right: 8px;
+  animation: flame-dance 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes flame-dance {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-3px) scale(1.1);
+    opacity: 1;
+  }
+}
+
+.btn-supercharged:hover .flames-container {
+  opacity: 0.7;
+}
+
+.btn-supercharged.active:hover .flames-container {
+  opacity: 1;
+}
+
 /* ============================================
    FORM ELEMENTS
    ============================================ */
