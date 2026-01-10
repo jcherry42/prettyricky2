@@ -1349,3 +1349,126 @@ html:not(.dark) .quick-shortcut-btn .shortcut-label {
 html:not(.dark) .quick-shortcut-btn:hover .shortcut-label {
   color: hsla(35, 80%, 35%, 1);
 }
+
+/* ============================================
+   VS BATTLE CARD STYLES
+   ============================================ */
+
+/* VS Segment Button */
+.vs-segment-btn {
+  @apply px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-200;
+  background: hsla(220, 12%, 14%, 0.9);
+  border: 1px solid hsla(220, 10%, 22%, 0.5);
+  color: hsla(220, 10%, 60%, 1);
+}
+
+.vs-segment-btn:hover {
+  background: hsla(220, 12%, 18%, 0.95);
+  border-color: hsla(280, 50%, 45%, 0.4);
+}
+
+.vs-segment-btn.active {
+  background: linear-gradient(135deg, hsla(280, 60%, 35%, 0.4) 0%, hsla(320, 60%, 30%, 0.35) 100%);
+  border-color: hsla(280, 70%, 50%, 0.5);
+  color: hsla(280, 80%, 75%, 1);
+  box-shadow: 0 0 15px hsla(280, 100%, 50%, 0.2);
+}
+
+/* VS Card */
+.vs-card {
+  @apply rounded-xl;
+  background: linear-gradient(135deg, hsla(280, 20%, 12%, 0.6) 0%, hsla(320, 15%, 10%, 0.5) 100%);
+  border: 1px solid hsla(280, 30%, 25%, 0.3);
+}
+
+.vs-card.vs-headline {
+  background: linear-gradient(135deg, hsla(45, 50%, 15%, 0.4) 0%, hsla(35, 40%, 12%, 0.35) 100%);
+  border-color: hsla(45, 60%, 35%, 0.3);
+}
+
+.vs-card.vs-closing {
+  background: linear-gradient(135deg, hsla(145, 40%, 15%, 0.3) 0%, hsla(160, 35%, 12%, 0.25) 100%);
+  border-color: hsla(145, 50%, 35%, 0.3);
+}
+
+/* VS Badge */
+.vs-badge {
+  @apply px-2 py-0.5 rounded text-[10px] font-black tracking-wider;
+  background: linear-gradient(135deg, hsla(280, 70%, 50%, 1) 0%, hsla(320, 80%, 45%, 1) 100%);
+  color: white;
+  text-shadow: 0 1px 2px hsla(0, 0%, 0%, 0.3);
+}
+
+/* VS Matchup Display */
+.vs-matchup-display {
+  @apply flex items-center gap-3;
+}
+
+.vs-vehicle-name {
+  @apply text-sm font-bold;
+}
+
+.vs-vehicle-name.our {
+  color: hsla(145, 70%, 55%, 1);
+}
+
+.vs-vehicle-name.their {
+  color: hsla(0, 60%, 55%, 1);
+}
+
+/* VS Advantage Row */
+.vs-advantage-row {
+  @apply flex items-center gap-3 py-1.5 px-2 rounded-lg;
+  background: hsla(280, 20%, 15%, 0.3);
+}
+
+/* VS Crusher Row */
+.vs-crusher-row {
+  @apply flex items-start gap-2 py-2 px-3 rounded-lg;
+  background: hsla(0, 20%, 15%, 0.2);
+  border-left: 2px solid hsla(0, 60%, 45%, 0.5);
+}
+
+/* VS Button */
+.btn-vs {
+  @apply rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all duration-200;
+  background: linear-gradient(135deg, hsla(280, 70%, 45%, 1) 0%, hsla(320, 80%, 40%, 1) 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px hsla(300, 100%, 50%, 0.25);
+}
+
+.btn-vs:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px hsla(300, 100%, 50%, 0.35);
+}
+
+.btn-vs:active {
+  transform: translateY(0);
+}
+
+/* Light mode VS adjustments */
+html:not(.dark) .vs-segment-btn {
+  background: hsla(220, 10%, 92%, 0.95);
+  border-color: hsla(220, 8%, 82%, 0.5);
+  color: hsla(220, 10%, 40%, 1);
+}
+
+html:not(.dark) .vs-segment-btn.active {
+  background: linear-gradient(135deg, hsla(280, 50%, 90%, 0.9) 0%, hsla(320, 50%, 88%, 0.85) 100%);
+  border-color: hsla(280, 60%, 60%, 0.5);
+  color: hsla(280, 70%, 40%, 1);
+}
+
+html:not(.dark) .vs-card {
+  background: linear-gradient(135deg, hsla(280, 15%, 96%, 0.9) 0%, hsla(320, 10%, 94%, 0.85) 100%);
+  border-color: hsla(280, 20%, 85%, 0.5);
+}
+
+html:not(.dark) .vs-advantage-row {
+  background: hsla(280, 15%, 92%, 0.5);
+}
+
+html:not(.dark) .vs-crusher-row {
+  background: hsla(0, 15%, 95%, 0.5);
+}
