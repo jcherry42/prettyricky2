@@ -1,9 +1,473 @@
-import React, { useState, useCallback } from 'react';
-import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock, Download } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { X, Upload, Link, FileText, Check, AlertCircle, Loader2, RefreshCw, Database, Trash2, Clock, Download, Plug, Settings, TestTube, Zap, ChevronRight, ToggleLeft, ToggleRight, Plus, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// CRM Integration Settings Panel Component
+const CRMIntegrationPanel = () => {
+  const [integrations, setIntegrations] = useState([]);
+  const [availableAdapters, setAvailableAdapters] = useState([]);
+  const [healthSummary, setHealthSummary] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAddNew, setShowAddNew] = useState(false);
+  const [actionLoading, setActionLoading] = useState({});
+  
+  // New integration form state
+  const [newIntegration, setNewIntegration] = useState({
+    name: '',
+    adapter_type: '',
+    base_url: '',
+    api_key: '',
+    mock_mode: true,
+    data_type: 'customers'
+  });
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [integrationsRes, adaptersRes, healthRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/integrations`),
+        fetch(`${BACKEND_URL}/api/integrations/adapters`),
+        fetch(`${BACKEND_URL}/api/integrations/health`)
+      ]);
+      
+      const integrationsData = await integrationsRes.json();
+      const adaptersData = await adaptersRes.json();
+      const healthData = await healthRes.json();
+      
+      setIntegrations(integrationsData.integrations || []);
+      setAvailableAdapters(adaptersData.adapters || []);
+      setHealthSummary(healthData);
+    } catch (err) {
+      console.error('Failed to load CRM data:', err);
+      toast.error('Failed to load CRM integrations');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleTestConnection = async (integrationId) => {
+    setActionLoading(prev => ({ ...prev, [`test_${integrationId}`]: true }));
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/integrations/${integrationId}/test`, {
+        method: 'POST'
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('Connection successful!', {
+          description: result.mock_mode ? 'Mock mode enabled' : result.message
+        });
+      } else {
+        toast.error('Connection failed', { description: result.message });
+      }
+      await loadData();
+    } catch (err) {
+      toast.error('Test failed');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`test_${integrationId}`]: false }));
+    }
+  };
+
+  const handleSync = async (integrationId) => {
+    setActionLoading(prev => ({ ...prev, [`sync_${integrationId}`]: true }));
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/integrations/${integrationId}/sync`, {
+        method: 'POST'
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`Synced ${result.records_fetched} records`, {
+          description: `Completed in ${result.duration_ms}ms`
+        });
+      } else {
+        toast.error('Sync failed', { description: result.errors?.[0] });
+      }
+      await loadData();
+    } catch (err) {
+      toast.error('Sync failed');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`sync_${integrationId}`]: false }));
+    }
+  };
+
+  const handleToggleMock = async (integrationId, currentMockMode) => {
+    setActionLoading(prev => ({ ...prev, [`mock_${integrationId}`]: true }));
+    try {
+      await fetch(`${BACKEND_URL}/api/integrations/${integrationId}/toggle-mock?enabled=${!currentMockMode}`, {
+        method: 'POST'
+      });
+      toast.success(`Mock mode ${!currentMockMode ? 'enabled' : 'disabled'}`);
+      await loadData();
+    } catch (err) {
+      toast.error('Failed to toggle mock mode');
+    } finally {
+      setActionLoading(prev => ({ ...prev, [`mock_${integrationId}`]: false }));
+    }
+  };
+
+  const handleDelete = async (integrationId, name) => {
+    if (!confirm(`Delete "${name}" integration? This cannot be undone.`)) return;
+    
+    try {
+      await fetch(`${BACKEND_URL}/api/integrations/${integrationId}`, { method: 'DELETE' });
+      toast.success('Integration deleted');
+      await loadData();
+    } catch (err) {
+      toast.error('Delete failed');
+    }
+  };
+
+  const handleCreateIntegration = async () => {
+    if (!newIntegration.name || !newIntegration.adapter_type) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+
+    setActionLoading(prev => ({ ...prev, create: true }));
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/integrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newIntegration.name,
+          adapter_type: newIntegration.adapter_type,
+          base_url: newIntegration.base_url || `https://api.${newIntegration.adapter_type}.com`,
+          auth_config: {
+            method: 'api_key',
+            api_key: newIntegration.api_key || 'mock_key'
+          },
+          data_type: newIntegration.data_type,
+          mock_mode: newIntegration.mock_mode
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success('Integration created!', {
+          description: newIntegration.mock_mode ? 'Mock mode enabled for testing' : 'Ready to connect'
+        });
+        setShowAddNew(false);
+        setNewIntegration({
+          name: '',
+          adapter_type: '',
+          base_url: '',
+          api_key: '',
+          mock_mode: true,
+          data_type: 'customers'
+        });
+        await loadData();
+      } else {
+        toast.error('Failed to create integration');
+      }
+    } catch (err) {
+      toast.error('Failed to create integration');
+    } finally {
+      setActionLoading(prev => ({ ...prev, create: false }));
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'healthy': return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'degraded': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case 'unhealthy': return <XCircle className="w-4 h-4 text-red-500" />;
+      default: return <AlertCircle className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getStatusBg = (status) => {
+    switch (status) {
+      case 'healthy': return 'bg-green-500/10 border-green-500/20';
+      case 'degraded': return 'bg-yellow-500/10 border-yellow-500/20';
+      case 'unhealthy': return 'bg-red-500/10 border-red-500/20';
+      default: return 'bg-gray-500/10 border-gray-500/20';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Health Summary */}
+      {healthSummary && (
+        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center p-2 rounded-lg bg-green-500/10">
+            <div className="text-lg font-bold text-green-400">{healthSummary.healthy}</div>
+            <div className="text-[10px] text-green-400/70">Healthy</div>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-yellow-500/10">
+            <div className="text-lg font-bold text-yellow-400">{healthSummary.degraded}</div>
+            <div className="text-[10px] text-yellow-400/70">Degraded</div>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-red-500/10">
+            <div className="text-lg font-bold text-red-400">{healthSummary.unhealthy}</div>
+            <div className="text-[10px] text-red-400/70">Unhealthy</div>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-amber-500/10">
+            <div className="text-lg font-bold text-amber-400">{healthSummary.mock_mode}</div>
+            <div className="text-[10px] text-amber-400/70">Mock</div>
+          </div>
+        </div>
+      )}
+
+      {/* Add New Button */}
+      {!showAddNew && (
+        <button
+          onClick={() => setShowAddNew(true)}
+          className="w-full py-3 px-4 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+          data-testid="add-integration-btn"
+        >
+          <Plus className="w-5 h-5" />
+          Add CRM Integration
+        </button>
+      )}
+
+      {/* Add New Form */}
+      {showAddNew && (
+        <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-foreground">New Integration</h4>
+            <button
+              onClick={() => setShowAddNew(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* CRM Type Selector */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">CRM Type *</label>
+            <select
+              value={newIntegration.adapter_type}
+              onChange={(e) => {
+                const adapter = availableAdapters.find(a => a.type === e.target.value);
+                setNewIntegration(prev => ({
+                  ...prev,
+                  adapter_type: e.target.value,
+                  name: prev.name || adapter?.name || ''
+                }));
+              }}
+              className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-foreground text-sm"
+              data-testid="adapter-type-select"
+            >
+              <option value="">Select CRM...</option>
+              {availableAdapters.map(adapter => (
+                <option key={adapter.type} value={adapter.type}>
+                  {adapter.name} ({adapter.vendor})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Name */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Display Name *</label>
+            <input
+              type="text"
+              value={newIntegration.name}
+              onChange={(e) => setNewIntegration(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="My VinSolutions Connection"
+              className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-foreground text-sm"
+              data-testid="integration-name-input"
+            />
+          </div>
+
+          {/* API Key (optional in mock mode) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              API Key {newIntegration.mock_mode && <span className="text-muted-foreground/50">(optional in mock mode)</span>}
+            </label>
+            <input
+              type="password"
+              value={newIntegration.api_key}
+              onChange={(e) => setNewIntegration(prev => ({ ...prev, api_key: e.target.value }))}
+              placeholder={newIntegration.mock_mode ? "Not required for mock mode" : "Enter your API key"}
+              className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-foreground text-sm"
+              data-testid="api-key-input"
+            />
+          </div>
+
+          {/* Data Type */}
+          <div className="flex gap-2">
+            {['customers', 'vehicles'].map(type => (
+              <button
+                key={type}
+                onClick={() => setNewIntegration(prev => ({ ...prev, data_type: type }))}
+                className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-all ${
+                  newIntegration.data_type === type
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/30 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {type === 'customers' ? 'Customers' : 'Vehicles'}
+              </button>
+            ))}
+          </div>
+
+          {/* Mock Mode Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <div>
+              <p className="text-sm font-medium text-amber-400">Mock Mode</p>
+              <p className="text-[10px] text-amber-400/70">Generate test data without real CRM</p>
+            </div>
+            <button
+              onClick={() => setNewIntegration(prev => ({ ...prev, mock_mode: !prev.mock_mode }))}
+              className="text-amber-400"
+              data-testid="mock-mode-toggle"
+            >
+              {newIntegration.mock_mode ? (
+                <ToggleRight className="w-8 h-8" />
+              ) : (
+                <ToggleLeft className="w-8 h-8" />
+              )}
+            </button>
+          </div>
+
+          {/* Create Button */}
+          <button
+            onClick={handleCreateIntegration}
+            disabled={actionLoading.create || !newIntegration.name || !newIntegration.adapter_type}
+            className="w-full ios-btn-primary py-3 text-sm gap-2"
+            data-testid="create-integration-btn"
+          >
+            {actionLoading.create ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Plug className="w-4 h-4" />
+            )}
+            Create Integration
+          </button>
+        </div>
+      )}
+
+      {/* Existing Integrations */}
+      {integrations.length === 0 && !showAddNew ? (
+        <div className="text-center py-8">
+          <Plug className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+          <p className="text-muted-foreground">No CRM integrations configured</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Add a CRM to sync customer and vehicle data
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {integrations.map(integration => (
+            <div
+              key={integration.id}
+              className={`p-3 rounded-xl border ${getStatusBg(integration.health_status)}`}
+              data-testid={`integration-${integration.id}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  {getStatusIcon(integration.health_status)}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-foreground text-sm truncate">{integration.name}</h4>
+                      {integration.mock_mode && (
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-500/20 text-amber-400">
+                          MOCK
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      {integration.adapter_name || integration.adapter_type} • {integration.data_type}
+                    </p>
+                    {integration.last_sync_at && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Last sync: {new Date(integration.last_sync_at).toLocaleString()}
+                        {integration.sync_stats?.records_fetched && (
+                          <span className="ml-1">({integration.sync_stats.records_fetched} records)</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleTestConnection(integration.id)}
+                    disabled={actionLoading[`test_${integration.id}`]}
+                    className="ios-btn w-7 h-7 text-muted-foreground hover:text-blue-500"
+                    title="Test connection"
+                  >
+                    {actionLoading[`test_${integration.id}`] ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <TestTube className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleSync(integration.id)}
+                    disabled={actionLoading[`sync_${integration.id}`]}
+                    className="ios-btn w-7 h-7 text-muted-foreground hover:text-green-500"
+                    title="Sync data"
+                  >
+                    {actionLoading[`sync_${integration.id}`] ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleToggleMock(integration.id, integration.mock_mode)}
+                    disabled={actionLoading[`mock_${integration.id}`]}
+                    className={`ios-btn w-7 h-7 ${integration.mock_mode ? 'text-amber-500' : 'text-muted-foreground hover:text-amber-500'}`}
+                    title={integration.mock_mode ? 'Disable mock mode' : 'Enable mock mode'}
+                  >
+                    {actionLoading[`mock_${integration.id}`] ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : integration.mock_mode ? (
+                      <ToggleRight className="w-3.5 h-3.5" />
+                    ) : (
+                      <ToggleLeft className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(integration.id, integration.name)}
+                    className="ios-btn w-7 h-7 text-muted-foreground hover:text-red-500"
+                    title="Delete integration"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Info Footer */}
+      {integrations.length > 0 && (
+        <div className="pt-2 border-t border-border/50 text-center">
+          <p className="text-[10px] text-muted-foreground">
+            {healthSummary?.mock_mode > 0 ? (
+              <>Enable real credentials to sync actual CRM data</>
+            ) : (
+              <>All integrations connected to live CRMs</>
+            )}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ImportModal = () => {
   const { showImport, toggleImport, setCustomers, setVehicles } = useSales();
