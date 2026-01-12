@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Heart, Sun, Moon, Flame, Swords, BarChart3, Gauge } from 'lucide-react';
+import { Heart, Sun, Moon, Flame, Swords, BarChart3 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
@@ -21,16 +21,26 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* Logo */}
+        {/* Taillights Logo - Porsche 911 Style */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center ambient-gold"
-               style={{
-                 background: 'linear-gradient(135deg, hsla(35, 70%, 50%, 1) 0%, hsla(25, 75%, 40%, 1) 100%)'
-               }}>
-            <Zap className="w-5 h-5 text-black" />
+          <div className="taillights-logo" data-testid="taillights-logo">
+            {/* Left taillight cluster */}
+            <div className="taillight-cluster left">
+              <div className="taillight-bar bar-1"></div>
+              <div className="taillight-bar bar-2"></div>
+              <div className="taillight-bar bar-3"></div>
+            </div>
+            {/* Right taillight cluster */}
+            <div className="taillight-cluster right">
+              <div className="taillight-bar bar-1"></div>
+              <div className="taillight-bar bar-2"></div>
+              <div className="taillight-bar bar-3"></div>
+            </div>
+            {/* Center connector glow */}
+            <div className="taillight-connector"></div>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-luxury tracking-wide">CLOSR</h1>
+            <h1 className="text-lg font-bold text-luxury tracking-widest">TAILLIGHTS</h1>
             <p className="text-xs text-muted-foreground truncate max-w-[140px]">
               {dealership.name}
             </p>
@@ -57,19 +67,29 @@ export const Header = () => {
             )}
           </div>
 
-          {/* Supercharg'd Mode Toggle - Animated Flames */}
+          {/* Supercharg'd Mode Toggle - Enhanced Animated Flames */}
           <button
             onClick={toggleSuperchargedMode}
-            className={`btn-supercharged relative ${supercharged ? 'active' : ''}`}
+            className={`btn-supercharged-v2 relative ${supercharged ? 'active' : ''}`}
             data-testid="toggle-supercharged-btn"
-            title={supercharged ? "Supercharg'd Mode ON" : "Enable Supercharg'd Mode"}
+            title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className={`flames-container ${supercharged ? 'active' : ''}`}>
-              <Flame className="flame flame-1" />
-              <Flame className="flame flame-2" />
-              <Flame className="flame flame-3" />
+            <div className="exhaust-pipe">
+              <div className="pipe-opening"></div>
             </div>
-            <span className="supercharged-label">
+            <div className={`flames-v2 ${supercharged ? 'active' : ''}`}>
+              <div className="flame-core"></div>
+              <div className="flame-outer flame-1"></div>
+              <div className="flame-outer flame-2"></div>
+              <div className="flame-outer flame-3"></div>
+              <div className="flame-outer flame-4"></div>
+              <div className="flame-outer flame-5"></div>
+              <div className="flame-sparks">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            <span className="supercharged-label-v2">
               {supercharged ? 'ES' : 'EN'}
             </span>
           </button>
@@ -130,28 +150,34 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine (All Settings) button - with improved hood animation */}
+          {/* Check Engine - Gran Turismo Style Side View */}
           <button
             onClick={() => toggleAdminSettings(true)}
-            className="btn-check-engine-v2"
+            className="btn-check-gt"
             data-testid="open-admin-settings-btn"
-            title="Check Engine - All Settings"
+            title="Check - All Settings"
           >
-            <div className="engine-hood-assembly">
-              <div className="hood-outer">
-                <div className="hood-inner">
-                  <div className="hood-vent-lines"></div>
-                </div>
+            <div className="gt-car-container">
+              {/* Car silhouette side view */}
+              <div className="gt-car-body">
+                <div className="gt-car-roof"></div>
+                <div className="gt-car-window"></div>
+                <div className="gt-car-lower"></div>
+                <div className="gt-wheel gt-wheel-front"></div>
+                <div className="gt-wheel gt-wheel-rear"></div>
               </div>
-              <div className="engine-block">
-                <Gauge className="engine-gauge" />
+              {/* Hood opening animation */}
+              <div className="gt-hood">
+                <div className="gt-hood-panel"></div>
               </div>
-              <div className="hood-hydraulics">
-                <div className="hydraulic-arm left"></div>
-                <div className="hydraulic-arm right"></div>
-              </div>
+              {/* Engine glow when hood opens */}
+              <div className="gt-engine-glow"></div>
+              {/* Headlight */}
+              <div className="gt-headlight"></div>
+              {/* Taillight */}
+              <div className="gt-taillight"></div>
             </div>
-            <span className="check-label">Check</span>
+            <span className="gt-label">Check</span>
           </button>
         </div>
       </div>
