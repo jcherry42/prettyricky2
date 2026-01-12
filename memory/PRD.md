@@ -269,14 +269,34 @@ A premium theme inspired by high-end automotive interiors:
 - Lead status change to 'hot', 'qualified', 'closed_won', 'closed_lost' trigger notifications
 - Test endpoint: POST /api/events/test-hot-lead for development testing
 
+### 43. Consolidated "Check Engine" Settings Panel ✅ (Jan 12, 2026)
+- Renamed to "Check" with improved hood opening animation (with hydraulic struts)
+- Consolidated all settings: Dealership, Data Import, Notifications, CRM, History
+- Removed separate Import and Settings buttons from header
+- Added Notification History tab showing sent/queued/failed notifications
+- Larger Supercharg'd button (14px wider, 11px taller)
+
+### 44. Capacitor Mobile App Wrapper ✅ (Jan 12, 2026)
+- Capacitor 6 configured for iOS and Android
+- Native capabilities: SplashScreen, StatusBar, Keyboard, PushNotifications
+- Device registration endpoint for push tokens: POST /api/notifications/register-device
+- Native initialization with theme-aware status bar
+- App ID: com.closr.salesapp
+
+### 45. A/B Testing Framework ✅ (Jan 12, 2026)
+- 4 pre-configured experiments: Tone Effectiveness, Shortcuts vs Tower Talk, Response Length, VS Card Layout
+- Deterministic user assignment (same user always sees same variant)
+- Event tracking: impressions, conversions, clicks
+- Aggregated results with conversion rate calculation
+- API endpoints: /api/ab/experiments, /api/ab/variant/{experiment_id}, /api/ab/track
+
 ### 📋 In Progress / Upcoming
 - **Push Notifications (Web Push API)** - Browser-based alerts complementing SMS
-- **Mobile App Wrapper (Capacitor)** - Package PWA for iOS/Android app stores
+- **A/B Testing UI** - Dashboard to view experiment results in admin panel
 
 ### 📋 Future Tasks (P3)
-- A/B Testing Framework - Track tone effectiveness, shortcuts vs Tower Talk, response length
-- Capacitor wrapper for native iOS/Android App Store deployment
 - Performance Leaderboard for team tracking
+- Mobile app store submission (iOS App Store, Google Play)
 
 ### 🔧 Technical Note
 - All CRM connectors currently operate in **MOCK MODE** using simulated data
