@@ -812,22 +812,22 @@ html:not(.dark) .r34-center-text span {
 
 @keyframes r34-flame-1 {
   0% { transform: translateY(-50%) scaleX(1); opacity: 1; }
-  100% { transform: translateY(-50%) scaleX(0.85) translateX(-5px); opacity: 0.8; }
+  100% { transform: translateY(-50%) scaleX(0.8) translateX(-10px); opacity: 0.85; }
 }
 
 @keyframes r34-flame-2 {
-  0% { transform: translateY(-50%) translateY(-9px) rotate(-14deg); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(-10px) rotate(-18deg) scaleX(0.9) translateX(-3px); opacity: 1; }
+  0% { transform: translateY(-50%) translateY(-14px) rotate(-18deg); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(-18px) rotate(-25deg) scaleX(0.85) translateX(-8px); opacity: 1; }
 }
 
 @keyframes r34-flame-3 {
-  0% { transform: translateY(-50%) translateY(9px) rotate(14deg); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(10px) rotate(18deg) scaleX(0.9) translateX(-3px); opacity: 1; }
+  0% { transform: translateY(-50%) translateY(14px) rotate(18deg); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(18px) rotate(25deg) scaleX(0.85) translateX(-8px); opacity: 1; }
 }
 
 .btn-supercharged .flames .sparks {
   position: absolute;
-  left: 0;
+  left: -20px;
   top: 0;
   width: 100%;
   height: 100%;
@@ -835,22 +835,22 @@ html:not(.dark) .r34-center-text span {
 
 .btn-supercharged .flames .sparks span {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   background: #ffee00;
   border-radius: 50%;
   opacity: 0;
-  box-shadow: 0 0 6px 2px #ff8800;
+  box-shadow: 0 0 10px 3px #ff8800;
 }
 
 .btn-supercharged .flames.active .sparks span {
-  animation: r34-spark 0.5s ease-out infinite;
+  animation: r34-spark 0.4s ease-out infinite;
 }
 
-.btn-supercharged .flames .sparks span:nth-child(1) { top: 10%; right: 15px; animation-delay: 0s; --spark-y: -12px; }
+.btn-supercharged .flames .sparks span:nth-child(1) { top: 5%; right: 20px; animation-delay: 0s; --spark-y: -18px; }
 .btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; right: 10px; animation-delay: 0.1s; --spark-y: 0; }
-.btn-supercharged .flames .sparks span:nth-child(3) { top: 90%; right: 12px; animation-delay: 0.2s; --spark-y: 12px; }
-.btn-supercharged .flames .sparks span:nth-child(4) { top: 30%; right: 8px; animation-delay: 0.15s; --spark-y: -6px; }
+.btn-supercharged .flames .sparks span:nth-child(3) { top: 95%; right: 15px; animation-delay: 0.2s; --spark-y: 18px; }
+.btn-supercharged .flames .sparks span:nth-child(4) { top: 25%; right: 5px; animation-delay: 0.15s; --spark-y: -10px; }
 
 @keyframes r34-spark {
   0% { opacity: 1; transform: translate(0, 0) scale(1); }
