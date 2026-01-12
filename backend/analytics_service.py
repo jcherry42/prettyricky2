@@ -132,9 +132,21 @@ class AnalyticsService:
         cold_leads = status_counts.get("cold", 0)
         sold = status_counts.get("sold", 0)
         
+        recent_leads_list = data.get("recent_leads", [])
+        new_leads_7d = recent_leads_list[0].get("count", 0) if recent_leads_list else 0
+        
+        email_list = data.get("with_email", [])
+        with_email = email_list[0].get("count", 0) if email_list else 0
+        
+        phone_list = data.get("with_phone", [])
+        with_phone = phone_list[0].get("count", 0) if phone_list else 0
+        
+        vehicle_list = data.get("with_vehicle_interest", [])
+        with_vehicle = vehicle_list[0].get("count", 0) if vehicle_list else 0
+        
         return {
             "total_customers": total,
-            "new_leads_7d": data.get("recent_leads", [{}])[0].get("count", 0),
+            "new_leads_7d": new_leads_7d,
             "lead_status_breakdown": status_counts,
             "hot_leads": hot_leads,
             "warm_leads": warm_leads,
@@ -142,9 +154,9 @@ class AnalyticsService:
             "sold": sold,
             "conversion_rate": round((sold / max(total, 1)) * 100, 1),
             "contact_completeness": {
-                "with_email": round((data.get("with_email", [{}])[0].get("count", 0) / max(total, 1)) * 100, 1),
-                "with_phone": round((data.get("with_phone", [{}])[0].get("count", 0) / max(total, 1)) * 100, 1),
-                "with_vehicle_interest": round((data.get("with_vehicle_interest", [{}])[0].get("count", 0) / max(total, 1)) * 100, 1),
+                "with_email": round((with_email / max(total, 1)) * 100, 1),
+                "with_phone": round((with_phone / max(total, 1)) * 100, 1),
+                "with_vehicle_interest": round((with_vehicle / max(total, 1)) * 100, 1),
             },
             "follow_up_priority": {
                 "immediate": hot_leads,
