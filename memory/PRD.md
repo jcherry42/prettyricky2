@@ -270,12 +270,11 @@ A premium theme inspired by high-end automotive interiors:
 - Test endpoint: POST /api/events/test-hot-lead for development testing
 
 ### 📋 In Progress / Upcoming
-- **Real CRM Connections** - Infrastructure ready, awaiting API credentials
-- **Enhanced PWA** - Better offline, app icon, splash screen
-- **A/B Testing** - Track tone effectiveness, shortcuts vs Tower Talk, response length
+- **Push Notifications (Web Push API)** - Browser-based alerts complementing SMS
+- **Mobile App Wrapper (Capacitor)** - Package PWA for iOS/Android app stores
 
 ### 📋 Future Tasks (P3)
-- "What If" Scenario Generator for VS-Battle Cards
+- A/B Testing Framework - Track tone effectiveness, shortcuts vs Tower Talk, response length
 - Capacitor wrapper for native iOS/Android App Store deployment
 - Performance Leaderboard for team tracking
 
