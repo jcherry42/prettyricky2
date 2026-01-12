@@ -140,6 +140,7 @@ export const Header = () => {
             {/* Element 4 - Outer (turn signal) - mirrored */}
             <path d="M62 3 L78 5 L76 21 L61 19 Z" className="c8-element c8-el-1" fill="url(#c8RedOff)" />
           </svg>
+          </div>
         </div>
 
         {/* Right side - Actions */}
