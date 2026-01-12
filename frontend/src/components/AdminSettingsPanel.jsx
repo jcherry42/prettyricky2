@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   X, Settings, Phone, Database, Shield, Check, Loader2, 
   Eye, EyeOff, AlertCircle, CheckCircle, Bell, Plug,
-  ChevronRight, Save, RefreshCw, Trash2, TestTube, Key, ToggleLeft, ToggleRight, ArrowLeft
+  ChevronRight, Save, RefreshCw, Trash2, TestTube, Key, ToggleLeft, ToggleRight, ArrowLeft,
+  Upload, Building2, User, MessageSquare, Clock, History
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSales } from '../context/SalesContext';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
