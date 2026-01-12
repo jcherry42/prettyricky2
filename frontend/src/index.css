@@ -546,6 +546,7 @@ h1, h2, h3 {
 
 .r34-cluster {
   display: flex;
+  align-items: flex-end;
   gap: 6px;
 }
 
