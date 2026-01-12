@@ -40,6 +40,17 @@ export const AdminSettingsPanel = ({ onClose }) => {
     integrations: [],
     health: null,
   });
+  
+  // Integration detail view
+  const [selectedIntegration, setSelectedIntegration] = useState(null);
+  const [integrationForm, setIntegrationForm] = useState({
+    api_key: '',
+    username: '',
+    password: '',
+    client_id: '',
+    client_secret: '',
+  });
+  const [showIntegrationSecrets, setShowIntegrationSecrets] = useState({});
 
   const loadConfig = useCallback(async () => {
     setLoading(true);
