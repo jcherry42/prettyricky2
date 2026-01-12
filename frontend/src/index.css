@@ -1098,12 +1098,17 @@ html:not(.dark) .btn-check-engine:hover {
 
 /* HOOD OPENS DRAMATICALLY - 70 degree rotation! */
 .btn-check-zl1:hover .zl1-hood-group {
-  transform: rotate(-70deg) translateY(-4px);
+  transform: rotate(-65deg) translateY(-6px) translateX(-2px);
+}
+
+.btn-check-zl1:hover .zl1-hood {
+  fill: #7a7a8a;
 }
 
 /* Engine bay reveals with hot glow */
 .btn-check-zl1:hover .zl1-engine-glow {
   opacity: 1 !important;
+  filter: blur(1px) !important;
 }
 
 .btn-check-zl1:hover .zl1-headlight {
