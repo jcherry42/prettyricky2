@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, Sun, Moon, Swords, BarChart3, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
@@ -20,6 +20,8 @@ export const Header = () => {
   // Startup animation state
   const [startupComplete, setStartupComplete] = useState(false);
   const [startupPhase, setStartupPhase] = useState(0);
+  // Brake light state - activates on screen tap
+  const [brakesPressed, setBrakesPressed] = useState(false);
 
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem('taillights_startup_played');
@@ -29,11 +31,11 @@ export const Header = () => {
       return;
     }
 
-    // C8 startup - both taillights illuminate together
+    // C8 startup sequence
     const phases = [
-      { delay: 200, phase: 1 },   // Dim glow
-      { delay: 600, phase: 2 },   // Brighter
-      { delay: 1000, phase: 3 },  // Full brightness + text
+      { delay: 200, phase: 1 },
+      { delay: 600, phase: 2 },
+      { delay: 1000, phase: 3 },
     ];
 
     phases.forEach(({ delay, phase }) => {
@@ -53,90 +55,86 @@ export const Header = () => {
     });
   }, []);
 
+  // Brake light handler - flash on screen tap/click
+  const handleBrakePress = useCallback(() => {
+    setBrakesPressed(true);
+    setTimeout(() => setBrakesPressed(false), 300);
+  }, []);
+
+  // Add global click listener for brake lights
+  useEffect(() => {
+    const handleClick = (e) => {
+      // Don't trigger on button clicks (let buttons do their thing)
+      if (!e.target.closest('button') && !e.target.closest('a')) {
+        handleBrakePress();
+      }
+    };
+    document.addEventListener('click', handleClick);
+    document.addEventListener('touchstart', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+      document.removeEventListener('touchstart', handleClick);
+    };
+  }, [handleBrakePress]);
+
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* C8 Corvette Taillights - Accurate L-shaped contoured design */}
-        <div className="c8-taillights-container" data-testid="taillights-logo">
-          {/* Left taillight unit - distinctive C8 L-shape */}
+        {/* C8 Corvette Z06 Taillights - Multi-element angular design */}
+        <div className="c8-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
+          {/* Left taillight assembly - 4 angular elements */}
           <svg 
-            viewBox="0 0 55 32" 
-            className={`c8-taillight-unit c8-left ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
+            viewBox="0 0 80 24" 
+            className={`c8-taillight-unit c8-left ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''} ${brakesPressed ? 'braking' : ''}`}
           >
             <defs>
-              <linearGradient id="c8RedGlowL" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#ff3333" />
+              <linearGradient id="c8RedGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ff4444" />
                 <stop offset="50%" stopColor="#dd0000" />
-                <stop offset="100%" stopColor="#aa0000" />
+                <stop offset="100%" stopColor="#990000" />
               </linearGradient>
-              <linearGradient id="c8RedOffL" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#3a0000" />
-                <stop offset="100%" stopColor="#200000" />
+              <linearGradient id="c8RedOff" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#330000" />
+                <stop offset="100%" stopColor="#1a0000" />
+              </linearGradient>
+              <linearGradient id="c8BrakeGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ff0000" />
+                <stop offset="50%" stopColor="#ff0000" />
+                <stop offset="100%" stopColor="#cc0000" />
               </linearGradient>
             </defs>
-            {/* Dark housing background */}
-            <rect x="0" y="0" width="55" height="32" rx="2" fill="#0a0a0a" />
-            {/* Horizontal LED bar - main element */}
-            <rect 
-              x="2" y="2" 
-              width="50" height="10" 
-              rx="1.5"
-              className="c8-led-main"
-              fill="url(#c8RedOffL)"
-            />
-            {/* Vertical LED element - the "L" stem */}
-            <rect 
-              x="42" y="14" 
-              width="10" height="16" 
-              rx="1.5"
-              className="c8-led-vertical"
-              fill="url(#c8RedOffL)"
-            />
-            {/* Subtle separator detail */}
-            <rect x="41" y="10" width="12" height="6" fill="#0a0a0a" />
+            {/* Housing - dark angular shape */}
+            <path d="M0 4 L78 0 L80 20 L4 24 Z" fill="#0a0a0a" />
+            {/* Element 1 - Outer (turn signal area) */}
+            <path d="M2 5 L18 3 L19 19 L4 21 Z" className="c8-element c8-el-1" fill="url(#c8RedOff)" />
+            {/* Element 2 - Main brake light */}
+            <path d="M22 3 L42 2 L43 18 L23 19 Z" className="c8-element c8-el-2" fill="url(#c8RedOff)" />
+            {/* Element 3 - Secondary brake */}
+            <path d="M46 2 L62 1 L63 17 L47 18 Z" className="c8-element c8-el-3" fill="url(#c8RedOff)" />
+            {/* Element 4 - Inner (reverse area) */}
+            <path d="M66 1 L76 1 L77 17 L67 17 Z" className="c8-element c8-el-4" fill="url(#c8RedOff)" />
           </svg>
 
-          {/* Center text area */}
+          {/* Center text */}
           <div className={`c8-center-text ${startupPhase >= 3 ? 'lit' : ''}`}>
             <span>TAILLIGHTS</span>
           </div>
 
-          {/* Right taillight unit - mirrored L-shape */}
+          {/* Right taillight assembly - mirrored 4 elements */}
           <svg 
-            viewBox="0 0 55 32" 
-            className={`c8-taillight-unit c8-right ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
+            viewBox="0 0 80 24" 
+            className={`c8-taillight-unit c8-right ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''} ${brakesPressed ? 'braking' : ''}`}
           >
-            <defs>
-              <linearGradient id="c8RedGlowR" x1="100%" y1="0%" x2="0%" y2="0%">
-                <stop offset="0%" stopColor="#ff3333" />
-                <stop offset="50%" stopColor="#dd0000" />
-                <stop offset="100%" stopColor="#aa0000" />
-              </linearGradient>
-              <linearGradient id="c8RedOffR" x1="100%" y1="0%" x2="0%" y2="0%">
-                <stop offset="0%" stopColor="#3a0000" />
-                <stop offset="100%" stopColor="#200000" />
-              </linearGradient>
-            </defs>
-            {/* Dark housing background */}
-            <rect x="0" y="0" width="55" height="32" rx="2" fill="#0a0a0a" />
-            {/* Horizontal LED bar - main element */}
-            <rect 
-              x="3" y="2" 
-              width="50" height="10" 
-              rx="1.5"
-              className="c8-led-main"
-              fill="url(#c8RedOffR)"
-            />
-            {/* Vertical LED element - the "L" stem (on left side for mirror) */}
-            <rect 
-              x="3" y="14" 
-              width="10" height="16" 
-              rx="1.5"
-              className="c8-led-vertical"
-              fill="url(#c8RedOffR)"
-            />
-            {/* Subtle separator detail */}
-            <rect x="2" y="10" width="12" height="6" fill="#0a0a0a" />
+            {/* Housing - mirrored angular shape */}
+            <path d="M2 0 L80 4 L76 24 L0 20 Z" fill="#0a0a0a" />
+            {/* Element 1 - Inner (reverse area) - mirrored */}
+            <path d="M4 1 L14 1 L13 17 L3 17 Z" className="c8-element c8-el-4" fill="url(#c8RedOff)" />
+            {/* Element 2 - Secondary brake - mirrored */}
+            <path d="M18 1 L34 2 L33 18 L17 17 Z" className="c8-element c8-el-3" fill="url(#c8RedOff)" />
+            {/* Element 3 - Main brake light - mirrored */}
+            <path d="M38 2 L58 3 L57 19 L37 18 Z" className="c8-element c8-el-2" fill="url(#c8RedOff)" />
+            {/* Element 4 - Outer (turn signal) - mirrored */}
+            <path d="M62 3 L78 5 L76 21 L61 19 Z" className="c8-element c8-el-1" fill="url(#c8RedOff)" />
           </svg>
         </div>
 
@@ -144,32 +142,25 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           <IntegrationHealthStatus compact={true} />
 
-          {/* Supercharg'd Button */}
+          {/* Supercharg'd Button - Reduced size */}
           <button
             onClick={toggleSuperchargedMode}
-            className={`btn-supercharged-xl relative ${supercharged ? 'active' : ''}`}
+            className={`btn-supercharged ${supercharged ? 'active' : ''}`}
             data-testid="toggle-supercharged-btn"
             title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className="exhaust-system">
-              <div className="exhaust-tip tip-1"></div>
-              <div className="exhaust-tip tip-2"></div>
+            <div className="exhaust-system-sm">
+              <div className="exhaust-tip-sm tip-1"></div>
+              <div className="exhaust-tip-sm tip-2"></div>
             </div>
-            <div className={`xl-flames ${supercharged ? 'active' : ''}`}>
-              <div className="flame-core"></div>
-              <div className="flame-layer layer-1"></div>
-              <div className="flame-layer layer-2"></div>
-              <div className="flame-layer layer-3"></div>
-              <div className="flame-layer layer-4"></div>
-              <div className="flame-layer layer-5"></div>
-              <div className="flame-sparks">
-                <span></span><span></span><span></span>
-                <span></span><span></span><span></span>
-                <span></span><span></span>
-              </div>
+            <div className={`flames-sm ${supercharged ? 'active' : ''}`}>
+              <div className="flame-core-sm"></div>
+              <div className="flame-layer-sm layer-1"></div>
+              <div className="flame-layer-sm layer-2"></div>
+              <div className="flame-layer-sm layer-3"></div>
             </div>
-            <span className="supercharged-label-xl vice-city-text">
-              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
+            <span className="supercharged-label vice-city-text">
+              {supercharged ? 'ES' : 'EN'}
             </span>
           </button>
 
@@ -221,101 +212,71 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine Button - ZL1 Camaro with working hood animation */}
+          {/* Check Engine Button - ZL1 Camaro with BIG hood animation */}
           <button
             onClick={() => toggleAdminSettings(true)}
             className="btn-check-zl1"
             data-testid="open-admin-settings-btn"
             title="Check Engine - All Settings"
           >
+            {/* Check engine icon BEHIND the text */}
+            <AlertTriangle className="zl1-bg-icon" />
+            
             <div className="zl1-car-wrapper">
-              {/* 2021 ZL1 Camaro Side Profile SVG */}
-              <svg viewBox="0 0 120 50" className="zl1-car-svg">
+              {/* 2021 ZL1 Camaro - Hood opens dramatically */}
+              <svg viewBox="0 0 100 40" className="zl1-car-svg">
                 <defs>
-                  <linearGradient id="zl1BodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4a4a5a" />
-                    <stop offset="50%" stopColor="#3a3a48" />
-                    <stop offset="100%" stopColor="#2a2a38" />
+                  <linearGradient id="zl1Body" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#5a5a6a" />
+                    <stop offset="100%" stopColor="#3a3a4a" />
                   </linearGradient>
-                  <linearGradient id="zl1WindowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#5599cc" stopOpacity="0.6" />
-                    <stop offset="100%" stopColor="#336699" stopOpacity="0.4" />
+                  <linearGradient id="zl1Window" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#4a90c2" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#2a5080" stopOpacity="0.3" />
                   </linearGradient>
-                  <linearGradient id="zl1HoodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#555566" />
-                    <stop offset="100%" stopColor="#404050" />
-                  </linearGradient>
-                  <linearGradient id="zl1EngineGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-                    <stop offset="0%" stopColor="#ff6600" />
-                    <stop offset="100%" stopColor="#cc3300" />
+                  <linearGradient id="zl1Engine" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stopColor="#ff8800" />
+                    <stop offset="50%" stopColor="#ff5500" />
+                    <stop offset="100%" stopColor="#cc2200" />
                   </linearGradient>
                 </defs>
                 
-                {/* Main Body - aggressive ZL1 profile */}
-                <path 
-                  d="M8 32 L12 26 L22 24 L38 22 L80 22 L100 24 L108 28 L112 32 L108 38 L12 38 L8 34 Z" 
-                  fill="url(#zl1BodyGrad)" 
-                  className="zl1-body"
-                />
+                {/* Engine bay glow - visible when hood opens */}
+                <ellipse cx="22" cy="28" rx="14" ry="8" fill="url(#zl1Engine)" className="zl1-engine-glow" />
                 
-                {/* Roof line - fastback style */}
-                <path 
-                  d="M42 22 L50 14 L78 14 L88 22 Z" 
-                  fill="url(#zl1BodyGrad)"
-                  className="zl1-roof"
-                />
+                {/* Main body */}
+                <path d="M5 28 L10 22 L30 20 L70 20 L90 22 L95 28 L90 32 L10 32 Z" fill="url(#zl1Body)" />
+                
+                {/* Roof */}
+                <path d="M35 20 L42 12 L65 12 L72 20 Z" fill="url(#zl1Body)" />
                 
                 {/* Window */}
-                <path 
-                  d="M46 21 L52 15 L76 15 L84 21 Z" 
-                  fill="url(#zl1WindowGrad)"
-                  className="zl1-window"
-                />
+                <path d="M38 19 L44 13 L63 13 L69 19 Z" fill="url(#zl1Window)" />
                 
-                {/* Hood assembly - animated on hover */}
+                {/* Hood assembly - PIVOTS OPEN on hover */}
                 <g className="zl1-hood-assembly">
-                  {/* Hood panel with power bulge */}
-                  <path 
-                    d="M12 26 L22 24 L38 22 L42 22 L42 26 L12 28 Z" 
-                    fill="url(#zl1HoodGrad)" 
-                    className="zl1-hood-panel"
-                  />
-                  {/* Hood scoop/vent (ZL1 signature) */}
-                  <rect x="18" y="23" width="18" height="3" rx="1" fill="#2a2a35" className="zl1-hood-scoop" />
-                  <rect x="20" y="24" width="14" height="1" fill="#1a1a22" />
+                  <path d="M10 22 L30 20 L35 20 L35 24 L10 26 Z" fill="#4a4a5a" className="zl1-hood-panel" />
+                  {/* Hood scoop */}
+                  <rect x="14" y="20" width="14" height="3" rx="0.5" fill="#2a2a3a" />
+                  <rect x="16" y="21" width="10" height="1" fill="#1a1a2a" />
                 </g>
                 
-                {/* Engine bay glow - appears when hood opens */}
-                <ellipse 
-                  cx="28" cy="30" rx="14" ry="6" 
-                  fill="url(#zl1EngineGrad)" 
-                  opacity="0" 
-                  className="zl1-engine-glow"
-                />
-                
-                {/* Front wheel */}
-                <circle cx="28" cy="38" r="8" fill="#151520" stroke="#3a3a4a" strokeWidth="1.5" />
-                <circle cx="28" cy="38" r="5" fill="#252530" />
-                <circle cx="28" cy="38" r="2" fill="#1a1a22" />
-                
-                {/* Rear wheel */}
-                <circle cx="92" cy="38" r="8" fill="#151520" stroke="#3a3a4a" strokeWidth="1.5" />
-                <circle cx="92" cy="38" r="5" fill="#252530" />
-                <circle cx="92" cy="38" r="2" fill="#1a1a22" />
+                {/* Wheels */}
+                <circle cx="22" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
+                <circle cx="22" cy="32" r="3.5" fill="#2a2a35" />
+                <circle cx="78" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
+                <circle cx="78" cy="32" r="3.5" fill="#2a2a35" />
                 
                 {/* Headlight */}
-                <path d="M10 28 L14 27 L14 31 L10 32 Z" fill="#ffdd88" className="zl1-headlight" />
+                <ellipse cx="7" cy="25" rx="2.5" ry="1.5" fill="#ffdd88" className="zl1-headlight" />
                 
-                {/* Taillight - ZL1 style */}
-                <rect x="106" y="28" width="4" height="5" rx="1" fill="#cc0000" className="zl1-taillight" />
+                {/* Taillight */}
+                <rect x="92" y="24" width="3" height="4" rx="0.5" fill="#ff0000" className="zl1-taillight" />
               </svg>
             </div>
             
-            {/* Label with glowing CHECK ENGINE icon */}
-            <div className="zl1-label">
-              <AlertTriangle className="zl1-check-icon" />
-              <span className="vice-city-text">CHECK</span>
-            </div>
+            {/* Label */}
+            <span className="zl1-label vice-city-text">CHECK</span>
           </button>
         </div>
       </div>
