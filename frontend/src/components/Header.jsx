@@ -27,21 +27,24 @@ export const Header = () => {
     const hasPlayed = sessionStorage.getItem('taillights_startup_played');
     if (hasPlayed) {
       setStartupComplete(true);
-      setStartupPhase(3);
+      setStartupPhase(5);
       return;
     }
 
-    // C8 startup sequence
+    // JDM-style startup sequence - outer lights first, then inner, then text
+    // Mimics R34 Skyline boot-up sequence
     const phases = [
-      { delay: 200, phase: 1 },
-      { delay: 600, phase: 2 },
-      { delay: 1000, phase: 3 },
+      { delay: 100, phase: 1 },   // Outer lights dim glow
+      { delay: 400, phase: 2 },   // Outer lights full brightness
+      { delay: 700, phase: 3 },   // Inner lights dim glow
+      { delay: 1000, phase: 4 },  // Inner lights full brightness
+      { delay: 1300, phase: 5 },  // Text illuminates
     ];
 
     phases.forEach(({ delay, phase }) => {
       setTimeout(() => {
         setStartupPhase(phase);
-        if (phase === 3) {
+        if (phase === 5) {
           const prefs = getSoundPreferences();
           if (prefs.enabled) {
             playNotificationSound(prefs.profile);
