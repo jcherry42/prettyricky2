@@ -250,6 +250,25 @@ A premium theme inspired by high-end automotive interiors:
 - Better input fields and buttons
 - Full light/dark mode support
 
+### 40. Admin Settings Panel ("Check Engine" Button) ✅ (Jan 12, 2026)
+- "Check Engine" button with car hood opening animation in header
+- Dual tabs: Notifications and CRM Integrations
+- Twilio SMS configuration with credential validation
+- CRM health overview with Healthy/Degraded/Unhealthy/Mock counts
+
+### 41. CRM Credential Management UI ✅ (Jan 12, 2026)
+- Click integration to open detail view
+- Mock Mode / Live Mode toggle button
+- API Credentials form (API Key, Username, Password, Client ID, Client Secret)
+- Test Connection button with result feedback
+- Save Credentials button with backend sync
+
+### 42. Webhook-to-Notification Integration ✅ (Jan 12, 2026)
+- Registered event handlers: customer.created, customer.updated, lead.status_changed, deal.created, deal.updated
+- Hot lead events automatically trigger SMS notifications (queued until Twilio configured)
+- Lead status change to 'hot', 'qualified', 'closed_won', 'closed_lost' trigger notifications
+- Test endpoint: POST /api/events/test-hot-lead for development testing
+
 ### 📋 In Progress / Upcoming
 - **Real CRM Connections** - Infrastructure ready, awaiting API credentials
 - **Enhanced PWA** - Better offline, app icon, splash screen
