@@ -854,7 +854,7 @@ html:not(.dark) .r34-center-text span {
 
 @keyframes r34-spark {
   0% { opacity: 1; transform: translate(0, 0) scale(1); }
-  100% { opacity: 0; transform: translate(-30px, var(--spark-y, 0)) scale(0.3); }
+  100% { opacity: 0; transform: translate(-50px, var(--spark-y, 0)) scale(0.3); }
 }
 
 /* Label */
