@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Sun, Moon, Flame, Swords, BarChart3 } from 'lucide-react';
+import { Heart, Sun, Moon, Swords, BarChart3, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
@@ -21,27 +21,27 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* Taillights Logo - Porsche 911 Style */}
+        {/* R34 Skyline Taillights Logo */}
         <div className="flex items-center gap-3">
-          <div className="taillights-logo" data-testid="taillights-logo">
-            {/* Left taillight cluster */}
-            <div className="taillight-cluster left">
-              <div className="taillight-bar bar-1"></div>
-              <div className="taillight-bar bar-2"></div>
-              <div className="taillight-bar bar-3"></div>
+          <div className="r34-taillights-logo" data-testid="taillights-logo">
+            {/* Left R34 taillight - 4 circular segments */}
+            <div className="r34-cluster left">
+              <div className="r34-ring ring-1"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-2"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-3"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-4"><div className="r34-glow"></div></div>
             </div>
-            {/* Right taillight cluster */}
-            <div className="taillight-cluster right">
-              <div className="taillight-bar bar-1"></div>
-              <div className="taillight-bar bar-2"></div>
-              <div className="taillight-bar bar-3"></div>
+            {/* Right R34 taillight - 4 circular segments */}
+            <div className="r34-cluster right">
+              <div className="r34-ring ring-1"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-2"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-3"><div className="r34-glow"></div></div>
+              <div className="r34-ring ring-4"><div className="r34-glow"></div></div>
             </div>
-            {/* Center connector glow */}
-            <div className="taillight-connector"></div>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-luxury tracking-widest">TAILLIGHTS</h1>
-            <p className="text-xs text-muted-foreground truncate max-w-[140px]">
+            <h1 className="vice-city-title">TAILLIGHTS</h1>
+            <p className="text-xs text-muted-foreground truncate max-w-[140px] vice-city-sub">
               {dealership.name}
             </p>
           </div>
@@ -57,44 +57,46 @@ export const Header = () => {
             {isOffline ? (
               <>
                 <span className="status-dot offline" />
-                <span className="text-warning">Offline</span>
+                <span className="text-warning vice-city-text">Offline</span>
               </>
             ) : (
               <>
                 <span className="status-dot online" />
-                <span className="text-chrome">Ready</span>
+                <span className="text-chrome vice-city-text">Ready</span>
               </>
             )}
           </div>
 
-          {/* Supercharg'd Mode Toggle - Enhanced Animated Flames */}
+          {/* Supercharg'd Mode Toggle - Extra Long with Exhaust Flames */}
           <button
             onClick={toggleSuperchargedMode}
-            className={`btn-supercharged-v2 relative ${supercharged ? 'active' : ''}`}
+            className={`btn-supercharged-xl relative ${supercharged ? 'active' : ''}`}
             data-testid="toggle-supercharged-btn"
             title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className="exhaust-pipe">
-              <div className="pipe-opening"></div>
+            <div className="exhaust-system">
+              <div className="exhaust-tip tip-1"></div>
+              <div className="exhaust-tip tip-2"></div>
             </div>
-            <div className={`flames-v2 ${supercharged ? 'active' : ''}`}>
+            <div className={`xl-flames ${supercharged ? 'active' : ''}`}>
               <div className="flame-core"></div>
-              <div className="flame-outer flame-1"></div>
-              <div className="flame-outer flame-2"></div>
-              <div className="flame-outer flame-3"></div>
-              <div className="flame-outer flame-4"></div>
-              <div className="flame-outer flame-5"></div>
+              <div className="flame-layer layer-1"></div>
+              <div className="flame-layer layer-2"></div>
+              <div className="flame-layer layer-3"></div>
+              <div className="flame-layer layer-4"></div>
+              <div className="flame-layer layer-5"></div>
               <div className="flame-sparks">
                 <span></span><span></span><span></span>
                 <span></span><span></span><span></span>
+                <span></span><span></span>
               </div>
             </div>
-            <span className="supercharged-label-v2">
-              {supercharged ? 'ES' : 'EN'}
+            <span className="supercharged-label-xl vice-city-text">
+              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
             </span>
           </button>
 
-          {/* Theme Toggle - Chrome Button */}
+          {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="btn-chrome"
@@ -118,7 +120,7 @@ export const Header = () => {
             title="VS Battle Cards"
           >
             <Swords className="w-4 h-4" />
-            <span className="text-[9px] font-black">VS</span>
+            <span className="text-[9px] font-black vice-city-text">VS</span>
           </button>
 
           {/* Favorites button */}
@@ -150,34 +152,37 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine - Gran Turismo Style Side View */}
+          {/* Check Engine - ZL1 Camaro Style */}
           <button
             onClick={() => toggleAdminSettings(true)}
-            className="btn-check-gt"
+            className="btn-check-zl1"
             data-testid="open-admin-settings-btn"
-            title="Check - All Settings"
+            title="Check Engine - All Settings"
           >
-            <div className="gt-car-container">
-              {/* Car silhouette side view */}
-              <div className="gt-car-body">
-                <div className="gt-car-roof"></div>
-                <div className="gt-car-window"></div>
-                <div className="gt-car-lower"></div>
-                <div className="gt-wheel gt-wheel-front"></div>
-                <div className="gt-wheel gt-wheel-rear"></div>
+            <div className="zl1-container">
+              {/* ZL1 Camaro silhouette */}
+              <div className="zl1-body">
+                <div className="zl1-roof"></div>
+                <div className="zl1-window"></div>
+                <div className="zl1-lower">
+                  <div className="zl1-hood-scoop"></div>
+                </div>
+                <div className="zl1-wheel zl1-wheel-front"></div>
+                <div className="zl1-wheel zl1-wheel-rear"></div>
+                {/* Hood that opens */}
+                <div className="zl1-hood"></div>
+                {/* Engine glow */}
+                <div className="zl1-engine-glow"></div>
               </div>
-              {/* Hood opening animation */}
-              <div className="gt-hood">
-                <div className="gt-hood-panel"></div>
-              </div>
-              {/* Engine glow when hood opens */}
-              <div className="gt-engine-glow"></div>
               {/* Headlight */}
-              <div className="gt-headlight"></div>
+              <div className="zl1-headlight"></div>
               {/* Taillight */}
-              <div className="gt-taillight"></div>
+              <div className="zl1-taillight"></div>
             </div>
-            <span className="gt-label">Check</span>
+            <div className="zl1-label">
+              <span className="vice-city-text">Check</span>
+              <AlertTriangle className="check-engine-icon" />
+            </div>
           </button>
         </div>
       </div>
