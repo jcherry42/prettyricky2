@@ -2040,6 +2040,57 @@ async def test_hot_lead_event(
     }
 
 
+# ============== A/B TESTING ==============
+
+class ABTrackEvent(BaseModel):
+    experiment_id: str
+    user_id: str
+    event_type: str  # "impression", "conversion", "click"
+    metadata: Dict[str, Any] = None
+
+
+@api_router.get("/ab/experiments")
+async def list_experiments(active_only: bool = False):
+    """List all A/B experiments"""
+    experiments = await ab_testing_service.list_experiments(active_only)
+    return {"experiments": experiments}
+
+
+@api_router.get("/ab/experiments/{experiment_id}")
+async def get_experiment_results(experiment_id: str):
+    """Get results for a specific experiment"""
+    results = await ab_testing_service.get_experiment_results(experiment_id)
+    return results
+
+
+@api_router.get("/ab/variant/{experiment_id}")
+async def get_user_variant(experiment_id: str, user_id: str):
+    """Get the assigned variant for a user"""
+    variant = await ab_testing_service.get_variant(user_id, experiment_id)
+    if not variant:
+        raise HTTPException(status_code=404, detail="Experiment not found or inactive")
+    return variant
+
+
+@api_router.post("/ab/track")
+async def track_ab_event(event: ABTrackEvent):
+    """Track an A/B test event (impression, conversion, etc.)"""
+    result = await ab_testing_service.track_event(
+        experiment_id=event.experiment_id,
+        user_id=event.user_id,
+        event_type=event.event_type,
+        metadata=event.metadata
+    )
+    return result
+
+
+@api_router.post("/ab/experiments/{experiment_id}/toggle")
+async def toggle_experiment(experiment_id: str, is_active: bool = True):
+    """Activate or deactivate an experiment"""
+    result = await ab_testing_service.toggle_experiment(experiment_id, is_active)
+    return result
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 app.include_router(api_router)
