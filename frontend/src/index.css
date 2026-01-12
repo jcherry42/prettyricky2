@@ -480,9 +480,9 @@
   transform: scale(0.98);
 }
 
-/* Supercharg'd Button - Animated Flames */
+/* Supercharg'd Button - Animated Flames - LARGER */
 .btn-supercharged {
-  @apply relative w-12 h-10 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
+  @apply relative w-14 h-11 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
   background: linear-gradient(180deg, 
     hsla(220, 10%, 15%, 0.9) 0%,
     hsla(220, 10%, 10%, 0.95) 100%
