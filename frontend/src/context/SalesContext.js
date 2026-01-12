@@ -351,6 +351,11 @@ export function SalesProvider({ children }) {
   };
   
   const removeFavorite = (id) => dispatch({ type: ACTIONS.REMOVE_FAVORITE, payload: id });
+  
+  const updateFavoriteCategory = (id, category) => dispatch({ 
+    type: ACTIONS.UPDATE_FAVORITE_CATEGORY, 
+    payload: { id, category } 
+  });
 
   // Theme & Supercharg'd actions
   const toggleTheme = () => {
