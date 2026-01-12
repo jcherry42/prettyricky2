@@ -203,8 +203,8 @@ export const Header = () => {
             data-testid="open-admin-settings-btn"
             title="Check Engine - All Settings"
           >
-            <AlertTriangle className="w-3.5 h-3.5" />
             <span>CHECK</span>
+            <AlertTriangle className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
