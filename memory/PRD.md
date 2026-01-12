@@ -238,14 +238,34 @@ A premium theme inspired by high-end automotive interiors:
 - Haptic-touch button styling
 - Light mode optimized for full readability
 
+### 38. SMS Notifications (Twilio) ✅ (Jan 12, 2026)
+- Hot lead alerts with instant SMS
+- Lead status change notifications
+- Scheduled follow-up reminders
+- Placeholder credential handling (queue notifications until configured)
+
+### 39. Enhanced Settings & Import Modals ✅ (Jan 12, 2026)
+- Premium form styling with Porsche/McLaren aesthetic
+- Step indicators with progress lines
+- Better input fields and buttons
+- Full light/dark mode support
+
+### 📋 In Progress / Upcoming
+- **Real CRM Connections** - Infrastructure ready, awaiting API credentials
+- **Enhanced PWA** - Better offline, app icon, splash screen
+- **A/B Testing** - Track tone effectiveness, shortcuts vs Tower Talk, response length
+
 ### 📋 Future Tasks (P3)
 - "What If" Scenario Generator for VS-Battle Cards
-- Real CRM API credentials integration (currently placeholder/mock mode)
+- Capacitor wrapper for native iOS/Android App Store deployment
 - Performance Leaderboard for team tracking
 
 ### 🔧 Technical Note
 - All CRM connectors currently operate in **MOCK MODE** using simulated data
-- To enable real CRM connections: provide actual API credentials for VinSolutions, DealerSocket, elead, CDK, DealerTrack, Reynolds, or ProMax
+- SMS notifications will **queue until Twilio credentials are provided**
+- To enable real connections:
+  - CRM: Provide API credentials for VinSolutions, DealerSocket, elead, CDK, DealerTrack, Reynolds, or ProMax
+  - SMS: Provide Twilio Account SID, Auth Token, and From Number
 
 ---
 
