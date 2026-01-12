@@ -481,6 +481,583 @@
 }
 
 /* Supercharg'd Button - Animated Flames - LARGER */
+/* ============================================
+   TAILLIGHTS LOGO - Pulsating Porsche 911 Style
+   ============================================ */
+
+.taillights-logo {
+  @apply relative flex items-center;
+  width: 48px;
+  height: 40px;
+}
+
+.taillight-cluster {
+  @apply absolute flex flex-col gap-[3px];
+  width: 18px;
+}
+
+.taillight-cluster.left {
+  left: 0;
+}
+
+.taillight-cluster.right {
+  right: 0;
+}
+
+.taillight-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, 
+    hsla(0, 100%, 50%, 1) 0%,
+    hsla(0, 100%, 60%, 1) 50%,
+    hsla(0, 100%, 50%, 1) 100%
+  );
+  box-shadow: 
+    0 0 8px hsla(0, 100%, 50%, 0.8),
+    0 0 16px hsla(0, 100%, 50%, 0.5),
+    0 0 24px hsla(0, 100%, 50%, 0.3),
+    inset 0 0 4px hsla(0, 100%, 80%, 0.5);
+  animation: taillight-pulse 1.5s ease-in-out infinite;
+}
+
+.taillight-bar.bar-1 {
+  animation-delay: 0s;
+}
+
+.taillight-bar.bar-2 {
+  animation-delay: 0.15s;
+  width: 85%;
+  margin-left: auto;
+}
+
+.taillight-cluster.left .taillight-bar.bar-2 {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.taillight-bar.bar-3 {
+  animation-delay: 0.3s;
+  width: 70%;
+  margin-left: auto;
+}
+
+.taillight-cluster.left .taillight-bar.bar-3 {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.taillight-connector {
+  @apply absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 2px;
+  background: hsla(0, 100%, 40%, 0.6);
+  box-shadow: 0 0 12px hsla(0, 100%, 50%, 0.4);
+  animation: connector-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes taillight-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    box-shadow: 
+      0 0 8px hsla(0, 100%, 50%, 0.7),
+      0 0 16px hsla(0, 100%, 50%, 0.4),
+      inset 0 0 4px hsla(0, 100%, 80%, 0.4);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 
+      0 0 12px hsla(0, 100%, 55%, 0.9),
+      0 0 24px hsla(0, 100%, 50%, 0.6),
+      0 0 36px hsla(0, 100%, 50%, 0.3),
+      inset 0 0 6px hsla(0, 100%, 80%, 0.6);
+  }
+}
+
+@keyframes connector-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Light mode taillights */
+html:not(.dark) .taillight-bar {
+  background: linear-gradient(90deg, 
+    hsla(0, 90%, 45%, 1) 0%,
+    hsla(0, 90%, 55%, 1) 50%,
+    hsla(0, 90%, 45%, 1) 100%
+  );
+}
+
+/* ============================================
+   SUPERCHARG'D V2 - Enhanced Exhaust Flames
+   ============================================ */
+
+.btn-supercharged-v2 {
+  @apply relative flex items-center justify-center transition-all duration-300;
+  width: 72px;
+  height: 44px;
+  background: linear-gradient(180deg, 
+    hsla(220, 12%, 18%, 0.95) 0%,
+    hsla(220, 12%, 12%, 0.98) 100%
+  );
+  border: 1px solid hsla(220, 10%, 28%, 0.5);
+  border-radius: 12px;
+  overflow: visible;
+}
+
+.btn-supercharged-v2 .exhaust-pipe {
+  @apply absolute left-2;
+  width: 10px;
+  height: 18px;
+}
+
+.btn-supercharged-v2 .pipe-opening {
+  @apply w-full h-full rounded-sm;
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 8%, 1) 0%,
+    hsla(220, 10%, 15%, 1) 100%
+  );
+  border: 1px solid hsla(220, 10%, 25%, 0.6);
+  box-shadow: inset 0 2px 4px hsla(0, 0%, 0%, 0.5);
+}
+
+.btn-supercharged-v2 .flames-v2 {
+  @apply absolute pointer-events-none;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: right center;
+  width: 40px;
+  height: 24px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-supercharged-v2.active .flames-v2 {
+  transform: translateY(-50%) scaleX(1);
+  opacity: 1;
+}
+
+.btn-supercharged-v2 .flame-core {
+  @apply absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 12px;
+  background: radial-gradient(ellipse at right,
+    hsla(60, 100%, 85%, 1) 0%,
+    hsla(45, 100%, 70%, 1) 30%,
+    hsla(30, 100%, 55%, 0.8) 60%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  animation: core-flicker 0.1s ease-in-out infinite;
+}
+
+.btn-supercharged-v2 .flame-outer {
+  @apply absolute;
+  right: 8px;
+  top: 50%;
+  width: 28px;
+  height: 8px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    hsla(25, 100%, 55%, 0.9) 30%,
+    hsla(35, 100%, 60%, 0.7) 60%,
+    hsla(45, 100%, 50%, 0.4) 100%
+  );
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.btn-supercharged-v2 .flame-outer.flame-1 {
+  transform: translateY(-50%);
+  animation: flame-shoot 0.15s ease-out infinite;
+}
+
+.btn-supercharged-v2 .flame-outer.flame-2 {
+  transform: translateY(-50%) translateY(-4px) rotate(-15deg);
+  animation: flame-shoot 0.12s ease-out infinite 0.03s;
+  height: 6px;
+  opacity: 0.8;
+}
+
+.btn-supercharged-v2 .flame-outer.flame-3 {
+  transform: translateY(-50%) translateY(4px) rotate(15deg);
+  animation: flame-shoot 0.13s ease-out infinite 0.05s;
+  height: 6px;
+  opacity: 0.8;
+}
+
+.btn-supercharged-v2 .flame-outer.flame-4 {
+  transform: translateY(-50%) translateY(-7px) rotate(-25deg);
+  animation: flame-shoot 0.14s ease-out infinite 0.02s;
+  height: 4px;
+  opacity: 0.6;
+  width: 22px;
+}
+
+.btn-supercharged-v2 .flame-outer.flame-5 {
+  transform: translateY(-50%) translateY(7px) rotate(25deg);
+  animation: flame-shoot 0.11s ease-out infinite 0.04s;
+  height: 4px;
+  opacity: 0.6;
+  width: 22px;
+}
+
+.btn-supercharged-v2 .flame-sparks {
+  @apply absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 35px;
+  height: 20px;
+}
+
+.btn-supercharged-v2 .flame-sparks span {
+  @apply absolute;
+  width: 3px;
+  height: 3px;
+  background: hsla(45, 100%, 70%, 1);
+  border-radius: 50%;
+  box-shadow: 0 0 4px hsla(45, 100%, 60%, 0.8);
+}
+
+.btn-supercharged-v2.active .flame-sparks span {
+  animation: spark-fly 0.4s ease-out infinite;
+}
+
+.btn-supercharged-v2 .flame-sparks span:nth-child(1) { top: 30%; right: 5px; animation-delay: 0s; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(2) { top: 50%; right: 8px; animation-delay: 0.1s; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(3) { top: 70%; right: 3px; animation-delay: 0.2s; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(4) { top: 20%; right: 12px; animation-delay: 0.15s; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(5) { top: 80%; right: 10px; animation-delay: 0.25s; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(6) { top: 45%; right: 2px; animation-delay: 0.05s; }
+
+@keyframes core-flicker {
+  0%, 100% { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  50% { opacity: 0.9; transform: translateY(-50%) scaleX(0.95); }
+}
+
+@keyframes flame-shoot {
+  0% { transform: translateY(-50%) scaleX(0.9); opacity: 0.7; }
+  50% { transform: translateY(-50%) scaleX(1.1); opacity: 1; }
+  100% { transform: translateY(-50%) scaleX(0.9); opacity: 0.7; }
+}
+
+@keyframes spark-fly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-25px, var(--spark-y, 0)) scale(0); opacity: 0; }
+}
+
+.btn-supercharged-v2 .flame-sparks span:nth-child(1) { --spark-y: -5px; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(2) { --spark-y: 2px; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(3) { --spark-y: 6px; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(4) { --spark-y: -8px; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(5) { --spark-y: 10px; }
+.btn-supercharged-v2 .flame-sparks span:nth-child(6) { --spark-y: 0px; }
+
+.btn-supercharged-v2 .supercharged-label-v2 {
+  @apply text-sm font-bold z-10 relative ml-2;
+  color: hsla(220, 10%, 55%, 1);
+  transition: all 0.3s ease;
+}
+
+.btn-supercharged-v2.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 90%, 18%, 0.98) 0%,
+    hsla(15, 95%, 12%, 1) 100%
+  );
+  border-color: hsla(30, 100%, 50%, 0.5);
+  box-shadow: 
+    0 0 25px hsla(25, 100%, 50%, 0.35),
+    0 0 50px hsla(15, 100%, 50%, 0.15),
+    inset 0 0 20px hsla(30, 100%, 30%, 0.2);
+}
+
+.btn-supercharged-v2.active .supercharged-label-v2 {
+  color: hsla(45, 100%, 70%, 1);
+  text-shadow: 0 0 12px hsla(45, 100%, 50%, 0.6);
+}
+
+.btn-supercharged-v2:hover {
+  border-color: hsla(220, 10%, 40%, 0.6);
+}
+
+.btn-supercharged-v2.active:hover {
+  box-shadow: 
+    0 0 30px hsla(25, 100%, 50%, 0.45),
+    0 0 60px hsla(15, 100%, 50%, 0.2);
+}
+
+/* Light mode supercharged */
+html:not(.dark) .btn-supercharged-v2 {
+  background: linear-gradient(180deg, 
+    hsla(220, 10%, 95%, 0.98) 0%,
+    hsla(220, 10%, 90%, 1) 100%
+  );
+  border-color: hsla(220, 10%, 80%, 0.6);
+}
+
+html:not(.dark) .btn-supercharged-v2 .supercharged-label-v2 {
+  color: hsla(220, 15%, 40%, 1);
+}
+
+html:not(.dark) .btn-supercharged-v2.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 80%, 92%, 1) 0%,
+    hsla(20, 85%, 88%, 1) 100%
+  );
+}
+
+html:not(.dark) .btn-supercharged-v2.active .supercharged-label-v2 {
+  color: hsla(20, 90%, 35%, 1);
+}
+
+/* ============================================
+   CHECK BUTTON - Gran Turismo Side View Style
+   ============================================ */
+
+.btn-check-gt {
+  @apply relative flex flex-col items-center justify-center transition-all duration-300;
+  width: 76px;
+  height: 46px;
+  background: linear-gradient(180deg, 
+    hsla(220, 15%, 18%, 0.95) 0%,
+    hsla(220, 15%, 12%, 0.98) 100%
+  );
+  border: 1px solid hsla(220, 12%, 30%, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.btn-check-gt .gt-car-container {
+  @apply relative;
+  width: 60px;
+  height: 24px;
+}
+
+/* Car body - sleek sports car profile */
+.btn-check-gt .gt-car-body {
+  @apply absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  height: 14px;
+}
+
+.btn-check-gt .gt-car-roof {
+  @apply absolute;
+  left: 22px;
+  bottom: 8px;
+  width: 18px;
+  height: 6px;
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 50%, 0.9) 0%,
+    hsla(220, 12%, 40%, 0.95) 100%
+  );
+  border-radius: 4px 4px 0 0;
+  clip-path: polygon(10% 100%, 0% 0%, 100% 0%, 90% 100%);
+}
+
+.btn-check-gt .gt-car-window {
+  @apply absolute;
+  left: 24px;
+  bottom: 10px;
+  width: 14px;
+  height: 4px;
+  background: linear-gradient(180deg,
+    hsla(200, 50%, 60%, 0.6) 0%,
+    hsla(210, 60%, 40%, 0.4) 100%
+  );
+  border-radius: 2px 2px 0 0;
+  clip-path: polygon(15% 100%, 0% 0%, 100% 0%, 85% 100%);
+}
+
+.btn-check-gt .gt-car-lower {
+  @apply absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 45%, 0.95) 0%,
+    hsla(220, 12%, 35%, 1) 100%
+  );
+  border-radius: 2px 6px 3px 3px;
+  clip-path: polygon(0% 50%, 5% 0%, 95% 0%, 100% 50%, 98% 100%, 2% 100%);
+}
+
+/* Wheels */
+.btn-check-gt .gt-wheel {
+  @apply absolute;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle,
+    hsla(220, 10%, 25%, 1) 40%,
+    hsla(220, 15%, 15%, 1) 50%,
+    hsla(220, 10%, 30%, 1) 60%,
+    hsla(220, 10%, 20%, 1) 100%
+  );
+  border-radius: 50%;
+  border: 1px solid hsla(220, 10%, 40%, 0.5);
+}
+
+.btn-check-gt .gt-wheel-front {
+  left: 8px;
+}
+
+.btn-check-gt .gt-wheel-rear {
+  right: 8px;
+}
+
+/* Hood - opens on hover */
+.btn-check-gt .gt-hood {
+  @apply absolute;
+  left: 4px;
+  bottom: 10px;
+  width: 20px;
+  height: 8px;
+  transform-origin: left bottom;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 5;
+}
+
+.btn-check-gt .gt-hood-panel {
+  @apply w-full h-full;
+  background: linear-gradient(90deg,
+    hsla(220, 15%, 48%, 0.95) 0%,
+    hsla(220, 12%, 42%, 1) 100%
+  );
+  border-radius: 2px 4px 0 0;
+  clip-path: polygon(0% 100%, 0% 20%, 100% 0%, 100% 100%);
+  box-shadow: inset 0 1px 0 hsla(220, 20%, 60%, 0.3);
+}
+
+/* Engine glow */
+.btn-check-gt .gt-engine-glow {
+  @apply absolute;
+  left: 6px;
+  bottom: 8px;
+  width: 16px;
+  height: 8px;
+  background: radial-gradient(ellipse,
+    hsla(30, 100%, 50%, 0) 0%,
+    hsla(25, 100%, 50%, 0) 100%
+  );
+  border-radius: 2px;
+  transition: all 0.3s ease 0.15s;
+  z-index: 4;
+}
+
+/* Headlight */
+.btn-check-gt .gt-headlight {
+  @apply absolute;
+  left: 5px;
+  bottom: 8px;
+  width: 4px;
+  height: 3px;
+  background: hsla(45, 100%, 80%, 0.8);
+  border-radius: 1px;
+  box-shadow: 0 0 4px hsla(45, 100%, 70%, 0.5);
+  transition: all 0.3s ease;
+}
+
+/* Taillight */
+.btn-check-gt .gt-taillight {
+  @apply absolute;
+  right: 5px;
+  bottom: 8px;
+  width: 4px;
+  height: 3px;
+  background: hsla(0, 100%, 50%, 0.9);
+  border-radius: 1px;
+  box-shadow: 0 0 6px hsla(0, 100%, 50%, 0.6);
+  animation: gt-taillight-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes gt-taillight-pulse {
+  0%, 100% { opacity: 0.8; box-shadow: 0 0 4px hsla(0, 100%, 50%, 0.4); }
+  50% { opacity: 1; box-shadow: 0 0 8px hsla(0, 100%, 50%, 0.8); }
+}
+
+.btn-check-gt .gt-label {
+  @apply text-[9px] font-bold tracking-wider mt-0.5;
+  color: hsla(220, 10%, 55%, 1);
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+/* Hover - Hood opens, engine glows */
+.btn-check-gt:hover .gt-hood {
+  transform: rotate(-45deg);
+}
+
+.btn-check-gt:hover .gt-engine-glow {
+  background: radial-gradient(ellipse,
+    hsla(30, 100%, 55%, 0.9) 0%,
+    hsla(25, 100%, 50%, 0.6) 40%,
+    hsla(20, 100%, 45%, 0.3) 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 15px hsla(30, 100%, 50%, 0.5);
+}
+
+.btn-check-gt:hover .gt-headlight {
+  box-shadow: 
+    0 0 8px hsla(45, 100%, 70%, 0.8),
+    -10px 0 20px hsla(45, 100%, 70%, 0.3);
+}
+
+.btn-check-gt:hover .gt-label {
+  color: hsla(30, 100%, 60%, 1);
+}
+
+.btn-check-gt:hover {
+  background: linear-gradient(180deg, 
+    hsla(220, 15%, 22%, 0.98) 0%,
+    hsla(220, 15%, 16%, 1) 100%
+  );
+  border-color: hsla(30, 80%, 50%, 0.4);
+  box-shadow: 0 0 20px hsla(30, 100%, 50%, 0.15);
+}
+
+.btn-check-gt:active {
+  transform: scale(0.96);
+}
+
+/* Light mode */
+html:not(.dark) .btn-check-gt {
+  background: linear-gradient(180deg, 
+    hsla(220, 12%, 95%, 0.98) 0%,
+    hsla(220, 12%, 90%, 1) 100%
+  );
+  border-color: hsla(220, 10%, 80%, 0.6);
+}
+
+html:not(.dark) .btn-check-gt .gt-car-roof,
+html:not(.dark) .btn-check-gt .gt-car-lower,
+html:not(.dark) .btn-check-gt .gt-hood-panel {
+  background: linear-gradient(180deg,
+    hsla(220, 12%, 65%, 0.95) 0%,
+    hsla(220, 10%, 55%, 1) 100%
+  );
+}
+
+html:not(.dark) .btn-check-gt .gt-label {
+  color: hsla(220, 15%, 40%, 1);
+}
+
+html:not(.dark) .btn-check-gt:hover .gt-label {
+  color: hsla(25, 90%, 40%, 1);
+}
+
+/* Old btn-supercharged kept for backward compatibility but hidden */
 .btn-supercharged {
   @apply relative w-14 h-11 rounded-lg flex items-center justify-center transition-all duration-300 overflow-hidden;
   background: linear-gradient(180deg, 
