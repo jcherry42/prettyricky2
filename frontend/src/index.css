@@ -534,150 +534,183 @@ h1, h2, h3 {
 
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   C8 CORVETTE FULL-WIDTH TAILLIGHT BAR
-   With center "TAILLIGHTS" badge text
+   C8 CORVETTE TAILLIGHT STRIP - ACCURATE DESIGN
+   Single thin horizontal LED bar spanning full width
+   Dark center section with TAILLIGHTS text
    ============================================ */
 
-.c8-taillight-bar {
+.c8-taillight-strip {
   @apply relative flex items-center;
-  height: 36px;
+  height: 28px;
   background: linear-gradient(180deg,
-    hsla(220, 20%, 12%, 1) 0%,
-    hsla(220, 18%, 8%, 1) 100%
+    hsla(220, 20%, 8%, 1) 0%,
+    hsla(220, 18%, 5%, 1) 100%
   );
-  border-radius: 4px;
-  padding: 4px 2px;
-  border: 1px solid hsla(220, 15%, 20%, 0.6);
+  border-radius: 3px;
+  border: 1px solid hsla(220, 15%, 18%, 0.6);
   box-shadow: 
-    inset 0 1px 0 hsla(220, 20%, 25%, 0.3),
-    0 2px 8px hsla(0, 0%, 0%, 0.4);
+    inset 0 1px 0 hsla(220, 20%, 20%, 0.2),
+    0 2px 10px hsla(0, 0%, 0%, 0.5);
+  overflow: hidden;
 }
 
-.c8-section {
+/* Wing sections - outer angled parts */
+.c8-wing {
+  width: 24px;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 4px 2px;
+}
+
+.c8-wing-left {
+  clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+.c8-wing-right {
+  clip-path: polygon(0% 0%, 70% 0%, 100% 100%, 0% 100%);
+}
+
+/* Mid sections */
+.c8-mid {
+  width: 20px;
   height: 100%;
   display: flex;
   align-items: center;
+  padding: 4px 1px;
+}
+
+/* Inner sections closest to center */
+.c8-inner {
+  width: 18px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 4px 1px;
+}
+
+/* The LED element inside each section */
+.c8-led {
+  width: 100%;
+  height: 6px;
+  background: hsla(0, 20%, 15%, 0.6);
+  border-radius: 1px;
   transition: all 0.3s ease;
 }
 
-.c8-left-outer, .c8-right-outer {
-  width: 28px;
-}
-
-.c8-left-inner, .c8-right-inner {
-  width: 22px;
-}
-
-.c8-led-strip {
-  width: 100%;
-  height: 8px;
-  background: hsla(0, 30%, 20%, 0.5);
-  border-radius: 2px;
-  transition: all 0.4s ease;
-}
-
-/* Lit state for LED strips */
-.c8-section.lit .c8-led-strip {
-  background: linear-gradient(90deg,
-    hsla(0, 100%, 45%, 1) 0%,
-    hsla(0, 100%, 55%, 1) 50%,
+/* Lit state - bright red LED glow */
+.c8-wing.lit .c8-led,
+.c8-mid.lit .c8-led,
+.c8-inner.lit .c8-led {
+  background: linear-gradient(180deg,
+    hsla(0, 100%, 55%, 1) 0%,
+    hsla(0, 100%, 50%, 1) 50%,
     hsla(0, 100%, 45%, 1) 100%
   );
   box-shadow: 
-    0 0 10px hsla(0, 100%, 50%, 0.8),
-    0 0 20px hsla(0, 100%, 50%, 0.5),
-    0 0 30px hsla(0, 100%, 50%, 0.3),
-    inset 0 0 4px hsla(0, 100%, 70%, 0.5);
+    0 0 8px hsla(0, 100%, 50%, 0.9),
+    0 0 16px hsla(0, 100%, 50%, 0.6),
+    0 0 24px hsla(0, 100%, 50%, 0.3),
+    inset 0 1px 2px hsla(0, 100%, 70%, 0.4);
 }
 
-/* Running state - pulsing animation */
-.c8-taillight-bar.running .c8-section.lit .c8-led-strip {
-  animation: c8-pulse 1.8s ease-in-out infinite;
+/* Running state pulse animation */
+.c8-taillight-strip.running .c8-wing.lit .c8-led,
+.c8-taillight-strip.running .c8-mid.lit .c8-led,
+.c8-taillight-strip.running .c8-inner.lit .c8-led {
+  animation: c8-led-pulse 2s ease-in-out infinite;
 }
 
-.c8-left-outer.lit .c8-led-strip { animation-delay: 0s; }
-.c8-left-inner.lit .c8-led-strip { animation-delay: 0.1s; }
-.c8-right-inner.lit .c8-led-strip { animation-delay: 0.1s; }
-.c8-right-outer.lit .c8-led-strip { animation-delay: 0s; }
+/* Stagger the pulse for flowing effect */
+.c8-wing-left.lit .c8-led { animation-delay: 0.15s; }
+.c8-mid-left.lit .c8-led { animation-delay: 0.1s; }
+.c8-inner-left.lit .c8-led { animation-delay: 0.05s; }
+.c8-inner-right.lit .c8-led { animation-delay: 0.05s; }
+.c8-mid-right.lit .c8-led { animation-delay: 0.1s; }
+.c8-wing-right.lit .c8-led { animation-delay: 0.15s; }
 
-@keyframes c8-pulse {
+@keyframes c8-led-pulse {
   0%, 100% {
-    opacity: 0.85;
+    opacity: 0.9;
     box-shadow: 
-      0 0 8px hsla(0, 100%, 50%, 0.7),
-      0 0 16px hsla(0, 100%, 50%, 0.4),
-      inset 0 0 3px hsla(0, 100%, 70%, 0.4);
+      0 0 6px hsla(0, 100%, 50%, 0.8),
+      0 0 12px hsla(0, 100%, 50%, 0.5),
+      inset 0 1px 2px hsla(0, 100%, 70%, 0.3);
   }
   50% {
     opacity: 1;
     box-shadow: 
-      0 0 14px hsla(0, 100%, 55%, 0.9),
-      0 0 28px hsla(0, 100%, 50%, 0.6),
-      0 0 40px hsla(0, 100%, 50%, 0.3),
-      inset 0 0 6px hsla(0, 100%, 75%, 0.6);
+      0 0 12px hsla(0, 100%, 55%, 1),
+      0 0 24px hsla(0, 100%, 50%, 0.7),
+      0 0 36px hsla(0, 100%, 50%, 0.4),
+      inset 0 1px 3px hsla(0, 100%, 75%, 0.5);
   }
 }
 
-/* Center badge with TAILLIGHTS text */
-.c8-center-badge {
+/* Center section - dark with TAILLIGHTS text */
+.c8-center {
   @apply flex items-center justify-center;
-  min-width: 90px;
+  min-width: 100px;
   height: 100%;
-  padding: 0 8px;
+  padding: 0 10px;
   background: linear-gradient(180deg,
-    hsla(220, 18%, 15%, 1) 0%,
-    hsla(220, 15%, 10%, 1) 100%
+    hsla(220, 20%, 6%, 1) 0%,
+    hsla(220, 18%, 3%, 1) 100%
   );
-  border-left: 1px solid hsla(220, 15%, 25%, 0.4);
-  border-right: 1px solid hsla(220, 15%, 25%, 0.4);
-  transition: all 0.4s ease;
+  border-left: 1px solid hsla(0, 50%, 20%, 0.3);
+  border-right: 1px solid hsla(0, 50%, 20%, 0.3);
 }
 
-.c8-badge-text {
+.c8-text {
   font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  color: hsla(220, 10%, 35%, 1);
+  font-size: 14px;
+  letter-spacing: 0.25em;
+  color: hsla(220, 10%, 25%, 1);
   transition: all 0.4s ease;
   text-transform: uppercase;
 }
 
-.c8-center-badge.lit .c8-badge-text {
+/* Lit center - Vice City neon glow */
+.c8-center.lit .c8-text {
   background: linear-gradient(180deg, 
     #ff6b9d 0%, 
-    #ff3366 50%,
+    #ff2d6a 50%,
     #ff6b9d 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 8px hsla(340, 100%, 60%, 0.6));
-  animation: badge-glow 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px hsla(340, 100%, 60%, 0.7));
 }
 
-@keyframes badge-glow {
-  0%, 100% { filter: drop-shadow(0 0 6px hsla(340, 100%, 60%, 0.5)); }
-  50% { filter: drop-shadow(0 0 12px hsla(340, 100%, 65%, 0.8)); }
+.c8-taillight-strip.running .c8-center.lit .c8-text {
+  animation: c8-text-glow 2.5s ease-in-out infinite;
+}
+
+@keyframes c8-text-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px hsla(340, 100%, 60%, 0.6)); }
+  50% { filter: drop-shadow(0 0 14px hsla(340, 100%, 65%, 0.9)); }
 }
 
 /* Light mode C8 */
-html:not(.dark) .c8-taillight-bar {
+html:not(.dark) .c8-taillight-strip {
   background: linear-gradient(180deg,
-    hsla(220, 15%, 88%, 1) 0%,
-    hsla(220, 12%, 82%, 1) 100%
+    hsla(220, 15%, 85%, 1) 0%,
+    hsla(220, 12%, 80%, 1) 100%
   );
-  border-color: hsla(220, 12%, 75%, 0.6);
+  border-color: hsla(220, 12%, 72%, 0.6);
 }
 
-html:not(.dark) .c8-center-badge {
+html:not(.dark) .c8-center {
   background: linear-gradient(180deg,
-    hsla(220, 12%, 85%, 1) 0%,
-    hsla(220, 10%, 80%, 1) 100%
+    hsla(220, 12%, 82%, 1) 0%,
+    hsla(220, 10%, 78%, 1) 100%
   );
 }
 
-html:not(.dark) .c8-badge-text {
-  color: hsla(220, 15%, 55%, 1);
+html:not(.dark) .c8-text {
+  color: hsla(220, 15%, 50%, 1);
 }
 
 /* ============================================
