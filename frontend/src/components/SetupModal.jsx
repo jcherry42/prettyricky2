@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Building2, User, Sliders } from 'lucide-react';
+import { X, Check, Building2, User, Sliders, ChevronRight, Sparkles } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { APPOINTMENT_PHRASES, SALESPERSON_STYLES, RESPONSE_TONES } from '../data/salesData';
 import { toast } from 'sonner';
@@ -30,9 +30,7 @@ export const SetupModal = () => {
     signOff: preferences.signOff,
   });
 
-  // Sync form data when context values change (on load from localStorage)
   useEffect(() => {
-    // Use callback to avoid re-render cascade
     const newFormData = {
       dealershipName: dealership.name,
       dealershipAddress: dealership.address,
@@ -44,7 +42,6 @@ export const SetupModal = () => {
       defaultTone: preferences.defaultTone,
       signOff: preferences.signOff,
     };
-    // Only update if modal is shown to avoid unnecessary renders
     if (showSetup) {
       setFormData(newFormData);
     }
@@ -86,107 +83,136 @@ export const SetupModal = () => {
     return true;
   };
 
+  const steps = [
+    { num: 1, label: 'Dealership', icon: Building2 },
+    { num: 2, label: 'Profile', icon: User },
+    { num: 3, label: 'Preferences', icon: Sliders },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="ios-modal w-full max-w-md max-h-[90vh] overflow-hidden animate-slide-up safe-area-bottom">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border/50">
-          <h2 className="font-bold text-lg text-foreground">
-            {step === 1 && 'Dealership Setup'}
-            {step === 2 && 'Your Profile'}
-            {step === 3 && 'Preferences'}
-          </h2>
-          
-          <button
-            onClick={() => toggleSetup(false)}
-            className="ios-btn w-9 h-9 bg-muted/50 rounded-full text-muted-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center mclaren-glass-overlay p-4">
+      <div className="mclaren-setup-modal w-full max-w-md max-h-[90vh] overflow-hidden animate-slide-up">
+        {/* Premium Header */}
+        <div className="mclaren-setup-header px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="mclaren-setup-icon">
+                {step === 1 && <Building2 className="w-5 h-5" />}
+                {step === 2 && <User className="w-5 h-5" />}
+                {step === 3 && <Sliders className="w-5 h-5" />}
+              </div>
+              <div>
+                <h2 className="font-bold text-lg text-foreground">
+                  {step === 1 && 'Dealership Setup'}
+                  {step === 2 && 'Your Profile'}
+                  {step === 3 && 'Preferences'}
+                </h2>
+                <p className="text-xs text-muted-foreground">Step {step} of 3</p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => toggleSetup(false)}
+              className="mclaren-close-btn"
+              data-testid="close-setup-modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Progress dots */}
-        <div className="flex justify-center gap-2 py-4 bg-gradient-to-b from-muted/30 to-transparent">
-          {[1, 2, 3].map((s) => (
-            <div
-              key={s}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                s === step 
-                  ? 'bg-primary scale-125' 
-                  : s < step 
-                    ? 'bg-primary/50' 
-                    : 'bg-muted'
-              }`}
-            />
-          ))}
+        {/* Progress Bar */}
+        <div className="mclaren-progress-container px-6 py-4">
+          <div className="flex items-center justify-between mb-3">
+            {steps.map((s, idx) => {
+              const Icon = s.icon;
+              return (
+                <React.Fragment key={s.num}>
+                  <div 
+                    className={`mclaren-step-indicator ${
+                      s.num === step ? 'active' : s.num < step ? 'completed' : ''
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  {idx < steps.length - 1 && (
+                    <div className={`mclaren-step-line ${s.num < step ? 'completed' : ''}`} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground px-1">
+            {steps.map(s => (
+              <span key={s.num} className={s.num === step ? 'text-primary font-medium' : ''}>
+                {s.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4 overflow-y-auto max-h-[55vh] hide-scrollbar">
+        <div className="px-6 pb-6 space-y-5 overflow-y-auto max-h-[50vh] hide-scrollbar">
           {/* Step 1: Dealership */}
           {step === 1 && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20">
-                <Building2 className="w-5 h-5 text-primary" />
-                <p className="text-sm font-medium text-foreground">Set up your dealership info</p>
+            <div className="space-y-5 animate-fade-in">
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">
+                  Dealership Name <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.dealershipName}
+                  onChange={(e) => handleChange('dealershipName', e.target.value)}
+                  placeholder="AutoMax Motors"
+                  className="mclaren-input"
+                  data-testid="dealership-name-input"
+                />
               </div>
               
-              <div className="space-y-4">
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Address</label>
+                <input
+                  type="text"
+                  value={formData.dealershipAddress}
+                  onChange={(e) => handleChange('dealershipAddress', e.target.value)}
+                  placeholder="1234 Auto Drive, City, ST 12345"
+                  className="mclaren-input"
+                />
+              </div>
+              
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">
+                  Hours <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.dealershipHours}
+                  onChange={(e) => handleChange('dealershipHours', e.target.value)}
+                  placeholder="Mon-Sat 9AM-8PM, Sun 11AM-6PM"
+                  className="mclaren-input"
+                />
+              </div>
+              
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Appointment Phrasing</label>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Dealership Name *</label>
-                  <input
-                    type="text"
-                    value={formData.dealershipName}
-                    onChange={(e) => handleChange('dealershipName', e.target.value)}
-                    placeholder="AutoMax Motors"
-                    className="ios-input"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Address</label>
-                  <input
-                    type="text"
-                    value={formData.dealershipAddress}
-                    onChange={(e) => handleChange('dealershipAddress', e.target.value)}
-                    placeholder="1234 Auto Drive, City, ST 12345"
-                    className="ios-input"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Hours *</label>
-                  <input
-                    type="text"
-                    value={formData.dealershipHours}
-                    onChange={(e) => handleChange('dealershipHours', e.target.value)}
-                    placeholder="Mon-Sat 9AM-8PM, Sun 11AM-6PM"
-                    className="ios-input"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Appointment Phrasing</label>
-                  <div className="space-y-2">
-                    {APPOINTMENT_PHRASES.map((phrase) => (
-                      <button
-                        key={phrase.id}
-                        onClick={() => handleChange('appointmentPhrase', phrase.id)}
-                        className={`
-                          ios-list-item rounded-xl w-full border transition-all
-                          ${formData.appointmentPhrase === phrase.id 
-                            ? 'border-primary bg-primary/5 shadow-sm' 
-                            : 'border-border/50 bg-card/50'
-                          }
-                        `}
-                      >
-                        <span className="flex-1 text-sm text-foreground">&ldquo;{phrase.full}&rdquo;</span>
-                        {formData.appointmentPhrase === phrase.id && (
-                          <Check className="w-5 h-5 text-primary" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  {APPOINTMENT_PHRASES.map((phrase) => (
+                    <button
+                      key={phrase.id}
+                      onClick={() => handleChange('appointmentPhrase', phrase.id)}
+                      className={`mclaren-option-btn ${
+                        formData.appointmentPhrase === phrase.id ? 'selected' : ''
+                      }`}
+                    >
+                      <span className="flex-1 text-left text-sm">&ldquo;{phrase.full}&rdquo;</span>
+                      {formData.appointmentPhrase === phrase.id && (
+                        <div className="mclaren-check-icon">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -194,60 +220,57 @@ export const SetupModal = () => {
 
           {/* Step 2: Salesperson */}
           {step === 2 && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-accent/10 to-accent/5 rounded-xl border border-accent/20">
-                <User className="w-5 h-5 text-accent" />
-                <p className="text-sm font-medium text-foreground">Tell us about yourself</p>
+            <div className="space-y-5 animate-fade-in">
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">
+                  Your Name <span className="text-primary">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.salespersonName}
+                  onChange={(e) => handleChange('salespersonName', e.target.value)}
+                  placeholder="John Smith"
+                  className="mclaren-input"
+                  data-testid="salesperson-name-input"
+                />
               </div>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Your Name *</label>
-                  <input
-                    type="text"
-                    value={formData.salespersonName}
-                    onChange={(e) => handleChange('salespersonName', e.target.value)}
-                    placeholder="John Smith"
-                    className="ios-input"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Title (optional)</label>
-                  <input
-                    type="text"
-                    value={formData.salespersonTitle}
-                    onChange={(e) => handleChange('salespersonTitle', e.target.value)}
-                    placeholder="Sales Consultant"
-                    className="ios-input"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Your Style</label>
-                  <div className="space-y-2">
-                    {SALESPERSON_STYLES.map((style) => (
-                      <button
-                        key={style.id}
-                        onClick={() => handleChange('salespersonStyle', style.id)}
-                        className={`
-                          ios-list-item rounded-xl w-full border transition-all
-                          ${formData.salespersonStyle === style.id 
-                            ? 'border-accent bg-accent/5 shadow-sm' 
-                            : 'border-border/50 bg-card/50'
-                          }
-                        `}
-                      >
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-semibold text-foreground">{style.label}</p>
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Title</label>
+                <input
+                  type="text"
+                  value={formData.salespersonTitle}
+                  onChange={(e) => handleChange('salespersonTitle', e.target.value)}
+                  placeholder="Sales Consultant"
+                  className="mclaren-input"
+                />
+              </div>
+              
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Your Sales Style</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {SALESPERSON_STYLES.map((style) => (
+                    <button
+                      key={style.id}
+                      onClick={() => handleChange('salespersonStyle', style.id)}
+                      className={`mclaren-style-card ${
+                        formData.salespersonStyle === style.id ? 'selected' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{style.emoji}</span>
+                        <div className="text-left flex-1">
+                          <p className="font-medium text-sm">{style.label}</p>
                           <p className="text-xs text-muted-foreground">{style.description}</p>
                         </div>
                         {formData.salespersonStyle === style.id && (
-                          <Check className="w-5 h-5 text-accent" />
+                          <div className="mclaren-check-icon">
+                            <Check className="w-3 h-3" />
+                          </div>
                         )}
-                      </button>
-                    ))}
-                  </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -255,78 +278,93 @@ export const SetupModal = () => {
 
           {/* Step 3: Preferences */}
           {step === 3 && (
-            <div className="space-y-4 animate-fade-in">
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-success/10 to-success/5 rounded-xl border border-success/20">
-                <Sliders className="w-5 h-5 text-success" />
-                <p className="text-sm font-medium text-foreground">Set your defaults</p>
+            <div className="space-y-5 animate-fade-in">
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Default Tone</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {RESPONSE_TONES.map((tone) => (
+                    <button
+                      key={tone.id}
+                      onClick={() => handleChange('defaultTone', tone.id)}
+                      className={`mclaren-tone-btn ${
+                        formData.defaultTone === tone.id ? 'selected' : ''
+                      }`}
+                    >
+                      <span className="text-lg mb-1">{tone.emoji}</span>
+                      <span className="text-xs font-medium">{tone.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Default Tone</label>
-                  <div className="space-y-2">
-                    {RESPONSE_TONES.map((tone) => (
-                      <button
-                        key={tone.id}
-                        onClick={() => handleChange('defaultTone', tone.id)}
-                        className={`
-                          ios-list-item rounded-xl w-full border transition-all
-                          ${formData.defaultTone === tone.id 
-                            ? 'border-success bg-success/5 shadow-sm' 
-                            : 'border-border/50 bg-card/50'
-                          }
-                        `}
-                      >
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-semibold text-foreground">{tone.label}</p>
-                          <p className="text-xs text-muted-foreground">{tone.description}</p>
-                        </div>
-                        {formData.defaultTone === tone.id && (
-                          <Check className="w-5 h-5 text-success" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
+              <div className="mclaren-form-group">
+                <label className="mclaren-label">Sign-off Name</label>
+                <input
+                  type="text"
+                  value={formData.signOff}
+                  onChange={(e) => handleChange('signOff', e.target.value)}
+                  placeholder={formData.salespersonName || 'Your name'}
+                  className="mclaren-input"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  This will appear at the end of your messages
+                </p>
+              </div>
+
+              {/* Preview */}
+              <div className="mclaren-preview-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">Preview</span>
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-foreground">Sign-off Name</label>
-                  <input
-                    type="text"
-                    value={formData.signOff}
-                    onChange={(e) => handleChange('signOff', e.target.value)}
-                    placeholder={formData.salespersonName || "Your name"}
-                    className="ios-input"
-                  />
-                  <p className="text-xs text-muted-foreground">How you want to sign your messages</p>
-                </div>
+                <p className="text-sm text-foreground leading-relaxed">
+                  &ldquo;Thanks for reaching out! I&apos;d love to help you find the perfect vehicle. 
+                  {formData.dealershipName && ` ${formData.dealershipName} is`}
+                  {formData.dealershipHours && ` open ${formData.dealershipHours}.`}
+                  &rdquo;
+                </p>
+                <p className="text-sm text-primary font-medium mt-2">
+                  — {formData.signOff || formData.salespersonName || 'Your Name'}
+                  {formData.salespersonTitle && `, ${formData.salespersonTitle}`}
+                </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer buttons */}
-        <div className="flex gap-3 p-5 border-t border-border/50 bg-gradient-to-t from-muted/30 to-transparent safe-area-bottom">
-          {step > 1 && (
-            <button onClick={() => setStep(step - 1)} className="ios-btn-secondary flex-1">
-              Back
-            </button>
-          )}
-          
-          {step < 3 ? (
-            <button
-              onClick={() => setStep(step + 1)}
-              disabled={!canProceed()}
-              className="ios-btn-primary flex-1 disabled:opacity-50"
-            >
-              Next
-            </button>
-          ) : (
-            <button onClick={handleSave} className="ios-btn-success flex-1">
-              <Check className="w-4 h-4" />
-              Save & Start
-            </button>
-          )}
+        {/* Footer */}
+        <div className="mclaren-setup-footer px-6 py-4">
+          <div className="flex gap-3">
+            {step > 1 && (
+              <button
+                onClick={() => setStep(step - 1)}
+                className="mclaren-btn-secondary flex-1"
+              >
+                Back
+              </button>
+            )}
+            
+            {step < 3 ? (
+              <button
+                onClick={() => setStep(step + 1)}
+                disabled={!canProceed()}
+                className="mclaren-btn-primary flex-1 gap-2"
+                data-testid="setup-next-btn"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSave}
+                className="mclaren-btn-primary flex-1 gap-2"
+                data-testid="setup-save-btn"
+              >
+                <Check className="w-4 h-4" />
+                Save Settings
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
