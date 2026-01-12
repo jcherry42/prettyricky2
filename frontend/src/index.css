@@ -534,49 +534,58 @@ h1, h2, h3 {
 
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   C8 CORVETTE TAILLIGHTS - ACCURATE DESIGN
-   Two separate tapered LED units with gap in middle
+   C8 CORVETTE TAILLIGHTS - ACCURATE L-SHAPED DESIGN
+   Distinctive contoured LED units like actual C8
    ============================================ */
 
 .c8-taillights-container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .c8-taillight-unit {
   width: 50px;
-  height: 18px;
+  height: 28px;
   transition: all 0.4s ease;
 }
 
-.c8-taillight-unit .c8-led-path {
+/* Housing outline */
+.c8-taillight-unit .c8-housing {
+  transition: all 0.3s ease;
+}
+
+/* LED elements - off state */
+.c8-taillight-unit .c8-led-main,
+.c8-taillight-unit .c8-led-vertical {
   transition: all 0.4s ease;
 }
 
-.c8-taillight-unit .c8-led-inner {
-  transition: all 0.4s ease;
+/* Lit state - bright red glow with L-shape */
+.c8-taillight-unit.lit .c8-led-main {
+  fill: #dd0000;
+  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
 }
 
-/* Lit state - bright red glow */
-.c8-taillight-unit.lit .c8-led-path {
+.c8-taillight-unit.lit .c8-led-vertical {
   fill: #cc0000;
-  filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
+  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
 }
 
-.c8-taillight-unit.lit .c8-led-inner {
-  fill: #ff2222;
-  filter: drop-shadow(0 0 4px #ff3333);
+.c8-taillight-unit.lit .c8-housing {
+  filter: drop-shadow(0 0 2px #ff000033);
 }
 
-/* Running animation */
-.c8-taillight-unit.running.lit .c8-led-path,
-.c8-taillight-unit.running.lit .c8-led-inner {
+/* Running animation - subtle pulse */
+.c8-taillight-unit.running.lit .c8-led-main,
+.c8-taillight-unit.running.lit .c8-led-vertical {
   animation: c8-glow-pulse 2s ease-in-out infinite;
 }
 
-.c8-taillight-unit.c8-left.running.lit .c8-led-path { animation-delay: 0s; }
-.c8-taillight-unit.c8-right.running.lit .c8-led-path { animation-delay: 0.1s; }
+.c8-taillight-unit.c8-left.running.lit .c8-led-main { animation-delay: 0s; }
+.c8-taillight-unit.c8-right.running.lit .c8-led-main { animation-delay: 0.15s; }
+.c8-taillight-unit.c8-left.running.lit .c8-led-vertical { animation-delay: 0.1s; }
+.c8-taillight-unit.c8-right.running.lit .c8-led-vertical { animation-delay: 0.05s; }
 
 @keyframes c8-glow-pulse {
   0%, 100% {
@@ -589,15 +598,15 @@ h1, h2, h3 {
 
 /* Center text */
 .c8-center-text {
-  padding: 0 8px;
+  padding: 0 6px;
   transition: all 0.4s ease;
 }
 
 .c8-center-text span {
   font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 15px;
-  letter-spacing: 0.2em;
-  color: #333;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: #444;
   transition: all 0.4s ease;
 }
 
@@ -617,141 +626,175 @@ h1, h2, h3 {
 
 /* Light mode */
 html:not(.dark) .c8-center-text span {
-  color: #666;
+  color: #555;
+}
+
+html:not(.dark) .c8-taillight-unit .c8-housing {
+  fill: #2a2a2a;
 }
 
 /* ============================================
-   CHECK BUTTON - CAMARO WITH WORKING HOOD
+   CHECK BUTTON - 2021 ZL1 CAMARO
+   Muscle car with functional hood animation
    ============================================ */
 
-.btn-check-camaro {
+.btn-check-zl1 {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 52px;
-  background: linear-gradient(180deg, #1e1e28 0%, #141418 100%);
+  width: 130px;
+  height: 58px;
+  background: linear-gradient(180deg, #1c1c24 0%, #121218 100%);
   border: 1px solid #2a2a35;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: visible;
 }
 
-.btn-check-camaro .camaro-wrapper {
-  width: 100px;
-  height: 32px;
+.btn-check-zl1 .zl1-car-wrapper {
+  width: 110px;
+  height: 36px;
 }
 
-.btn-check-camaro .camaro-svg {
+.btn-check-zl1 .zl1-car-svg {
   width: 100%;
   height: 100%;
 }
 
-/* Hood animation group */
-.btn-check-camaro .camaro-hood-group {
-  transform-origin: 35px 22px;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Hood assembly animation */
+.btn-check-zl1 .zl1-hood-assembly {
+  transform-origin: 42px 26px;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Engine glow */
-.btn-check-camaro .camaro-engine-glow {
-  transition: opacity 0.3s ease 0.15s;
+/* Engine glow - hidden by default */
+.btn-check-zl1 .zl1-engine-glow {
+  transition: opacity 0.3s ease 0.2s;
 }
 
-/* Headlight */
-.btn-check-camaro .camaro-headlight {
-  filter: drop-shadow(0 0 3px #ffdd88);
+/* Headlight glow */
+.btn-check-zl1 .zl1-headlight {
+  filter: drop-shadow(0 0 4px #ffdd88);
   transition: all 0.3s ease;
 }
 
 /* Taillight pulse */
-.btn-check-camaro .camaro-taillight {
-  filter: drop-shadow(0 0 4px #ff0000);
-  animation: camaro-tail-pulse 1.5s ease-in-out infinite;
+.btn-check-zl1 .zl1-taillight {
+  filter: drop-shadow(0 0 6px #ff0000);
+  animation: zl1-tail-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes camaro-tail-pulse {
-  0%, 100% { filter: drop-shadow(0 0 3px #ff0000); opacity: 0.9; }
-  50% { filter: drop-shadow(0 0 8px #ff0000); opacity: 1; }
+@keyframes zl1-tail-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 4px #ff0000); 
+    opacity: 0.85; 
+  }
+  50% { 
+    filter: drop-shadow(0 0 10px #ff0000) drop-shadow(0 0 15px #cc0000); 
+    opacity: 1; 
+  }
 }
 
-/* Label */
-.btn-check-camaro .camaro-label {
+/* Label with check engine icon */
+.btn-check-zl1 .zl1-label {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 2px;
 }
 
-.btn-check-camaro .camaro-label span {
+.btn-check-zl1 .zl1-label span {
   font-family: 'Russo One', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: #666;
   text-transform: uppercase;
-  transition: color 0.3s ease;
-}
-
-.btn-check-camaro .check-icon {
-  width: 16px;
-  height: 16px;
-  color: #cc8800;
-  filter: drop-shadow(0 0 3px rgba(255, 170, 0, 0.5));
   transition: all 0.3s ease;
 }
 
-/* HOVER STATE */
-.btn-check-camaro:hover {
-  background: linear-gradient(180deg, #252530 0%, #1a1a20 100%);
+/* Check engine icon - always visible with amber glow */
+.btn-check-zl1 .zl1-check-icon {
+  width: 16px;
+  height: 16px;
+  color: #cc8800;
+  filter: drop-shadow(0 0 4px rgba(255, 170, 0, 0.6));
+  transition: all 0.3s ease;
+  animation: check-engine-idle 2s ease-in-out infinite;
+}
+
+@keyframes check-engine-idle {
+  0%, 100% { 
+    opacity: 0.8;
+    filter: drop-shadow(0 0 3px rgba(255, 170, 0, 0.4));
+  }
+  50% { 
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.7));
+  }
+}
+
+/* ===== HOVER STATE - Hood opens, engine glows, check light blinks ===== */
+.btn-check-zl1:hover {
+  background: linear-gradient(180deg, #242430 0%, #1a1a22 100%);
   border-color: #ff8800;
-  box-shadow: 0 0 20px rgba(255, 136, 0, 0.2);
+  box-shadow: 
+    0 0 25px rgba(255, 136, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-.btn-check-camaro:hover .camaro-hood-group {
-  transform: rotate(-40deg);
+.btn-check-zl1:hover .zl1-hood-assembly {
+  transform: rotate(-45deg) translateY(-2px);
 }
 
-.btn-check-camaro:hover .camaro-engine-glow {
-  opacity: 0.8 !important;
+.btn-check-zl1:hover .zl1-engine-glow {
+  opacity: 0.9 !important;
 }
 
-.btn-check-camaro:hover .camaro-headlight {
-  filter: drop-shadow(0 0 8px #ffdd88) drop-shadow(-10px 0 15px rgba(255, 220, 100, 0.4));
+.btn-check-zl1:hover .zl1-headlight {
+  filter: 
+    drop-shadow(0 0 8px #ffdd88) 
+    drop-shadow(-12px 0 20px rgba(255, 220, 100, 0.5));
 }
 
-.btn-check-camaro:hover .camaro-label span {
+.btn-check-zl1:hover .zl1-label span {
   color: #ff9933;
+  text-shadow: 0 0 8px rgba(255, 153, 51, 0.4);
 }
 
-.btn-check-camaro:hover .check-icon {
+.btn-check-zl1:hover .zl1-check-icon {
   color: #ffaa00;
-  filter: drop-shadow(0 0 8px rgba(255, 170, 0, 0.9));
-  animation: check-blink 0.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 170, 0, 1));
+  animation: check-engine-alert 0.3s ease-in-out infinite;
 }
 
-@keyframes check-blink {
+@keyframes check-engine-alert {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
 }
 
-.btn-check-camaro:active {
+.btn-check-zl1:active {
   transform: scale(0.96);
 }
 
-/* Light mode */
-html:not(.dark) .btn-check-camaro {
+/* Light mode ZL1 */
+html:not(.dark) .btn-check-zl1 {
   background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
   border-color: #c0c0c8;
 }
 
-html:not(.dark) .btn-check-camaro .camaro-label span {
+html:not(.dark) .btn-check-zl1 .zl1-label span {
   color: #555;
 }
 
-html:not(.dark) .btn-check-camaro:hover .camaro-label span {
+html:not(.dark) .btn-check-zl1:hover {
+  border-color: #dd7700;
+  box-shadow: 0 0 20px rgba(221, 119, 0, 0.2);
+}
+
+html:not(.dark) .btn-check-zl1:hover .zl1-label span {
   color: #cc6600;
 }
 
