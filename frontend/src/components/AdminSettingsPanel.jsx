@@ -1019,6 +1019,124 @@ export const AdminSettingsPanel = ({ onClose }) => {
                   )}
                 </div>
               )}
+              
+              {/* Notification History Tab */}
+              {activeTab === 'history' && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="mclaren-config-section">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <History className="w-5 h-5 text-primary" />
+                        <h3 className="font-semibold text-foreground">Notification History</h3>
+                      </div>
+                      <button
+                        onClick={loadNotificationHistory}
+                        className="mclaren-btn-icon-sm"
+                        title="Refresh"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                    
+                    {historyLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                      </div>
+                    ) : notificationHistory.length === 0 ? (
+                      <div className="text-center py-8">
+                        <MessageSquare className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+                        <p className="text-sm text-muted-foreground">No notifications yet</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">
+                          Notifications will appear here when hot leads trigger alerts
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[350px] overflow-y-auto hide-scrollbar">
+                        {notificationHistory.map((notif, idx) => (
+                          <div
+                            key={notif.id || idx}
+                            className="p-3 rounded-lg bg-card/50 border border-border/30 hover:border-border/50 transition-colors"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${
+                                    notif.notification_type === 'hot_lead' 
+                                      ? 'bg-red-500/20 text-red-400' 
+                                      : notif.notification_type === 'status_change'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'bg-gray-500/20 text-gray-400'
+                                  }`}>
+                                    {notif.notification_type === 'hot_lead' && '🔥'}
+                                    {notif.notification_type === 'status_change' && '📊'}
+                                    {notif.notification_type?.replace('_', ' ').toUpperCase()}
+                                  </span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${
+                                    notif.status === 'sent' 
+                                      ? 'bg-emerald-500/20 text-emerald-400' 
+                                      : notif.status === 'failed'
+                                        ? 'bg-red-500/20 text-red-400'
+                                        : notif.status === 'queued'
+                                          ? 'bg-amber-500/20 text-amber-400'
+                                          : 'bg-gray-500/20 text-gray-400'
+                                  }`}>
+                                    {notif.status?.toUpperCase()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-foreground truncate">
+                                  {notif.payload?.customer_name || notif.recipient || 'Unknown'}
+                                </p>
+                                {notif.payload?.vehicle_interest && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {notif.payload.vehicle_interest}
+                                  </p>
+                                )}
+                                {notif.error_message && (
+                                  <p className="text-xs text-red-400 mt-1 truncate">
+                                    Error: {notif.error_message}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <p className="text-[10px] text-muted-foreground">
+                                  {notif.created_at ? new Date(notif.created_at).toLocaleDateString() : ''}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {notif.created_at ? new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Stats Summary */}
+                  {notificationHistory.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-center">
+                        <p className="text-lg font-bold text-emerald-400">
+                          {notificationHistory.filter(n => n.status === 'sent').length}
+                        </p>
+                        <p className="text-xs text-emerald-400/70">Sent</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
+                        <p className="text-lg font-bold text-amber-400">
+                          {notificationHistory.filter(n => n.status === 'queued' || n.status === 'scheduled').length}
+                        </p>
+                        <p className="text-xs text-amber-400/70">Queued</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
+                        <p className="text-lg font-bold text-red-400">
+                          {notificationHistory.filter(n => n.status === 'failed').length}
+                        </p>
+                        <p className="text-xs text-red-400/70">Failed</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
