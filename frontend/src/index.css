@@ -664,7 +664,7 @@ html:not(.dark) .r34-center-text span {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 190px;
+  width: 205px;
   height: 36px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
@@ -672,7 +672,7 @@ html:not(.dark) .r34-center-text span {
   cursor: pointer;
   overflow: visible;
   transition: all 0.3s ease;
-  padding: 0 16px 0 50px;
+  padding: 0 18px 0 50px;
 }
 
 /* Realistic side-view exhaust tip */
