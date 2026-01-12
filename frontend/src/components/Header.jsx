@@ -83,63 +83,37 @@ export const Header = () => {
         {/* Left side - empty spacer */}
         <div className="w-[200px]"></div>
         
-        {/* Center - C8 Corvette Z06 Taillights */}
+        {/* Center - R34 Skyline Taillights */}
         <div className="flex-1 flex justify-center">
-          <div className="c8-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
-          {/* Left taillight assembly - 4 angular elements */}
-          <svg 
-            viewBox="0 0 80 24" 
-            className={`c8-taillight-unit c8-left ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''} ${brakesPressed ? 'braking' : ''}`}
-          >
-            <defs>
-              <linearGradient id="c8RedGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#ff4444" />
-                <stop offset="50%" stopColor="#dd0000" />
-                <stop offset="100%" stopColor="#990000" />
-              </linearGradient>
-              <linearGradient id="c8RedOff" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#330000" />
-                <stop offset="100%" stopColor="#1a0000" />
-              </linearGradient>
-              <linearGradient id="c8BrakeGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#ff0000" />
-                <stop offset="50%" stopColor="#ff0000" />
-                <stop offset="100%" stopColor="#cc0000" />
-              </linearGradient>
-            </defs>
-            {/* Housing - dark angular shape */}
-            <path d="M0 4 L78 0 L80 20 L4 24 Z" fill="#0a0a0a" />
-            {/* Element 1 - Outer (turn signal area) */}
-            <path d="M2 5 L18 3 L19 19 L4 21 Z" className="c8-element c8-el-1" fill="url(#c8RedOff)" />
-            {/* Element 2 - Main brake light */}
-            <path d="M22 3 L42 2 L43 18 L23 19 Z" className="c8-element c8-el-2" fill="url(#c8RedOff)" />
-            {/* Element 3 - Secondary brake */}
-            <path d="M46 2 L62 1 L63 17 L47 18 Z" className="c8-element c8-el-3" fill="url(#c8RedOff)" />
-            {/* Element 4 - Inner (reverse area) */}
-            <path d="M66 1 L76 1 L77 17 L67 17 Z" className="c8-element c8-el-4" fill="url(#c8RedOff)" />
-          </svg>
+          <div className="r34-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
+            {/* Left taillight cluster - 2 circular lights */}
+            <div className={`r34-cluster left ${startupPhase >= 2 ? 'lit' : ''} ${brakesPressed ? 'braking' : ''}`}>
+              <div className="r34-light">
+                <div className="r34-ring"></div>
+                <div className="r34-center"></div>
+              </div>
+              <div className="r34-light">
+                <div className="r34-ring"></div>
+                <div className="r34-center"></div>
+              </div>
+            </div>
 
-          {/* Center text */}
-          <div className={`c8-center-text ${startupPhase >= 3 ? 'lit' : ''}`}>
-            <span>TAILLIGHTS</span>
-          </div>
+            {/* Center text */}
+            <div className={`r34-center-text ${startupPhase >= 3 ? 'lit' : ''}`}>
+              <span>TAILLIGHTS</span>
+            </div>
 
-          {/* Right taillight assembly - mirrored 4 elements */}
-          <svg 
-            viewBox="0 0 80 24" 
-            className={`c8-taillight-unit c8-right ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''} ${brakesPressed ? 'braking' : ''}`}
-          >
-            {/* Housing - mirrored angular shape */}
-            <path d="M2 0 L80 4 L76 24 L0 20 Z" fill="#0a0a0a" />
-            {/* Element 1 - Inner (reverse area) - mirrored */}
-            <path d="M4 1 L14 1 L13 17 L3 17 Z" className="c8-element c8-el-4" fill="url(#c8RedOff)" />
-            {/* Element 2 - Secondary brake - mirrored */}
-            <path d="M18 1 L34 2 L33 18 L17 17 Z" className="c8-element c8-el-3" fill="url(#c8RedOff)" />
-            {/* Element 3 - Main brake light - mirrored */}
-            <path d="M38 2 L58 3 L57 19 L37 18 Z" className="c8-element c8-el-2" fill="url(#c8RedOff)" />
-            {/* Element 4 - Outer (turn signal) - mirrored */}
-            <path d="M62 3 L78 5 L76 21 L61 19 Z" className="c8-element c8-el-1" fill="url(#c8RedOff)" />
-          </svg>
+            {/* Right taillight cluster - 2 circular lights */}
+            <div className={`r34-cluster right ${startupPhase >= 2 ? 'lit' : ''} ${brakesPressed ? 'braking' : ''}`}>
+              <div className="r34-light">
+                <div className="r34-ring"></div>
+                <div className="r34-center"></div>
+              </div>
+              <div className="r34-light">
+                <div className="r34-ring"></div>
+                <div className="r34-center"></div>
+              </div>
+            </div>
           </div>
         </div>
 
