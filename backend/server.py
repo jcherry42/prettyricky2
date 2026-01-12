@@ -942,6 +942,250 @@ async def analyze_sample_record(request: AnalyzeSampleRequest):
     }
 
 
+# ============== FIELD TRANSFORMS ==============
+
+from integrations.field_transforms import (
+    FieldTransformEngine, MappingConfig, FieldMapping, Transform, Condition,
+    TransformType, ConditionOperator,
+    create_name_composite_mapping, create_phone_mapping, create_price_mapping
+)
+
+class TransformTestRequest(BaseModel):
+    """Test transforms on sample data"""
+    sample_record: Dict[str, Any]
+    mapping_config: Dict[str, Any]
+    data_type: str = "customers"
+
+class TransformPreviewRequest(BaseModel):
+    """Preview a single transform"""
+    value: Any
+    transform_type: str
+    params: Dict[str, Any] = Field(default_factory=dict)
+    record: Dict[str, Any] = Field(default_factory=dict)
+
+@api_router.get("/integrations/transforms")
+async def list_available_transforms():
+    """List all available transform types with descriptions"""
+    transforms = {
+        "string": [
+            {"type": "uppercase", "description": "Convert to UPPERCASE", "example": "hello → HELLO"},
+            {"type": "lowercase", "description": "Convert to lowercase", "example": "HELLO → hello"},
+            {"type": "titlecase", "description": "Convert to Title Case", "example": "hello world → Hello World"},
+            {"type": "trim", "description": "Remove leading/trailing whitespace", "example": "  hello  → hello"},
+            {"type": "strip_html", "description": "Remove HTML tags", "example": "<b>hello</b> → hello"},
+            {"type": "truncate", "description": "Truncate to max length", "params": ["max_length", "suffix"]},
+        ],
+        "phone": [
+            {"type": "phone_normalize", "description": "Normalize to +1XXXXXXXXXX", "example": "(555) 123-4567 → +15551234567"},
+            {"type": "phone_format_us", "description": "Format as (XXX) XXX-XXXX", "example": "5551234567 → (555) 123-4567"},
+            {"type": "phone_digits_only", "description": "Extract digits only", "example": "(555) 123-4567 → 5551234567"},
+        ],
+        "name": [
+            {"type": "name_combine", "description": "Combine first + last name", "params": ["fields", "separator"]},
+            {"type": "name_parse", "description": "Parse full name into parts", "example": "John Smith → {first_name: John, last_name: Smith}"},
+        ],
+        "price": [
+            {"type": "price_normalize", "description": "Convert to number", "example": "$25,000.00 → 25000.00"},
+            {"type": "number_extract", "description": "Extract first number", "example": "Asking $25000 OBO → 25000"},
+            {"type": "round_price", "description": "Round to nearest dollar", "example": "25999.99 → 26000"},
+        ],
+        "date": [
+            {"type": "date_normalize", "description": "Convert to ISO format", "example": "01/15/2024 → 2024-01-15"},
+            {"type": "date_format", "description": "Format with custom pattern", "params": ["format"]},
+        ],
+        "address": [
+            {"type": "address_combine", "description": "Combine address parts", "params": ["fields", "separator"]},
+            {"type": "state_abbreviate", "description": "Abbreviate state name", "example": "California → CA"},
+            {"type": "state_expand", "description": "Expand state abbreviation", "example": "CA → California"},
+            {"type": "zip_normalize", "description": "Normalize ZIP code", "example": "9021 → 09021"},
+        ],
+        "vehicle": [
+            {"type": "vin_validate", "description": "Validate and uppercase VIN", "example": "abc123... → ABC123..."},
+            {"type": "year_extract", "description": "Extract year from string", "example": "2024 Toyota Camry → 2024"},
+            {"type": "mileage_normalize", "description": "Extract mileage number", "example": "45,000 miles → 45000"},
+        ],
+        "status": [
+            {"type": "status_normalize", "description": "Normalize to standard values", "example": "Active → hot"},
+        ],
+        "generic": [
+            {"type": "regex_extract", "description": "Extract via regex pattern", "params": ["pattern", "group"]},
+            {"type": "regex_replace", "description": "Replace via regex", "params": ["pattern", "replacement"]},
+            {"type": "template", "description": "String template", "params": ["template"], "example": "{year} {make} {model}"},
+            {"type": "lookup", "description": "Map via lookup table", "params": ["table", "default"]},
+            {"type": "coalesce", "description": "First non-empty value", "params": ["fields"]},
+            {"type": "split", "description": "Split and take part", "params": ["delimiter", "index"]},
+            {"type": "join", "description": "Join multiple fields", "params": ["fields", "delimiter"]},
+        ],
+    }
+    
+    conditions = [
+        {"operator": "equals", "description": "Field equals value"},
+        {"operator": "not_equals", "description": "Field does not equal value"},
+        {"operator": "contains", "description": "Field contains value"},
+        {"operator": "not_contains", "description": "Field does not contain value"},
+        {"operator": "starts_with", "description": "Field starts with value"},
+        {"operator": "ends_with", "description": "Field ends with value"},
+        {"operator": "matches_regex", "description": "Field matches regex pattern"},
+        {"operator": "is_empty", "description": "Field is empty or null"},
+        {"operator": "is_not_empty", "description": "Field has a value"},
+        {"operator": "greater_than", "description": "Field > value (numeric)"},
+        {"operator": "less_than", "description": "Field < value (numeric)"},
+        {"operator": "in_list", "description": "Field is in list of values"},
+        {"operator": "not_in_list", "description": "Field is not in list of values"},
+    ]
+    
+    return {
+        "transforms": transforms,
+        "conditions": conditions,
+    }
+
+@api_router.post("/integrations/transforms/preview")
+async def preview_transform(request: TransformPreviewRequest):
+    """Preview a single transform on a value"""
+    try:
+        transform_type = TransformType(request.transform_type)
+        transform = Transform(type=transform_type, params=request.params)
+        result = transform.apply(request.value, request.record)
+        
+        return {
+            "success": True,
+            "input": request.value,
+            "output": result,
+            "transform": request.transform_type,
+        }
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Unknown transform type: {request.transform_type}")
+    except Exception as e:
+        return {
+            "success": False,
+            "input": request.value,
+            "output": None,
+            "error": str(e),
+        }
+
+@api_router.post("/integrations/transforms/test")
+async def test_mapping_config(request: TransformTestRequest):
+    """Test a complete mapping configuration on sample data"""
+    try:
+        config = MappingConfig.from_dict(request.mapping_config)
+        engine = FieldTransformEngine(config)
+        
+        if request.data_type == "customers":
+            result = engine.transform_customer(request.sample_record)
+        else:
+            result = engine.transform_vehicle(request.sample_record)
+        
+        return {
+            "success": True,
+            "input": request.sample_record,
+            "output": result,
+            "data_type": request.data_type,
+        }
+    except Exception as e:
+        logger.error(f"Transform test error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+        }
+
+@api_router.post("/integrations/transforms/suggest")
+async def suggest_transforms_for_field(
+    source_field: str,
+    sample_value: Any,
+    target_field: str,
+    data_type: str = "customers"
+):
+    """Suggest transforms to convert source value to target field format"""
+    suggestions = []
+    
+    # Phone field suggestions
+    if target_field == "phone":
+        suggestions.append({
+            "transforms": [{"type": "phone_normalize", "params": {}}],
+            "description": "Normalize phone to +1XXXXXXXXXX format",
+            "preview": Transform(type=TransformType.PHONE_NORMALIZE).apply(sample_value, {}),
+        })
+        suggestions.append({
+            "transforms": [{"type": "phone_format_us", "params": {}}],
+            "description": "Format as (XXX) XXX-XXXX",
+            "preview": Transform(type=TransformType.PHONE_FORMAT_US).apply(sample_value, {}),
+        })
+    
+    # Name field suggestions
+    elif target_field == "name":
+        suggestions.append({
+            "transforms": [{"type": "titlecase", "params": {}}, {"type": "trim", "params": {}}],
+            "description": "Title case and trim whitespace",
+            "preview": Transform(type=TransformType.TITLECASE).apply(
+                Transform(type=TransformType.TRIM).apply(sample_value, {}), {}
+            ),
+        })
+        suggestions.append({
+            "transforms": [{"type": "name_combine", "params": {"fields": ["first_name", "last_name"]}}],
+            "description": "Combine first_name + last_name fields",
+            "note": "Use this if name is split across multiple fields",
+        })
+    
+    # Price field suggestions
+    elif target_field == "price":
+        suggestions.append({
+            "transforms": [{"type": "price_normalize", "params": {}}],
+            "description": "Remove $ and commas, convert to number",
+            "preview": Transform(type=TransformType.PRICE_NORMALIZE).apply(sample_value, {}),
+        })
+    
+    # Year field suggestions
+    elif target_field == "year":
+        suggestions.append({
+            "transforms": [{"type": "year_extract", "params": {}}],
+            "description": "Extract 4-digit year from text",
+            "preview": Transform(type=TransformType.YEAR_EXTRACT).apply(sample_value, {}),
+        })
+    
+    # Status field suggestions
+    elif target_field == "status":
+        suggestions.append({
+            "transforms": [{"type": "lowercase", "params": {}}, {"type": "status_normalize", "params": {}}],
+            "description": "Normalize to standard status values (hot/warm/cold/new)",
+            "preview": Transform(type=TransformType.STATUS_NORMALIZE).apply(
+                Transform(type=TransformType.LOWERCASE).apply(sample_value, {}), {}
+            ),
+        })
+    
+    # VIN field suggestions
+    elif target_field == "vin":
+        suggestions.append({
+            "transforms": [{"type": "vin_validate", "params": {}}],
+            "description": "Validate and uppercase VIN",
+            "preview": Transform(type=TransformType.VIN_VALIDATE).apply(sample_value, {}),
+        })
+    
+    # Email - just trim
+    elif target_field == "email":
+        suggestions.append({
+            "transforms": [{"type": "lowercase", "params": {}}, {"type": "trim", "params": {}}],
+            "description": "Lowercase and trim whitespace",
+            "preview": Transform(type=TransformType.LOWERCASE).apply(
+                Transform(type=TransformType.TRIM).apply(sample_value, {}), {}
+            ),
+        })
+    
+    # Default - just trim
+    else:
+        suggestions.append({
+            "transforms": [{"type": "trim", "params": {}}],
+            "description": "Trim whitespace",
+            "preview": Transform(type=TransformType.TRIM).apply(sample_value, {}),
+        })
+    
+    return {
+        "source_field": source_field,
+        "target_field": target_field,
+        "sample_value": sample_value,
+        "suggestions": suggestions,
+    }
+
+
 # ============== INTEGRATION PROFILES ==============
 
 from integrations.profiles import ProfileManager, IntegrationProfile
