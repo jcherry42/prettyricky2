@@ -173,6 +173,110 @@ export const AdminSettingsPanel = ({ onClose }) => {
     }
   };
 
+  const handleSelectIntegration = (integration) => {
+    setSelectedIntegration(integration);
+    // Reset form
+    setIntegrationForm({
+      api_key: '',
+      username: '',
+      password: '',
+      client_id: '',
+      client_secret: '',
+    });
+    setShowIntegrationSecrets({});
+  };
+
+  const handleToggleMockMode = async (integration) => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/${integration.id}/toggle-mock?enabled=${!integration.mock_mode}`, {
+        method: 'POST',
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        toast.success(`Mock mode ${result.mock_mode ? 'enabled' : 'disabled'} for ${integration.name}`);
+        loadConfig();
+        // Update selected integration
+        setSelectedIntegration(prev => prev ? {...prev, mock_mode: result.mock_mode} : null);
+      } else {
+        toast.error('Failed to toggle mock mode');
+      }
+    } catch (err) {
+      toast.error('Failed to toggle mock mode');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveIntegrationCredentials = async () => {
+    if (!selectedIntegration) return;
+    
+    // Build auth config from form
+    const authConfig = {};
+    if (integrationForm.api_key) authConfig.api_key = integrationForm.api_key;
+    if (integrationForm.username) authConfig.username = integrationForm.username;
+    if (integrationForm.password) authConfig.password = integrationForm.password;
+    if (integrationForm.client_id) authConfig.client_id = integrationForm.client_id;
+    if (integrationForm.client_secret) authConfig.client_secret = integrationForm.client_secret;
+    
+    if (Object.keys(authConfig).length === 0) {
+      toast.error('Please enter at least one credential');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/${selectedIntegration.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auth_config: authConfig }),
+      });
+      
+      if (res.ok) {
+        toast.success('Credentials saved successfully!');
+        // Clear form
+        setIntegrationForm({
+          api_key: '',
+          username: '',
+          password: '',
+          client_id: '',
+          client_secret: '',
+        });
+        loadConfig();
+      } else {
+        const result = await res.json();
+        toast.error(result.detail || 'Failed to save credentials');
+      }
+    } catch (err) {
+      toast.error('Failed to save credentials');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestIntegration = async () => {
+    if (!selectedIntegration) return;
+    
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/${selectedIntegration.id}/test`, {
+        method: 'POST',
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        toast.success(`Connection successful! ${result.mock_mode ? '(Mock Mode)' : ''}`);
+      } else {
+        toast.error(`Connection failed: ${result.message}`);
+      }
+    } catch (err) {
+      toast.error('Connection test failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const tabs = [
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'integrations', label: 'CRM Integrations', icon: Database },
