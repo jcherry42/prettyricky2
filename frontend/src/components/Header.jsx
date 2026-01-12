@@ -6,8 +6,6 @@ import { playNotificationSound, getSoundPreferences } from '../utils/notificatio
 
 export const Header = () => {
   const { 
-    isOffline, 
-    dealership, 
     toggleFavorites,
     toggleVS,
     toggleAnalytics,
@@ -28,23 +26,22 @@ export const Header = () => {
     const hasPlayed = sessionStorage.getItem('taillights_startup_played');
     if (hasPlayed) {
       setStartupComplete(true);
-      setStartupPhase(5);
+      setStartupPhase(4);
       return;
     }
 
-    // Startup sequence
+    // C8 Corvette startup sequence - sweeps from center outward
     const phases = [
-      { delay: 100, phase: 1 },   // Left outer lights
-      { delay: 300, phase: 2 },   // Left inner lights
-      { delay: 500, phase: 3 },   // Center text glow
-      { delay: 700, phase: 4 },   // Right inner lights
-      { delay: 900, phase: 5 },   // Right outer lights + complete
+      { delay: 100, phase: 1 },   // Center text glows
+      { delay: 400, phase: 2 },   // Inner segments light
+      { delay: 700, phase: 3 },   // Mid segments light
+      { delay: 1000, phase: 4 },  // Outer segments + complete
     ];
 
     phases.forEach(({ delay, phase }) => {
       setTimeout(() => {
         setStartupPhase(phase);
-        if (phase === 5) {
+        if (phase === 4) {
           // Play engine sound on final phase
           const prefs = getSoundPreferences();
           if (prefs.enabled) {
@@ -62,57 +59,48 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* C8 Corvette Full-Width Taillight Bar */}
-        <div className="flex items-center gap-3">
-          <div className={`c8-taillight-bar ${startupComplete ? 'running' : ''}`} data-testid="taillights-logo">
-            {/* Left taillight section */}
-            <div className={`c8-section c8-left-outer ${startupPhase >= 1 ? 'lit' : ''}`}>
-              <div className="c8-led-strip"></div>
-            </div>
-            <div className={`c8-section c8-left-inner ${startupPhase >= 2 ? 'lit' : ''}`}>
-              <div className="c8-led-strip"></div>
-            </div>
-            
-            {/* Center badge area with TAILLIGHTS text */}
-            <div className={`c8-center-badge ${startupPhase >= 3 ? 'lit' : ''}`}>
-              <span className="c8-badge-text">TAILLIGHTS</span>
-            </div>
-            
-            {/* Right taillight section */}
-            <div className={`c8-section c8-right-inner ${startupPhase >= 4 ? 'lit' : ''}`}>
-              <div className="c8-led-strip"></div>
-            </div>
-            <div className={`c8-section c8-right-outer ${startupPhase >= 5 ? 'lit' : ''}`}>
-              <div className="c8-led-strip"></div>
-            </div>
+        {/* C8 Corvette Full-Width Taillight Bar - Accurate Design */}
+        <div className={`c8-taillight-strip ${startupComplete ? 'running' : ''}`} data-testid="taillights-logo">
+          {/* Left outer wing */}
+          <div className={`c8-wing c8-wing-left ${startupPhase >= 4 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
           </div>
           
-          <div className="ml-2">
-            <p className="text-xs text-muted-foreground truncate max-w-[100px] vice-city-sub">
-              {dealership.name}
-            </p>
+          {/* Left mid section */}
+          <div className={`c8-mid c8-mid-left ${startupPhase >= 3 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
+          </div>
+          
+          {/* Left inner section */}
+          <div className={`c8-inner c8-inner-left ${startupPhase >= 2 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
+          </div>
+          
+          {/* Center black section with TAILLIGHTS text */}
+          <div className={`c8-center ${startupPhase >= 1 ? 'lit' : ''}`}>
+            <span className="c8-text">TAILLIGHTS</span>
+          </div>
+          
+          {/* Right inner section */}
+          <div className={`c8-inner c8-inner-right ${startupPhase >= 2 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
+          </div>
+          
+          {/* Right mid section */}
+          <div className={`c8-mid c8-mid-right ${startupPhase >= 3 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
+          </div>
+          
+          {/* Right outer wing */}
+          <div className={`c8-wing c8-wing-right ${startupPhase >= 4 ? 'lit' : ''}`}>
+            <div className="c8-led"></div>
           </div>
         </div>
 
-        {/* Status & Actions */}
+        {/* Actions - No status indicator, no dealership name */}
         <div className="flex items-center gap-2">
           {/* CRM Integration Health Status */}
           <IntegrationHealthStatus compact={true} />
-
-          {/* Online/Offline indicator */}
-          <div className="status-indicator">
-            {isOffline ? (
-              <>
-                <span className="status-dot offline" />
-                <span className="text-warning vice-city-text">Offline</span>
-              </>
-            ) : (
-              <>
-                <span className="status-dot online" />
-                <span className="text-chrome vice-city-text">Ready</span>
-              </>
-            )}
-          </div>
 
           {/* Supercharg'd Mode Toggle - Extra Long with Exhaust Flames */}
           <button
