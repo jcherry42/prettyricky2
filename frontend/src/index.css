@@ -532,87 +532,102 @@ h1, h2, h3 {
   transform: scale(0.98);
 }
 
-/* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   C8 CORVETTE TAILLIGHTS - ACCURATE L-SHAPED DESIGN
-   Distinctive L-shaped LED units like actual C8 Corvette
+   C8 CORVETTE Z06 TAILLIGHTS
+   Multi-element angular design (4 segments per side)
+   Based on actual 2024-2026 C8 Corvette Z06
    ============================================ */
 
 .c8-taillights-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .c8-taillight-unit {
-  width: 55px;
-  height: 32px;
-  transition: all 0.4s ease;
+  width: 70px;
+  height: 22px;
+  transition: all 0.3s ease;
 }
 
-/* LED elements - off state (dark red) */
-.c8-taillight-unit .c8-led-main,
-.c8-taillight-unit .c8-led-vertical {
-  transition: all 0.4s ease;
+/* Individual LED elements - 4 per side */
+.c8-taillight-unit .c8-element {
+  transition: all 0.15s ease;
 }
 
-/* Lit state - bright red glow */
-.c8-taillight-unit.lit .c8-led-main {
-  fill: #dd0000;
-  filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
+/* Lit state - all 4 elements glow */
+.c8-taillight-unit.lit .c8-element {
+  fill: #bb0000;
+  filter: drop-shadow(0 0 3px #ff0000);
 }
 
-.c8-taillight-unit.lit .c8-led-vertical {
+.c8-taillight-unit.lit .c8-el-1 {
   fill: #cc0000;
+  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
+}
+
+.c8-taillight-unit.lit .c8-el-2 {
+  fill: #dd0000;
   filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 10px #ff0000);
 }
 
-/* Running animation - subtle pulse */
-.c8-taillight-unit.running.lit .c8-led-main {
-  animation: c8-main-pulse 2s ease-in-out infinite;
+.c8-taillight-unit.lit .c8-el-3 {
+  fill: #cc0000;
+  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
 }
 
-.c8-taillight-unit.running.lit .c8-led-vertical {
-  animation: c8-vertical-pulse 2s ease-in-out infinite;
+.c8-taillight-unit.lit .c8-el-4 {
+  fill: #aa0000;
+  filter: drop-shadow(0 0 3px #ff0000);
 }
 
-.c8-taillight-unit.c8-left.running.lit .c8-led-main { animation-delay: 0s; }
-.c8-taillight-unit.c8-right.running.lit .c8-led-main { animation-delay: 0.1s; }
-.c8-taillight-unit.c8-left.running.lit .c8-led-vertical { animation-delay: 0.15s; }
-.c8-taillight-unit.c8-right.running.lit .c8-led-vertical { animation-delay: 0.05s; }
+/* Running state - subtle sequential pulse */
+.c8-taillight-unit.running.lit .c8-el-1 { animation: c8-pulse 2s ease-in-out infinite 0s; }
+.c8-taillight-unit.running.lit .c8-el-2 { animation: c8-pulse 2s ease-in-out infinite 0.1s; }
+.c8-taillight-unit.running.lit .c8-el-3 { animation: c8-pulse 2s ease-in-out infinite 0.2s; }
+.c8-taillight-unit.running.lit .c8-el-4 { animation: c8-pulse 2s ease-in-out infinite 0.3s; }
 
-@keyframes c8-main-pulse {
+@keyframes c8-pulse {
   0%, 100% {
-    fill: #dd0000;
-    filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
+    filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
   }
   50% {
-    fill: #ff2222;
-    filter: drop-shadow(0 0 10px #ff0000) drop-shadow(0 0 20px #ff0000) drop-shadow(0 0 30px #cc0000);
+    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 24px #cc0000);
   }
 }
 
-@keyframes c8-vertical-pulse {
-  0%, 100% {
-    fill: #cc0000;
-    filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 10px #ff0000);
-  }
-  50% {
-    fill: #ee1111;
-    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 25px #cc0000);
-  }
+/* BRAKING STATE - Maximum brightness on screen tap! */
+.c8-taillight-unit.braking .c8-element {
+  fill: #ff0000 !important;
+  filter: 
+    drop-shadow(0 0 8px #ff0000) 
+    drop-shadow(0 0 16px #ff0000) 
+    drop-shadow(0 0 32px #ff0000) 
+    drop-shadow(0 0 48px #cc0000) !important;
+  transition: all 0.05s ease !important;
+}
+
+.c8-taillight-unit.braking .c8-el-2,
+.c8-taillight-unit.braking .c8-el-3 {
+  fill: #ff2222 !important;
+  filter: 
+    drop-shadow(0 0 12px #ff0000) 
+    drop-shadow(0 0 24px #ff0000) 
+    drop-shadow(0 0 48px #ff0000) 
+    drop-shadow(0 0 64px #ff0000) !important;
 }
 
 /* Center text */
 .c8-center-text {
-  padding: 0 8px;
+  padding: 0 6px;
   transition: all 0.4s ease;
 }
 
 .c8-center-text span {
   font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 15px;
-  letter-spacing: 0.2em;
+  font-size: 14px;
+  letter-spacing: 0.18em;
   color: #444;
   transition: all 0.4s ease;
 }
@@ -633,6 +648,132 @@ h1, h2, h3 {
 
 /* Light mode */
 html:not(.dark) .c8-center-text span {
+  color: #555;
+}
+
+/* ============================================
+   SUPERCHARG'D BUTTON - SMALLER SIZE
+   ============================================ */
+
+.btn-supercharged {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 32px;
+  background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
+  border: 1px solid #2a2a35;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: visible;
+  transition: all 0.3s ease;
+}
+
+.btn-supercharged .exhaust-system-sm {
+  position: absolute;
+  left: 2px;
+  display: flex;
+  gap: 2px;
+}
+
+.btn-supercharged .exhaust-tip-sm {
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, #3a3a4a 0%, #2a2a35 100%);
+  border-radius: 50%;
+  border: 1px solid #4a4a5a;
+}
+
+.btn-supercharged .flames-sm {
+  position: absolute;
+  left: -12px;
+  width: 20px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-supercharged .flames-sm.active {
+  opacity: 1;
+}
+
+.btn-supercharged .flame-core-sm {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #fff 0%, #ffcc00 40%, #ff6600 70%, transparent 100%);
+  border-radius: 50%;
+  animation: flame-flicker-sm 0.15s ease-in-out infinite alternate;
+}
+
+.btn-supercharged .flame-layer-sm {
+  position: absolute;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: flame-dance-sm 0.2s ease-in-out infinite alternate;
+}
+
+.btn-supercharged .flame-layer-sm.layer-1 {
+  left: 2px; top: 2px; width: 12px; height: 12px;
+  background: linear-gradient(to left, #ff6600, #ff3300);
+  opacity: 0.9;
+}
+
+.btn-supercharged .flame-layer-sm.layer-2 {
+  left: 0; top: 4px; width: 10px; height: 8px;
+  background: linear-gradient(to left, #ff3300, #cc0000);
+  opacity: 0.7;
+  animation-delay: 0.05s;
+}
+
+.btn-supercharged .flame-layer-sm.layer-3 {
+  left: -2px; top: 6px; width: 8px; height: 6px;
+  background: linear-gradient(to left, #cc0000, #660000);
+  opacity: 0.5;
+  animation-delay: 0.1s;
+}
+
+@keyframes flame-flicker-sm {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes flame-dance-sm {
+  from { transform: translateX(0) scaleY(1); }
+  to { transform: translateX(-2px) scaleY(0.9); }
+}
+
+.btn-supercharged .supercharged-label {
+  font-size: 9px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #666;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.btn-supercharged.active {
+  border-color: #ff6600;
+  box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+}
+
+.btn-supercharged.active .supercharged-label {
+  color: #ff9933;
+  text-shadow: 0 0 8px rgba(255, 153, 51, 0.5);
+}
+
+.btn-supercharged:hover {
+  border-color: #ff8800;
+}
+
+html:not(.dark) .btn-supercharged {
+  background: linear-gradient(180deg, #f0f0f5 0%, #e5e5ea 100%);
+  border-color: #c0c0c8;
+}
+
+html:not(.dark) .btn-supercharged .supercharged-label {
   color: #555;
 }
 
