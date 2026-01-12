@@ -298,10 +298,13 @@ class AnalyticsService:
         by_hour = data.get("by_hour", [])
         peak_hour = max(by_hour, key=lambda x: x["count"])["_id"] if by_hour else 12
         
+        avg_response_list = data.get("avg_response_length", [])
+        avg_response_length = avg_response_list[0].get("avg_length", 0) if avg_response_list else 0
+        
         return {
             "total_conversations": total,
             "bilingual_usage_rate": round((bilingual / max(total, 1)) * 100, 1),
-            "avg_response_length": round(data.get("avg_response_length", [{}])[0].get("avg_length", 0), 0),
+            "avg_response_length": round(avg_response_length, 0),
             "peak_usage_hour": peak_hour,
             "hourly_distribution": by_hour,
             "top_quick_shortcuts": data.get("top_situations", []),
