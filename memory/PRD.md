@@ -29,7 +29,8 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ### A/B Testing
 - **Experiment Framework**: Test different response variants
-- **Analytics**: Track conversion events
+- **Analytics Dashboard**: View variant performance, conversions, and rates
+- **Toggle Controls**: Pause/activate experiments from the UI
 
 ### Mobile Support
 - **PWA**: iOS-optimized Progressive Web App
@@ -43,9 +44,10 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Glassmorphism effects
 
 ### Key Visual Elements
-- **C8 Corvette Taillights Logo**: L-shaped LED design (horizontal bar + vertical stem)
-- **ZL1 Camaro Check Button**: Hood-opening animation, amber check engine icon
-- **Supercharg'd Button**: Flame animations for language toggle
+- **C8 Corvette Z06 Taillights Logo**: Multi-element angular design (4 segments per side, horizontally oriented) - matches actual 2024-2026 C8 Z06
+- **Brake Light Effect**: Taillights flash bright red when screen is tapped
+- **ZL1 Camaro Check Button**: 70° hood-opening animation on hover, engine glow reveals, amber check engine icon BEHIND text
+- **Supercharg'd Button**: Compact size with flame animations for language toggle
 - **Vice City Typography**: Bebas Neue + Russo One fonts
 
 ## Technical Architecture
@@ -76,8 +78,9 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
     ├── App.js
     ├── index.css             # Custom styling + animations
     ├── components/
-    │   ├── Header.jsx        # Taillights logo + buttons
+    │   ├── Header.jsx        # C8 taillights, Check button, Supercharged
     │   ├── AdminSettingsPanel.jsx  # All settings (tabs)
+    │   ├── AnalyticsDashboard.jsx  # Analytics + A/B Testing UI
     │   └── ...
     └── utils/
         ├── native.js         # Capacitor bridge
@@ -100,13 +103,16 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - [x] AI Tower Talk with OpenAI GPT
 - [x] CRM integration layer (mock + real mode)
 - [x] Webhook processing and notifications
-- [x] A/B testing framework
-- [x] C8 Corvette taillight logo (L-shaped design)
-- [x] ZL1 Camaro Check button with hood animation
-- [x] Check Engine icon visible with amber glow
+- [x] A/B testing framework (backend + frontend UI)
+- [x] C8 Corvette Z06 taillight logo (multi-element angular design)
+- [x] Brake lights flash on screen tap
+- [x] ZL1 Camaro Check button with 70° hood animation
+- [x] Check Engine icon behind text
+- [x] Smaller Supercharged button
 - [x] Admin Settings Panel (5 tabs)
 - [x] Sound profiles for notifications
 - [x] Capacitor mobile wrapper setup
+- [x] A/B Testing Dashboard in Analytics
 
 ### Ready for Production
 - [ ] Real CRM credentials (user must provide)
@@ -132,22 +138,25 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/ab/experiments` - List experiments
 - `GET /api/ab/assign/{name}` - Get variant assignment
 - `POST /api/ab/track` - Track conversion event
+- `PATCH /api/ab/experiments/{name}` - Update experiment (activate/pause)
 
 ### Notifications
 - `POST /api/notifications/register-device` - Register push token
 - `GET /api/notifications/history` - Notification history
 
+## Changelog
+- **2026-01-12**: Implemented C8 Z06 multi-element angular taillights (4 segments per side)
+- **2026-01-12**: Added brake light flash effect on screen tap
+- **2026-01-12**: Updated Check button with 70° hood animation and icon behind text
+- **2026-01-12**: Reduced Supercharged button size
+- **2026-01-12**: Added A/B Testing Dashboard UI inside Analytics
+
 ## Next Steps (Backlog)
 
 ### P2 - Enhancement
-- [ ] A/B Testing Dashboard UI
-- [ ] Full push notification integration (Firebase)
+- [ ] Full push notification integration (Firebase via Capacitor)
+- [ ] Native mobile app builds (cap add ios/android, build, sync)
 
 ### P3 - Future
 - [ ] Offline mode improvements
-- [ ] Advanced analytics dashboard
-
-## Changelog
-- **2026-01-12**: Fixed P0 UI issues (C8 taillights L-shape, Check button animation/icon)
-- **2026-01-12**: Verified P1 CRM integration flow working
-- **2026-01-12**: Confirmed P2 Capacitor setup complete
+- [ ] Advanced analytics with charts

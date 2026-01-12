@@ -660,7 +660,7 @@ html:not(.dark) .c8-center-text span {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
+  width: 84px;
   height: 32px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
