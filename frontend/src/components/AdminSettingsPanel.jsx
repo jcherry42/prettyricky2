@@ -16,9 +16,28 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
  * Porsche/McLaren premium design
  */
 export const AdminSettingsPanel = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState('notifications');
+  const { 
+    dealership, 
+    salesperson, 
+    setDealership, 
+    setSalesperson,
+    toggleImport 
+  } = useSales();
+  
+  const [activeTab, setActiveTab] = useState('dealership');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  
+  // Dealership form state
+  const [dealershipForm, setDealershipForm] = useState({
+    name: '',
+    brand: '',
+    location: '',
+  });
+  const [salespersonForm, setSalespersonForm] = useState({
+    name: '',
+    preferredPhrase: 'Hey',
+  });
   
   // Notification config
   const [notificationConfig, setNotificationConfig] = useState({
@@ -26,6 +45,10 @@ export const AdminSettingsPanel = ({ onClose }) => {
     from_number: null,
     pending_notifications: 0,
   });
+  
+  // Notification history
+  const [notificationHistory, setNotificationHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   
   // Twilio form
   const [twilioForm, setTwilioForm] = useState({
