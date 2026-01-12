@@ -56,24 +56,24 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* C8 Corvette Taillights - Accurate dual unit design */}
+        {/* C8 Corvette Taillights - Accurate L-shaped contoured design */}
         <div className="c8-taillights-container" data-testid="taillights-logo">
-          {/* Left taillight unit - tapered shape */}
+          {/* Left taillight unit - L-shaped contour (like actual C8) */}
           <svg 
-            viewBox="0 0 60 20" 
+            viewBox="0 0 50 28" 
             className={`c8-taillight-unit c8-left ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
           >
             <defs>
-              <linearGradient id="c8RedGlow" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#ff3333" />
+              <linearGradient id="c8RedGlowL" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ff2222" />
                 <stop offset="50%" stopColor="#cc0000" />
-                <stop offset="100%" stopColor="#990000" />
+                <stop offset="100%" stopColor="#880000" />
               </linearGradient>
-              <linearGradient id="c8RedOff" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#330000" />
-                <stop offset="100%" stopColor="#1a0000" />
+              <linearGradient id="c8RedOffL" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#2a0000" />
+                <stop offset="100%" stopColor="#150000" />
               </linearGradient>
-              <filter id="c8Glow">
+              <filter id="c8GlowL">
                 <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                 <feMerge>
                   <feMergeNode in="coloredBlur"/>
@@ -81,17 +81,25 @@ export const Header = () => {
                 </feMerge>
               </filter>
             </defs>
-            {/* Tapered shape - wider on left (outside), narrower on right (inside) */}
+            {/* L-shaped outer housing - distinctive C8 contour */}
             <path 
-              d="M2 4 L55 7 L55 13 L2 16 Z" 
-              className="c8-led-path"
-              fill="url(#c8RedOff)"
+              d="M2 2 L45 2 L48 5 L48 12 L38 12 L35 16 L35 26 L32 26 L32 14 L40 14 L42 10 L42 6 L5 6 L5 10 L2 10 Z" 
+              className="c8-housing"
+              fill="#1a1a1a"
+              stroke="#333"
+              strokeWidth="0.5"
             />
-            {/* Inner LED strip detail */}
+            {/* Main horizontal LED bar */}
             <path 
-              d="M5 6 L52 8 L52 12 L5 14 Z" 
-              className="c8-led-inner"
-              fill="url(#c8RedOff)"
+              d="M4 3.5 L42 3.5 L44 5 L44 9 L40 9 L40 5 L6 5 L4 7 Z" 
+              className="c8-led-main"
+              fill="url(#c8RedOffL)"
+            />
+            {/* Vertical LED section (the "L" part) */}
+            <path 
+              d="M34 13 L37 13 L37 24 L34 24 Z" 
+              className="c8-led-vertical"
+              fill="url(#c8RedOffL)"
             />
           </svg>
 
@@ -100,22 +108,31 @@ export const Header = () => {
             <span>TAILLIGHTS</span>
           </div>
 
-          {/* Right taillight unit - tapered shape (mirrored) */}
+          {/* Right taillight unit - L-shaped contour (mirrored) */}
           <svg 
-            viewBox="0 0 60 20" 
+            viewBox="0 0 50 28" 
             className={`c8-taillight-unit c8-right ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
+            style={{ transform: 'scaleX(-1)' }}
           >
-            {/* Tapered shape - narrower on left (inside), wider on right (outside) */}
+            {/* L-shaped outer housing - mirrored */}
             <path 
-              d="M5 7 L58 4 L58 16 L5 13 Z" 
-              className="c8-led-path"
-              fill="url(#c8RedOff)"
+              d="M2 2 L45 2 L48 5 L48 12 L38 12 L35 16 L35 26 L32 26 L32 14 L40 14 L42 10 L42 6 L5 6 L5 10 L2 10 Z" 
+              className="c8-housing"
+              fill="#1a1a1a"
+              stroke="#333"
+              strokeWidth="0.5"
             />
-            {/* Inner LED strip detail */}
+            {/* Main horizontal LED bar */}
             <path 
-              d="M8 8 L55 6 L55 14 L8 12 Z" 
-              className="c8-led-inner"
-              fill="url(#c8RedOff)"
+              d="M4 3.5 L42 3.5 L44 5 L44 9 L40 9 L40 5 L6 5 L4 7 Z" 
+              className="c8-led-main"
+              fill="url(#c8RedOffL)"
+            />
+            {/* Vertical LED section (the "L" part) */}
+            <path 
+              d="M34 13 L37 13 L37 24 L34 24 Z" 
+              className="c8-led-vertical"
+              fill="url(#c8RedOffL)"
             />
           </svg>
         </div>
@@ -201,63 +218,100 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine Button - Fixed with proper hood animation and visible icon */}
+          {/* Check Engine Button - ZL1 Camaro with working hood animation */}
           <button
             onClick={() => toggleAdminSettings(true)}
-            className="btn-check-camaro"
+            className="btn-check-zl1"
             data-testid="open-admin-settings-btn"
             title="Check Engine - All Settings"
           >
-            <div className="camaro-wrapper">
-              {/* ZL1 Camaro SVG with working hood */}
-              <svg viewBox="0 0 100 40" className="camaro-svg">
+            <div className="zl1-car-wrapper">
+              {/* 2021 ZL1 Camaro Side Profile SVG */}
+              <svg viewBox="0 0 120 50" className="zl1-car-svg">
                 <defs>
-                  <linearGradient id="camaroBody" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#5a5a6e" />
-                    <stop offset="100%" stopColor="#3a3a4a" />
+                  <linearGradient id="zl1BodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#4a4a5a" />
+                    <stop offset="50%" stopColor="#3a3a48" />
+                    <stop offset="100%" stopColor="#2a2a38" />
                   </linearGradient>
-                  <linearGradient id="camaroWindow" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4a90c2" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#2a5080" stopOpacity="0.3" />
+                  <linearGradient id="zl1WindowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#5599cc" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#336699" stopOpacity="0.4" />
+                  </linearGradient>
+                  <linearGradient id="zl1HoodGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#555566" />
+                    <stop offset="100%" stopColor="#404050" />
+                  </linearGradient>
+                  <linearGradient id="zl1EngineGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stopColor="#ff6600" />
+                    <stop offset="100%" stopColor="#cc3300" />
                   </linearGradient>
                 </defs>
                 
-                {/* Body */}
-                <path d="M5 28 L10 22 L30 20 L70 20 L90 22 L95 28 L90 32 L10 32 Z" fill="url(#camaroBody)" />
+                {/* Main Body - aggressive ZL1 profile */}
+                <path 
+                  d="M8 32 L12 26 L22 24 L38 22 L80 22 L100 24 L108 28 L112 32 L108 38 L12 38 L8 34 Z" 
+                  fill="url(#zl1BodyGrad)" 
+                  className="zl1-body"
+                />
                 
-                {/* Roof */}
-                <path d="M35 20 L42 12 L65 12 L72 20 Z" fill="url(#camaroBody)" />
+                {/* Roof line - fastback style */}
+                <path 
+                  d="M42 22 L50 14 L78 14 L88 22 Z" 
+                  fill="url(#zl1BodyGrad)"
+                  className="zl1-roof"
+                />
                 
                 {/* Window */}
-                <path d="M38 19 L44 13 L63 13 L69 19 Z" fill="url(#camaroWindow)" />
+                <path 
+                  d="M46 21 L52 15 L76 15 L84 21 Z" 
+                  fill="url(#zl1WindowGrad)"
+                  className="zl1-window"
+                />
                 
-                {/* Hood - this will rotate on hover */}
-                <g className="camaro-hood-group">
-                  <path d="M10 22 L30 20 L35 20 L35 22 Z" fill="#4a4a5a" className="camaro-hood" />
-                  <rect x="14" y="19" width="14" height="2.5" rx="0.5" fill="#2a2a35" />
+                {/* Hood assembly - animated on hover */}
+                <g className="zl1-hood-assembly">
+                  {/* Hood panel with power bulge */}
+                  <path 
+                    d="M12 26 L22 24 L38 22 L42 22 L42 26 L12 28 Z" 
+                    fill="url(#zl1HoodGrad)" 
+                    className="zl1-hood-panel"
+                  />
+                  {/* Hood scoop/vent (ZL1 signature) */}
+                  <rect x="18" y="23" width="18" height="3" rx="1" fill="#2a2a35" className="zl1-hood-scoop" />
+                  <rect x="20" y="24" width="14" height="1" fill="#1a1a22" />
                 </g>
                 
-                {/* Engine glow - visible on hover */}
-                <ellipse cx="22" cy="24" rx="10" ry="5" fill="#ff6600" opacity="0" className="camaro-engine-glow" />
+                {/* Engine bay glow - appears when hood opens */}
+                <ellipse 
+                  cx="28" cy="30" rx="14" ry="6" 
+                  fill="url(#zl1EngineGrad)" 
+                  opacity="0" 
+                  className="zl1-engine-glow"
+                />
                 
-                {/* Wheels */}
-                <circle cx="22" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
-                <circle cx="22" cy="32" r="3.5" fill="#2a2a35" />
-                <circle cx="78" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
-                <circle cx="78" cy="32" r="3.5" fill="#2a2a35" />
+                {/* Front wheel */}
+                <circle cx="28" cy="38" r="8" fill="#151520" stroke="#3a3a4a" strokeWidth="1.5" />
+                <circle cx="28" cy="38" r="5" fill="#252530" />
+                <circle cx="28" cy="38" r="2" fill="#1a1a22" />
+                
+                {/* Rear wheel */}
+                <circle cx="92" cy="38" r="8" fill="#151520" stroke="#3a3a4a" strokeWidth="1.5" />
+                <circle cx="92" cy="38" r="5" fill="#252530" />
+                <circle cx="92" cy="38" r="2" fill="#1a1a22" />
                 
                 {/* Headlight */}
-                <ellipse cx="7" cy="25" rx="2.5" ry="1.5" fill="#ffdd88" className="camaro-headlight" />
+                <path d="M10 28 L14 27 L14 31 L10 32 Z" fill="#ffdd88" className="zl1-headlight" />
                 
-                {/* Taillight */}
-                <rect x="92" y="24" width="3" height="4" rx="0.5" fill="#ff0000" className="camaro-taillight" />
+                {/* Taillight - ZL1 style */}
+                <rect x="106" y="28" width="4" height="5" rx="1" fill="#cc0000" className="zl1-taillight" />
               </svg>
             </div>
             
-            {/* Label with CHECK ENGINE icon */}
-            <div className="camaro-label">
-              <span>Check</span>
-              <AlertTriangle className="check-icon" />
+            {/* Label with glowing CHECK ENGINE icon */}
+            <div className="zl1-label">
+              <AlertTriangle className="zl1-check-icon" />
+              <span className="vice-city-text">CHECK</span>
             </div>
           </button>
         </div>
