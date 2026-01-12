@@ -55,6 +55,9 @@ source_repo = DataSourceRepository(db)
 # Import processor
 import_processor = ImportProcessor()
 
+# A/B Testing Service
+from ab_testing_service import ab_testing_service, Experiment, DEFAULT_EXPERIMENTS
+
 
 # ============== LIFESPAN ==============
 
