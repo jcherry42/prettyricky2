@@ -154,9 +154,10 @@ export const IntegrationHealthStatus = ({ compact = true }) => {
   if (compact) {
     return (
       <div 
-        className={`integration-health-compact flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all hover:scale-105 ${getStatusColor(health.overall_status)}`}
+        className={`integration-health-compact flex items-center gap-1.5 px-2 py-1 rounded-md border cursor-pointer transition-all hover:scale-105 ${getStatusColor(health.overall_status)}`}
         title={`${health.healthy}/${health.total} integrations healthy${health.mock_mode > 0 ? ` (${health.mock_mode} mock)` : ''}`}
         data-testid="integration-health-status"
+        style={{ transform: 'scale(0.7)', transformOrigin: 'right center' }}
       >
         {getStatusIcon(health.overall_status)}
         <span className="text-xs font-medium">
