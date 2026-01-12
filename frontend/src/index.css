@@ -901,7 +901,61 @@ html:not(.dark) .btn-supercharged.active .supercharged-label {
 }
 
 /* ============================================
-   CHECK BUTTON - 2021 ZL1 CAMARO
+   CHECK ENGINE BUTTON - Clean Inline Style
+   Icon + Text on same line, with amber glow on hover
+   ============================================ */
+
+.btn-check-engine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  height: 34px;
+  background: linear-gradient(180deg, #1c1c24 0%, #121218 100%);
+  border: 1px solid #2a2a35;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-family: 'Russo One', sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.btn-check-engine:hover {
+  background: linear-gradient(180deg, #252530 0%, #1a1a20 100%);
+  border-color: #ff8800;
+  color: #ff9933;
+  box-shadow: 0 0 20px rgba(255, 136, 0, 0.25);
+}
+
+.btn-check-engine:hover svg {
+  color: #ffaa00;
+  filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.6));
+}
+
+.btn-check-engine:active {
+  transform: scale(0.96);
+}
+
+/* Light mode */
+html:not(.dark) .btn-check-engine {
+  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
+  border-color: #c0c0c8;
+  color: #555;
+}
+
+html:not(.dark) .btn-check-engine:hover {
+  border-color: #dd7700;
+  color: #cc6600;
+  box-shadow: 0 0 15px rgba(221, 119, 0, 0.2);
+}
+
+/* ============================================
+   CHECK BUTTON - 2021 ZL1 CAMARO (Legacy)
    Icon BEHIND text, BIG hood opening animation
    ============================================ */
 
