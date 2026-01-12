@@ -198,10 +198,15 @@ class TestCRMIntegrationCredentialManagement:
     
     def test_toggle_mock_mode(self):
         """POST /api/integrations/{id}/toggle-mock should toggle mock mode"""
-        if not self.integrations:
+        # Get fresh integrations list
+        response = requests.get(f"{BASE_URL}/api/integrations")
+        assert response.status_code == 200
+        integrations = response.json().get("integrations", [])
+        
+        if not integrations:
             pytest.skip("No integrations available for testing")
         
-        integration = self.integrations[0]
+        integration = integrations[0]
         integration_id = integration["id"]
         current_mock_mode = integration.get("mock_mode", True)
         
