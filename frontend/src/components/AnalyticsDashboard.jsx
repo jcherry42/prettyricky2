@@ -595,6 +595,164 @@ export const AnalyticsDashboard = ({ onClose }) => {
               )}
             </div>
           )}
+
+          {/* A/B Testing Tab */}
+          {activeTab === 'ab' && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">A/B Testing Dashboard</h2>
+                  <p className="text-sm text-muted-foreground">Optimize response effectiveness</p>
+                </div>
+                <button
+                  onClick={fetchABExperiments}
+                  className="mclaren-btn-icon"
+                  data-testid="refresh-ab-experiments"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Experiments List */}
+              {abExperiments.length > 0 ? (
+                <div className="space-y-4">
+                  {abExperiments.map((exp) => (
+                    <div key={exp.name} className="mclaren-card p-5">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-foreground flex items-center gap-2">
+                            <FlaskConical className="w-4 h-4 text-primary" />
+                            {exp.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {exp.variants?.length || 0} variants • {exp.total_assignments || 0} assignments
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => toggleExperiment(exp.name, exp.active)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            exp.active 
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                              : 'bg-muted/30 text-muted-foreground border border-muted/50'
+                          }`}
+                          data-testid={`toggle-experiment-${exp.name}`}
+                        >
+                          {exp.active ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                          {exp.active ? 'Active' : 'Paused'}
+                        </button>
+                      </div>
+
+                      {/* Variants Performance */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {(exp.variants || []).map((variant, idx) => {
+                          const assignments = variant.assignments || 0;
+                          const conversions = variant.conversions || 0;
+                          const conversionRate = assignments > 0 ? ((conversions / assignments) * 100).toFixed(1) : 0;
+                          const isWinner = exp.variants && exp.variants.length > 1 && 
+                            conversionRate === Math.max(...exp.variants.map(v => v.assignments > 0 ? ((v.conversions || 0) / v.assignments) * 100 : 0)).toFixed(1) &&
+                            parseFloat(conversionRate) > 0;
+                          
+                          return (
+                            <div 
+                              key={variant.id} 
+                              className={`p-4 rounded-xl border transition-all ${
+                                isWinner 
+                                  ? 'bg-emerald-500/10 border-emerald-500/30' 
+                                  : 'bg-muted/10 border-muted/20'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="font-medium text-foreground flex items-center gap-2">
+                                  {variant.id || `Variant ${idx + 1}`}
+                                  {isWinner && <Award className="w-4 h-4 text-amber-400" />}
+                                </span>
+                                <span className="text-xs bg-muted/30 px-2 py-0.5 rounded">
+                                  {(variant.weight * 100).toFixed(0)}% traffic
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-2 text-center">
+                                <div>
+                                  <p className="text-lg font-bold text-foreground">{assignments}</p>
+                                  <p className="text-[10px] text-muted-foreground">Assignments</p>
+                                </div>
+                                <div>
+                                  <p className="text-lg font-bold text-primary">{conversions}</p>
+                                  <p className="text-[10px] text-muted-foreground">Conversions</p>
+                                </div>
+                                <div>
+                                  <p className={`text-lg font-bold ${isWinner ? 'text-emerald-400' : 'text-foreground'}`}>
+                                    {conversionRate}%
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground">Rate</p>
+                                </div>
+                              </div>
+
+                              {/* Conversion bar */}
+                              <div className="mt-3 h-2 bg-muted/20 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full transition-all duration-500 ${
+                                    isWinner ? 'bg-emerald-500' : 'bg-primary/60'
+                                  }`}
+                                  style={{ width: `${Math.min(conversionRate, 100)}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Created date */}
+                      <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        Created: {exp.created_at ? new Date(exp.created_at).toLocaleDateString() : 'Unknown'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mclaren-card p-8 text-center">
+                  <FlaskConical className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="font-semibold text-foreground mb-2">No Experiments Yet</h3>
+                  <p className="text-sm text-muted-foreground">
+                    A/B tests will appear here when created. Use the API to create experiments.
+                  </p>
+                </div>
+              )}
+
+              {/* How it Works */}
+              <div className="mclaren-card p-5">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  How A/B Testing Works
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">1</div>
+                    <div>
+                      <p className="font-medium text-foreground">Create Variants</p>
+                      <p className="text-xs text-muted-foreground">Define different response styles or templates</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">2</div>
+                    <div>
+                      <p className="font-medium text-foreground">Split Traffic</p>
+                      <p className="text-xs text-muted-foreground">Users are assigned to variants automatically</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">3</div>
+                    <div>
+                      <p className="font-medium text-foreground">Track Results</p>
+                      <p className="text-xs text-muted-foreground">Compare conversion rates to find winners</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
 
         {/* Footer */}
