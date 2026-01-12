@@ -660,7 +660,7 @@ html:not(.dark) .c8-center-text span {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 160px;
+  width: 180px;
   height: 36px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
@@ -668,13 +668,13 @@ html:not(.dark) .c8-center-text span {
   cursor: pointer;
   overflow: visible;
   transition: all 0.3s ease;
-  padding-right: 12px;
+  padding-right: 14px;
 }
 
-/* Single realistic exhaust tip - SIDE VIEW - INSIDE BUTTON */
+/* Single realistic exhaust tip - SIDE VIEW */
 .btn-supercharged .exhaust-tip {
   position: absolute;
-  left: 6px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
@@ -709,7 +709,7 @@ html:not(.dark) .c8-center-text span {
 .btn-supercharged .exhaust-tip .exhaust-outer::before {
   content: '';
   position: absolute;
-  right: -2px;
+  left: -2px;
   top: 2px;
   bottom: 2px;
   width: 3px;
@@ -720,7 +720,7 @@ html:not(.dark) .c8-center-text span {
     #5a5a65 80%,
     #6a6a75 100%
   );
-  border-radius: 0 2px 2px 0;
+  border-radius: 2px 0 0 2px;
 }
 
 .btn-supercharged .exhaust-tip .exhaust-inner {
@@ -744,14 +744,14 @@ html:not(.dark) .c8-center-text span {
   display: none;
 }
 
-/* Flames container - VISIBLE */
+/* Flames container - SHOOTING LEFT with overflow */
 .btn-supercharged .flames {
   position: absolute;
-  left: 20px;
+  left: -60px;
   top: 50%;
   transform: translateY(-50%);
-  width: 80px;
-  height: 32px;
+  width: 70px;
+  height: 36px;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
@@ -762,15 +762,15 @@ html:not(.dark) .c8-center-text span {
   opacity: 1;
 }
 
-/* White-hot core glow */
+/* White-hot core glow - at the RIGHT (near exhaust) */
 .btn-supercharged .flames .flame-core {
   position: absolute;
-  left: 0;
+  right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 18px;
-  height: 14px;
-  background: radial-gradient(ellipse at left center,
+  width: 20px;
+  height: 16px;
+  background: radial-gradient(ellipse at right center,
     #ffffff 0%,
     #ffffcc 20%,
     #ffcc00 45%,
@@ -787,70 +787,70 @@ html:not(.dark) .c8-center-text span {
   100% { opacity: 0.85; transform: translateY(-50%) scale(1.08); }
 }
 
-/* Flame layers - shooting RIGHT */
+/* Flame layers - shooting LEFT */
 .btn-supercharged .flames .flame {
   position: absolute;
   top: 50%;
-  border-radius: 30% 50% 30% 50%;
+  border-radius: 50% 30% 50% 30%;
 }
 
 .btn-supercharged .flames .flame.f1 {
-  left: 5px;
-  width: 60px;
-  height: 12px;
+  right: 5px;
+  width: 55px;
+  height: 14px;
   transform: translateY(-50%);
-  background: linear-gradient(to right, #ffee00 0%, #ff8800 35%, #ff4400 65%, transparent 100%);
+  background: linear-gradient(to left, #ffee00 0%, #ff8800 35%, #ff4400 65%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-1 0.1s ease-in-out infinite alternate;
+  animation: flame-dance-left-1 0.1s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f2 {
-  left: 8px;
-  width: 45px;
-  height: 8px;
-  transform: translateY(-50%) translateY(-7px) rotate(10deg);
-  background: linear-gradient(to right, #ffaa00 0%, #ff5500 55%, transparent 100%);
+  right: 8px;
+  width: 42px;
+  height: 9px;
+  transform: translateY(-50%) translateY(-8px) rotate(-12deg);
+  background: linear-gradient(to left, #ffaa00 0%, #ff5500 55%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-2 0.12s ease-in-out infinite alternate;
+  animation: flame-dance-left-2 0.12s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f3 {
-  left: 8px;
-  width: 45px;
-  height: 8px;
-  transform: translateY(-50%) translateY(7px) rotate(-10deg);
-  background: linear-gradient(to right, #ffaa00 0%, #ff5500 55%, transparent 100%);
+  right: 8px;
+  width: 42px;
+  height: 9px;
+  transform: translateY(-50%) translateY(8px) rotate(12deg);
+  background: linear-gradient(to left, #ffaa00 0%, #ff5500 55%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-3 0.11s ease-in-out infinite alternate;
+  animation: flame-dance-left-3 0.11s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f4 {
-  left: 15px;
-  width: 35px;
-  height: 6px;
+  right: 12px;
+  width: 32px;
+  height: 7px;
   transform: translateY(-50%);
-  background: linear-gradient(to right, #ff6600 0%, #dd2200 55%, transparent 100%);
+  background: linear-gradient(to left, #ff6600 0%, #dd2200 55%, transparent 100%);
   filter: blur(2px);
-  animation: flame-dance-1 0.14s ease-in-out infinite alternate;
+  animation: flame-dance-left-1 0.14s ease-in-out infinite alternate;
   animation-delay: 0.05s;
 }
 
-@keyframes flame-dance-1 {
+@keyframes flame-dance-left-1 {
   0% { transform: translateY(-50%) scaleX(1); opacity: 1; }
-  100% { transform: translateY(-50%) scaleX(0.88) translateX(3px); opacity: 0.8; }
+  100% { transform: translateY(-50%) scaleX(0.88) translateX(-4px); opacity: 0.8; }
 }
 
-@keyframes flame-dance-2 {
-  0% { transform: translateY(-50%) translateY(-7px) rotate(10deg) scaleX(1); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(-8px) rotate(12deg) scaleX(0.9); opacity: 1; }
+@keyframes flame-dance-left-2 {
+  0% { transform: translateY(-50%) translateY(-8px) rotate(-12deg) scaleX(1); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(-9px) rotate(-15deg) scaleX(0.9) translateX(-3px); opacity: 1; }
 }
 
-@keyframes flame-dance-3 {
-  0% { transform: translateY(-50%) translateY(7px) rotate(-10deg) scaleX(1); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(8px) rotate(-12deg) scaleX(0.9); opacity: 1; }
+@keyframes flame-dance-left-3 {
+  0% { transform: translateY(-50%) translateY(8px) rotate(12deg) scaleX(1); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(9px) rotate(15deg) scaleX(0.9) translateX(-3px); opacity: 1; }
 }
 
-/* Flying sparks */
+/* Flying sparks - shooting LEFT */
 .btn-supercharged .flames .sparks {
   position: absolute;
   left: 0;
@@ -870,30 +870,30 @@ html:not(.dark) .c8-center-text span {
 }
 
 .btn-supercharged .flames.active .sparks span {
-  animation: spark-fly 0.45s ease-out infinite;
+  animation: spark-fly-left 0.5s ease-out infinite;
 }
 
-.btn-supercharged .flames .sparks span:nth-child(1) { top: 15%; left: 35px; animation-delay: 0s; }
-.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; left: 50px; animation-delay: 0.1s; }
-.btn-supercharged .flames .sparks span:nth-child(3) { top: 85%; left: 40px; animation-delay: 0.2s; }
-.btn-supercharged .flames .sparks span:nth-child(4) { top: 35%; left: 60px; animation-delay: 0.15s; }
+.btn-supercharged .flames .sparks span:nth-child(1) { top: 15%; right: 20px; animation-delay: 0s; }
+.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; right: 15px; animation-delay: 0.1s; }
+.btn-supercharged .flames .sparks span:nth-child(3) { top: 85%; right: 18px; animation-delay: 0.2s; }
+.btn-supercharged .flames .sparks span:nth-child(4) { top: 35%; right: 10px; animation-delay: 0.15s; }
 
-@keyframes spark-fly {
+@keyframes spark-fly-left {
   0% { opacity: 1; transform: translate(0, 0) scale(1); }
   50% { opacity: 0.9; }
-  100% { opacity: 0; transform: translate(20px, var(--spark-y, 0)) scale(0.4); }
+  100% { opacity: 0; transform: translate(-25px, var(--spark-y, 0)) scale(0.4); }
 }
 
-.btn-supercharged .flames .sparks span:nth-child(1) { --spark-y: -8px; }
+.btn-supercharged .flames .sparks span:nth-child(1) { --spark-y: -10px; }
 .btn-supercharged .flames .sparks span:nth-child(2) { --spark-y: 3px; }
-.btn-supercharged .flames .sparks span:nth-child(3) { --spark-y: 10px; }
-.btn-supercharged .flames .sparks span:nth-child(4) { --spark-y: -4px; }
+.btn-supercharged .flames .sparks span:nth-child(3) { --spark-y: 12px; }
+.btn-supercharged .flames .sparks span:nth-child(4) { --spark-y: -5px; }
 
 /* Label */
 .btn-supercharged .supercharged-label {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: #666;
   z-index: 6;
   transition: all 0.3s ease;
@@ -916,7 +916,7 @@ html:not(.dark) .c8-center-text span {
 
 .btn-supercharged.active .exhaust-tip .exhaust-outer {
   box-shadow: 
-    2px 0 3px rgba(0,0,0,0.4),
+    -2px 0 3px rgba(0,0,0,0.4),
     0 0 15px rgba(255,100,0,0.5),
     inset 2px 0 3px rgba(0,0,0,0.3);
 }
@@ -930,7 +930,7 @@ html:not(.dark) .c8-center-text span {
     #3a1a12 100%
   );
   box-shadow: 
-    inset 2px 0 6px rgba(255,80,0,0.6),
+    inset -2px 0 6px rgba(255,80,0,0.6),
     inset 0 0 10px rgba(255,60,0,0.4);
 }
 
