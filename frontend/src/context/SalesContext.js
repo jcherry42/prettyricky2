@@ -53,6 +53,7 @@ const initialState = {
   showFavorites: false,
   showVS: false,  // VS Battle Card mode
   showAnalytics: false,  // Analytics Dashboard
+  showAdminSettings: false,  // Admin Settings Panel
   isOffline: !navigator.onLine,
   
   // Theme & Modes
@@ -175,6 +176,9 @@ function salesReducer(state, action) {
     
     case ACTIONS.TOGGLE_ANALYTICS:
       return { ...state, showAnalytics: action.payload ?? !state.showAnalytics };
+    
+    case ACTIONS.TOGGLE_ADMIN_SETTINGS:
+      return { ...state, showAdminSettings: action.payload ?? !state.showAdminSettings };
     
     case ACTIONS.ADD_FAVORITE:
       const newFavorites = [...state.favorites, action.payload];
@@ -339,6 +343,7 @@ export function SalesProvider({ children }) {
   const toggleFavorites = (value) => dispatch({ type: ACTIONS.TOGGLE_FAVORITES, payload: value });
   const toggleVS = (value) => dispatch({ type: ACTIONS.TOGGLE_VS, payload: value });
   const toggleAnalytics = (value) => dispatch({ type: ACTIONS.TOGGLE_ANALYTICS, payload: value });
+  const toggleAdminSettings = (value) => dispatch({ type: ACTIONS.TOGGLE_ADMIN_SETTINGS, payload: value });
   
   // Favorites actions
   const addFavorite = (favorite) => {
@@ -412,6 +417,7 @@ export function SalesProvider({ children }) {
     toggleFavorites,
     toggleVS,
     toggleAnalytics,
+    toggleAdminSettings,
     addFavorite,
     removeFavorite,
     updateFavoriteCategory,
