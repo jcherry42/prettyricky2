@@ -58,49 +58,42 @@ export const Header = () => {
       <div className="flex items-center justify-between h-16 px-4">
         {/* C8 Corvette Taillights - Accurate L-shaped contoured design */}
         <div className="c8-taillights-container" data-testid="taillights-logo">
-          {/* Left taillight unit - L-shaped contour (like actual C8) */}
+          {/* Left taillight unit - distinctive C8 L-shape */}
           <svg 
-            viewBox="0 0 50 28" 
+            viewBox="0 0 55 32" 
             className={`c8-taillight-unit c8-left ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
           >
             <defs>
-              <linearGradient id="c8RedGlowL" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ff2222" />
-                <stop offset="50%" stopColor="#cc0000" />
-                <stop offset="100%" stopColor="#880000" />
+              <linearGradient id="c8RedGlowL" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ff3333" />
+                <stop offset="50%" stopColor="#dd0000" />
+                <stop offset="100%" stopColor="#aa0000" />
               </linearGradient>
-              <linearGradient id="c8RedOffL" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#2a0000" />
-                <stop offset="100%" stopColor="#150000" />
+              <linearGradient id="c8RedOffL" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#3a0000" />
+                <stop offset="100%" stopColor="#200000" />
               </linearGradient>
-              <filter id="c8GlowL">
-                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
             </defs>
-            {/* L-shaped outer housing - distinctive C8 contour */}
-            <path 
-              d="M2 2 L45 2 L48 5 L48 12 L38 12 L35 16 L35 26 L32 26 L32 14 L40 14 L42 10 L42 6 L5 6 L5 10 L2 10 Z" 
-              className="c8-housing"
-              fill="#1a1a1a"
-              stroke="#333"
-              strokeWidth="0.5"
-            />
-            {/* Main horizontal LED bar */}
-            <path 
-              d="M4 3.5 L42 3.5 L44 5 L44 9 L40 9 L40 5 L6 5 L4 7 Z" 
+            {/* Dark housing background */}
+            <rect x="0" y="0" width="55" height="32" rx="2" fill="#0a0a0a" />
+            {/* Horizontal LED bar - main element */}
+            <rect 
+              x="2" y="2" 
+              width="50" height="10" 
+              rx="1.5"
               className="c8-led-main"
               fill="url(#c8RedOffL)"
             />
-            {/* Vertical LED section (the "L" part) */}
-            <path 
-              d="M34 13 L37 13 L37 24 L34 24 Z" 
+            {/* Vertical LED element - the "L" stem */}
+            <rect 
+              x="42" y="14" 
+              width="10" height="16" 
+              rx="1.5"
               className="c8-led-vertical"
               fill="url(#c8RedOffL)"
             />
+            {/* Subtle separator detail */}
+            <rect x="41" y="10" width="12" height="6" fill="#0a0a0a" />
           </svg>
 
           {/* Center text area */}
@@ -108,32 +101,42 @@ export const Header = () => {
             <span>TAILLIGHTS</span>
           </div>
 
-          {/* Right taillight unit - L-shaped contour (mirrored) */}
+          {/* Right taillight unit - mirrored L-shape */}
           <svg 
-            viewBox="0 0 50 28" 
+            viewBox="0 0 55 32" 
             className={`c8-taillight-unit c8-right ${startupPhase >= 2 ? 'lit' : ''} ${startupComplete ? 'running' : ''}`}
-            style={{ transform: 'scaleX(-1)' }}
           >
-            {/* L-shaped outer housing - mirrored */}
-            <path 
-              d="M2 2 L45 2 L48 5 L48 12 L38 12 L35 16 L35 26 L32 26 L32 14 L40 14 L42 10 L42 6 L5 6 L5 10 L2 10 Z" 
-              className="c8-housing"
-              fill="#1a1a1a"
-              stroke="#333"
-              strokeWidth="0.5"
-            />
-            {/* Main horizontal LED bar */}
-            <path 
-              d="M4 3.5 L42 3.5 L44 5 L44 9 L40 9 L40 5 L6 5 L4 7 Z" 
+            <defs>
+              <linearGradient id="c8RedGlowR" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stopColor="#ff3333" />
+                <stop offset="50%" stopColor="#dd0000" />
+                <stop offset="100%" stopColor="#aa0000" />
+              </linearGradient>
+              <linearGradient id="c8RedOffR" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stopColor="#3a0000" />
+                <stop offset="100%" stopColor="#200000" />
+              </linearGradient>
+            </defs>
+            {/* Dark housing background */}
+            <rect x="0" y="0" width="55" height="32" rx="2" fill="#0a0a0a" />
+            {/* Horizontal LED bar - main element */}
+            <rect 
+              x="3" y="2" 
+              width="50" height="10" 
+              rx="1.5"
               className="c8-led-main"
-              fill="url(#c8RedOffL)"
+              fill="url(#c8RedOffR)"
             />
-            {/* Vertical LED section (the "L" part) */}
-            <path 
-              d="M34 13 L37 13 L37 24 L34 24 Z" 
+            {/* Vertical LED element - the "L" stem (on left side for mirror) */}
+            <rect 
+              x="3" y="14" 
+              width="10" height="16" 
+              rx="1.5"
               className="c8-led-vertical"
-              fill="url(#c8RedOffL)"
+              fill="url(#c8RedOffR)"
             />
+            {/* Subtle separator detail */}
+            <rect x="2" y="10" width="12" height="6" fill="#0a0a0a" />
           </svg>
         </div>
 
