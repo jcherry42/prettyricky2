@@ -151,6 +151,13 @@ export const AdminSettingsPanel = ({ onClose }) => {
     }
   }, [activeTab, loadNotificationHistory]);
 
+  // Check notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
   const handleDealershipSave = () => {
     setDealership(dealershipForm);
     setSalesperson(salespersonForm);
