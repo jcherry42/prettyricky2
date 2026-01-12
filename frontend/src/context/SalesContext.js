@@ -52,6 +52,7 @@ const initialState = {
   showTowerTalk: false,
   showFavorites: false,
   showVS: false,  // VS Battle Card mode
+  showAnalytics: false,  // Analytics Dashboard
   isOffline: !navigator.onLine,
   
   // Theme & Modes
