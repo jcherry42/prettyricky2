@@ -86,6 +86,12 @@ async def lifespan(app: FastAPI):
     await profile_mgr.create_indexes()
     await profile_mgr.ensure_builtin_profiles()
     
+    # Initialize A/B Testing
+    await ab_testing_service.initialize(db)
+    for exp in DEFAULT_EXPERIMENTS:
+        await ab_testing_service.create_experiment(Experiment(**exp))
+    logger.info("A/B Testing service initialized with default experiments")
+    
     logger.info("Integration layer initialized")
     
     # Initialize scheduler
