@@ -363,8 +363,8 @@ export const AdminSettingsPanel = ({ onClose }) => {
                 <Settings className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-foreground">Admin Settings</h2>
-                <p className="text-xs text-muted-foreground">Configure integrations & notifications</p>
+                <h2 className="font-bold text-lg text-foreground">Check Engine</h2>
+                <p className="text-xs text-muted-foreground">All settings & configurations</p>
               </div>
             </div>
             
