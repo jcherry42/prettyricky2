@@ -104,6 +104,7 @@ export const AnalyticsDashboard = ({ onClose }) => {
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'inventory', label: 'Inventory', icon: Car },
     { id: 'ai', label: 'AI Insights', icon: Zap },
+    { id: 'ab', label: 'A/B Testing', icon: FlaskConical },
   ];
 
   return (
