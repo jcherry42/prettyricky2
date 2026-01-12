@@ -128,12 +128,10 @@ export const Header = () => {
             data-testid="toggle-supercharged-btn"
             title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className="exhaust-tip">
-              <div className="exhaust-outer">
-                <div className="exhaust-inner">
-                  <div className="exhaust-core"></div>
-                </div>
-              </div>
+            {/* Realistic side-view exhaust tip */}
+            <div className="exhaust-tip-side">
+              <div className="exhaust-pipe"></div>
+              <div className="exhaust-opening"></div>
             </div>
             <div className={`flames ${supercharged ? 'active' : ''}`}>
               <div className="flame-core"></div>
@@ -146,7 +144,7 @@ export const Header = () => {
               </div>
             </div>
             <span className="supercharged-label vice-city-text">
-              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
+              {supercharged ? 'SUPERCHARG\'D: ESPAÑOL' : 'SUPERCHARG\'D: ENGLISH'}
             </span>
           </button>
 
