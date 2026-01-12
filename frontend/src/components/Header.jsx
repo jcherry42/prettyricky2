@@ -152,9 +152,12 @@ export const Header = () => {
             data-testid="toggle-supercharged-btn"
             title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className="exhaust-pipes">
-              <div className="pipe"></div>
-              <div className="pipe"></div>
+            <div className="exhaust-tip">
+              <div className="exhaust-outer">
+                <div className="exhaust-inner">
+                  <div className="exhaust-core"></div>
+                </div>
+              </div>
             </div>
             <div className={`flames ${supercharged ? 'active' : ''}`}>
               <div className="flame-core"></div>
