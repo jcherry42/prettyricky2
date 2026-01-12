@@ -299,6 +299,21 @@ A premium theme inspired by high-end automotive interiors:
 - Aggregated results with conversion rate calculation
 - API endpoints: /api/ab/experiments, /api/ab/variant/{experiment_id}, /api/ab/track
 
+### 46. Taillights Rebrand ✅ (Jan 12, 2026)
+- Renamed from "CLOSR" to "Taillights"
+- Pulsating Porsche 911-style taillights logo (dual red bar clusters)
+- Enhanced Supercharg'd button - longer with exhaust pipe and animated flames with sparks
+- Gran Turismo-style Check button - side view car silhouette with opening hood animation
+- Engine glow effect when hood opens on hover
+
+### 47. Notification Sound System ✅ (Jan 12, 2026)
+- Web Audio API-based notification sounds (no external files)
+- Sound types: hotLead (rising tones), success, alert, message
+- Browser notification support with sound
+- Sound preferences saved to localStorage
+- Enable/disable toggle per notification type (Hot Lead, Status Changes, Messages)
+- Test sound button in settings
+
 ### 📋 In Progress / Upcoming
 - **Push Notifications (Web Push API)** - Browser-based alerts complementing SMS
 - **A/B Testing UI** - Dashboard to view experiment results in admin panel
