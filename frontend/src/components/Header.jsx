@@ -142,22 +142,26 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           <IntegrationHealthStatus compact={true} />
 
-          {/* Supercharg'd Button - Reduced size */}
+          {/* Supercharg'd Button with Flames */}
           <button
             onClick={toggleSuperchargedMode}
             className={`btn-supercharged ${supercharged ? 'active' : ''}`}
             data-testid="toggle-supercharged-btn"
             title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
           >
-            <div className="exhaust-system-sm">
-              <div className="exhaust-tip-sm tip-1"></div>
-              <div className="exhaust-tip-sm tip-2"></div>
+            <div className="exhaust-pipes">
+              <div className="pipe"></div>
+              <div className="pipe"></div>
             </div>
-            <div className={`flames-sm ${supercharged ? 'active' : ''}`}>
-              <div className="flame-core-sm"></div>
-              <div className="flame-layer-sm layer-1"></div>
-              <div className="flame-layer-sm layer-2"></div>
-              <div className="flame-layer-sm layer-3"></div>
+            <div className={`flames ${supercharged ? 'active' : ''}`}>
+              <div className="flame-core"></div>
+              <div className="flame f1"></div>
+              <div className="flame f2"></div>
+              <div className="flame f3"></div>
+              <div className="flame f4"></div>
+              <div className="sparks">
+                <span></span><span></span><span></span><span></span>
+              </div>
             </div>
             <span className="supercharged-label vice-city-text">
               {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
