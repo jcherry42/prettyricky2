@@ -779,27 +779,44 @@ html:not(.dark) .btn-supercharged .supercharged-label {
 
 /* ============================================
    CHECK BUTTON - 2021 ZL1 CAMARO
-   Muscle car with functional hood animation
+   Icon BEHIND text, BIG hood opening animation
    ============================================ */
 
 .btn-check-zl1 {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 130px;
-  height: 58px;
+  width: 90px;
+  height: 50px;
   background: linear-gradient(180deg, #1c1c24 0%, #121218 100%);
   border: 1px solid #2a2a35;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: visible;
 }
 
-.btn-check-zl1 .zl1-car-wrapper {
-  width: 110px;
+/* Background icon - BEHIND everything */
+.btn-check-zl1 .zl1-bg-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
   height: 36px;
+  color: #cc8800;
+  opacity: 0.15;
+  z-index: 0;
+  transition: all 0.4s ease;
+}
+
+.btn-check-zl1 .zl1-car-wrapper {
+  position: relative;
+  width: 80px;
+  height: 32px;
+  z-index: 1;
 }
 
 .btn-check-zl1 .zl1-car-svg {
@@ -807,130 +824,104 @@ html:not(.dark) .btn-supercharged .supercharged-label {
   height: 100%;
 }
 
-/* Hood assembly animation */
-.btn-check-zl1 .zl1-hood-assembly {
-  transform-origin: 42px 26px;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Engine glow - hidden by default */
+/* Engine glow - HIDDEN by default, reveals when hood opens */
 .btn-check-zl1 .zl1-engine-glow {
-  transition: opacity 0.3s ease 0.2s;
+  opacity: 0;
+  transition: opacity 0.4s ease 0.1s;
 }
 
-/* Headlight glow */
+/* Hood assembly - PIVOTS DRAMATICALLY on hover */
+.btn-check-zl1 .zl1-hood-assembly {
+  transform-origin: 35px 24px;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Headlight */
 .btn-check-zl1 .zl1-headlight {
-  filter: drop-shadow(0 0 4px #ffdd88);
+  filter: drop-shadow(0 0 3px #ffdd88);
   transition: all 0.3s ease;
 }
 
 /* Taillight pulse */
 .btn-check-zl1 .zl1-taillight {
-  filter: drop-shadow(0 0 6px #ff0000);
+  filter: drop-shadow(0 0 4px #ff0000);
   animation: zl1-tail-pulse 1.5s ease-in-out infinite;
 }
 
 @keyframes zl1-tail-pulse {
-  0%, 100% { 
-    filter: drop-shadow(0 0 4px #ff0000); 
-    opacity: 0.85; 
-  }
-  50% { 
-    filter: drop-shadow(0 0 10px #ff0000) drop-shadow(0 0 15px #cc0000); 
-    opacity: 1; 
-  }
+  0%, 100% { filter: drop-shadow(0 0 3px #ff0000); opacity: 0.85; }
+  50% { filter: drop-shadow(0 0 8px #ff0000); opacity: 1; }
 }
 
-/* Label with check engine icon */
+/* Label text */
 .btn-check-zl1 .zl1-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-}
-
-.btn-check-zl1 .zl1-label span {
+  position: relative;
+  z-index: 1;
   font-family: 'Russo One', sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: #666;
   text-transform: uppercase;
+  margin-top: 1px;
   transition: all 0.3s ease;
 }
 
-/* Check engine icon - always visible with amber glow */
-.btn-check-zl1 .zl1-check-icon {
-  width: 16px;
-  height: 16px;
-  color: #cc8800;
-  filter: drop-shadow(0 0 4px rgba(255, 170, 0, 0.6));
-  transition: all 0.3s ease;
-  animation: check-engine-idle 2s ease-in-out infinite;
-}
-
-@keyframes check-engine-idle {
-  0%, 100% { 
-    opacity: 0.8;
-    filter: drop-shadow(0 0 3px rgba(255, 170, 0, 0.4));
-  }
-  50% { 
-    opacity: 1;
-    filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.7));
-  }
-}
-
-/* ===== HOVER STATE - Hood opens, engine glows, check light blinks ===== */
+/* ===== HOVER STATE - Hood opens BIG, engine glows ===== */
 .btn-check-zl1:hover {
-  background: linear-gradient(180deg, #242430 0%, #1a1a22 100%);
+  background: linear-gradient(180deg, #252530 0%, #1a1a20 100%);
   border-color: #ff8800;
-  box-shadow: 
-    0 0 25px rgba(255, 136, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: 0 0 25px rgba(255, 136, 0, 0.25);
 }
 
+.btn-check-zl1:hover .zl1-bg-icon {
+  opacity: 0.35;
+  color: #ffaa00;
+  filter: drop-shadow(0 0 10px rgba(255, 170, 0, 0.5));
+  animation: bg-icon-pulse 0.4s ease-in-out infinite;
+}
+
+@keyframes bg-icon-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.2; }
+}
+
+/* HOOD OPENS DRAMATICALLY - 70 degree rotation! */
 .btn-check-zl1:hover .zl1-hood-assembly {
-  transform: rotate(-45deg) translateY(-2px);
+  transform: rotate(-70deg) translateY(-4px);
 }
 
+/* Engine bay reveals with hot glow */
 .btn-check-zl1:hover .zl1-engine-glow {
-  opacity: 0.9 !important;
+  opacity: 1 !important;
 }
 
 .btn-check-zl1:hover .zl1-headlight {
-  filter: 
-    drop-shadow(0 0 8px #ffdd88) 
-    drop-shadow(-12px 0 20px rgba(255, 220, 100, 0.5));
+  filter: drop-shadow(0 0 8px #ffdd88) drop-shadow(-10px 0 15px rgba(255, 220, 100, 0.4));
 }
 
-.btn-check-zl1:hover .zl1-label span {
+.btn-check-zl1:hover .zl1-label {
   color: #ff9933;
   text-shadow: 0 0 8px rgba(255, 153, 51, 0.4);
-}
-
-.btn-check-zl1:hover .zl1-check-icon {
-  color: #ffaa00;
-  filter: drop-shadow(0 0 10px rgba(255, 170, 0, 1));
-  animation: check-engine-alert 0.3s ease-in-out infinite;
-}
-
-@keyframes check-engine-alert {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 
 .btn-check-zl1:active {
   transform: scale(0.96);
 }
 
-/* Light mode ZL1 */
+/* Light mode */
 html:not(.dark) .btn-check-zl1 {
   background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
   border-color: #c0c0c8;
 }
 
-html:not(.dark) .btn-check-zl1 .zl1-label span {
+html:not(.dark) .btn-check-zl1 .zl1-label {
   color: #555;
+}
+
+html:not(.dark) .btn-check-zl1 .zl1-bg-icon {
+  color: #dd8800;
+  opacity: 0.1;
 }
 
 html:not(.dark) .btn-check-zl1:hover {
@@ -938,7 +929,9 @@ html:not(.dark) .btn-check-zl1:hover {
   box-shadow: 0 0 20px rgba(221, 119, 0, 0.2);
 }
 
-html:not(.dark) .btn-check-zl1:hover .zl1-label span {
+html:not(.dark) .btn-check-zl1:hover .zl1-label {
+  color: #cc6600;
+}
   color: #cc6600;
 }
 
