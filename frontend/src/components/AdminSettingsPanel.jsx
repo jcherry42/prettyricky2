@@ -482,104 +482,313 @@ export const AdminSettingsPanel = ({ onClose }) => {
               {/* Integrations Tab */}
               {activeTab === 'integrations' && (
                 <div className="space-y-6 animate-fade-in">
-                  {/* Health Overview */}
-                  {crmConfig.health && (
-                    <div className="grid grid-cols-4 gap-3">
-                      <div className="mclaren-mini-stat healthy">
-                        <span className="text-xl font-bold">{crmConfig.health.healthy}</span>
-                        <span className="text-xs">Healthy</span>
-                      </div>
-                      <div className="mclaren-mini-stat degraded">
-                        <span className="text-xl font-bold">{crmConfig.health.degraded}</span>
-                        <span className="text-xs">Degraded</span>
-                      </div>
-                      <div className="mclaren-mini-stat unhealthy">
-                        <span className="text-xl font-bold">{crmConfig.health.unhealthy}</span>
-                        <span className="text-xs">Unhealthy</span>
-                      </div>
-                      <div className="mclaren-mini-stat mock">
-                        <span className="text-xl font-bold">{crmConfig.health.mock_mode}</span>
-                        <span className="text-xs">Mock</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Mock Mode Notice */}
-                  <div className="mclaren-notice-card">
-                    <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-amber-400">CRM Connectors in Mock Mode</p>
-                      <p className="text-xs text-amber-400/70 mt-1">
-                        All integrations are using simulated data. To connect to real CRMs, 
-                        provide API credentials through the Connection Wizard in the Import menu.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Integration List */}
-                  <div className="mclaren-config-section">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <Plug className="w-5 h-5 text-primary" />
-                        <h3 className="font-semibold text-foreground">Active Integrations</h3>
-                      </div>
+                  {/* Integration Detail View */}
+                  {selectedIntegration ? (
+                    <div className="space-y-5">
+                      {/* Back button */}
                       <button
-                        onClick={loadConfig}
-                        className="mclaren-btn-icon-sm"
-                        title="Refresh"
+                        onClick={() => setSelectedIntegration(null)}
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        <RefreshCw className="w-4 h-4" />
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Integrations
                       </button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {crmConfig.integrations.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-6">
-                          No integrations configured. Use the Connection Wizard to add one.
-                        </p>
-                      ) : (
-                        crmConfig.integrations.map((integration) => (
-                          <div key={integration.id} className="mclaren-integration-row">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-2.5 h-2.5 rounded-full ${
-                                integration.status === 'healthy' ? 'bg-emerald-500' :
-                                integration.status === 'degraded' ? 'bg-amber-500' : 'bg-red-500'
-                              }`} />
-                              <div>
-                                <p className="font-medium text-foreground text-sm">{integration.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {integration.adapter_name} • {integration.data_type}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {integration.mock_mode && (
-                                <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded font-medium">
-                                  MOCK
-                                </span>
-                              )}
-                              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      
+                      {/* Integration Header */}
+                      <div className="mclaren-config-section">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-3 h-3 rounded-full ${
+                              selectedIntegration.status === 'healthy' ? 'bg-emerald-500' :
+                              selectedIntegration.status === 'degraded' ? 'bg-amber-500' : 'bg-red-500'
+                            }`} />
+                            <div>
+                              <h3 className="font-semibold text-foreground">{selectedIntegration.name}</h3>
+                              <p className="text-xs text-muted-foreground">
+                                {selectedIntegration.adapter_name || selectedIntegration.adapter_type}
+                              </p>
                             </div>
                           </div>
-                        ))
+                          
+                          {/* Mock Mode Toggle */}
+                          <button
+                            onClick={() => handleToggleMockMode(selectedIntegration)}
+                            disabled={saving}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              selectedIntegration.mock_mode 
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            }`}
+                            data-testid="toggle-mock-mode"
+                          >
+                            {selectedIntegration.mock_mode ? (
+                              <>
+                                <ToggleLeft className="w-4 h-4" />
+                                Mock Mode
+                              </>
+                            ) : (
+                              <>
+                                <ToggleRight className="w-4 h-4" />
+                                Live Mode
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* Connection Status */}
+                        <div className={`p-3 rounded-lg mb-4 ${
+                          selectedIntegration.mock_mode 
+                            ? 'bg-amber-500/10 border border-amber-500/20'
+                            : selectedIntegration.status === 'healthy'
+                              ? 'bg-emerald-500/10 border border-emerald-500/20'
+                              : 'bg-red-500/10 border border-red-500/20'
+                        }`}>
+                          <p className="text-sm">
+                            {selectedIntegration.mock_mode ? (
+                              <span className="text-amber-400">Using simulated data. Add credentials and disable mock mode for live data.</span>
+                            ) : selectedIntegration.status === 'healthy' ? (
+                              <span className="text-emerald-400">Connected and syncing live data from CRM.</span>
+                            ) : (
+                              <span className="text-red-400">Connection issue. Check credentials and try again.</span>
+                            )}
+                          </p>
+                        </div>
+                        
+                        {/* Test Connection */}
+                        <button
+                          onClick={handleTestIntegration}
+                          disabled={saving}
+                          className="mclaren-btn-secondary w-full gap-2"
+                          data-testid="test-integration"
+                        >
+                          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
+                          Test Connection
+                        </button>
+                      </div>
+                      
+                      {/* API Credentials */}
+                      <div className="mclaren-config-section">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Key className="w-5 h-5 text-primary" />
+                          <h3 className="font-semibold text-foreground">API Credentials</h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-4">
+                          Enter your CRM API credentials to enable live data synchronization.
+                        </p>
+                        
+                        <div className="space-y-4">
+                          {/* API Key */}
+                          <div className="mclaren-form-group">
+                            <label className="mclaren-label">API Key</label>
+                            <div className="relative">
+                              <input
+                                type={showIntegrationSecrets.api_key ? 'text' : 'password'}
+                                value={integrationForm.api_key}
+                                onChange={(e) => setIntegrationForm(prev => ({ ...prev, api_key: e.target.value }))}
+                                placeholder="Enter API key"
+                                className="mclaren-input font-mono text-sm pr-12"
+                                data-testid="integration-api-key"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowIntegrationSecrets(prev => ({ ...prev, api_key: !prev.api_key }))}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                              >
+                                {showIntegrationSecrets.api_key ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Username/Password for basic auth */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="mclaren-form-group">
+                              <label className="mclaren-label">Username (Optional)</label>
+                              <input
+                                type="text"
+                                value={integrationForm.username}
+                                onChange={(e) => setIntegrationForm(prev => ({ ...prev, username: e.target.value }))}
+                                placeholder="Username"
+                                className="mclaren-input text-sm"
+                                data-testid="integration-username"
+                              />
+                            </div>
+                            <div className="mclaren-form-group">
+                              <label className="mclaren-label">Password (Optional)</label>
+                              <div className="relative">
+                                <input
+                                  type={showIntegrationSecrets.password ? 'text' : 'password'}
+                                  value={integrationForm.password}
+                                  onChange={(e) => setIntegrationForm(prev => ({ ...prev, password: e.target.value }))}
+                                  placeholder="Password"
+                                  className="mclaren-input text-sm pr-10"
+                                  data-testid="integration-password"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowIntegrationSecrets(prev => ({ ...prev, password: !prev.password }))}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showIntegrationSecrets.password ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* OAuth credentials */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="mclaren-form-group">
+                              <label className="mclaren-label">Client ID (OAuth)</label>
+                              <input
+                                type="text"
+                                value={integrationForm.client_id}
+                                onChange={(e) => setIntegrationForm(prev => ({ ...prev, client_id: e.target.value }))}
+                                placeholder="OAuth Client ID"
+                                className="mclaren-input text-sm"
+                                data-testid="integration-client-id"
+                              />
+                            </div>
+                            <div className="mclaren-form-group">
+                              <label className="mclaren-label">Client Secret (OAuth)</label>
+                              <div className="relative">
+                                <input
+                                  type={showIntegrationSecrets.client_secret ? 'text' : 'password'}
+                                  value={integrationForm.client_secret}
+                                  onChange={(e) => setIntegrationForm(prev => ({ ...prev, client_secret: e.target.value }))}
+                                  placeholder="OAuth Client Secret"
+                                  className="mclaren-input text-sm pr-10"
+                                  data-testid="integration-client-secret"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowIntegrationSecrets(prev => ({ ...prev, client_secret: !prev.client_secret }))}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                  {showIntegrationSecrets.client_secret ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <button
+                            onClick={handleSaveIntegrationCredentials}
+                            disabled={saving}
+                            className="mclaren-btn-primary w-full gap-2 mt-2"
+                            data-testid="save-integration-credentials"
+                          >
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            Save Credentials
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Health Overview */}
+                      {crmConfig.health && (
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="mclaren-mini-stat healthy">
+                            <span className="text-xl font-bold">{crmConfig.health.healthy}</span>
+                            <span className="text-xs">Healthy</span>
+                          </div>
+                          <div className="mclaren-mini-stat degraded">
+                            <span className="text-xl font-bold">{crmConfig.health.degraded}</span>
+                            <span className="text-xs">Degraded</span>
+                          </div>
+                          <div className="mclaren-mini-stat unhealthy">
+                            <span className="text-xl font-bold">{crmConfig.health.unhealthy}</span>
+                            <span className="text-xs">Unhealthy</span>
+                          </div>
+                          <div className="mclaren-mini-stat mock">
+                            <span className="text-xl font-bold">{crmConfig.health.mock_mode}</span>
+                            <span className="text-xs">Mock</span>
+                          </div>
+                        </div>
                       )}
-                    </div>
-                  </div>
 
-                  {/* Supported CRMs */}
-                  <div className="mclaren-info-card">
-                    <h4 className="font-medium text-foreground mb-3">Supported CRM Vendors</h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                      <span>• VinSolutions</span>
-                      <span>• DealerSocket</span>
-                      <span>• elead (CDK)</span>
-                      <span>• DealerTrack</span>
-                      <span>• Reynolds & Reynolds</span>
-                      <span>• ProMax</span>
-                      <span>• CDK Drive</span>
-                      <span>• Custom REST API</span>
-                    </div>
-                  </div>
+                      {/* Mock Mode Notice */}
+                      {crmConfig.health && crmConfig.health.mock_mode > 0 && (
+                        <div className="mclaren-notice-card">
+                          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-amber-400">CRM Connectors in Mock Mode</p>
+                            <p className="text-xs text-amber-400/70 mt-1">
+                              {crmConfig.health.mock_mode} integration(s) using simulated data. Click an integration to add credentials.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Integration List */}
+                      <div className="mclaren-config-section">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2">
+                            <Plug className="w-5 h-5 text-primary" />
+                            <h3 className="font-semibold text-foreground">Active Integrations</h3>
+                          </div>
+                          <button
+                            onClick={loadConfig}
+                            className="mclaren-btn-icon-sm"
+                            title="Refresh"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          {crmConfig.integrations.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-6">
+                              No integrations configured. Use the Connection Wizard to add one.
+                            </p>
+                          ) : (
+                            crmConfig.integrations.map((integration) => (
+                              <button
+                                key={integration.id}
+                                onClick={() => handleSelectIntegration(integration)}
+                                className="mclaren-integration-row w-full text-left"
+                                data-testid={`integration-${integration.id}`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-2.5 h-2.5 rounded-full ${
+                                    integration.status === 'healthy' ? 'bg-emerald-500' :
+                                    integration.status === 'degraded' ? 'bg-amber-500' : 'bg-red-500'
+                                  }`} />
+                                  <div>
+                                    <p className="font-medium text-foreground text-sm">{integration.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {integration.adapter_name} • {integration.data_type}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {integration.mock_mode && (
+                                    <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded font-medium">
+                                      MOCK
+                                    </span>
+                                  )}
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Supported CRMs */}
+                      <div className="mclaren-info-card">
+                        <h4 className="font-medium text-foreground mb-3">Supported CRM Vendors</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                          <span>• VinSolutions</span>
+                          <span>• DealerSocket</span>
+                          <span>• elead (CDK)</span>
+                          <span>• DealerTrack</span>
+                          <span>• Reynolds & Reynolds</span>
+                          <span>• ProMax</span>
+                          <span>• CDK Drive</span>
+                          <span>• Custom REST API</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </>
