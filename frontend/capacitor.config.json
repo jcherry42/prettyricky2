@@ -2,7 +2,6 @@
   "appId": "com.taillights.salesapp",
   "appName": "Taillights",
   "webDir": "build",
-  "bundledWebRuntime": false,
   "backgroundColor": "#0d0d0d",
   "plugins": {
     "SplashScreen": {
@@ -30,14 +29,14 @@
   "ios": {
     "contentInset": "automatic",
     "preferredContentMode": "mobile",
-    "scheme": "CLOSR"
+    "scheme": "taillights"
   },
   "android": {
     "backgroundColor": "#0d0d0d",
     "allowMixedContent": true
   },
   "server": {
-    "hostname": "closr.app",
+    "hostname": "taillights.app",
     "androidScheme": "https"
   }
 }
