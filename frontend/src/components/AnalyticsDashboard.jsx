@@ -3,7 +3,7 @@ import {
   X, BarChart3, TrendingUp, Users, Car, MessageSquare, Activity,
   RefreshCw, Loader2, Zap, Target, Award, Clock, Flame, Shield,
   ArrowUpRight, ArrowDownRight, Minus, Database, CheckCircle,
-  AlertCircle, XCircle, Calendar, PieChart
+  AlertCircle, XCircle, Calendar, PieChart, FlaskConical, Play, Pause, Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
