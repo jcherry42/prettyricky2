@@ -2198,6 +2198,572 @@ html:not(.dark) .opacity-50 {
 
 html:not(.dark) .opacity-60 {
   opacity: 0.7;
+
+
+/* ===================================================================
+   PREMIUM FORM & MODAL COMPONENTS
+   Setup Modal, Import Modal, and general form styling
+   =================================================================== */
+
+/* Setup Modal Container */
+.mclaren-setup-modal {
+  background: linear-gradient(
+    165deg,
+    hsla(220, 25%, 12%, 0.98) 0%,
+    hsla(220, 30%, 7%, 0.99) 100%
+  );
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 24px;
+  box-shadow: 
+    0 30px 100px hsla(0, 0%, 0%, 0.6),
+    0 15px 40px hsla(0, 0%, 0%, 0.4),
+    inset 0 1px 0 hsla(220, 40%, 50%, 0.1);
+}
+
+html:not(.dark) .mclaren-setup-modal {
+  background: linear-gradient(
+    165deg,
+    hsla(220, 15%, 100%, 0.98) 0%,
+    hsla(220, 20%, 97%, 0.99) 100%
+  );
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  box-shadow: 
+    0 30px 100px hsla(220, 30%, 0%, 0.15),
+    0 15px 40px hsla(220, 30%, 0%, 0.1);
+}
+
+/* Setup Header */
+.mclaren-setup-header {
+  background: linear-gradient(
+    180deg,
+    hsla(220, 25%, 15%, 0.6) 0%,
+    hsla(220, 25%, 10%, 0.3) 100%
+  );
+  border-bottom: 1px solid hsla(220, 30%, 25%, 0.3);
+}
+
+html:not(.dark) .mclaren-setup-header {
+  background: linear-gradient(
+    180deg,
+    hsla(220, 15%, 98%, 0.8) 0%,
+    hsla(220, 15%, 96%, 0.6) 100%
+  );
+  border-bottom: 1px solid hsla(220, 30%, 90%, 0.5);
+}
+
+/* Setup Icon */
+.mclaren-setup-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 50%, 0.2) 0%,
+    hsla(var(--primary-hue, 25), 90%, 40%, 0.1) 100%
+  );
+  border: 1px solid hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
+  border-radius: 14px;
+  color: hsl(var(--primary));
+  box-shadow: 
+    0 4px 12px hsla(var(--primary-hue, 25), 90%, 50%, 0.2),
+    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 70%, 0.2);
+}
+
+/* Close Button */
+.mclaren-close-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsla(220, 25%, 20%, 0.5);
+  border: 1px solid hsla(220, 30%, 30%, 0.3);
+  border-radius: 10px;
+  color: hsla(220, 10%, 60%, 1);
+  transition: all 0.2s ease;
+}
+
+.mclaren-close-btn:hover {
+  background: hsla(220, 25%, 25%, 0.7);
+  color: hsla(220, 10%, 90%, 1);
+}
+
+html:not(.dark) .mclaren-close-btn {
+  background: hsla(220, 15%, 94%, 0.8);
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  color: hsla(220, 15%, 45%, 1);
+}
+
+html:not(.dark) .mclaren-close-btn:hover {
+  background: hsla(220, 15%, 90%, 1);
+  color: hsla(220, 15%, 25%, 1);
+}
+
+/* Progress Container */
+.mclaren-progress-container {
+  background: hsla(220, 25%, 10%, 0.3);
+  border-bottom: 1px solid hsla(220, 30%, 20%, 0.2);
+}
+
+html:not(.dark) .mclaren-progress-container {
+  background: hsla(220, 15%, 96%, 0.5);
+  border-bottom: 1px solid hsla(220, 30%, 92%, 0.5);
+}
+
+/* Step Indicator */
+.mclaren-step-indicator {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsla(220, 25%, 15%, 0.6);
+  border: 2px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 12px;
+  color: hsla(220, 10%, 50%, 1);
+  transition: all 0.3s ease;
+}
+
+.mclaren-step-indicator.active {
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 50%, 0.25) 0%,
+    hsla(var(--primary-hue, 25), 90%, 40%, 0.15) 100%
+  );
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.5);
+  color: hsl(var(--primary));
+  box-shadow: 0 0 20px hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
+}
+
+.mclaren-step-indicator.completed {
+  background: hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
+  color: hsl(var(--primary));
+}
+
+html:not(.dark) .mclaren-step-indicator {
+  background: hsla(220, 15%, 95%, 0.8);
+  border-color: hsla(220, 30%, 88%, 0.5);
+  color: hsla(220, 15%, 50%, 1);
+}
+
+html:not(.dark) .mclaren-step-indicator.active {
+  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.15);
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.4);
+  color: hsl(var(--primary));
+}
+
+/* Step Line */
+.mclaren-step-line {
+  flex: 1;
+  height: 2px;
+  background: hsla(220, 30%, 25%, 0.4);
+  margin: 0 8px;
+  border-radius: 1px;
+  transition: background 0.3s ease;
+}
+
+.mclaren-step-line.completed {
+  background: linear-gradient(90deg, hsl(var(--primary)), hsla(var(--primary-hue, 25), 90%, 50%, 0.5));
+}
+
+html:not(.dark) .mclaren-step-line {
+  background: hsla(220, 30%, 88%, 0.6);
+}
+
+/* Form Group */
+.mclaren-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Label */
+.mclaren-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: hsla(220, 10%, 85%, 1);
+  letter-spacing: 0.02em;
+}
+
+html:not(.dark) .mclaren-label {
+  color: hsla(220, 20%, 25%, 1);
+}
+
+/* Input Override for Premium Look */
+.mclaren-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: hsla(220, 25%, 12%, 0.7);
+  border: 1px solid hsla(220, 30%, 28%, 0.5);
+  border-radius: 12px;
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.mclaren-input::placeholder {
+  color: hsla(220, 10%, 45%, 1);
+}
+
+.mclaren-input:focus {
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.6);
+  background: hsla(220, 25%, 14%, 0.8);
+  box-shadow: 
+    0 0 0 3px hsla(var(--primary-hue, 25), 90%, 50%, 0.15),
+    0 4px 12px hsla(0, 0%, 0%, 0.2);
+}
+
+html:not(.dark) .mclaren-input {
+  background: hsla(220, 15%, 98%, 0.9);
+  border: 1px solid hsla(220, 30%, 85%, 0.6);
+  color: hsla(220, 20%, 15%, 1);
+}
+
+html:not(.dark) .mclaren-input::placeholder {
+  color: hsla(220, 15%, 55%, 1);
+}
+
+html:not(.dark) .mclaren-input:focus {
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.5);
+  background: hsla(220, 15%, 100%, 1);
+  box-shadow: 0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
+}
+
+/* Option Button (for phrases) */
+.mclaren-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: hsla(220, 25%, 14%, 0.6);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 12px;
+  color: hsla(220, 10%, 75%, 1);
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.mclaren-option-btn:hover {
+  background: hsla(220, 25%, 18%, 0.7);
+  border-color: hsla(220, 30%, 35%, 0.5);
+}
+
+.mclaren-option-btn.selected {
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 50%, 0.15) 0%,
+    hsla(var(--primary-hue, 25), 90%, 40%, 0.08) 100%
+  );
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.4);
+  color: hsl(var(--foreground));
+  box-shadow: 0 2px 8px hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
+}
+
+html:not(.dark) .mclaren-option-btn {
+  background: hsla(220, 15%, 97%, 0.8);
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .mclaren-option-btn:hover {
+  background: hsla(220, 15%, 94%, 0.9);
+  border-color: hsla(220, 30%, 80%, 0.6);
+}
+
+html:not(.dark) .mclaren-option-btn.selected {
+  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.35);
+  color: hsla(220, 20%, 15%, 1);
+}
+
+/* Check Icon */
+.mclaren-check-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  color: white;
+  flex-shrink: 0;
+}
+
+/* Style Card (for salesperson style) */
+.mclaren-style-card {
+  padding: 16px;
+  background: hsla(220, 25%, 14%, 0.6);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.mclaren-style-card:hover {
+  background: hsla(220, 25%, 18%, 0.7);
+  border-color: hsla(220, 30%, 35%, 0.5);
+}
+
+.mclaren-style-card.selected {
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 50%, 0.12) 0%,
+    hsla(var(--primary-hue, 25), 90%, 40%, 0.06) 100%
+  );
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.4);
+  box-shadow: 0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
+}
+
+html:not(.dark) .mclaren-style-card {
+  background: hsla(220, 15%, 98%, 0.8);
+  border: 1px solid hsla(220, 30%, 90%, 0.5);
+}
+
+html:not(.dark) .mclaren-style-card:hover {
+  background: hsla(220, 15%, 96%, 0.9);
+}
+
+html:not(.dark) .mclaren-style-card.selected {
+  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.08);
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.3);
+}
+
+/* Tone Button */
+.mclaren-tone-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  background: hsla(220, 25%, 14%, 0.6);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  color: hsla(220, 10%, 70%, 1);
+}
+
+.mclaren-tone-btn:hover {
+  background: hsla(220, 25%, 18%, 0.7);
+  transform: translateY(-2px);
+}
+
+.mclaren-tone-btn.selected {
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 50%, 0.2) 0%,
+    hsla(var(--primary-hue, 25), 90%, 40%, 0.1) 100%
+  );
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.5);
+  color: hsl(var(--foreground));
+  box-shadow: 0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.2);
+}
+
+html:not(.dark) .mclaren-tone-btn {
+  background: hsla(220, 15%, 97%, 0.8);
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  color: hsla(220, 15%, 40%, 1);
+}
+
+html:not(.dark) .mclaren-tone-btn.selected {
+  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.12);
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.4);
+  color: hsla(220, 20%, 15%, 1);
+}
+
+/* Preview Card */
+.mclaren-preview-card {
+  padding: 16px;
+  background: hsla(220, 25%, 10%, 0.5);
+  border: 1px solid hsla(220, 30%, 22%, 0.4);
+  border-radius: 14px;
+  border-left: 3px solid hsl(var(--primary));
+}
+
+html:not(.dark) .mclaren-preview-card {
+  background: hsla(220, 15%, 96%, 0.6);
+  border: 1px solid hsla(220, 30%, 90%, 0.5);
+  border-left: 3px solid hsl(var(--primary));
+}
+
+/* Setup Footer */
+.mclaren-setup-footer {
+  background: hsla(220, 25%, 10%, 0.5);
+  border-top: 1px solid hsla(220, 30%, 20%, 0.3);
+}
+
+html:not(.dark) .mclaren-setup-footer {
+  background: hsla(220, 15%, 97%, 0.6);
+  border-top: 1px solid hsla(220, 30%, 92%, 0.5);
+}
+
+/* Button Primary (enhanced) */
+.mclaren-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 90%, 52%, 1) 0%,
+    hsla(var(--primary-hue, 25), 90%, 45%, 1) 100%
+  );
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.35),
+    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 70%, 0.25);
+}
+
+.mclaren-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 25px hsla(var(--primary-hue, 25), 90%, 50%, 0.45),
+    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 75%, 0.3);
+}
+
+.mclaren-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.mclaren-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button Secondary */
+.mclaren-btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  background: hsla(220, 25%, 18%, 0.6);
+  border: 1px solid hsla(220, 30%, 30%, 0.4);
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: hsla(220, 10%, 75%, 1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mclaren-btn-secondary:hover {
+  background: hsla(220, 25%, 22%, 0.7);
+  color: hsla(220, 10%, 90%, 1);
+}
+
+html:not(.dark) .mclaren-btn-secondary {
+  background: hsla(220, 15%, 95%, 0.8);
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .mclaren-btn-secondary:hover {
+  background: hsla(220, 15%, 92%, 0.9);
+  color: hsla(220, 15%, 20%, 1);
+}
+
+/* Apply premium styling to existing ios-input */
+.ios-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: hsla(220, 25%, 12%, 0.7);
+  border: 1px solid hsla(220, 30%, 28%, 0.5);
+  border-radius: 12px;
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.ios-input::placeholder {
+  color: hsla(220, 10%, 45%, 1);
+}
+
+.ios-input:focus {
+  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.6);
+  background: hsla(220, 25%, 14%, 0.8);
+  box-shadow: 
+    0 0 0 3px hsla(var(--primary-hue, 25), 90%, 50%, 0.15),
+    0 4px 12px hsla(0, 0%, 0%, 0.2);
+}
+
+html:not(.dark) .ios-input {
+  background: hsla(220, 15%, 98%, 0.9);
+  border: 1px solid hsla(220, 30%, 85%, 0.6);
+  color: hsla(220, 20%, 15%, 1);
+}
+
+html:not(.dark) .ios-input::placeholder {
+  color: hsla(220, 15%, 55%, 1);
+}
+
+html:not(.dark) .ios-input:focus {
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.5);
+  background: hsla(220, 15%, 100%, 1);
+  box-shadow: 0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
+}
+
+/* Apply premium styling to ios-modal */
+.ios-modal {
+  background: linear-gradient(
+    165deg,
+    hsla(220, 25%, 12%, 0.98) 0%,
+    hsla(220, 30%, 7%, 0.99) 100%
+  );
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 
+    0 -10px 50px hsla(0, 0%, 0%, 0.5);
+}
+
+html:not(.dark) .ios-modal {
+  background: linear-gradient(
+    165deg,
+    hsla(220, 15%, 100%, 0.98) 0%,
+    hsla(220, 20%, 97%, 0.99) 100%
+  );
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+  box-shadow: 
+    0 -10px 50px hsla(220, 30%, 0%, 0.1);
+}
+
+/* iOS List Item Premium Styling */
+.ios-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: hsla(220, 25%, 14%, 0.6);
+  border: 1px solid hsla(220, 30%, 25%, 0.4);
+  transition: all 0.2s ease;
+}
+
+.ios-list-item:hover {
+  background: hsla(220, 25%, 18%, 0.7);
+}
+
+html:not(.dark) .ios-list-item {
+  background: hsla(220, 15%, 97%, 0.8);
+  border: 1px solid hsla(220, 30%, 88%, 0.5);
+}
+
+html:not(.dark) .ios-list-item:hover {
+  background: hsla(220, 15%, 94%, 0.9);
+}
+
 }
 
 html:not(.dark) .opacity-70 {
