@@ -1,6 +1,6 @@
 {
-  "appId": "com.closr.salesapp",
-  "appName": "CLOSR",
+  "appId": "com.taillights.salesapp",
+  "appName": "Taillights",
   "webDir": "build",
   "bundledWebRuntime": false,
   "backgroundColor": "#0d0d0d",
