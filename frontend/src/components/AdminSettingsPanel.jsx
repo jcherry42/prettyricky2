@@ -3,10 +3,16 @@ import {
   X, Settings, Phone, Database, Shield, Check, Loader2, 
   Eye, EyeOff, AlertCircle, CheckCircle, Bell, Plug,
   ChevronRight, Save, RefreshCw, Trash2, TestTube, Key, ToggleLeft, ToggleRight, ArrowLeft,
-  Upload, Building2, User, MessageSquare, Clock, History
+  Upload, Building2, User, MessageSquare, Clock, History, Volume2, VolumeX
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
+import { 
+  playNotificationSound, 
+  requestNotificationPermission,
+  getSoundPreferences, 
+  setSoundPreferences 
+} from '../utils/notificationSound';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -45,6 +51,10 @@ export const AdminSettingsPanel = ({ onClose }) => {
     from_number: null,
     pending_notifications: 0,
   });
+  
+  // Sound preferences
+  const [soundPrefs, setSoundPrefs] = useState(getSoundPreferences());
+  const [notificationPermission, setNotificationPermission] = useState('default');
   
   // Notification history
   const [notificationHistory, setNotificationHistory] = useState([]);
