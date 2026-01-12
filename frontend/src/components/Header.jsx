@@ -224,8 +224,9 @@ export const Header = () => {
                   </linearGradient>
                 </defs>
                 
-                {/* Engine bay glow - reveals on hover */}
-                <ellipse cx="22" cy="28" rx="14" ry="8" fill="url(#zl1Engine)" className="zl1-engine-glow" />
+                {/* Engine bay glow - reveals on hover - BRIGHT */}
+                <ellipse cx="22" cy="26" rx="16" ry="10" fill="url(#zl1Engine)" className="zl1-engine-glow" />
+                <ellipse cx="22" cy="26" rx="10" ry="6" fill="#ffcc00" className="zl1-engine-glow" style={{filter: 'blur(2px)'}} />
                 
                 {/* Main body */}
                 <path d="M5 28 L10 22 L30 20 L70 20 L90 22 L95 28 L90 32 L10 32 Z" fill="url(#zl1Body)" />
