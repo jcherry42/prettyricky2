@@ -12,11 +12,12 @@ import { ImportModal } from './components/ImportModal';
 import { FavoritesModal } from './components/FavoritesModal';
 import { VSModal } from './components/VSModal';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
+import { AdminSettingsPanel } from './components/AdminSettingsPanel';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 
 function AppContent() {
-  const { showAnalytics, toggleAnalytics } = useSales();
+  const { showAnalytics, toggleAnalytics, showAdminSettings, toggleAdminSettings } = useSales();
   
   return (
     <div className="min-h-screen bg-background">
@@ -58,6 +59,7 @@ function AppContent() {
       <FavoritesModal />
       <VSModal />
       {showAnalytics && <AnalyticsDashboard onClose={() => toggleAnalytics(false)} />}
+      {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
       {/* Toast notifications */}
       <Toaster position="top-center" />
