@@ -36,11 +36,40 @@ export const AnalyticsDashboard = ({ onClose }) => {
     }
   }, []);
 
+  const fetchABExperiments = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/ab/experiments`);
+      if (res.ok) {
+        const result = await res.json();
+        setAbExperiments(result.experiments || []);
+      }
+    } catch (err) {
+      console.error('A/B experiments fetch error:', err);
+    }
+  }, []);
+
+  const toggleExperiment = async (expName, active) => {
+    try {
+      const res = await fetch(`${API_URL}/api/ab/experiments/${expName}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !active }),
+      });
+      if (res.ok) {
+        toast.success(`Experiment ${!active ? 'activated' : 'paused'}`);
+        fetchABExperiments();
+      }
+    } catch (err) {
+      toast.error('Failed to update experiment');
+    }
+  };
+
   useEffect(() => {
     fetchAnalytics();
+    fetchABExperiments();
     const interval = setInterval(fetchAnalytics, 60000); // Refresh every minute
     return () => clearInterval(interval);
-  }, [fetchAnalytics]);
+  }, [fetchAnalytics, fetchABExperiments]);
 
   const formatNumber = (num) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
