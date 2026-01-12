@@ -742,21 +742,22 @@ html:not(.dark) .r34-center-text span {
 
 .btn-supercharged .flames .flame-core {
   position: absolute;
-  right: 0;
+  right: 5px;
   top: 50%;
   transform: translateY(-50%);
-  width: 35px;
-  height: 24px;
+  width: 30px;
+  height: 20px;
   background: radial-gradient(ellipse at right center,
     #ffffff 0%,
-    #ffffcc 20%,
-    #ffcc00 40%,
-    #ff6600 65%,
+    #ffffaa 15%,
+    #ffcc00 35%,
+    #ff6600 60%,
     transparent 100%
   );
   border-radius: 50%;
-  filter: blur(3px);
+  filter: blur(2px);
   animation: r34-core-pulse 0.08s ease-in-out infinite alternate;
+  box-shadow: 0 0 20px #ff8800, 0 0 40px #ff4400;
 }
 
 @keyframes r34-core-pulse {
