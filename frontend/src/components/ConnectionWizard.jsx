@@ -3,19 +3,48 @@ import {
   X, ChevronRight, ChevronLeft, Check, AlertCircle, Loader2, 
   Plug, Database, Settings, Zap, Upload, Download, Copy, 
   ArrowRight, CheckCircle, XCircle, HelpCircle, Wand2,
-  FileJson, Link2, GripVertical
+  FileJson, Link2, GripVertical, Sparkles, Eye, Code, 
+  Plus, Trash2, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Available transform types for UI
+const TRANSFORM_OPTIONS = {
+  string: [
+    { type: 'uppercase', label: 'UPPERCASE', icon: 'Aa' },
+    { type: 'lowercase', label: 'lowercase', icon: 'aa' },
+    { type: 'titlecase', label: 'Title Case', icon: 'Aa' },
+    { type: 'trim', label: 'Trim whitespace', icon: '✂️' },
+  ],
+  phone: [
+    { type: 'phone_normalize', label: 'Normalize (+1...)', icon: '📱' },
+    { type: 'phone_format_us', label: 'Format US ((XXX)...)', icon: '📞' },
+    { type: 'phone_digits_only', label: 'Digits only', icon: '#' },
+  ],
+  price: [
+    { type: 'price_normalize', label: 'Remove $ and commas', icon: '💰' },
+    { type: 'round_price', label: 'Round to dollar', icon: '🔢' },
+  ],
+  name: [
+    { type: 'name_combine', label: 'Combine first + last', icon: '👤' },
+  ],
+  date: [
+    { type: 'date_normalize', label: 'Normalize to ISO', icon: '📅' },
+  ],
+  status: [
+    { type: 'status_normalize', label: 'Normalize status', icon: '🏷️' },
+  ],
+};
+
 /**
- * Connection Wizard - Step-by-step CRM setup
+ * Connection Wizard - Step-by-step CRM setup with advanced features
  * 
  * Steps:
- * 1. Choose connection method (Quick Connect / Custom API / Import Profile)
- * 2. Enter connection details (URL, auth)
- * 3. Discover & map fields
+ * 1. Choose connection method (Quick Connect / Custom API / Import OpenAPI / Import Profile)
+ * 2. Enter connection details (URL, auth) or parse OpenAPI spec
+ * 3. Discover & map fields with Smart Suggest and Transforms
  * 4. Test & save
  */
 export const ConnectionWizard = ({ onClose, onSuccess }) => {
@@ -23,11 +52,17 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   
   // Step 1: Connection method
-  const [connectionMethod, setConnectionMethod] = useState(null); // 'quick', 'custom', 'import'
+  const [connectionMethod, setConnectionMethod] = useState(null);
   const [selectedAdapter, setSelectedAdapter] = useState(null);
   const [availableAdapters, setAvailableAdapters] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  
+  // OpenAPI import
+  const [showOpenAPIImport, setShowOpenAPIImport] = useState(false);
+  const [openAPISpec, setOpenAPISpec] = useState('');
+  const [openAPIUrl, setOpenAPIUrl] = useState('');
+  const [parsedOpenAPI, setParsedOpenAPI] = useState(null);
   
   // Step 2: Connection details
   const [connectionConfig, setConnectionConfig] = useState({
@@ -43,11 +78,15 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
   // Step 3: Field mapping
   const [discoveredFields, setDiscoveredFields] = useState([]);
   const [fieldMappings, setFieldMappings] = useState({});
+  const [advancedMappings, setAdvancedMappings] = useState({});
   const [targetSchema, setTargetSchema] = useState({});
   const [sampleRecord, setSampleRecord] = useState(null);
   const [unmappedRequired, setUnmappedRequired] = useState([]);
-  const [discoveryMethod, setDiscoveryMethod] = useState('auto'); // 'auto' or 'manual'
+  const [discoveryMethod, setDiscoveryMethod] = useState('auto');
   const [manualSample, setManualSample] = useState('');
+  const [smartSuggestLoading, setSmartSuggestLoading] = useState(false);
+  const [expandedField, setExpandedField] = useState(null);
+  const [transformPreview, setTransformPreview] = useState({});
   
   // Step 4: Review
   const [testResult, setTestResult] = useState(null);
@@ -55,7 +94,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
   const [saveAsProfile, setSaveAsProfile] = useState(false);
   const [profileName, setProfileName] = useState('');
 
-  // Load adapters and profiles on mount
   useEffect(() => {
     loadAdaptersAndProfiles();
   }, []);
@@ -87,20 +125,18 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     }
   };
 
-  // Step navigation
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
-  // Step 1: Select connection method
+  // ========== STEP 1: Connection Method ==========
+  
   const handleMethodSelect = (method) => {
     setConnectionMethod(method);
-    if (method === 'quick') {
-      // Show adapter selection
-    } else if (method === 'custom') {
+    if (method === 'custom') {
       setSelectedAdapter({ type: 'generic_rest', name: 'Custom REST API' });
       nextStep();
-    } else if (method === 'import') {
-      // Show profile selection
+    } else if (method === 'openapi') {
+      setShowOpenAPIImport(true);
     }
   };
 
@@ -117,31 +153,82 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
   const handleProfileSelect = async (profile) => {
     setSelectedProfile(profile);
     
-    // Load full profile details
     try {
       const res = await fetch(`${API_URL}/api/integration-profiles/${profile.id}`);
       const fullProfile = await res.json();
       
       setConnectionConfig({
         name: `${fullProfile.name} (Copy)`,
-        base_url: fullProfile.base_url,
-        auth_method: fullProfile.auth_method,
+        base_url: fullProfile.base_url || '',
+        auth_method: fullProfile.auth_method || 'api_key',
         api_key: '',
-        customers_endpoint: fullProfile.customers_endpoint,
-        vehicles_endpoint: fullProfile.vehicles_endpoint,
+        customers_endpoint: fullProfile.customers_endpoint || '/customers',
+        vehicles_endpoint: fullProfile.vehicles_endpoint || '/vehicles',
         data_type: 'customers',
       });
       
-      // Pre-load mappings from profile
       setFieldMappings(fullProfile.customer_mappings || {});
-      
       nextStep();
     } catch (err) {
       toast.error('Failed to load profile');
     }
   };
 
-  // Step 2: Validate and proceed
+  // ========== OpenAPI Import ==========
+  
+  const handleParseOpenAPI = async () => {
+    if (!openAPISpec.trim() && !openAPIUrl.trim()) {
+      toast.error('Please provide an OpenAPI spec or URL');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/parse-openapi`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          spec_content: openAPISpec.trim() || undefined,
+          spec_url: openAPIUrl.trim() || undefined,
+        }),
+      });
+      
+      const result = await res.json();
+      
+      if (result.success) {
+        setParsedOpenAPI(result);
+        
+        // Pre-fill connection config from parsed spec
+        setConnectionConfig(prev => ({
+          ...prev,
+          name: result.api_info?.title || 'Imported API',
+          base_url: result.base_url || '',
+          customers_endpoint: result.customers_endpoint?.path || '/customers',
+          vehicles_endpoint: result.vehicles_endpoint?.path || '/vehicles',
+          auth_method: result.auth_methods?.[0]?.method || 'api_key',
+        }));
+        
+        // Pre-fill field mappings if available
+        if (result.suggested_config?.customer_mappings) {
+          setFieldMappings(result.suggested_config.customer_mappings);
+        }
+        
+        setSelectedAdapter({ type: 'generic_rest', name: result.api_info?.title || 'OpenAPI Import' });
+        setShowOpenAPIImport(false);
+        toast.success(`Parsed ${result.spec_version} spec with ${result.endpoints?.length || 0} endpoints`);
+        nextStep();
+      } else {
+        toast.error(result.errors?.[0] || 'Failed to parse OpenAPI spec');
+      }
+    } catch (err) {
+      toast.error('Failed to parse OpenAPI spec');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ========== STEP 2: Connection Details ==========
+  
   const handleConnectionNext = async () => {
     if (!connectionConfig.name.trim()) {
       toast.error('Please enter a name');
@@ -156,7 +243,8 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     nextStep();
   };
 
-  // Step 3: Field Discovery
+  // ========== STEP 3: Field Mapping ==========
+  
   const handleDiscoverFields = async () => {
     setIsLoading(true);
     
@@ -183,7 +271,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
         });
         result = await res.json();
       } else {
-        // Manual sample
         const res = await fetch(`${API_URL}/api/integrations/discover-fields/sample`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -224,6 +311,75 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     }
   };
 
+  // Smart Suggest for unmapped fields
+  const handleSmartSuggest = async () => {
+    const unmapped = discoveredFields.filter(f => !fieldMappings[f.source_name]);
+    if (unmapped.length === 0) {
+      toast.info('All fields are already mapped');
+      return;
+    }
+    
+    setSmartSuggestLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/smart-suggest`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          unmapped_fields: unmapped.map(f => ({
+            source_name: f.source_name,
+            sample_value: f.sample_value,
+          })),
+          data_type: connectionConfig.data_type,
+          use_ai: true,
+        }),
+      });
+      
+      const result = await res.json();
+      
+      if (result.success && result.suggestions?.length > 0) {
+        const newMappings = { ...fieldMappings };
+        result.suggestions.forEach(s => {
+          if (s.confidence >= 0.6) {
+            newMappings[s.source_field] = s.suggested_target;
+          }
+        });
+        setFieldMappings(newMappings);
+        toast.success(`AI suggested ${result.suggestions.length} mappings`);
+      } else {
+        toast.info('No additional suggestions found');
+      }
+    } catch (err) {
+      toast.error('Smart suggest failed');
+    } finally {
+      setSmartSuggestLoading(false);
+    }
+  };
+
+  // Transform preview
+  const handlePreviewTransform = async (sourceField, transformType, value) => {
+    try {
+      const res = await fetch(`${API_URL}/api/integrations/transforms/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          value: value,
+          transform_type: transformType,
+          params: {},
+        }),
+      });
+      
+      const result = await res.json();
+      if (result.success) {
+        setTransformPreview(prev => ({
+          ...prev,
+          [sourceField]: result.output,
+        }));
+      }
+    } catch (err) {
+      console.error('Preview failed:', err);
+    }
+  };
+
   const handleMappingChange = (sourceField, targetField) => {
     setFieldMappings(prev => {
       const updated = { ...prev };
@@ -236,13 +392,63 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     });
   };
 
-  // Step 4: Test and create
+  // Advanced mapping: add transform
+  const handleAddTransform = (sourceField, transformType) => {
+    setAdvancedMappings(prev => {
+      const existing = prev[sourceField] || { transforms: [] };
+      return {
+        ...prev,
+        [sourceField]: {
+          ...existing,
+          transforms: [...existing.transforms, { type: transformType, params: {} }],
+        },
+      };
+    });
+    
+    // Preview the transform
+    const field = discoveredFields.find(f => f.source_name === sourceField);
+    if (field) {
+      handlePreviewTransform(sourceField, transformType, field.sample_value);
+    }
+  };
+
+  const handleRemoveTransform = (sourceField, index) => {
+    setAdvancedMappings(prev => {
+      const existing = prev[sourceField] || { transforms: [] };
+      const newTransforms = existing.transforms.filter((_, i) => i !== index);
+      if (newTransforms.length === 0) {
+        const { [sourceField]: _, ...rest } = prev;
+        return rest;
+      }
+      return {
+        ...prev,
+        [sourceField]: { ...existing, transforms: newTransforms },
+      };
+    });
+    setTransformPreview(prev => {
+      const { [sourceField]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // Set default value
+  const handleSetDefault = (sourceField, defaultValue) => {
+    setAdvancedMappings(prev => ({
+      ...prev,
+      [sourceField]: {
+        ...(prev[sourceField] || {}),
+        default_value: defaultValue,
+      },
+    }));
+  };
+
+  // ========== STEP 4: Test & Save ==========
+  
   const handleTestConnection = async () => {
     setIsLoading(true);
     setTestResult(null);
     
     try {
-      // Create a temporary integration to test
       const createRes = await fetch(`${API_URL}/api/integrations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -263,7 +469,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
       const createData = await createRes.json();
       
       if (createData.success) {
-        // Test the connection
         const testRes = await fetch(`${API_URL}/api/integrations/${createData.integration_id}/test`, {
           method: 'POST',
         });
@@ -279,7 +484,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
           toast.success('Connection test passed!');
         } else {
           toast.error(testData.message || 'Connection test failed');
-          // Delete the failed test integration
           await fetch(`${API_URL}/api/integrations/${createData.integration_id}`, { method: 'DELETE' });
         }
       } else {
@@ -301,7 +505,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     setIsLoading(true);
     
     try {
-      // Rename the test integration to the final name
       await fetch(`${API_URL}/api/integrations/${testResult.integrationId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -310,7 +513,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
         }),
       });
       
-      // Save as profile if requested
       if (saveAsProfile && profileName.trim()) {
         await fetch(`${API_URL}/api/integration-profiles`, {
           method: 'POST',
@@ -341,7 +543,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
     }
   };
 
-  // Get priority fields for schema
   const getPriorityFields = () => {
     return Object.entries(targetSchema)
       .sort((a, b) => (a[1].priority || 99) - (b[1].priority || 99))
@@ -364,7 +565,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
               <p className="text-xs text-muted-foreground">Step {step} of 4</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" data-testid="wizard-close-btn">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -405,6 +606,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                       key={adapter.type}
                       onClick={() => handleAdapterSelect(adapter)}
                       className="p-3 rounded-xl border border-border hover:border-primary bg-card hover:bg-primary/5 text-left transition-all group"
+                      data-testid={`adapter-${adapter.type}`}
                     >
                       <div className="flex items-center gap-2">
                         <Database className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
@@ -420,6 +622,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
               <button
                 onClick={() => handleMethodSelect('custom')}
                 className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary bg-card hover:bg-primary/5 text-left transition-all flex items-center gap-4"
+                data-testid="custom-api-btn"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Link2 className="w-6 h-6 text-primary" />
@@ -431,7 +634,23 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                 <ChevronRight className="w-5 h-5 text-muted-foreground ml-auto" />
               </button>
 
-              {/* Import Profile */}
+              {/* Import OpenAPI Spec */}
+              <button
+                onClick={() => handleMethodSelect('openapi')}
+                className="w-full p-4 rounded-xl border-2 border-dashed border-purple-500/30 hover:border-purple-500 bg-purple-500/5 hover:bg-purple-500/10 text-left transition-all flex items-center gap-4"
+                data-testid="openapi-import-btn"
+              >
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Code className="w-6 h-6 text-purple-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground">Import OpenAPI/Swagger</h4>
+                  <p className="text-xs text-muted-foreground">Auto-configure from API specification</p>
+                </div>
+                <Sparkles className="w-5 h-5 text-purple-400 ml-auto" />
+              </button>
+
+              {/* Saved Profiles */}
               {profiles.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-muted-foreground">Or use a saved profile</h4>
@@ -441,6 +660,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                         key={profile.id}
                         onClick={() => handleProfileSelect(profile)}
                         className="w-full p-3 rounded-lg border border-border hover:border-primary bg-card hover:bg-primary/5 text-left transition-all flex items-center gap-3"
+                        data-testid={`profile-${profile.id}`}
                       >
                         <FileJson className="w-4 h-4 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
@@ -453,6 +673,60 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                   </div>
                 </div>
               )}
+
+              {/* OpenAPI Import Modal */}
+              {showOpenAPIImport && (
+                <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                  <div className="w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-purple-500/30 overflow-hidden">
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-border/50 bg-purple-500/5">
+                      <div className="flex items-center gap-3">
+                        <Code className="w-5 h-5 text-purple-400" />
+                        <h3 className="font-semibold text-foreground">Import OpenAPI Spec</h3>
+                      </div>
+                      <button onClick={() => setShowOpenAPIImport(false)} className="text-muted-foreground hover:text-foreground">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    
+                    <div className="p-5 space-y-4">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Spec URL (optional)</label>
+                        <input
+                          type="text"
+                          value={openAPIUrl}
+                          onChange={e => setOpenAPIUrl(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
+                          placeholder="https://api.example.com/openapi.json"
+                          data-testid="openapi-url-input"
+                        />
+                      </div>
+                      
+                      <div className="text-center text-xs text-muted-foreground">— or —</div>
+                      
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Paste Spec (JSON/YAML)</label>
+                        <textarea
+                          value={openAPISpec}
+                          onChange={e => setOpenAPISpec(e.target.value)}
+                          className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm font-mono h-40"
+                          placeholder='openapi: "3.0.0"&#10;info:&#10;  title: My API&#10;  version: "1.0"'
+                          data-testid="openapi-spec-input"
+                        />
+                      </div>
+                      
+                      <button
+                        onClick={handleParseOpenAPI}
+                        disabled={isLoading || (!openAPISpec.trim() && !openAPIUrl.trim())}
+                        className="w-full py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                        data-testid="parse-openapi-btn"
+                      >
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                        Parse & Import
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -460,6 +734,19 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
           {step === 2 && (
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground">Connection Details</h3>
+              
+              {/* Show parsed OpenAPI info if available */}
+              {parsedOpenAPI && (
+                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20 mb-4">
+                  <p className="text-xs text-purple-400 font-medium">Imported from {parsedOpenAPI.spec_version}</p>
+                  <p className="text-sm text-foreground">{parsedOpenAPI.api_info?.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {parsedOpenAPI.endpoints?.length || 0} endpoints found • 
+                    Customers: {parsedOpenAPI.customers_endpoint?.path || 'Not detected'} • 
+                    Vehicles: {parsedOpenAPI.vehicles_endpoint?.path || 'Not detected'}
+                  </p>
+                </div>
+              )}
               
               <div className="space-y-3">
                 <div>
@@ -470,6 +757,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                     onChange={e => setConnectionConfig(p => ({ ...p, name: e.target.value }))}
                     className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
                     placeholder="My CRM Connection"
+                    data-testid="integration-name-input"
                   />
                 </div>
 
@@ -481,6 +769,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                     onChange={e => setConnectionConfig(p => ({ ...p, base_url: e.target.value }))}
                     className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
                     placeholder="https://api.yourcrm.com/v1"
+                    data-testid="base-url-input"
                   />
                 </div>
 
@@ -491,6 +780,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                       value={connectionConfig.auth_method}
                       onChange={e => setConnectionConfig(p => ({ ...p, auth_method: e.target.value }))}
                       className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
+                      data-testid="auth-method-select"
                     >
                       <option value="api_key">API Key</option>
                       <option value="bearer_token">Bearer Token</option>
@@ -505,6 +795,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                       onChange={e => setConnectionConfig(p => ({ ...p, api_key: e.target.value }))}
                       className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
                       placeholder="Enter your API key"
+                      data-testid="api-key-input"
                     />
                   </div>
                 </div>
@@ -544,6 +835,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted/30 text-muted-foreground hover:text-foreground'
                         }`}
+                        data-testid={`data-type-${type}`}
                       >
                         {type === 'customers' ? 'Customers' : 'Vehicles'}
                       </button>
@@ -587,27 +879,38 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                     onChange={e => setManualSample(e.target.value)}
                     className="w-full mt-1 px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm font-mono h-32"
                     placeholder='{"first_name": "John", "last_name": "Doe", "email": "john@example.com"}'
+                    data-testid="manual-sample-input"
                   />
                 </div>
               )}
 
-              <button
-                onClick={handleDiscoverFields}
-                disabled={isLoading || (discoveryMethod === 'manual' && !manualSample.trim())}
-                className="w-full py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Wand2 className="w-4 h-4" />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDiscoverFields}
+                  disabled={isLoading || (discoveryMethod === 'manual' && !manualSample.trim())}
+                  className="flex-1 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                  data-testid="discover-fields-btn"
+                >
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                  {discoveryMethod === 'auto' ? 'Discover Fields from API' : 'Analyze Sample'}
+                </button>
+                
+                {discoveredFields.length > 0 && (
+                  <button
+                    onClick={handleSmartSuggest}
+                    disabled={smartSuggestLoading}
+                    className="px-4 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+                    data-testid="smart-suggest-btn"
+                  >
+                    {smartSuggestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    AI Suggest
+                  </button>
                 )}
-                {discoveryMethod === 'auto' ? 'Discover Fields from API' : 'Analyze Sample'}
-              </button>
+              </div>
 
               {/* Field Mapping Table */}
               {discoveredFields.length > 0 && (
                 <div className="space-y-3">
-                  {/* Required fields warning */}
                   {unmappedRequired.length > 0 && (
                     <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5" />
@@ -618,47 +921,134 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                     </div>
                   )}
 
-                  {/* Mapping table */}
                   <div className="border border-border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-3 gap-2 p-2 bg-muted/30 text-xs font-medium text-muted-foreground">
-                      <div>Source Field</div>
-                      <div>Sample Value</div>
-                      <div>Maps To</div>
+                    <div className="grid grid-cols-12 gap-2 p-2 bg-muted/30 text-xs font-medium text-muted-foreground">
+                      <div className="col-span-3">Source Field</div>
+                      <div className="col-span-3">Sample Value</div>
+                      <div className="col-span-3">Maps To</div>
+                      <div className="col-span-3">Transforms</div>
                     </div>
                     <div className="max-h-64 overflow-y-auto">
-                      {discoveredFields.map(field => (
-                        <div 
-                          key={field.source_name}
-                          className="grid grid-cols-3 gap-2 p-2 border-t border-border/50 items-center text-sm"
-                        >
-                          <div className="font-mono text-xs truncate" title={field.source_path}>
-                            {field.source_name}
+                      {discoveredFields.map(field => {
+                        const isExpanded = expandedField === field.source_name;
+                        const fieldAdvanced = advancedMappings[field.source_name] || {};
+                        
+                        return (
+                          <div key={field.source_name} className="border-t border-border/50">
+                            <div className="grid grid-cols-12 gap-2 p-2 items-center text-sm">
+                              <div className="col-span-3 font-mono text-xs truncate" title={field.source_path}>
+                                {field.source_name}
+                              </div>
+                              <div className="col-span-3 text-muted-foreground text-xs truncate" title={String(field.sample_value)}>
+                                {transformPreview[field.source_name] ? (
+                                  <span className="text-green-400">{String(transformPreview[field.source_name])}</span>
+                                ) : (
+                                  String(field.sample_value)?.substring(0, 30)
+                                )}
+                              </div>
+                              <div className="col-span-3">
+                                <select
+                                  value={fieldMappings[field.source_name] || ''}
+                                  onChange={e => handleMappingChange(field.source_name, e.target.value)}
+                                  className={`w-full px-2 py-1 bg-muted/30 border rounded text-xs ${
+                                    fieldMappings[field.source_name] 
+                                      ? 'border-green-500/50 bg-green-500/10' 
+                                      : 'border-border'
+                                  }`}
+                                  data-testid={`mapping-${field.source_name}`}
+                                >
+                                  <option value="">-- Skip --</option>
+                                  {getPriorityFields().map(target => (
+                                    <option 
+                                      key={target.key} 
+                                      value={target.key}
+                                      disabled={getMappedTargets().has(target.key) && fieldMappings[field.source_name] !== target.key}
+                                    >
+                                      {target.key} {target.required ? '*' : ''} {field.suggested_mapping === target.key ? '✓' : ''}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="col-span-3 flex items-center gap-1">
+                                {fieldAdvanced.transforms?.length > 0 && (
+                                  <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 text-[10px] rounded">
+                                    {fieldAdvanced.transforms.length} transform{fieldAdvanced.transforms.length > 1 ? 's' : ''}
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => setExpandedField(isExpanded ? null : field.source_name)}
+                                  className="ml-auto p-1 text-muted-foreground hover:text-foreground"
+                                  data-testid={`expand-${field.source_name}`}
+                                >
+                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {/* Expanded: Transform options */}
+                            {isExpanded && (
+                              <div className="px-3 pb-3 bg-muted/10 border-t border-border/30">
+                                <div className="pt-3 space-y-3">
+                                  {/* Current transforms */}
+                                  {fieldAdvanced.transforms?.length > 0 && (
+                                    <div className="space-y-1">
+                                      <p className="text-[10px] text-muted-foreground font-medium">Applied Transforms</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {fieldAdvanced.transforms.map((t, idx) => (
+                                          <span 
+                                            key={idx}
+                                            className="inline-flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded"
+                                          >
+                                            {t.type}
+                                            <button 
+                                              onClick={() => handleRemoveTransform(field.source_name, idx)}
+                                              className="hover:text-red-400"
+                                            >
+                                              <X className="w-3 h-3" />
+                                            </button>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Add transform */}
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] text-muted-foreground font-medium">Add Transform</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {Object.entries(TRANSFORM_OPTIONS).map(([category, transforms]) => (
+                                        transforms.slice(0, 2).map(t => (
+                                          <button
+                                            key={t.type}
+                                            onClick={() => handleAddTransform(field.source_name, t.type)}
+                                            className="px-2 py-1 bg-muted/50 hover:bg-muted text-xs text-muted-foreground hover:text-foreground rounded transition-colors"
+                                            data-testid={`add-transform-${t.type}`}
+                                          >
+                                            {t.icon} {t.label}
+                                          </button>
+                                        ))
+                                      ))}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Default value */}
+                                  <div className="space-y-1">
+                                    <p className="text-[10px] text-muted-foreground font-medium">Default Value (if empty)</p>
+                                    <input
+                                      type="text"
+                                      value={fieldAdvanced.default_value || ''}
+                                      onChange={e => handleSetDefault(field.source_name, e.target.value)}
+                                      className="w-full px-2 py-1 bg-muted/30 border border-border rounded text-xs"
+                                      placeholder="Enter default value..."
+                                      data-testid={`default-${field.source_name}`}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div className="text-muted-foreground text-xs truncate" title={String(field.sample_value)}>
-                            {String(field.sample_value)?.substring(0, 30)}
-                          </div>
-                          <select
-                            value={fieldMappings[field.source_name] || ''}
-                            onChange={e => handleMappingChange(field.source_name, e.target.value)}
-                            className={`px-2 py-1 bg-muted/30 border rounded text-xs ${
-                              fieldMappings[field.source_name] 
-                                ? 'border-green-500/50 bg-green-500/10' 
-                                : 'border-border'
-                            }`}
-                          >
-                            <option value="">-- Skip --</option>
-                            {getPriorityFields().map(target => (
-                              <option 
-                                key={target.key} 
-                                value={target.key}
-                                disabled={getMappedTargets().has(target.key) && fieldMappings[field.source_name] !== target.key}
-                              >
-                                {target.key} {target.required ? '*' : ''} {field.suggested_mapping === target.key ? '✓' : ''}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -675,7 +1065,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
             <div className="space-y-4">
               <h3 className="font-semibold text-foreground">Test & Save</h3>
 
-              {/* Summary */}
               <div className="p-4 rounded-xl bg-muted/30 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Name:</span>
@@ -693,9 +1082,14 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                   <span className="text-muted-foreground">Fields Mapped:</span>
                   <span className="font-medium">{Object.keys(fieldMappings).length}</span>
                 </div>
+                {Object.keys(advancedMappings).length > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">With Transforms:</span>
+                    <span className="font-medium text-purple-400">{Object.keys(advancedMappings).length} fields</span>
+                  </div>
+                )}
               </div>
 
-              {/* Mock Mode Toggle */}
               <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div>
                   <p className="text-sm font-medium text-amber-400">Mock Mode</p>
@@ -706,6 +1100,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                   className={`w-12 h-6 rounded-full transition-colors ${
                     mockMode ? 'bg-amber-500' : 'bg-muted'
                   }`}
+                  data-testid="mock-mode-toggle"
                 >
                   <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${
                     mockMode ? 'translate-x-6' : 'translate-x-0.5'
@@ -713,21 +1108,16 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                 </button>
               </div>
 
-              {/* Test Connection Button */}
               <button
                 onClick={handleTestConnection}
                 disabled={isLoading}
                 className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium flex items-center justify-center gap-2"
+                data-testid="test-connection-btn"
               >
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Zap className="w-4 h-4" />
-                )}
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
                 Test Connection
               </button>
 
-              {/* Test Result */}
               {testResult && (
                 <div className={`p-4 rounded-xl flex items-start gap-3 ${
                   testResult.success 
@@ -750,7 +1140,6 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                 </div>
               )}
 
-              {/* Save as Profile */}
               {testResult?.success && (
                 <div className="p-3 rounded-lg bg-muted/30 space-y-2">
                   <label className="flex items-center gap-2">
@@ -759,6 +1148,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                       checked={saveAsProfile}
                       onChange={e => setSaveAsProfile(e.target.checked)}
                       className="rounded"
+                      data-testid="save-profile-checkbox"
                     />
                     <span className="text-sm">Save as reusable profile</span>
                   </label>
@@ -769,6 +1159,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
                       onChange={e => setProfileName(e.target.value)}
                       className="w-full px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm"
                       placeholder="Profile name (e.g., 'VinSolutions Standard')"
+                      data-testid="profile-name-input"
                     />
                   )}
                 </div>
@@ -782,6 +1173,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
           <button
             onClick={step === 1 ? onClose : prevStep}
             className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+            data-testid="wizard-back-btn"
           >
             <ChevronLeft className="w-4 h-4" />
             {step === 1 ? 'Cancel' : 'Back'}
@@ -792,6 +1184,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
               onClick={step === 2 ? handleConnectionNext : nextStep}
               disabled={step === 3 && unmappedRequired.length > 0}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium flex items-center gap-1 disabled:opacity-50"
+              data-testid="wizard-next-btn"
             >
               Next
               <ChevronRight className="w-4 h-4" />
@@ -801,6 +1194,7 @@ export const ConnectionWizard = ({ onClose, onSuccess }) => {
               onClick={handleFinish}
               disabled={!testResult?.success || isLoading}
               className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium flex items-center gap-1 disabled:opacity-50"
+              data-testid="wizard-finish-btn"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               Create Integration
