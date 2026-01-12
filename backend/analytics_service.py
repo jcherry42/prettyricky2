@@ -276,8 +276,11 @@ class AnalyticsService:
         result = await conversations.aggregate(pipeline).to_list(1)
         data = result[0] if result else {}
         
-        total = data.get("total", [{}])[0].get("count", 0)
-        bilingual = data.get("bilingual_usage", [{}])[0].get("count", 0)
+        total_list = data.get("total", [])
+        total = total_list[0].get("count", 0) if total_list else 0
+        
+        bilingual_list = data.get("bilingual_usage", [])
+        bilingual = bilingual_list[0].get("count", 0) if bilingual_list else 0
         
         # Find peak hours
         by_hour = data.get("by_hour", [])
