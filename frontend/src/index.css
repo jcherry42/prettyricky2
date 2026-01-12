@@ -1109,6 +1109,11 @@ html:not(.dark) .btn-check-engine:hover {
   text-shadow: 0 0 8px rgba(255, 153, 51, 0.4);
 }
 
+.btn-check-zl1:hover .zl1-label svg {
+  color: #ffaa00;
+  filter: drop-shadow(0 0 6px rgba(255, 170, 0, 0.8));
+}
+
 .btn-check-zl1:active {
   transform: scale(0.96);
 }
