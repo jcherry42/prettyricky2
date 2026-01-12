@@ -185,6 +185,15 @@ function salesReducer(state, action) {
       saveToStorage(STORAGE_KEYS.FAVORITES, filteredFavorites);
       return { ...state, favorites: filteredFavorites };
     
+    case ACTIONS.UPDATE_FAVORITE_CATEGORY:
+      const updatedFavorites = state.favorites.map(f => 
+        f.id === action.payload.id 
+          ? { ...f, category: action.payload.category }
+          : f
+      );
+      saveToStorage(STORAGE_KEYS.FAVORITES, updatedFavorites);
+      return { ...state, favorites: updatedFavorites };
+    
     case ACTIONS.SET_FAVORITES:
       saveToStorage(STORAGE_KEYS.FAVORITES, action.payload);
       return { ...state, favorites: action.payload };
