@@ -36,8 +36,6 @@ export const FavoritesModal = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [editingCategoryId, setEditingCategoryId] = useState(null);
 
-  if (!showFavorites) return null;
-
   // Filter favorites by category
   const filteredFavorites = useMemo(() => {
     if (activeCategory === 'all') return favorites;
@@ -53,6 +51,8 @@ export const FavoritesModal = () => {
     });
     return counts;
   }, [favorites]);
+
+  if (!showFavorites) return null;
 
   const handleCopy = async (text, id) => {
     const success = await copyToClipboard(text);
