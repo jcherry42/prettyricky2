@@ -86,13 +86,13 @@ export const Header = () => {
         {/* Center - R34 Skyline Taillights */}
         <div className="flex-1 flex justify-center">
           <div className="r34-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
-            {/* Left taillight cluster - 2 circular lights */}
+            {/* Left taillight cluster - 2 circular lights (outer larger) */}
             <div className={`r34-cluster left ${startupPhase >= 2 ? 'lit' : ''} ${brakesPressed ? 'braking' : ''}`}>
-              <div className="r34-light">
+              <div className="r34-light outer">
                 <div className="r34-ring"></div>
                 <div className="r34-center"></div>
               </div>
-              <div className="r34-light">
+              <div className="r34-light inner">
                 <div className="r34-ring"></div>
                 <div className="r34-center"></div>
               </div>
@@ -103,13 +103,13 @@ export const Header = () => {
               <span>TAILLIGHTS</span>
             </div>
 
-            {/* Right taillight cluster - 2 circular lights */}
+            {/* Right taillight cluster - 2 circular lights (inner smaller) */}
             <div className={`r34-cluster right ${startupPhase >= 2 ? 'lit' : ''} ${brakesPressed ? 'braking' : ''}`}>
-              <div className="r34-light">
+              <div className="r34-light inner">
                 <div className="r34-ring"></div>
                 <div className="r34-center"></div>
               </div>
-              <div className="r34-light">
+              <div className="r34-light outer">
                 <div className="r34-ring"></div>
                 <div className="r34-center"></div>
               </div>
@@ -144,7 +144,7 @@ export const Header = () => {
               </div>
             </div>
             <span className="supercharged-label vice-city-text">
-              {supercharged ? 'SUPERCHARG\'D: ESPAÑOL' : 'SUPERCHARG\'D: ENGLISH'}
+              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
             </span>
           </button>
 
