@@ -81,7 +81,7 @@ export const Header = () => {
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center h-16 px-4">
         {/* Left side - Health Indicator */}
-        <div className="flex items-center">
+        <div className="flex items-center mr-4">
           <IntegrationHealthStatus compact={true} />
         </div>
         
@@ -196,65 +196,15 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine Button - ZL1 Camaro with hood animation */}
+          {/* Check Engine Button - Compact inline style */}
           <button
             onClick={() => toggleAdminSettings(true)}
-            className="btn-check-zl1"
+            className="btn-check-engine"
             data-testid="open-admin-settings-btn"
             title="Check Engine - All Settings"
           >
-            <div className="zl1-car-wrapper">
-              <svg viewBox="0 0 100 40" className="zl1-car-svg">
-                <defs>
-                  <linearGradient id="zl1Body" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#5a5a6a" />
-                    <stop offset="100%" stopColor="#3a3a4a" />
-                  </linearGradient>
-                  <linearGradient id="zl1Window" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4a90c2" stopOpacity="0.5" />
-                    <stop offset="100%" stopColor="#2a5080" stopOpacity="0.3" />
-                  </linearGradient>
-                  <linearGradient id="zl1Engine" x1="50%" y1="0%" x2="50%" y2="100%">
-                    <stop offset="0%" stopColor="#ff8800" />
-                    <stop offset="50%" stopColor="#ff5500" />
-                    <stop offset="100%" stopColor="#cc2200" />
-                  </linearGradient>
-                </defs>
-                
-                {/* Engine bay glow */}
-                <ellipse cx="22" cy="28" rx="14" ry="8" fill="url(#zl1Engine)" className="zl1-engine-glow" />
-                
-                {/* Main body */}
-                <path d="M5 28 L10 22 L30 20 L70 20 L90 22 L95 28 L90 32 L10 32 Z" fill="url(#zl1Body)" />
-                
-                {/* Roof */}
-                <path d="M35 20 L42 12 L65 12 L72 20 Z" fill="url(#zl1Body)" />
-                
-                {/* Window */}
-                <path d="M38 19 L44 13 L63 13 L69 19 Z" fill="url(#zl1Window)" />
-                
-                {/* Hood assembly - OPENS on hover */}
-                <g className="zl1-hood-assembly">
-                  <path d="M10 22 L30 20 L35 20 L35 24 L10 26 Z" fill="#4a4a5a" />
-                  <rect x="14" y="20" width="14" height="3" rx="0.5" fill="#2a2a3a" />
-                </g>
-                
-                {/* Wheels */}
-                <circle cx="22" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
-                <circle cx="78" cy="32" r="6" fill="#1a1a22" stroke="#3a3a4a" strokeWidth="1" />
-                
-                {/* Headlight */}
-                <ellipse cx="7" cy="25" rx="2.5" ry="1.5" fill="#ffdd88" className="zl1-headlight" />
-                
-                {/* Taillight */}
-                <rect x="92" y="24" width="3" height="4" rx="0.5" fill="#ff0000" className="zl1-taillight" />
-              </svg>
-            </div>
-            
-            <div className="zl1-label">
-              <AlertTriangle className="zl1-icon" />
-              <span>CHECK</span>
-            </div>
+            <AlertTriangle className="w-3.5 h-3.5" />
+            <span>CHECK</span>
           </button>
         </div>
       </div>
