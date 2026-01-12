@@ -44,10 +44,10 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Glassmorphism effects
 
 ### Key Visual Elements
-- **C8 Corvette Z06 Taillights Logo**: Multi-element angular design (4 segments per side, horizontally oriented) - matches actual 2024-2026 C8 Z06
-- **Brake Light Effect**: Taillights flash bright red when screen is tapped
-- **ZL1 Camaro Check Button**: 70° hood-opening animation on hover, engine glow reveals, amber check engine icon BEHIND text
-- **Supercharg'd Button**: Compact size with flame animations for language toggle
+- **R34 Skyline Taillights Logo**: Circular ring lights with amber centers, electric blue "TAILLIGHTS" text
+- **Brake Light Effect**: Taillights glow brighter when screen is tapped
+- **Check Engine Button**: Clean inline button with AlertTriangle icon + "CHECK" text, amber glow on hover
+- **Supercharg'd Button**: Compact with subtle exhaust tip and flame animations for language toggle
 - **Vice City Typography**: Bebas Neue + Russo One fonts
 
 ## Technical Architecture
@@ -145,6 +145,12 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-12**: Fixed header UI - added spacing between health indicator and taillights
+- **2026-01-12**: Reduced Supercharg'd button width by 25%
+- **2026-01-12**: Made exhaust tip more subtle (smaller, lower opacity)
+- **2026-01-12**: Simplified Check Engine button to inline icon+text style
+- **2026-01-12**: Verified brake light effect (taillights glow on screen tap)
+- **2026-01-12**: Verified A/B Testing Dashboard connected to backend API
 - **2026-01-12**: Implemented C8 Z06 multi-element angular taillights (4 segments per side)
 - **2026-01-12**: Added brake light flash effect on screen tap
 - **2026-01-12**: Updated Check button with 70° hood animation and icon behind text
