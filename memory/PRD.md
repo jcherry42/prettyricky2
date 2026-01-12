@@ -1,4 +1,13 @@
-# Sales Weapon (Closr) - Product Requirements Document
+# Taillights - Product Requirements Document
+
+## Overview
+**Taillights** (formerly CLOSR) is an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The app features a sophisticated Porsche 911-inspired design with pulsating taillights logo and Gran Turismo-style UI elements.
+
+## Product Identity
+- **App Name:** Taillights
+- **App ID:** com.taillights.salesapp
+- **Logo:** Pulsating Porsche 911-style taillights (dual red bar clusters)
+- **Design Theme:** Porsche/McLaren glassmorphism with Gran Turismo aesthetic
 
 ## Original Problem Statement
 Build a "sales weapon" for automotive sales reps that is:
