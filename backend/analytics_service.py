@@ -122,7 +122,8 @@ class AnalyticsService:
         result = await customers.aggregate(pipeline).to_list(1)
         data = result[0] if result else {}
         
-        total = data.get("total", [{}])[0].get("count", 0)
+        total_list = data.get("total", [])
+        total = total_list[0].get("count", 0) if total_list else 0
         
         # Calculate conversion funnel
         status_counts = {item["_id"]: item["count"] for item in data.get("by_status", [])}
