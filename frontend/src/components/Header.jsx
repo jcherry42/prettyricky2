@@ -121,6 +121,16 @@ export const Header = () => {
             )}
           </button>
 
+          {/* Analytics button */}
+          <button
+            onClick={() => toggleAnalytics(true)}
+            className="btn-icon"
+            data-testid="open-analytics-btn"
+            title="Analytics Dashboard"
+          >
+            <BarChart3 className="w-5 h-5 text-muted-foreground" />
+          </button>
+
           {/* Import button */}
           <button
             onClick={() => toggleImport(true)}
