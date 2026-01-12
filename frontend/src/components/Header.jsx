@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords, BarChart3, Wrench } from 'lucide-react';
+import { Zap, Settings, Heart, Sun, Moon, Flame, Swords, BarChart3, Gauge } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
@@ -7,8 +7,6 @@ export const Header = () => {
   const { 
     isOffline, 
     dealership, 
-    toggleSetup, 
-    toggleImport, 
     toggleFavorites,
     toggleVS,
     toggleAnalytics,
