@@ -1858,6 +1858,141 @@ async def process_scheduled_notifications():
     return {"success": True, **result}
 
 
+# ============== WEBHOOK TO NOTIFICATION HANDLERS ==============
+
+async def handle_hot_lead_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handler for hot lead events - sends SMS notification
+    Payload should contain: customer_name, customer_phone, vehicle_interest, salesperson_phone, salesperson_name
+    """
+    await notification_service.initialize()
+    
+    # Extract data from payload with defaults
+    customer_name = payload.get('customer_name', 'Unknown Customer')
+    customer_phone = payload.get('customer_phone', '')
+    vehicle_interest = payload.get('vehicle_interest', 'Not specified')
+    salesperson_phone = payload.get('salesperson_phone')
+    salesperson_name = payload.get('salesperson_name', 'Sales Team')
+    
+    if not salesperson_phone:
+        logger.warning(f"Hot lead event missing salesperson_phone: {event.get('_id')}")
+        return {"success": False, "error": "Missing salesperson_phone"}
+    
+    result = await notification_service.send_hot_lead_alert(
+        salesperson_phone=salesperson_phone,
+        salesperson_name=salesperson_name,
+        customer_name=customer_name,
+        customer_phone=customer_phone,
+        vehicle_interest=vehicle_interest
+    )
+    
+    logger.info(f"Hot lead notification sent: {result.notification_id}")
+    return {"success": result.success, "notification_id": result.notification_id}
+
+
+async def handle_lead_status_change_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handler for lead status change events - sends SMS notification
+    Triggers notification when status changes to 'hot'
+    """
+    await notification_service.initialize()
+    
+    customer_name = payload.get('customer_name', 'Unknown Customer')
+    old_status = payload.get('old_status', 'unknown')
+    new_status = payload.get('new_status', 'unknown')
+    salesperson_phone = payload.get('salesperson_phone')
+    notes = payload.get('notes', '')
+    
+    if not salesperson_phone:
+        logger.warning(f"Status change event missing salesperson_phone: {event.get('_id')}")
+        return {"success": False, "error": "Missing salesperson_phone"}
+    
+    # Only send notification for significant status changes
+    significant_statuses = ['hot', 'qualified', 'closed_won', 'closed_lost']
+    if new_status.lower() not in significant_statuses:
+        return {"success": True, "message": "Status change not significant enough for notification"}
+    
+    result = await notification_service.send_status_change_alert(
+        salesperson_phone=salesperson_phone,
+        customer_name=customer_name,
+        old_status=old_status,
+        new_status=new_status,
+        notes=notes
+    )
+    
+    logger.info(f"Status change notification sent: {result.notification_id}")
+    return {"success": result.success, "notification_id": result.notification_id}
+
+
+async def handle_deal_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handler for deal events - logs and optionally notifies
+    """
+    deal_stage = payload.get('deal_stage', 'unknown')
+    customer_name = payload.get('customer_name', 'Unknown')
+    amount = payload.get('amount', 0)
+    
+    logger.info(f"Deal event processed: {customer_name} - {deal_stage} - ${amount}")
+    return {"success": True, "deal_stage": deal_stage, "amount": amount}
+
+
+# Register webhook event handlers
+def register_notification_handlers():
+    """Register handlers to connect webhook events to notifications"""
+    # Hot lead events -> SMS alert
+    event_processor.register_handler(EventType.LEAD_STATUS_CHANGED.value, handle_lead_status_change_event)
+    
+    # Deal events -> logging (can be extended to notifications)
+    event_processor.register_handler(EventType.DEAL_CREATED.value, handle_deal_event)
+    event_processor.register_handler(EventType.DEAL_UPDATED.value, handle_deal_event)
+    
+    # Customer events with hot flag -> SMS alert
+    async def customer_created_handler(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
+        """Check if new customer is a hot lead and notify"""
+        if payload.get('is_hot') or payload.get('lead_status', '').lower() == 'hot':
+            return await handle_hot_lead_event(payload, event)
+        return {"success": True, "message": "Customer created but not a hot lead"}
+    
+    event_processor.register_handler(EventType.CUSTOMER_CREATED.value, customer_created_handler)
+    event_processor.register_handler(EventType.CUSTOMER_UPDATED.value, customer_created_handler)
+    
+    logger.info("Notification handlers registered for webhook events")
+
+
+# Register handlers on module load
+register_notification_handlers()
+
+
+@api_router.post("/events/test-hot-lead")
+async def test_hot_lead_event(
+    customer_name: str = "Test Customer",
+    customer_phone: str = "+1234567890",
+    vehicle_interest: str = "2024 Test Vehicle",
+    salesperson_phone: str = "+1987654321"
+):
+    """Test hot lead event processing (for development/testing)"""
+    test_event = WebhookEvent(
+        webhook_id="test-webhook",
+        event_type=EventType.CUSTOMER_CREATED.value,
+        payload={
+            "customer_name": customer_name,
+            "customer_phone": customer_phone,
+            "vehicle_interest": vehicle_interest,
+            "salesperson_phone": salesperson_phone,
+            "salesperson_name": "Test Salesperson",
+            "is_hot": True,
+        },
+        source="test"
+    )
+    
+    event_id = await event_processor.enqueue_event(test_event)
+    return {
+        "success": True,
+        "event_id": event_id,
+        "message": "Hot lead test event enqueued. Check notification service for SMS (if configured)."
+    }
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 app.include_router(api_router)
