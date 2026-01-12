@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords } from 'lucide-react';
+import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords, BarChart3 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
@@ -11,6 +11,7 @@ export const Header = () => {
     toggleImport, 
     toggleFavorites,
     toggleVS,
+    toggleAnalytics,
     favorites,
     theme,
     supercharged,
