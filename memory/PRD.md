@@ -349,6 +349,21 @@ POST /api/integrations/{id}/test        - Test connection
 PATCH /api/integrations/{id}            - Update credentials (auth_config)
 ```
 
+### Push Notification Device Registration
+```
+POST /api/notifications/register-device - Register device for push notifications
+GET  /api/notifications/devices         - List registered devices
+```
+
+### A/B Testing
+```
+GET  /api/ab/experiments                - List all experiments
+GET  /api/ab/experiments/{id}           - Get experiment results
+GET  /api/ab/variant/{id}?user_id=X     - Get user's assigned variant
+POST /api/ab/track                      - Track event (impression/conversion)
+POST /api/ab/experiments/{id}/toggle    - Activate/deactivate experiment
+```
+
 ### Favorites Categories
 ```
 GET /api/favorites/categories           - Get favorite categories (9 categories)
