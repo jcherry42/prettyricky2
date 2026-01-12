@@ -80,8 +80,10 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center h-16 px-4">
-        {/* Left side - empty spacer */}
-        <div className="w-[200px]"></div>
+        {/* Left side - Health Indicator */}
+        <div className="w-[200px] flex items-center">
+          <IntegrationHealthStatus compact={true} />
+        </div>
         
         {/* Center - R34 Skyline Taillights */}
         <div className="flex-1 flex justify-center">
@@ -119,8 +121,6 @@ export const Header = () => {
 
         {/* Right side - Actions */}
         <div className="flex items-center justify-end gap-2">
-          <IntegrationHealthStatus compact={true} />
-
           {/* Supercharg'd Button with Flames */}
           <button
             onClick={toggleSuperchargedMode}
