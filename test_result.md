@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the Closr iOS-optimized sales weapon app at https://vroom-data.preview.emergentagent.com - This is an automotive sales response tool optimized for iOS with tap-friendly interfaces. Test key workflows: Initial Load, Customer Selection, Inquiry Type Grid, Tone Selector, Response Cards, Tower Talk Button, Settings Modal, and Import Modal using iPhone viewport (390x844)."
+user_problem_statement: "Test the Closr iOS-optimized sales weapon app at https://autocardai.preview.emergentagent.com - This is an automotive sales response tool optimized for iOS with tap-friendly interfaces. Test key workflows: Initial Load, Customer Selection, Inquiry Type Grid, Tone Selector, Response Cards, Tower Talk Button, Settings Modal, and Import Modal using iPhone viewport (390x844)."
 
 frontend:
   - task: "Initial Load - App loads with Closr branding, Ready status indicator, and customer selector"
