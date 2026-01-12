@@ -559,6 +559,18 @@ h1, h2, h3 {
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
 }
 
+/* Outer lights are larger */
+.r34-light.outer {
+  width: 32px;
+  height: 32px;
+}
+
+/* Inner lights are smaller */
+.r34-light.inner {
+  width: 26px;
+  height: 26px;
+}
+
 /* Red ring - outer */
 .r34-light .r34-ring {
   position: absolute;
@@ -631,11 +643,11 @@ h1, h2, h3 {
 }
 
 .r34-center-text.lit span {
-  background: linear-gradient(180deg, #ff6b9d 0%, #ff2266 50%, #ff6b9d 100%);
+  background: linear-gradient(180deg, #00d4ff 0%, #0099ff 50%, #00d4ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(255, 100, 150, 0.7));
+  filter: drop-shadow(0 0 8px rgba(0, 180, 255, 0.8));
 }
 
 html:not(.dark) .r34-center-text span {
