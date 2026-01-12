@@ -1083,7 +1083,7 @@ html:not(.dark) .btn-check-engine:hover {
 }
 
 /* HOOD OPENS DRAMATICALLY - 70 degree rotation! */
-.btn-check-zl1:hover .zl1-hood-assembly {
+.btn-check-zl1:hover .zl1-hood-group {
   transform: rotate(-70deg) translateY(-4px);
 }
 
