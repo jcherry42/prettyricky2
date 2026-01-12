@@ -598,7 +598,21 @@ h1, h2, h3 {
 }
 
 /* Lit state */
-.r34-cluster.lit .r34-ring {
+.r34-light.dim .r34-ring {
+  border-color: #880000;
+  box-shadow: 
+    0 0 4px #aa0000,
+    inset 0 0 2px #aa0000;
+  transition: all 0.3s ease;
+}
+
+.r34-light.dim .r34-center {
+  background: #aa5500;
+  box-shadow: 0 0 3px #aa5500;
+  transition: all 0.3s ease;
+}
+
+.r34-light.lit .r34-ring {
   border-color: #dd0000;
   box-shadow: 
     0 0 8px #ff0000,
@@ -606,7 +620,7 @@ h1, h2, h3 {
     inset 0 0 4px #ff0000;
 }
 
-.r34-cluster.lit .r34-center {
+.r34-light.lit .r34-center {
   background: #ff8800;
   box-shadow: 
     0 0 6px #ffaa00,
