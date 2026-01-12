@@ -534,69 +534,150 @@ h1, h2, h3 {
 
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   R34 SKYLINE TAILLIGHTS LOGO
-   Iconic circular quad-ring design
+   C8 CORVETTE FULL-WIDTH TAILLIGHT BAR
+   With center "TAILLIGHTS" badge text
    ============================================ */
 
-.r34-taillights-logo {
-  @apply relative flex items-center justify-center;
-  width: 56px;
-  height: 44px;
-  gap: 6px;
-}
-
-.r34-cluster {
-  @apply relative;
-  width: 22px;
-  height: 22px;
-}
-
-.r34-ring {
-  @apply absolute rounded-full;
-  border: 2px solid hsla(0, 100%, 50%, 0.9);
-  box-shadow: 
-    0 0 6px hsla(0, 100%, 50%, 0.7),
-    inset 0 0 4px hsla(0, 100%, 60%, 0.5);
-}
-
-.r34-ring .r34-glow {
-  @apply absolute inset-0 rounded-full;
-  background: radial-gradient(circle, 
-    hsla(0, 100%, 55%, 0.8) 0%,
-    hsla(0, 100%, 45%, 0.4) 50%,
-    transparent 70%
+.c8-taillight-bar {
+  @apply relative flex items-center;
+  height: 36px;
+  background: linear-gradient(180deg,
+    hsla(220, 20%, 12%, 1) 0%,
+    hsla(220, 18%, 8%, 1) 100%
   );
-  animation: r34-pulse 1.2s ease-in-out infinite;
+  border-radius: 4px;
+  padding: 4px 2px;
+  border: 1px solid hsla(220, 15%, 20%, 0.6);
+  box-shadow: 
+    inset 0 1px 0 hsla(220, 20%, 25%, 0.3),
+    0 2px 8px hsla(0, 0%, 0%, 0.4);
 }
 
-/* Four rings in 2x2 grid */
-.r34-ring.ring-1 { top: 0; left: 0; width: 9px; height: 9px; animation-delay: 0s; }
-.r34-ring.ring-2 { top: 0; right: 0; width: 9px; height: 9px; animation-delay: 0.1s; }
-.r34-ring.ring-3 { bottom: 0; left: 0; width: 9px; height: 9px; animation-delay: 0.2s; }
-.r34-ring.ring-4 { bottom: 0; right: 0; width: 9px; height: 9px; animation-delay: 0.3s; }
+.c8-section {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
 
-.r34-ring.ring-1 .r34-glow { animation-delay: 0s; }
-.r34-ring.ring-2 .r34-glow { animation-delay: 0.1s; }
-.r34-ring.ring-3 .r34-glow { animation-delay: 0.2s; }
-.r34-ring.ring-4 .r34-glow { animation-delay: 0.3s; }
+.c8-left-outer, .c8-right-outer {
+  width: 28px;
+}
 
-@keyframes r34-pulse {
+.c8-left-inner, .c8-right-inner {
+  width: 22px;
+}
+
+.c8-led-strip {
+  width: 100%;
+  height: 8px;
+  background: hsla(0, 30%, 20%, 0.5);
+  border-radius: 2px;
+  transition: all 0.4s ease;
+}
+
+/* Lit state for LED strips */
+.c8-section.lit .c8-led-strip {
+  background: linear-gradient(90deg,
+    hsla(0, 100%, 45%, 1) 0%,
+    hsla(0, 100%, 55%, 1) 50%,
+    hsla(0, 100%, 45%, 1) 100%
+  );
+  box-shadow: 
+    0 0 10px hsla(0, 100%, 50%, 0.8),
+    0 0 20px hsla(0, 100%, 50%, 0.5),
+    0 0 30px hsla(0, 100%, 50%, 0.3),
+    inset 0 0 4px hsla(0, 100%, 70%, 0.5);
+}
+
+/* Running state - pulsing animation */
+.c8-taillight-bar.running .c8-section.lit .c8-led-strip {
+  animation: c8-pulse 1.8s ease-in-out infinite;
+}
+
+.c8-left-outer.lit .c8-led-strip { animation-delay: 0s; }
+.c8-left-inner.lit .c8-led-strip { animation-delay: 0.1s; }
+.c8-right-inner.lit .c8-led-strip { animation-delay: 0.1s; }
+.c8-right-outer.lit .c8-led-strip { animation-delay: 0s; }
+
+@keyframes c8-pulse {
   0%, 100% {
-    opacity: 0.7;
-    transform: scale(1);
+    opacity: 0.85;
+    box-shadow: 
+      0 0 8px hsla(0, 100%, 50%, 0.7),
+      0 0 16px hsla(0, 100%, 50%, 0.4),
+      inset 0 0 3px hsla(0, 100%, 70%, 0.4);
   }
   50% {
     opacity: 1;
-    transform: scale(1.1);
+    box-shadow: 
+      0 0 14px hsla(0, 100%, 55%, 0.9),
+      0 0 28px hsla(0, 100%, 50%, 0.6),
+      0 0 40px hsla(0, 100%, 50%, 0.3),
+      inset 0 0 6px hsla(0, 100%, 75%, 0.6);
   }
 }
 
-/* Light mode R34 */
-html:not(.dark) .r34-ring {
-  border-color: hsla(0, 90%, 45%, 0.95);
-  box-shadow: 
-    0 0 8px hsla(0, 90%, 45%, 0.6),
-    inset 0 0 4px hsla(0, 90%, 55%, 0.4);
+/* Center badge with TAILLIGHTS text */
+.c8-center-badge {
+  @apply flex items-center justify-center;
+  min-width: 90px;
+  height: 100%;
+  padding: 0 8px;
+  background: linear-gradient(180deg,
+    hsla(220, 18%, 15%, 1) 0%,
+    hsla(220, 15%, 10%, 1) 100%
+  );
+  border-left: 1px solid hsla(220, 15%, 25%, 0.4);
+  border-right: 1px solid hsla(220, 15%, 25%, 0.4);
+  transition: all 0.4s ease;
+}
+
+.c8-badge-text {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: hsla(220, 10%, 35%, 1);
+  transition: all 0.4s ease;
+  text-transform: uppercase;
+}
+
+.c8-center-badge.lit .c8-badge-text {
+  background: linear-gradient(180deg, 
+    #ff6b9d 0%, 
+    #ff3366 50%,
+    #ff6b9d 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px hsla(340, 100%, 60%, 0.6));
+  animation: badge-glow 2s ease-in-out infinite;
+}
+
+@keyframes badge-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px hsla(340, 100%, 60%, 0.5)); }
+  50% { filter: drop-shadow(0 0 12px hsla(340, 100%, 65%, 0.8)); }
+}
+
+/* Light mode C8 */
+html:not(.dark) .c8-taillight-bar {
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 88%, 1) 0%,
+    hsla(220, 12%, 82%, 1) 100%
+  );
+  border-color: hsla(220, 12%, 75%, 0.6);
+}
+
+html:not(.dark) .c8-center-badge {
+  background: linear-gradient(180deg,
+    hsla(220, 12%, 85%, 1) 0%,
+    hsla(220, 10%, 80%, 1) 100%
+  );
+}
+
+html:not(.dark) .c8-badge-text {
+  color: hsla(220, 15%, 55%, 1);
 }
 
 /* ============================================
