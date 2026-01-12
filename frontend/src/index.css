@@ -534,112 +534,544 @@ h1, h2, h3 {
 
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   TAILLIGHTS LOGO - Pulsating Porsche 911 Style
+   R34 SKYLINE TAILLIGHTS LOGO
+   Iconic circular quad-ring design
    ============================================ */
 
-.taillights-logo {
-  @apply relative flex items-center;
-  width: 48px;
-  height: 40px;
+.r34-taillights-logo {
+  @apply relative flex items-center justify-center;
+  width: 56px;
+  height: 44px;
+  gap: 6px;
 }
 
-.taillight-cluster {
-  @apply absolute flex flex-col gap-[3px];
-  width: 18px;
+.r34-cluster {
+  @apply relative;
+  width: 22px;
+  height: 22px;
 }
 
-.taillight-cluster.left {
-  left: 0;
-}
-
-.taillight-cluster.right {
-  right: 0;
-}
-
-.taillight-bar {
-  height: 4px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, 
-    hsla(0, 100%, 50%, 1) 0%,
-    hsla(0, 100%, 60%, 1) 50%,
-    hsla(0, 100%, 50%, 1) 100%
-  );
+.r34-ring {
+  @apply absolute rounded-full;
+  border: 2px solid hsla(0, 100%, 50%, 0.9);
   box-shadow: 
-    0 0 8px hsla(0, 100%, 50%, 0.8),
-    0 0 16px hsla(0, 100%, 50%, 0.5),
-    0 0 24px hsla(0, 100%, 50%, 0.3),
-    inset 0 0 4px hsla(0, 100%, 80%, 0.5);
-  animation: taillight-pulse 1.5s ease-in-out infinite;
+    0 0 6px hsla(0, 100%, 50%, 0.7),
+    inset 0 0 4px hsla(0, 100%, 60%, 0.5);
 }
 
-.taillight-bar.bar-1 {
-  animation-delay: 0s;
+.r34-ring .r34-glow {
+  @apply absolute inset-0 rounded-full;
+  background: radial-gradient(circle, 
+    hsla(0, 100%, 55%, 0.8) 0%,
+    hsla(0, 100%, 45%, 0.4) 50%,
+    transparent 70%
+  );
+  animation: r34-pulse 1.2s ease-in-out infinite;
 }
 
-.taillight-bar.bar-2 {
-  animation-delay: 0.15s;
-  width: 85%;
-  margin-left: auto;
-}
+/* Four rings in 2x2 grid */
+.r34-ring.ring-1 { top: 0; left: 0; width: 9px; height: 9px; animation-delay: 0s; }
+.r34-ring.ring-2 { top: 0; right: 0; width: 9px; height: 9px; animation-delay: 0.1s; }
+.r34-ring.ring-3 { bottom: 0; left: 0; width: 9px; height: 9px; animation-delay: 0.2s; }
+.r34-ring.ring-4 { bottom: 0; right: 0; width: 9px; height: 9px; animation-delay: 0.3s; }
 
-.taillight-cluster.left .taillight-bar.bar-2 {
-  margin-left: 0;
-  margin-right: auto;
-}
+.r34-ring.ring-1 .r34-glow { animation-delay: 0s; }
+.r34-ring.ring-2 .r34-glow { animation-delay: 0.1s; }
+.r34-ring.ring-3 .r34-glow { animation-delay: 0.2s; }
+.r34-ring.ring-4 .r34-glow { animation-delay: 0.3s; }
 
-.taillight-bar.bar-3 {
-  animation-delay: 0.3s;
-  width: 70%;
-  margin-left: auto;
-}
-
-.taillight-cluster.left .taillight-bar.bar-3 {
-  margin-left: 0;
-  margin-right: auto;
-}
-
-.taillight-connector {
-  @apply absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 2px;
-  background: hsla(0, 100%, 40%, 0.6);
-  box-shadow: 0 0 12px hsla(0, 100%, 50%, 0.4);
-  animation: connector-glow 1.5s ease-in-out infinite;
-}
-
-@keyframes taillight-pulse {
+@keyframes r34-pulse {
   0%, 100% {
-    opacity: 0.85;
-    box-shadow: 
-      0 0 8px hsla(0, 100%, 50%, 0.7),
-      0 0 16px hsla(0, 100%, 50%, 0.4),
-      inset 0 0 4px hsla(0, 100%, 80%, 0.4);
+    opacity: 0.7;
+    transform: scale(1);
   }
   50% {
     opacity: 1;
-    box-shadow: 
-      0 0 12px hsla(0, 100%, 55%, 0.9),
-      0 0 24px hsla(0, 100%, 50%, 0.6),
-      0 0 36px hsla(0, 100%, 50%, 0.3),
-      inset 0 0 6px hsla(0, 100%, 80%, 0.6);
+    transform: scale(1.1);
   }
 }
 
-@keyframes connector-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+/* Light mode R34 */
+html:not(.dark) .r34-ring {
+  border-color: hsla(0, 90%, 45%, 0.95);
+  box-shadow: 
+    0 0 8px hsla(0, 90%, 45%, 0.6),
+    inset 0 0 4px hsla(0, 90%, 55%, 0.4);
 }
 
-/* Light mode taillights */
-html:not(.dark) .taillight-bar {
-  background: linear-gradient(90deg, 
-    hsla(0, 90%, 45%, 1) 0%,
-    hsla(0, 90%, 55%, 1) 50%,
-    hsla(0, 90%, 45%, 1) 100%
+/* ============================================
+   SUPERCHARG'D XL - Double Length Exhaust Flames
+   ============================================ */
+
+.btn-supercharged-xl {
+  @apply relative flex items-center justify-center transition-all duration-300;
+  width: 144px;
+  height: 46px;
+  background: linear-gradient(180deg, 
+    hsla(220, 15%, 16%, 0.95) 0%,
+    hsla(220, 15%, 10%, 0.98) 100%
   );
+  border: 1px solid hsla(220, 12%, 28%, 0.5);
+  border-radius: 14px;
+  overflow: visible;
+}
+
+.btn-supercharged-xl .exhaust-system {
+  @apply absolute left-3 flex gap-1;
+}
+
+.btn-supercharged-xl .exhaust-tip {
+  width: 8px;
+  height: 14px;
+  background: linear-gradient(180deg,
+    hsla(220, 10%, 20%, 1) 0%,
+    hsla(220, 8%, 12%, 1) 100%
+  );
+  border-radius: 2px;
+  border: 1px solid hsla(220, 10%, 30%, 0.6);
+  box-shadow: inset 0 2px 3px hsla(0, 0%, 0%, 0.5);
+}
+
+.btn-supercharged-xl .xl-flames {
+  @apply absolute pointer-events-none;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: right center;
+  width: 60px;
+  height: 32px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-supercharged-xl.active .xl-flames {
+  transform: translateY(-50%) scaleX(1);
+  opacity: 1;
+}
+
+.btn-supercharged-xl .flame-core {
+  @apply absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 16px;
+  background: radial-gradient(ellipse at right,
+    hsla(60, 100%, 90%, 1) 0%,
+    hsla(50, 100%, 75%, 1) 25%,
+    hsla(35, 100%, 60%, 0.9) 50%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  animation: xl-core-flicker 0.08s ease-in-out infinite;
+}
+
+.btn-supercharged-xl .flame-layer {
+  @apply absolute;
+  right: 10px;
+  top: 50%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    hsla(25, 100%, 55%, 0.95) 20%,
+    hsla(35, 100%, 60%, 0.8) 50%,
+    hsla(45, 100%, 55%, 0.5) 80%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+.btn-supercharged-xl .flame-layer.layer-1 {
+  width: 45px;
+  height: 10px;
+  transform: translateY(-50%);
+  animation: xl-flame-shoot 0.12s ease-out infinite;
+}
+
+.btn-supercharged-xl .flame-layer.layer-2 {
+  width: 40px;
+  height: 8px;
+  transform: translateY(-50%) translateY(-6px) rotate(-12deg);
+  animation: xl-flame-shoot 0.1s ease-out infinite 0.02s;
+  opacity: 0.85;
+}
+
+.btn-supercharged-xl .flame-layer.layer-3 {
+  width: 40px;
+  height: 8px;
+  transform: translateY(-50%) translateY(6px) rotate(12deg);
+  animation: xl-flame-shoot 0.11s ease-out infinite 0.04s;
+  opacity: 0.85;
+}
+
+.btn-supercharged-xl .flame-layer.layer-4 {
+  width: 35px;
+  height: 6px;
+  transform: translateY(-50%) translateY(-10px) rotate(-20deg);
+  animation: xl-flame-shoot 0.13s ease-out infinite 0.01s;
+  opacity: 0.7;
+}
+
+.btn-supercharged-xl .flame-layer.layer-5 {
+  width: 35px;
+  height: 6px;
+  transform: translateY(-50%) translateY(10px) rotate(20deg);
+  animation: xl-flame-shoot 0.09s ease-out infinite 0.03s;
+  opacity: 0.7;
+}
+
+.btn-supercharged-xl .flame-sparks {
+  @apply absolute;
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 30px;
+}
+
+.btn-supercharged-xl .flame-sparks span {
+  @apply absolute;
+  width: 4px;
+  height: 4px;
+  background: hsla(50, 100%, 75%, 1);
+  border-radius: 50%;
+  box-shadow: 0 0 6px hsla(45, 100%, 60%, 0.9);
+}
+
+.btn-supercharged-xl.active .flame-sparks span {
+  animation: xl-spark-fly 0.35s ease-out infinite;
+}
+
+.btn-supercharged-xl .flame-sparks span:nth-child(1) { top: 20%; right: 10px; animation-delay: 0s; --spark-y: -8px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(2) { top: 40%; right: 5px; animation-delay: 0.08s; --spark-y: -3px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(3) { top: 50%; right: 8px; animation-delay: 0.15s; --spark-y: 0px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(4) { top: 60%; right: 3px; animation-delay: 0.05s; --spark-y: 3px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(5) { top: 80%; right: 12px; animation-delay: 0.12s; --spark-y: 8px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(6) { top: 30%; right: 15px; animation-delay: 0.2s; --spark-y: -5px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(7) { top: 70%; right: 18px; animation-delay: 0.1s; --spark-y: 6px; }
+.btn-supercharged-xl .flame-sparks span:nth-child(8) { top: 45%; right: 0px; animation-delay: 0.18s; --spark-y: -1px; }
+
+@keyframes xl-core-flicker {
+  0%, 100% { opacity: 1; transform: translateY(-50%) scaleX(1); }
+  50% { opacity: 0.85; transform: translateY(-50%) scaleX(0.92); }
+}
+
+@keyframes xl-flame-shoot {
+  0% { transform: translateY(-50%) scaleX(0.85); opacity: 0.6; }
+  50% { transform: translateY(-50%) scaleX(1.15); opacity: 1; }
+  100% { transform: translateY(-50%) scaleX(0.85); opacity: 0.6; }
+}
+
+@keyframes xl-spark-fly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-40px, var(--spark-y, 0)) scale(0); opacity: 0; }
+}
+
+.btn-supercharged-xl .supercharged-label-xl {
+  @apply text-sm font-bold z-10 relative ml-8;
+  color: hsla(220, 10%, 55%, 1);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.btn-supercharged-xl.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 95%, 16%, 0.98) 0%,
+    hsla(15, 100%, 10%, 1) 100%
+  );
+  border-color: hsla(30, 100%, 50%, 0.6);
+  box-shadow: 
+    0 0 30px hsla(25, 100%, 50%, 0.4),
+    0 0 60px hsla(15, 100%, 50%, 0.2),
+    inset 0 0 25px hsla(30, 100%, 30%, 0.25);
+}
+
+.btn-supercharged-xl.active .supercharged-label-xl {
+  color: hsla(45, 100%, 70%, 1);
+  text-shadow: 0 0 15px hsla(45, 100%, 50%, 0.7);
+}
+
+/* Light mode XL */
+html:not(.dark) .btn-supercharged-xl {
+  background: linear-gradient(180deg, 
+    hsla(220, 12%, 94%, 0.98) 0%,
+    hsla(220, 12%, 88%, 1) 100%
+  );
+  border-color: hsla(220, 10%, 78%, 0.6);
+}
+
+html:not(.dark) .btn-supercharged-xl.active {
+  background: linear-gradient(180deg, 
+    hsla(25, 85%, 92%, 1) 0%,
+    hsla(20, 90%, 86%, 1) 100%
+  );
+}
+
+/* ============================================
+   CHECK BUTTON - 2021 ZL1 CAMARO STYLE
+   ============================================ */
+
+.btn-check-zl1 {
+  @apply relative flex flex-col items-center justify-center transition-all duration-300;
+  width: 100px;
+  height: 50px;
+  background: linear-gradient(180deg, 
+    hsla(220, 15%, 16%, 0.95) 0%,
+    hsla(220, 15%, 10%, 0.98) 100%
+  );
+  border: 1px solid hsla(220, 12%, 28%, 0.5);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.btn-check-zl1 .zl1-container {
+  @apply relative;
+  width: 80px;
+  height: 26px;
+}
+
+/* ZL1 Camaro body - aggressive muscle car profile */
+.btn-check-zl1 .zl1-body {
+  @apply absolute;
+  bottom: 4px;
+  left: 6px;
+  right: 6px;
+  height: 16px;
+}
+
+.btn-check-zl1 .zl1-roof {
+  @apply absolute;
+  left: 28px;
+  bottom: 10px;
+  width: 24px;
+  height: 7px;
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 48%, 0.95) 0%,
+    hsla(220, 12%, 38%, 1) 100%
+  );
+  border-radius: 3px 3px 0 0;
+  clip-path: polygon(8% 100%, 0% 0%, 100% 0%, 92% 100%);
+}
+
+.btn-check-zl1 .zl1-window {
+  @apply absolute;
+  left: 30px;
+  bottom: 12px;
+  width: 20px;
+  height: 5px;
+  background: linear-gradient(180deg,
+    hsla(200, 60%, 55%, 0.5) 0%,
+    hsla(210, 70%, 35%, 0.3) 100%
+  );
+  border-radius: 2px 2px 0 0;
+  clip-path: polygon(12% 100%, 0% 0%, 100% 0%, 88% 100%);
+}
+
+.btn-check-zl1 .zl1-lower {
+  @apply absolute;
+  left: 0;
+  bottom: 2px;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(180deg,
+    hsla(220, 15%, 42%, 0.95) 0%,
+    hsla(220, 12%, 32%, 1) 100%
+  );
+  border-radius: 3px 8px 4px 4px;
+  clip-path: polygon(0% 40%, 8% 0%, 92% 0%, 100% 40%, 96% 100%, 4% 100%);
+}
+
+/* ZL1 Hood scoop */
+.btn-check-zl1 .zl1-hood-scoop {
+  @apply absolute;
+  left: 8px;
+  top: 0px;
+  width: 18px;
+  height: 4px;
+  background: hsla(220, 15%, 25%, 0.9);
+  border-radius: 0 0 2px 2px;
+  box-shadow: inset 0 -1px 2px hsla(0, 0%, 0%, 0.4);
+}
+
+/* Wheels */
+.btn-check-zl1 .zl1-wheel {
+  @apply absolute;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle,
+    hsla(220, 10%, 22%, 1) 35%,
+    hsla(220, 15%, 12%, 1) 45%,
+    hsla(220, 10%, 28%, 1) 55%,
+    hsla(220, 10%, 18%, 1) 100%
+  );
+  border-radius: 50%;
+  border: 1px solid hsla(220, 10%, 38%, 0.5);
+}
+
+.btn-check-zl1 .zl1-wheel-front { left: 10px; }
+.btn-check-zl1 .zl1-wheel-rear { right: 10px; }
+
+/* Hood that opens */
+.btn-check-zl1 .zl1-hood {
+  @apply absolute;
+  left: 6px;
+  bottom: 10px;
+  width: 26px;
+  height: 10px;
+  background: linear-gradient(90deg,
+    hsla(220, 15%, 45%, 0.95) 0%,
+    hsla(220, 12%, 40%, 1) 100%
+  );
+  border-radius: 2px 5px 0 0;
+  clip-path: polygon(0% 100%, 0% 30%, 100% 0%, 100% 100%);
+  transform-origin: left bottom;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: inset 0 1px 0 hsla(220, 20%, 58%, 0.3);
+  z-index: 5;
+}
+
+/* Engine glow */
+.btn-check-zl1 .zl1-engine-glow {
+  @apply absolute;
+  left: 10px;
+  bottom: 8px;
+  width: 22px;
+  height: 10px;
+  background: radial-gradient(ellipse,
+    hsla(30, 100%, 50%, 0) 0%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  transition: all 0.3s ease 0.15s;
+  z-index: 4;
+}
+
+/* Headlight */
+.btn-check-zl1 .zl1-headlight {
+  @apply absolute;
+  left: 8px;
+  bottom: 10px;
+  width: 5px;
+  height: 4px;
+  background: hsla(45, 100%, 80%, 0.85);
+  border-radius: 1px;
+  box-shadow: 0 0 5px hsla(45, 100%, 70%, 0.6);
+  transition: all 0.3s ease;
+}
+
+/* Taillight - Camaro style horizontal strip */
+.btn-check-zl1 .zl1-taillight {
+  @apply absolute;
+  right: 8px;
+  bottom: 10px;
+  width: 6px;
+  height: 4px;
+  background: hsla(0, 100%, 50%, 0.95);
+  border-radius: 1px;
+  box-shadow: 0 0 8px hsla(0, 100%, 50%, 0.7);
+  animation: zl1-taillight-glow 1.3s ease-in-out infinite;
+}
+
+@keyframes zl1-taillight-glow {
+  0%, 100% { opacity: 0.85; box-shadow: 0 0 5px hsla(0, 100%, 50%, 0.5); }
+  50% { opacity: 1; box-shadow: 0 0 12px hsla(0, 100%, 50%, 0.9); }
+}
+
+.btn-check-zl1 .zl1-label {
+  @apply flex items-center gap-1.5 mt-0.5;
+}
+
+.btn-check-zl1 .zl1-label span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: hsla(220, 10%, 55%, 1);
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.btn-check-zl1 .check-engine-icon {
+  width: 12px;
+  height: 12px;
+  color: hsla(45, 100%, 50%, 0.7);
+  transition: all 0.3s ease;
+}
+
+/* Hover - Hood opens, engine glows, check engine light on */
+.btn-check-zl1:hover .zl1-hood {
+  transform: rotate(-50deg);
+}
+
+.btn-check-zl1:hover .zl1-engine-glow {
+  background: radial-gradient(ellipse,
+    hsla(30, 100%, 55%, 0.95) 0%,
+    hsla(25, 100%, 50%, 0.7) 35%,
+    hsla(20, 100%, 45%, 0.4) 65%,
+    transparent 100%
+  );
+  box-shadow: 0 0 20px hsla(30, 100%, 50%, 0.6);
+}
+
+.btn-check-zl1:hover .zl1-headlight {
+  box-shadow: 
+    0 0 10px hsla(45, 100%, 70%, 0.9),
+    -15px 0 25px hsla(45, 100%, 70%, 0.4);
+}
+
+.btn-check-zl1:hover .zl1-label span {
+  color: hsla(30, 100%, 60%, 1);
+}
+
+.btn-check-zl1:hover .check-engine-icon {
+  color: hsla(45, 100%, 55%, 1);
+  filter: drop-shadow(0 0 6px hsla(45, 100%, 50%, 0.8));
+  animation: check-engine-blink 0.5s ease-in-out infinite;
+}
+
+@keyframes check-engine-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.btn-check-zl1:hover {
+  background: linear-gradient(180deg, 
+    hsla(220, 15%, 20%, 0.98) 0%,
+    hsla(220, 15%, 14%, 1) 100%
+  );
+  border-color: hsla(30, 85%, 50%, 0.45);
+  box-shadow: 0 0 25px hsla(30, 100%, 50%, 0.2);
+}
+
+.btn-check-zl1:active {
+  transform: scale(0.96);
+}
+
+/* Light mode ZL1 */
+html:not(.dark) .btn-check-zl1 {
+  background: linear-gradient(180deg, 
+    hsla(220, 12%, 94%, 0.98) 0%,
+    hsla(220, 12%, 88%, 1) 100%
+  );
+  border-color: hsla(220, 10%, 78%, 0.6);
+}
+
+html:not(.dark) .btn-check-zl1 .zl1-roof,
+html:not(.dark) .btn-check-zl1 .zl1-lower,
+html:not(.dark) .btn-check-zl1 .zl1-hood {
+  background: linear-gradient(180deg,
+    hsla(220, 12%, 62%, 0.95) 0%,
+    hsla(220, 10%, 52%, 1) 100%
+  );
+}
+
+html:not(.dark) .btn-check-zl1 .zl1-label span {
+  color: hsla(220, 15%, 40%, 1);
+}
+
+html:not(.dark) .btn-check-zl1:hover .zl1-label span {
+  color: hsla(25, 90%, 40%, 1);
 }
 
 /* ============================================
