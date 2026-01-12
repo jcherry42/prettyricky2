@@ -108,7 +108,49 @@ export const AdminSettingsPanel = ({ onClose }) => {
 
   useEffect(() => {
     loadConfig();
-  }, [loadConfig]);
+    // Initialize form from context
+    setDealershipForm({
+      name: dealership.name || '',
+      brand: dealership.brand || '',
+      location: dealership.location || '',
+    });
+    setSalespersonForm({
+      name: salesperson.name || '',
+      preferredPhrase: salesperson.preferredPhrase || 'Hey',
+    });
+  }, [loadConfig, dealership, salesperson]);
+
+  const loadNotificationHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/notifications?limit=50`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotificationHistory(data.notifications || []);
+      }
+    } catch (err) {
+      console.error('Failed to load notification history:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadNotificationHistory();
+    }
+  }, [activeTab, loadNotificationHistory]);
+
+  const handleDealershipSave = () => {
+    setDealership(dealershipForm);
+    setSalesperson(salespersonForm);
+    toast.success('Dealership settings saved!');
+  };
+
+  const handleOpenImport = () => {
+    onClose();
+    setTimeout(() => toggleImport(true), 100);
+  };
 
   const handleTwilioSave = async () => {
     if (!twilioForm.account_sid || !twilioForm.auth_token || !twilioForm.from_number) {
