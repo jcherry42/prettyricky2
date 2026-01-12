@@ -139,9 +139,10 @@ class TestCRMIntegrationCredentialManagement:
             assert "id" in integration
             assert "name" in integration
             assert "adapter_type" in integration or "adapter_name" in integration
-            assert "status" in integration
+            assert "health_status" in integration or "status" in integration
             assert "mock_mode" in integration
-            print(f"  - {integration['name']}: status={integration['status']}, mock_mode={integration['mock_mode']}")
+            status = integration.get('health_status') or integration.get('status')
+            print(f"  - {integration['name']}: health_status={status}, mock_mode={integration['mock_mode']}")
     
     def test_integration_health_summary(self):
         """GET /api/integrations/health should return health summary"""
