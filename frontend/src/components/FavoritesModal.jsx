@@ -225,7 +225,7 @@ export const FavoritesModal = () => {
                     {/* Situation snippet */}
                     {favorite.situation && (
                       <p className="text-xs text-muted-foreground bg-muted/20 px-3 py-2 rounded-lg line-clamp-2">
-                        "{favorite.situation}"
+                        &ldquo;{favorite.situation}&rdquo;
                       </p>
                     )}
                     
