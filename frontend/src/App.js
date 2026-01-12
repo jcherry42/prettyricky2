@@ -11,7 +11,9 @@ import { SetupModal } from './components/SetupModal';
 import { ImportModal } from './components/ImportModal';
 import { FavoritesModal } from './components/FavoritesModal';
 import { VSModal } from './components/VSModal';
+import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { Toaster } from './components/ui/sonner';
+import { useSales } from './context/SalesContext';
 
 function AppContent() {
   return (
