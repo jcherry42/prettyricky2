@@ -345,8 +345,11 @@ export const AdminSettingsPanel = ({ onClose }) => {
   };
 
   const tabs = [
+    { id: 'dealership', label: 'Dealership', icon: Building2 },
+    { id: 'import', label: 'Data Import', icon: Upload },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'integrations', label: 'CRM Integrations', icon: Database },
+    { id: 'integrations', label: 'CRM', icon: Database },
+    { id: 'history', label: 'History', icon: History },
   ];
 
   return (
