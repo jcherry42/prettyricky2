@@ -534,183 +534,225 @@ h1, h2, h3 {
 
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
-   C8 CORVETTE TAILLIGHT STRIP - ACCURATE DESIGN
-   Single thin horizontal LED bar spanning full width
-   Dark center section with TAILLIGHTS text
+   C8 CORVETTE TAILLIGHTS - ACCURATE DESIGN
+   Two separate tapered LED units with gap in middle
    ============================================ */
 
-.c8-taillight-strip {
-  @apply relative flex items-center;
-  height: 28px;
-  background: linear-gradient(180deg,
-    hsla(220, 20%, 8%, 1) 0%,
-    hsla(220, 18%, 5%, 1) 100%
-  );
-  border-radius: 3px;
-  border: 1px solid hsla(220, 15%, 18%, 0.6);
-  box-shadow: 
-    inset 0 1px 0 hsla(220, 20%, 20%, 0.2),
-    0 2px 10px hsla(0, 0%, 0%, 0.5);
-  overflow: hidden;
-}
-
-/* Wing sections - outer angled parts */
-.c8-wing {
-  width: 24px;
-  height: 100%;
-  position: relative;
+.c8-taillights-container {
   display: flex;
   align-items: center;
-  padding: 4px 2px;
+  gap: 6px;
 }
 
-.c8-wing-left {
-  clip-path: polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%);
+.c8-taillight-unit {
+  width: 50px;
+  height: 18px;
+  transition: all 0.4s ease;
 }
 
-.c8-wing-right {
-  clip-path: polygon(0% 0%, 70% 0%, 100% 100%, 0% 100%);
+.c8-taillight-unit .c8-led-path {
+  transition: all 0.4s ease;
 }
 
-/* Mid sections */
-.c8-mid {
-  width: 20px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 4px 1px;
+.c8-taillight-unit .c8-led-inner {
+  transition: all 0.4s ease;
 }
 
-/* Inner sections closest to center */
-.c8-inner {
-  width: 18px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 4px 1px;
+/* Lit state - bright red glow */
+.c8-taillight-unit.lit .c8-led-path {
+  fill: #cc0000;
+  filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
 }
 
-/* The LED element inside each section */
-.c8-led {
-  width: 100%;
-  height: 6px;
-  background: hsla(0, 20%, 15%, 0.6);
-  border-radius: 1px;
-  transition: all 0.3s ease;
+.c8-taillight-unit.lit .c8-led-inner {
+  fill: #ff2222;
+  filter: drop-shadow(0 0 4px #ff3333);
 }
 
-/* Lit state - bright red LED glow */
-.c8-wing.lit .c8-led,
-.c8-mid.lit .c8-led,
-.c8-inner.lit .c8-led {
-  background: linear-gradient(180deg,
-    hsla(0, 100%, 55%, 1) 0%,
-    hsla(0, 100%, 50%, 1) 50%,
-    hsla(0, 100%, 45%, 1) 100%
-  );
-  box-shadow: 
-    0 0 8px hsla(0, 100%, 50%, 0.9),
-    0 0 16px hsla(0, 100%, 50%, 0.6),
-    0 0 24px hsla(0, 100%, 50%, 0.3),
-    inset 0 1px 2px hsla(0, 100%, 70%, 0.4);
+/* Running animation */
+.c8-taillight-unit.running.lit .c8-led-path,
+.c8-taillight-unit.running.lit .c8-led-inner {
+  animation: c8-glow-pulse 2s ease-in-out infinite;
 }
 
-/* Running state pulse animation */
-.c8-taillight-strip.running .c8-wing.lit .c8-led,
-.c8-taillight-strip.running .c8-mid.lit .c8-led,
-.c8-taillight-strip.running .c8-inner.lit .c8-led {
-  animation: c8-led-pulse 2s ease-in-out infinite;
-}
+.c8-taillight-unit.c8-left.running.lit .c8-led-path { animation-delay: 0s; }
+.c8-taillight-unit.c8-right.running.lit .c8-led-path { animation-delay: 0.1s; }
 
-/* Stagger the pulse for flowing effect */
-.c8-wing-left.lit .c8-led { animation-delay: 0.15s; }
-.c8-mid-left.lit .c8-led { animation-delay: 0.1s; }
-.c8-inner-left.lit .c8-led { animation-delay: 0.05s; }
-.c8-inner-right.lit .c8-led { animation-delay: 0.05s; }
-.c8-mid-right.lit .c8-led { animation-delay: 0.1s; }
-.c8-wing-right.lit .c8-led { animation-delay: 0.15s; }
-
-@keyframes c8-led-pulse {
+@keyframes c8-glow-pulse {
   0%, 100% {
-    opacity: 0.9;
-    box-shadow: 
-      0 0 6px hsla(0, 100%, 50%, 0.8),
-      0 0 12px hsla(0, 100%, 50%, 0.5),
-      inset 0 1px 2px hsla(0, 100%, 70%, 0.3);
+    filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
   }
   50% {
-    opacity: 1;
-    box-shadow: 
-      0 0 12px hsla(0, 100%, 55%, 1),
-      0 0 24px hsla(0, 100%, 50%, 0.7),
-      0 0 36px hsla(0, 100%, 50%, 0.4),
-      inset 0 1px 3px hsla(0, 100%, 75%, 0.5);
+    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 24px #cc0000);
   }
 }
 
-/* Center section - dark with TAILLIGHTS text */
-.c8-center {
-  @apply flex items-center justify-center;
-  min-width: 100px;
-  height: 100%;
-  padding: 0 10px;
-  background: linear-gradient(180deg,
-    hsla(220, 20%, 6%, 1) 0%,
-    hsla(220, 18%, 3%, 1) 100%
-  );
-  border-left: 1px solid hsla(0, 50%, 20%, 0.3);
-  border-right: 1px solid hsla(0, 50%, 20%, 0.3);
-}
-
-.c8-text {
-  font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 14px;
-  letter-spacing: 0.25em;
-  color: hsla(220, 10%, 25%, 1);
+/* Center text */
+.c8-center-text {
+  padding: 0 8px;
   transition: all 0.4s ease;
-  text-transform: uppercase;
 }
 
-/* Lit center - Vice City neon glow */
-.c8-center.lit .c8-text {
-  background: linear-gradient(180deg, 
-    #ff6b9d 0%, 
-    #ff2d6a 50%,
-    #ff6b9d 100%
-  );
+.c8-center-text span {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: #333;
+  transition: all 0.4s ease;
+}
+
+.c8-center-text.lit span {
+  background: linear-gradient(180deg, #ff6b9d 0%, #ff2266 50%, #ff6b9d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 10px hsla(340, 100%, 60%, 0.7));
+  filter: drop-shadow(0 0 8px rgba(255, 100, 150, 0.7));
+  animation: text-glow-pulse 2.5s ease-in-out infinite;
 }
 
-.c8-taillight-strip.running .c8-center.lit .c8-text {
-  animation: c8-text-glow 2.5s ease-in-out infinite;
+@keyframes text-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 100, 150, 0.5)); }
+  50% { filter: drop-shadow(0 0 12px rgba(255, 100, 150, 0.9)); }
 }
 
-@keyframes c8-text-glow {
-  0%, 100% { filter: drop-shadow(0 0 8px hsla(340, 100%, 60%, 0.6)); }
-  50% { filter: drop-shadow(0 0 14px hsla(340, 100%, 65%, 0.9)); }
+/* Light mode */
+html:not(.dark) .c8-center-text span {
+  color: #666;
 }
 
-/* Light mode C8 */
-html:not(.dark) .c8-taillight-strip {
-  background: linear-gradient(180deg,
-    hsla(220, 15%, 85%, 1) 0%,
-    hsla(220, 12%, 80%, 1) 100%
-  );
-  border-color: hsla(220, 12%, 72%, 0.6);
+/* ============================================
+   CHECK BUTTON - CAMARO WITH WORKING HOOD
+   ============================================ */
+
+.btn-check-camaro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 52px;
+  background: linear-gradient(180deg, #1e1e28 0%, #141418 100%);
+  border: 1px solid #2a2a35;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: visible;
 }
 
-html:not(.dark) .c8-center {
-  background: linear-gradient(180deg,
-    hsla(220, 12%, 82%, 1) 0%,
-    hsla(220, 10%, 78%, 1) 100%
-  );
+.btn-check-camaro .camaro-wrapper {
+  width: 100px;
+  height: 32px;
 }
 
-html:not(.dark) .c8-text {
-  color: hsla(220, 15%, 50%, 1);
+.btn-check-camaro .camaro-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Hood animation group */
+.btn-check-camaro .camaro-hood-group {
+  transform-origin: 35px 22px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Engine glow */
+.btn-check-camaro .camaro-engine-glow {
+  transition: opacity 0.3s ease 0.15s;
+}
+
+/* Headlight */
+.btn-check-camaro .camaro-headlight {
+  filter: drop-shadow(0 0 3px #ffdd88);
+  transition: all 0.3s ease;
+}
+
+/* Taillight pulse */
+.btn-check-camaro .camaro-taillight {
+  filter: drop-shadow(0 0 4px #ff0000);
+  animation: camaro-tail-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes camaro-tail-pulse {
+  0%, 100% { filter: drop-shadow(0 0 3px #ff0000); opacity: 0.9; }
+  50% { filter: drop-shadow(0 0 8px #ff0000); opacity: 1; }
+}
+
+/* Label */
+.btn-check-camaro .camaro-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.btn-check-camaro .camaro-label span {
+  font-family: 'Russo One', sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #666;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.btn-check-camaro .check-icon {
+  width: 16px;
+  height: 16px;
+  color: #cc8800;
+  filter: drop-shadow(0 0 3px rgba(255, 170, 0, 0.5));
+  transition: all 0.3s ease;
+}
+
+/* HOVER STATE */
+.btn-check-camaro:hover {
+  background: linear-gradient(180deg, #252530 0%, #1a1a20 100%);
+  border-color: #ff8800;
+  box-shadow: 0 0 20px rgba(255, 136, 0, 0.2);
+}
+
+.btn-check-camaro:hover .camaro-hood-group {
+  transform: rotate(-40deg);
+}
+
+.btn-check-camaro:hover .camaro-engine-glow {
+  opacity: 0.8 !important;
+}
+
+.btn-check-camaro:hover .camaro-headlight {
+  filter: drop-shadow(0 0 8px #ffdd88) drop-shadow(-10px 0 15px rgba(255, 220, 100, 0.4));
+}
+
+.btn-check-camaro:hover .camaro-label span {
+  color: #ff9933;
+}
+
+.btn-check-camaro:hover .check-icon {
+  color: #ffaa00;
+  filter: drop-shadow(0 0 8px rgba(255, 170, 0, 0.9));
+  animation: check-blink 0.4s ease-in-out infinite;
+}
+
+@keyframes check-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.btn-check-camaro:active {
+  transform: scale(0.96);
+}
+
+/* Light mode */
+html:not(.dark) .btn-check-camaro {
+  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
+  border-color: #c0c0c8;
+}
+
+html:not(.dark) .btn-check-camaro .camaro-label span {
+  color: #555;
+}
+
+html:not(.dark) .btn-check-camaro:hover .camaro-label span {
+  color: #cc6600;
 }
 
 /* ============================================
