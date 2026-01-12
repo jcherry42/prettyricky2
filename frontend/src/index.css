@@ -726,13 +726,13 @@ html:not(.dark) .r34-center-text span {
 /* Flames - shooting LEFT onto header - PRONOUNCED OVERFLOW */
 .btn-supercharged .flames {
   position: absolute;
-  left: -60px;
+  left: -55px;
   top: 50%;
   transform: translateY(-50%);
-  width: 80px;
-  height: 50px;
+  width: 70px;
+  height: 45px;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.2s ease;
   pointer-events: none;
   z-index: 1000;
 }
@@ -743,22 +743,22 @@ html:not(.dark) .r34-center-text span {
 
 .btn-supercharged .flames .flame-core {
   position: absolute;
-  right: 5px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 30px;
-  height: 20px;
+  width: 25px;
+  height: 18px;
   background: radial-gradient(ellipse at right center,
     #ffffff 0%,
-    #ffffaa 15%,
-    #ffcc00 35%,
-    #ff6600 60%,
+    #ffffaa 20%,
+    #ffcc00 40%,
+    #ff6600 70%,
     transparent 100%
   );
   border-radius: 50%;
-  filter: blur(2px);
+  filter: blur(1px);
   animation: r34-core-pulse 0.08s ease-in-out infinite alternate;
-  box-shadow: 0 0 20px #ff8800, 0 0 40px #ff4400;
+  box-shadow: 0 0 25px 5px #ff8800, 0 0 50px 10px rgba(255,68,0,0.5);
 }
 
 @keyframes r34-core-pulse {
