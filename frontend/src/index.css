@@ -722,14 +722,14 @@ html:not(.dark) .r34-center-text span {
   margin-left: -1px;
 }
 
-/* Flames - shooting LEFT onto header */
+/* Flames - shooting LEFT onto header - PRONOUNCED OVERFLOW */
 .btn-supercharged .flames {
   position: absolute;
-  left: -50px;
+  left: -80px;
   top: 50%;
   transform: translateY(-50%);
-  width: 60px;
-  height: 44px;
+  width: 100px;
+  height: 60px;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
@@ -745,17 +745,17 @@ html:not(.dark) .r34-center-text span {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 16px;
+  width: 35px;
+  height: 24px;
   background: radial-gradient(ellipse at right center,
     #ffffff 0%,
-    #ffffcc 25%,
-    #ffcc00 50%,
-    #ff6600 75%,
+    #ffffcc 20%,
+    #ffcc00 40%,
+    #ff6600 65%,
     transparent 100%
   );
   border-radius: 50%;
-  filter: blur(2px);
+  filter: blur(3px);
   animation: r34-core-pulse 0.08s ease-in-out infinite alternate;
 }
 
