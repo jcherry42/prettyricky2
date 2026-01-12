@@ -676,75 +676,110 @@ html:not(.dark) .c8-center-text span {
   display: none;
 }
 
-/* Single realistic exhaust tip */
+/* Single realistic exhaust tip - SIDE VIEW */
 .btn-supercharged .exhaust-tip {
   position: absolute;
-  left: -10px;
+  left: -14px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
 }
 
 .btn-supercharged .exhaust-tip .exhaust-outer {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #4a4a52 0%, #2a2a32 40%, #1a1a22 100%);
-  border: 2px solid #5a5a65;
+  width: 18px;
+  height: 24px;
+  border-radius: 4px 4px 4px 4px;
+  background: linear-gradient(180deg, 
+    #6a6a72 0%, 
+    #4a4a52 15%,
+    #3a3a42 30%,
+    #4a4a52 50%,
+    #3a3a42 70%,
+    #4a4a52 85%,
+    #5a5a62 100%
+  );
+  border: 1px solid #5a5a65;
   box-shadow: 
-    0 2px 4px rgba(0,0,0,0.6),
-    inset 0 3px 6px rgba(0,0,0,0.7),
-    inset 0 -2px 4px rgba(80,80,90,0.3);
+    2px 0 4px rgba(0,0,0,0.5),
+    -1px 0 2px rgba(100,100,110,0.3),
+    inset 2px 0 4px rgba(0,0,0,0.4),
+    inset -1px 0 3px rgba(100,100,110,0.2);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 2px;
+  position: relative;
+}
+
+/* Chrome lip at the opening */
+.btn-supercharged .exhaust-tip .exhaust-outer::before {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 2px;
+  bottom: 2px;
+  width: 4px;
+  background: linear-gradient(180deg,
+    #7a7a85 0%,
+    #5a5a65 20%,
+    #4a4a55 50%,
+    #5a5a65 80%,
+    #6a6a75 100%
+  );
+  border-radius: 0 2px 2px 0;
+  box-shadow: 1px 0 2px rgba(0,0,0,0.3);
 }
 
 .btn-supercharged .exhaust-tip .exhaust-inner {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #1a1a20 0%, #0a0a0e 100%);
-  border: 1px solid #3a3a42;
+  width: 12px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, 
+    #1a1a20 0%, 
+    #0a0a0e 30%,
+    #050508 50%,
+    #0a0a0e 70%,
+    #151518 100%
+  );
   box-shadow: 
-    inset 0 2px 4px rgba(0,0,0,0.9),
-    inset 0 -1px 2px rgba(60,60,70,0.2);
+    inset 2px 0 4px rgba(0,0,0,0.9),
+    inset -1px 0 2px rgba(40,40,50,0.3),
+    inset 0 2px 3px rgba(0,0,0,0.8),
+    inset 0 -2px 3px rgba(0,0,0,0.8);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .btn-supercharged .exhaust-tip .exhaust-core {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #0f0f12 0%, #000 100%);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,1);
+  display: none;
 }
 
-/* When active - exhaust glows hot */
+/* When active - exhaust glows hot from inside */
 .btn-supercharged.active .exhaust-tip .exhaust-outer {
   box-shadow: 
-    0 2px 4px rgba(0,0,0,0.6),
-    0 0 12px rgba(255,100,0,0.4),
-    0 0 20px rgba(255,100,0,0.2),
-    inset 0 3px 6px rgba(0,0,0,0.7),
-    inset 0 -2px 4px rgba(80,80,90,0.3);
-  border-color: #6a5a55;
+    2px 0 4px rgba(0,0,0,0.5),
+    -1px 0 2px rgba(100,100,110,0.3),
+    0 0 15px rgba(255,100,0,0.3),
+    0 0 25px rgba(255,80,0,0.15),
+    inset 2px 0 4px rgba(0,0,0,0.4),
+    inset -1px 0 3px rgba(100,100,110,0.2);
 }
 
 .btn-supercharged.active .exhaust-tip .exhaust-inner {
-  background: linear-gradient(145deg, #2a1a18 0%, #1a0a08 100%);
+  background: linear-gradient(180deg, 
+    #2a1510 0%, 
+    #1a0a08 30%,
+    #150505 50%,
+    #1a0a08 70%,
+    #251510 100%
+  );
   box-shadow: 
-    inset 0 2px 4px rgba(0,0,0,0.9),
-    inset 0 0 8px rgba(255,80,0,0.3);
-}
-
-.btn-supercharged.active .exhaust-tip .exhaust-core {
-  background: radial-gradient(circle, #331100 0%, #110000 60%, #000 100%);
-  box-shadow: 
-    inset 0 0 4px rgba(255,100,0,0.5),
-    0 0 6px rgba(255,80,0,0.4);
+    inset 2px 0 6px rgba(255,80,0,0.4),
+    inset -1px 0 4px rgba(255,100,0,0.2),
+    inset 0 2px 4px rgba(0,0,0,0.8),
+    inset 0 -2px 4px rgba(0,0,0,0.8),
+    inset 0 0 8px rgba(255,60,0,0.3);
 }
 
 /* Flames container */
