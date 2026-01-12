@@ -659,36 +659,31 @@ html:not(.dark) .c8-center-text span {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 110px;
-  height: 32px;
+  justify-content: flex-end;
+  width: 160px;
+  height: 36px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
   border-radius: 8px;
   cursor: pointer;
-  overflow: visible !important;
+  overflow: hidden;
   transition: all 0.3s ease;
-  z-index: 10;
+  padding-right: 12px;
 }
 
-/* Exhaust pipes on the left - VISIBLE */
-.btn-supercharged .exhaust-pipes {
-  display: none;
-}
-
-/* Single realistic exhaust tip - SIDE VIEW */
+/* Single realistic exhaust tip - SIDE VIEW - INSIDE BUTTON */
 .btn-supercharged .exhaust-tip {
   position: absolute;
-  left: -14px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
 }
 
 .btn-supercharged .exhaust-tip .exhaust-outer {
-  width: 18px;
-  height: 24px;
-  border-radius: 4px 4px 4px 4px;
+  width: 16px;
+  height: 22px;
+  border-radius: 3px;
   background: linear-gradient(180deg, 
     #6a6a72 0%, 
     #4a4a52 15%,
@@ -700,10 +695,9 @@ html:not(.dark) .c8-center-text span {
   );
   border: 1px solid #5a5a65;
   box-shadow: 
-    2px 0 4px rgba(0,0,0,0.5),
-    -1px 0 2px rgba(100,100,110,0.3),
-    inset 2px 0 4px rgba(0,0,0,0.4),
-    inset -1px 0 3px rgba(100,100,110,0.2);
+    2px 0 3px rgba(0,0,0,0.4),
+    inset 2px 0 3px rgba(0,0,0,0.3),
+    inset -1px 0 2px rgba(100,100,110,0.2);
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -718,7 +712,7 @@ html:not(.dark) .c8-center-text span {
   right: -2px;
   top: 2px;
   bottom: 2px;
-  width: 4px;
+  width: 3px;
   background: linear-gradient(180deg,
     #7a7a85 0%,
     #5a5a65 20%,
@@ -727,12 +721,11 @@ html:not(.dark) .c8-center-text span {
     #6a6a75 100%
   );
   border-radius: 0 2px 2px 0;
-  box-shadow: 1px 0 2px rgba(0,0,0,0.3);
 }
 
 .btn-supercharged .exhaust-tip .exhaust-inner {
-  width: 12px;
-  height: 18px;
+  width: 10px;
+  height: 16px;
   border-radius: 2px;
   background: linear-gradient(180deg, 
     #1a1a20 0%, 
@@ -742,28 +735,179 @@ html:not(.dark) .c8-center-text span {
     #151518 100%
   );
   box-shadow: 
-    inset 2px 0 4px rgba(0,0,0,0.9),
-    inset -1px 0 2px rgba(40,40,50,0.3),
-    inset 0 2px 3px rgba(0,0,0,0.8),
-    inset 0 -2px 3px rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    inset 2px 0 3px rgba(0,0,0,0.9),
+    inset 0 2px 2px rgba(0,0,0,0.8),
+    inset 0 -2px 2px rgba(0,0,0,0.8);
 }
 
 .btn-supercharged .exhaust-tip .exhaust-core {
   display: none;
 }
 
-/* When active - exhaust glows hot from inside */
+/* Flames container - INSIDE BUTTON */
+.btn-supercharged .flames {
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70px;
+  height: 28px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.btn-supercharged .flames.active {
+  opacity: 1;
+}
+
+/* White-hot core glow */
+.btn-supercharged .flames .flame-core {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 12px;
+  background: radial-gradient(ellipse at left center,
+    #ffffff 0%,
+    #ffffaa 25%,
+    #ffcc00 50%,
+    #ff6600 75%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  filter: blur(2px);
+  animation: flame-core-pulse 0.08s ease-in-out infinite alternate;
+}
+
+/* Flame layers - shooting RIGHT inside button */
+.btn-supercharged .flames .flame {
+  position: absolute;
+  top: 50%;
+  border-radius: 30% 50% 30% 50%;
+}
+
+.btn-supercharged .flames .flame.f1 {
+  left: 5px;
+  width: 50px;
+  height: 10px;
+  transform: translateY(-50%);
+  background: linear-gradient(to right, #ffdd00 0%, #ff8800 40%, #ff4400 70%, transparent 100%);
+  filter: blur(1px);
+  animation: flame-flicker-1 0.1s ease-in-out infinite alternate;
+}
+
+.btn-supercharged .flames .flame.f2 {
+  left: 8px;
+  width: 40px;
+  height: 7px;
+  transform: translateY(-50%) translateY(-6px) rotate(8deg);
+  background: linear-gradient(to right, #ff9900 0%, #ff5500 60%, transparent 100%);
+  filter: blur(1px);
+  animation: flame-flicker-2 0.12s ease-in-out infinite alternate;
+}
+
+.btn-supercharged .flames .flame.f3 {
+  left: 8px;
+  width: 40px;
+  height: 7px;
+  transform: translateY(-50%) translateY(6px) rotate(-8deg);
+  background: linear-gradient(to right, #ff9900 0%, #ff5500 60%, transparent 100%);
+  filter: blur(1px);
+  animation: flame-flicker-2 0.12s ease-in-out infinite alternate;
+  animation-delay: 0.04s;
+}
+
+.btn-supercharged .flames .flame.f4 {
+  left: 12px;
+  width: 30px;
+  height: 5px;
+  transform: translateY(-50%);
+  background: linear-gradient(to right, #ff6600 0%, #cc2200 60%, transparent 100%);
+  filter: blur(2px);
+  animation: flame-flicker-1 0.15s ease-in-out infinite alternate;
+  animation-delay: 0.06s;
+}
+
+@keyframes flame-flicker-1 {
+  0% { transform: translateY(-50%) scaleX(1); opacity: 1; }
+  100% { transform: translateY(-50%) scaleX(0.92) translateX(2px); opacity: 0.85; }
+}
+
+@keyframes flame-flicker-2 {
+  0% { opacity: 0.9; }
+  100% { opacity: 1; scaleX: 0.95; }
+}
+
+/* Flying sparks - contained */
+.btn-supercharged .flames .sparks {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.btn-supercharged .flames .sparks span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffee00;
+  border-radius: 50%;
+  opacity: 0;
+  box-shadow: 0 0 4px 1px #ff8800;
+}
+
+.btn-supercharged .flames.active .sparks span {
+  animation: spark-shoot 0.5s ease-out infinite;
+}
+
+.btn-supercharged .flames .sparks span:nth-child(1) { top: 20%; left: 30px; animation-delay: 0s; }
+.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; left: 40px; animation-delay: 0.12s; }
+.btn-supercharged .flames .sparks span:nth-child(3) { top: 80%; left: 35px; animation-delay: 0.25s; }
+.btn-supercharged .flames .sparks span:nth-child(4) { top: 40%; left: 50px; animation-delay: 0.18s; }
+
+@keyframes spark-shoot {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  50% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(15px, var(--spark-y, 0)) scale(0.5); }
+}
+
+.btn-supercharged .flames .sparks span:nth-child(1) { --spark-y: -6px; }
+.btn-supercharged .flames .sparks span:nth-child(2) { --spark-y: 2px; }
+.btn-supercharged .flames .sparks span:nth-child(3) { --spark-y: 8px; }
+.btn-supercharged .flames .sparks span:nth-child(4) { --spark-y: -3px; }
+
+/* Label */
+.btn-supercharged .supercharged-label {
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  color: #666;
+  z-index: 6;
+  transition: all 0.3s ease;
+}
+
+/* Active state - FLAMES ON */
+.btn-supercharged.active {
+  border-color: #ff6600;
+  box-shadow: 
+    0 0 15px rgba(255, 102, 0, 0.4),
+    inset 0 0 20px rgba(255, 80, 0, 0.15);
+}
+
+.btn-supercharged.active .supercharged-label {
+  color: #ffaa33;
+  text-shadow: 0 0 8px rgba(255, 153, 51, 0.7);
+}
+
 .btn-supercharged.active .exhaust-tip .exhaust-outer {
   box-shadow: 
-    2px 0 4px rgba(0,0,0,0.5),
-    -1px 0 2px rgba(100,100,110,0.3),
-    0 0 15px rgba(255,100,0,0.3),
-    0 0 25px rgba(255,80,0,0.15),
-    inset 2px 0 4px rgba(0,0,0,0.4),
-    inset -1px 0 3px rgba(100,100,110,0.2);
+    2px 0 3px rgba(0,0,0,0.4),
+    0 0 10px rgba(255,100,0,0.3),
+    inset 2px 0 3px rgba(0,0,0,0.3);
 }
 
 .btn-supercharged.active .exhaust-tip .exhaust-inner {
@@ -775,192 +919,8 @@ html:not(.dark) .c8-center-text span {
     #251510 100%
   );
   box-shadow: 
-    inset 2px 0 6px rgba(255,80,0,0.4),
-    inset -1px 0 4px rgba(255,100,0,0.2),
-    inset 0 2px 4px rgba(0,0,0,0.8),
-    inset 0 -2px 4px rgba(0,0,0,0.8),
-    inset 0 0 8px rgba(255,60,0,0.3);
-}
-
-/* Flames container */
-.btn-supercharged .flames {
-  position: absolute;
-  left: -45px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 32px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.btn-supercharged .flames.active {
-  opacity: 1;
-}
-
-/* White-hot core glow */
-.btn-supercharged .flames .flame-core {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 14px;
-  background: radial-gradient(ellipse at right center,
-    #ffffff 0%,
-    #ffffaa 20%,
-    #ffcc00 40%,
-    #ff6600 70%,
-    transparent 100%
-  );
-  border-radius: 50%;
-  filter: blur(2px);
-  animation: flame-core-pulse 0.08s ease-in-out infinite alternate;
-}
-
-@keyframes flame-core-pulse {
-  0% { opacity: 1; transform: translateY(-50%) scale(1); }
-  100% { opacity: 0.9; transform: translateY(-50%) scale(1.05); }
-}
-
-/* Flame layers */
-.btn-supercharged .flames .flame {
-  position: absolute;
-  top: 50%;
-  border-radius: 50% 30% 50% 30%;
-}
-
-.btn-supercharged .flames .flame.f1 {
-  right: 5px;
-  width: 35px;
-  height: 12px;
-  transform: translateY(-50%);
-  background: linear-gradient(to left, #ffdd00 0%, #ff8800 30%, #ff4400 60%, transparent 100%);
-  filter: blur(1px);
-  animation: flame-flicker-1 0.1s ease-in-out infinite alternate;
-}
-
-.btn-supercharged .flames .flame.f2 {
-  right: 8px;
-  width: 28px;
-  height: 8px;
-  transform: translateY(-50%) translateY(-7px) rotate(-12deg);
-  background: linear-gradient(to left, #ff9900 0%, #ff5500 50%, transparent 100%);
-  filter: blur(1px);
-  animation: flame-flicker-2 0.12s ease-in-out infinite alternate;
-}
-
-.btn-supercharged .flames .flame.f3 {
-  right: 8px;
-  width: 28px;
-  height: 8px;
-  transform: translateY(-50%) translateY(7px) rotate(12deg);
-  background: linear-gradient(to left, #ff9900 0%, #ff5500 50%, transparent 100%);
-  filter: blur(1px);
-  animation: flame-flicker-2 0.12s ease-in-out infinite alternate;
-  animation-delay: 0.04s;
-}
-
-.btn-supercharged .flames .flame.f4 {
-  right: 15px;
-  width: 22px;
-  height: 6px;
-  transform: translateY(-50%);
-  background: linear-gradient(to left, #ff6600 0%, #cc2200 50%, transparent 100%);
-  filter: blur(2px);
-  animation: flame-flicker-1 0.15s ease-in-out infinite alternate;
-  animation-delay: 0.06s;
-}
-
-@keyframes flame-flicker-1 {
-  0% { transform: translateY(-50%) scaleX(1); opacity: 1; }
-  100% { transform: translateY(-50%) scaleX(0.9) translateX(-2px); opacity: 0.85; }
-}
-
-@keyframes flame-flicker-2 {
-  0% { opacity: 0.9; }
-  100% { opacity: 1; transform: translateY(-50%) translateY(-7px) rotate(-15deg) scaleX(0.95); }
-}
-
-/* Flying sparks */
-.btn-supercharged .flames .sparks {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.btn-supercharged .flames .sparks span {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: #ffee00;
-  border-radius: 50%;
-  opacity: 0;
-  box-shadow: 0 0 6px 2px #ff8800, 0 0 12px 4px #ff4400;
-}
-
-.btn-supercharged .flames.active .sparks span {
-  animation: spark-shoot 0.5s ease-out infinite;
-}
-
-.btn-supercharged .flames .sparks span:nth-child(1) { top: 25%; right: 20px; animation-delay: 0s; }
-.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; right: 15px; animation-delay: 0.12s; }
-.btn-supercharged .flames .sparks span:nth-child(3) { top: 75%; right: 18px; animation-delay: 0.25s; }
-.btn-supercharged .flames .sparks span:nth-child(4) { top: 40%; right: 10px; animation-delay: 0.18s; }
-
-@keyframes spark-shoot {
-  0% { 
-    opacity: 1; 
-    transform: translate(0, 0) scale(1); 
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% { 
-    opacity: 0; 
-    transform: translate(-25px, var(--spark-y, 0)) scale(0.5); 
-  }
-}
-
-.btn-supercharged .flames .sparks span:nth-child(1) { --spark-y: -10px; }
-.btn-supercharged .flames .sparks span:nth-child(2) { --spark-y: 2px; }
-.btn-supercharged .flames .sparks span:nth-child(3) { --spark-y: 12px; }
-.btn-supercharged .flames .sparks span:nth-child(4) { --spark-y: -5px; }
-
-/* Label */
-.btn-supercharged .supercharged-label {
-  font-size: 9px;
-  font-weight: bold;
-  letter-spacing: 0.08em;
-  color: #666;
-  z-index: 3;
-  transition: all 0.3s ease;
-  margin-left: 8px;
-}
-
-/* Active state - FLAMES ON */
-.btn-supercharged.active {
-  border-color: #ff6600;
-  box-shadow: 
-    0 0 20px rgba(255, 102, 0, 0.5), 
-    0 0 40px rgba(255, 102, 0, 0.3),
-    inset 0 0 10px rgba(255, 102, 0, 0.1);
-}
-
-.btn-supercharged.active .supercharged-label {
-  color: #ffaa33;
-  text-shadow: 0 0 10px rgba(255, 153, 51, 0.8);
-}
-
-.btn-supercharged.active .exhaust-pipes .pipe {
-  box-shadow: 
-    inset 0 2px 3px rgba(0,0,0,0.6), 
-    0 0 8px rgba(255, 100, 0, 0.6),
-    0 0 15px rgba(255, 100, 0, 0.3);
+    inset 2px 0 4px rgba(255,80,0,0.4),
+    inset 0 0 6px rgba(255,60,0,0.3);
 }
 
 .btn-supercharged:hover {
@@ -979,7 +939,7 @@ html:not(.dark) .btn-supercharged .supercharged-label {
 
 html:not(.dark) .btn-supercharged.active {
   border-color: #dd6600;
-  box-shadow: 0 0 15px rgba(221, 102, 0, 0.4);
+  box-shadow: 0 0 12px rgba(221, 102, 0, 0.35);
 }
 
 html:not(.dark) .btn-supercharged.active .supercharged-label {
