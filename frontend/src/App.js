@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
 import { CustomerSelector } from './components/CustomerSelector';
@@ -15,9 +15,24 @@ import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { AdminSettingsPanel } from './components/AdminSettingsPanel';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
+import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 
 function AppContent() {
-  const { showAnalytics, toggleAnalytics, showAdminSettings, toggleAdminSettings } = useSales();
+  const { showAnalytics, toggleAnalytics, showAdminSettings, toggleAdminSettings, theme } = useSales();
+  
+  // Initialize native capabilities on mount
+  useEffect(() => {
+    if (isNative) {
+      initializeNative();
+    }
+  }, []);
+  
+  // Update status bar when theme changes
+  useEffect(() => {
+    if (isNative) {
+      updateStatusBarTheme(theme === 'dark');
+    }
+  }, [theme]);
   
   return (
     <div className="min-h-screen bg-background">
