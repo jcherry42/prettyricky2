@@ -234,10 +234,15 @@ class TestCRMIntegrationCredentialManagement:
     
     def test_test_integration_connection(self):
         """POST /api/integrations/{id}/test should test connection"""
-        if not self.integrations:
+        # Get fresh integrations list
+        response = requests.get(f"{BASE_URL}/api/integrations")
+        assert response.status_code == 200
+        integrations = response.json().get("integrations", [])
+        
+        if not integrations:
             pytest.skip("No integrations available for testing")
         
-        integration = self.integrations[0]
+        integration = integrations[0]
         integration_id = integration["id"]
         
         response = requests.post(f"{BASE_URL}/api/integrations/{integration_id}/test")
