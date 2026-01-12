@@ -16,6 +16,8 @@ import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 
 function AppContent() {
+  const { showAnalytics, toggleAnalytics } = useSales();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -55,6 +57,7 @@ function AppContent() {
       <TowerTalkModal />
       <FavoritesModal />
       <VSModal />
+      {showAnalytics && <AnalyticsDashboard onClose={() => toggleAnalytics(false)} />}
       
       {/* Toast notifications */}
       <Toaster position="top-center" />
