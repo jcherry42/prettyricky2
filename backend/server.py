@@ -1537,6 +1537,201 @@ async def get_webhook_events(
     return {"events": events}
 
 
+# ============== CONVERSATION HISTORY ==============
+
+from conversation_history import ConversationHistoryService, ConversationCreate
+
+class ConversationCreateRequest(BaseModel):
+    session_id: str
+    situation: str
+    response: str
+    translated_response: Optional[str] = None
+    customer_id: Optional[str] = None
+    customer_name: Optional[str] = None
+    vehicle_info: Optional[str] = None
+    category: Optional[str] = None
+    language: str = "en"
+    shortcut_used: Optional[str] = None
+
+@api_router.get("/conversations/categories")
+async def get_conversation_categories():
+    """Get available conversation categories"""
+    return {"categories": ConversationHistoryService.get_categories()}
+
+@api_router.post("/conversations")
+async def create_conversation(request: ConversationCreateRequest):
+    """Create a new conversation record"""
+    service = ConversationHistoryService(db)
+    await service.initialize()
+    
+    data = ConversationCreate(**request.model_dump())
+    result = await service.create_conversation(data)
+    
+    return {"success": True, "conversation": result.model_dump()}
+
+@api_router.get("/conversations")
+async def get_conversations(
+    session_id: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    category: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0
+):
+    """Get conversations with optional filters"""
+    service = ConversationHistoryService(db)
+    conversations = await service.get_conversations(
+        session_id=session_id,
+        customer_id=customer_id,
+        category=category,
+        limit=limit,
+        offset=offset
+    )
+    return {"conversations": conversations, "count": len(conversations)}
+
+@api_router.get("/conversations/stats")
+async def get_conversation_stats():
+    """Get conversation statistics"""
+    service = ConversationHistoryService(db)
+    stats = await service.get_stats()
+    return stats
+
+@api_router.get("/conversations/session/{session_id}")
+async def get_session_history(session_id: str):
+    """Get all conversations in a session"""
+    service = ConversationHistoryService(db)
+    conversations = await service.get_session_history(session_id)
+    return {"session_id": session_id, "conversations": conversations}
+
+@api_router.get("/conversations/customer/{customer_id}")
+async def get_customer_conversation_history(customer_id: str):
+    """Get all conversations for a customer"""
+    service = ConversationHistoryService(db)
+    conversations = await service.get_customer_history(customer_id)
+    return {"customer_id": customer_id, "conversations": conversations}
+
+@api_router.delete("/conversations/{conversation_id}")
+async def delete_conversation(conversation_id: str):
+    """Delete a specific conversation"""
+    service = ConversationHistoryService(db)
+    success = await service.delete_conversation(conversation_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return {"success": True}
+
+@api_router.delete("/conversations/session/{session_id}")
+async def delete_session_conversations(session_id: str):
+    """Delete all conversations in a session"""
+    service = ConversationHistoryService(db)
+    deleted_count = await service.delete_session(session_id)
+    return {"success": True, "deleted_count": deleted_count}
+
+
+# ============== ANALYTICS DASHBOARD ==============
+
+from analytics_service import AnalyticsService
+
+@api_router.get("/analytics/dashboard")
+async def get_analytics_dashboard():
+    """Get comprehensive analytics dashboard"""
+    service = AnalyticsService(db)
+    return await service.get_dashboard_summary()
+
+@api_router.get("/analytics/sales")
+async def get_sales_analytics(days: int = 30):
+    """Get sales performance analytics"""
+    service = AnalyticsService(db)
+    return await service.get_sales_performance(days)
+
+@api_router.get("/analytics/customers")
+async def get_customer_analytics():
+    """Get customer engagement analytics"""
+    service = AnalyticsService(db)
+    return await service.get_customer_engagement()
+
+@api_router.get("/analytics/inventory")
+async def get_inventory_analytics():
+    """Get inventory metrics"""
+    service = AnalyticsService(db)
+    return await service.get_inventory_metrics()
+
+@api_router.get("/analytics/conversations")
+async def get_conversation_analytics():
+    """Get conversation insights"""
+    service = AnalyticsService(db)
+    return await service.get_conversation_insights()
+
+@api_router.get("/analytics/integrations")
+async def get_integration_analytics():
+    """Get integration health analytics"""
+    service = AnalyticsService(db)
+    return await service.get_integration_health()
+
+@api_router.get("/analytics/trends/{metric}")
+async def get_metric_trends(metric: str, days: int = 30):
+    """Get trend data for a specific metric"""
+    service = AnalyticsService(db)
+    return await service.get_trends(metric, days)
+
+
+# ============== WEBHOOK EVENT PROCESSING ==============
+
+from webhook_processor import WebhookEventProcessor, WebhookEvent, EventType
+
+# Initialize event processor
+event_processor = WebhookEventProcessor(db)
+
+@api_router.get("/events/stats")
+async def get_event_stats():
+    """Get webhook event processing statistics"""
+    return await event_processor.get_event_stats()
+
+@api_router.post("/events/enqueue")
+async def enqueue_event(event: WebhookEvent):
+    """Manually enqueue an event for processing"""
+    event_id = await event_processor.enqueue_event(event)
+    return {"success": True, "event_id": event_id}
+
+@api_router.get("/events/dlq")
+async def get_dlq_events(limit: int = 50):
+    """Get events in dead letter queue"""
+    events = await event_processor.get_dlq_events(limit)
+    return {"events": events, "count": len(events)}
+
+@api_router.post("/events/dlq/{event_id}/replay")
+async def replay_dlq_event(event_id: str):
+    """Replay a dead letter queue event"""
+    success = await event_processor.replay_dlq_event(event_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Event not found in DLQ")
+    return {"success": True, "message": "Event re-queued for processing"}
+
+@api_router.get("/events/types")
+async def get_event_types():
+    """Get available event types"""
+    return {"event_types": [e.value for e in EventType]}
+
+
+# ============== FAVORITES CATEGORIES ==============
+
+# Favorites categories matching the existing patterns
+FAVORITE_CATEGORIES = [
+    {"id": "price_negotiation", "label": "Price Negotiation", "icon": "💰"},
+    {"id": "trade_in", "label": "Trade-In", "icon": "🔄"},
+    {"id": "objection_handling", "label": "Objection Handling", "icon": "🛡️"},
+    {"id": "follow_up", "label": "Follow-Up", "icon": "📞"},
+    {"id": "competitor", "label": "Competitor", "icon": "⚔️"},
+    {"id": "financing", "label": "Financing", "icon": "📊"},
+    {"id": "features", "label": "Features", "icon": "⚙️"},
+    {"id": "closing", "label": "Closing", "icon": "🎯"},
+    {"id": "general", "label": "General", "icon": "💬"},
+]
+
+@api_router.get("/favorites/categories")
+async def get_favorite_categories():
+    """Get available favorite categories"""
+    return {"categories": FAVORITE_CATEGORIES}
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 app.include_router(api_router)
