@@ -404,6 +404,164 @@ export const AdminSettingsPanel = ({ onClose }) => {
             </div>
           ) : (
             <>
+              {/* Dealership Tab */}
+              {activeTab === 'dealership' && (
+                <div className="space-y-6 animate-fade-in">
+                  {/* Dealership Info */}
+                  <div className="mclaren-config-section">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Building2 className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-foreground">Dealership Information</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="mclaren-form-group">
+                        <label className="mclaren-label">Dealership Name</label>
+                        <input
+                          type="text"
+                          value={dealershipForm.name}
+                          onChange={(e) => setDealershipForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Premier Motors"
+                          className="mclaren-input"
+                          data-testid="dealership-name-input"
+                        />
+                      </div>
+                      
+                      <div className="mclaren-form-group">
+                        <label className="mclaren-label">Brand / Manufacturer</label>
+                        <input
+                          type="text"
+                          value={dealershipForm.brand}
+                          onChange={(e) => setDealershipForm(prev => ({ ...prev, brand: e.target.value }))}
+                          placeholder="e.g., BMW, Toyota, Multi-Brand"
+                          className="mclaren-input"
+                          data-testid="dealership-brand-input"
+                        />
+                      </div>
+                      
+                      <div className="mclaren-form-group">
+                        <label className="mclaren-label">Location</label>
+                        <input
+                          type="text"
+                          value={dealershipForm.location}
+                          onChange={(e) => setDealershipForm(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="e.g., Los Angeles, CA"
+                          className="mclaren-input"
+                          data-testid="dealership-location-input"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Salesperson Info */}
+                  <div className="mclaren-config-section">
+                    <div className="flex items-center gap-2 mb-4">
+                      <User className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-foreground">Your Information</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="mclaren-form-group">
+                        <label className="mclaren-label">Your Name</label>
+                        <input
+                          type="text"
+                          value={salespersonForm.name}
+                          onChange={(e) => setSalespersonForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Alex Johnson"
+                          className="mclaren-input"
+                          data-testid="salesperson-name-input"
+                        />
+                      </div>
+                      
+                      <div className="mclaren-form-group">
+                        <label className="mclaren-label">Preferred Greeting</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {['Hey', 'Hi', 'Hello'].map((phrase) => (
+                            <button
+                              key={phrase}
+                              onClick={() => setSalespersonForm(prev => ({ ...prev, preferredPhrase: phrase }))}
+                              className={`mclaren-option-btn py-3 justify-center ${salespersonForm.preferredPhrase === phrase ? 'selected' : ''}`}
+                              data-testid={`greeting-${phrase.toLowerCase()}`}
+                            >
+                              {phrase}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={handleDealershipSave}
+                    className="mclaren-btn-primary w-full gap-2"
+                    data-testid="save-dealership-settings"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save Settings
+                  </button>
+                </div>
+              )}
+              
+              {/* Data Import Tab */}
+              {activeTab === 'import' && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="mclaren-config-section">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Upload className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-foreground">Data Import Options</h3>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Import your customer and vehicle data from various sources.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleOpenImport}
+                        className="mclaren-option-btn w-full"
+                        data-testid="open-import-wizard"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <Database className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium text-foreground">Connection Wizard</p>
+                            <p className="text-xs text-muted-foreground">Set up CRM integrations, import CSV, or connect to APIs</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Integration Status Summary */}
+                  {crmConfig.health && (
+                    <div className="mclaren-config-section">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Plug className="w-5 h-5 text-primary" />
+                        <h3 className="font-semibold text-foreground">Current Integrations</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                          <p className="text-2xl font-bold text-emerald-400">{crmConfig.health.healthy}</p>
+                          <p className="text-xs text-emerald-400/70">Active</p>
+                        </div>
+                        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                          <p className="text-2xl font-bold text-amber-400">{crmConfig.health.mock_mode}</p>
+                          <p className="text-xs text-amber-400/70">Mock Mode</p>
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mt-3">
+                        Manage credentials in the CRM tab to switch from mock to live data.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {/* Notifications Tab */}
               {activeTab === 'notifications' && (
                 <div className="space-y-6 animate-fade-in">
