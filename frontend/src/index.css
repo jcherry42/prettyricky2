@@ -718,14 +718,14 @@ html:not(.dark) .r34-center-text span {
   box-shadow: inset 2px 0 4px rgba(0,0,0,0.9);
 }
 
-/* Flames - shooting LEFT */
+/* Flames - shooting LEFT - starts at button edge */
 .btn-supercharged .flames {
   position: absolute;
-  left: -65px;
+  left: -75px;
   top: 50%;
   transform: translateY(-50%);
-  width: 75px;
-  height: 36px;
+  width: 80px;
+  height: 40px;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
