@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   X, Settings, Phone, Database, Shield, Check, Loader2, 
   Eye, EyeOff, AlertCircle, CheckCircle, Bell, Plug,
-  ChevronRight, Save, RefreshCw, Trash2, TestTube
+  ChevronRight, Save, RefreshCw, Trash2, TestTube, Key, ToggleLeft, ToggleRight, ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 
