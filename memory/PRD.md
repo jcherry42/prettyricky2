@@ -317,8 +317,16 @@ GET /api/analytics/trends/{metric}      - Trend data (conversations, customers, 
 GET  /api/events/stats                  - Event processing statistics
 GET  /api/events/types                  - Available event types (11 types)
 POST /api/events/enqueue                - Manually enqueue event
+POST /api/events/test-hot-lead          - Test hot lead event (creates notification)
 GET  /api/events/dlq                    - Dead letter queue events
 POST /api/events/dlq/{id}/replay        - Replay DLQ event
+```
+
+### CRM Integration Management
+```
+POST /api/integrations/{id}/toggle-mock - Toggle mock/live mode
+POST /api/integrations/{id}/test        - Test connection
+PATCH /api/integrations/{id}            - Update credentials (auth_config)
 ```
 
 ### Favorites Categories
