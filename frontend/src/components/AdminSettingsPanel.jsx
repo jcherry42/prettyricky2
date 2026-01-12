@@ -714,6 +714,141 @@ export const AdminSettingsPanel = ({ onClose }) => {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Sound Settings */}
+                  <div className="mclaren-config-section">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        {soundPrefs.enabled ? (
+                          <Volume2 className="w-5 h-5 text-primary" />
+                        ) : (
+                          <VolumeX className="w-5 h-5 text-muted-foreground" />
+                        )}
+                        <h3 className="font-semibold text-foreground">Sound Settings</h3>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newPrefs = { ...soundPrefs, enabled: !soundPrefs.enabled };
+                          setSoundPrefs(newPrefs);
+                          setSoundPreferences(newPrefs);
+                          if (newPrefs.enabled) {
+                            playNotificationSound('success');
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                          soundPrefs.enabled 
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-muted text-muted-foreground border border-border'
+                        }`}
+                        data-testid="toggle-sounds"
+                      >
+                        {soundPrefs.enabled ? (
+                          <>
+                            <ToggleRight className="w-4 h-4" />
+                            On
+                          </>
+                        ) : (
+                          <>
+                            <ToggleLeft className="w-4 h-4" />
+                            Off
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {/* Browser Notification Permission */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-card/50">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Browser Notifications</p>
+                          <p className="text-xs text-muted-foreground">
+                            {notificationPermission === 'granted' 
+                              ? 'Enabled - You\'ll receive desktop alerts' 
+                              : notificationPermission === 'denied'
+                                ? 'Blocked - Enable in browser settings'
+                                : 'Click to enable desktop notifications'}
+                          </p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const perm = await requestNotificationPermission();
+                            setNotificationPermission(perm);
+                            if (perm === 'granted') {
+                              toast.success('Browser notifications enabled!');
+                              playNotificationSound('success');
+                            }
+                          }}
+                          disabled={notificationPermission === 'granted'}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                            notificationPermission === 'granted'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : 'bg-primary/20 text-primary hover:bg-primary/30'
+                          }`}
+                          data-testid="enable-browser-notifications"
+                        >
+                          {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
+                        </button>
+                      </div>
+                      
+                      {/* Sound Types */}
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground mb-2">Play sounds for:</p>
+                        
+                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
+                          <span className="text-sm text-foreground">Hot Lead Alerts</span>
+                          <input
+                            type="checkbox"
+                            checked={soundPrefs.hotLeadSound}
+                            onChange={(e) => {
+                              const newPrefs = { ...soundPrefs, hotLeadSound: e.target.checked };
+                              setSoundPrefs(newPrefs);
+                              setSoundPreferences(newPrefs);
+                            }}
+                            className="w-4 h-4 accent-primary"
+                          />
+                        </label>
+                        
+                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
+                          <span className="text-sm text-foreground">Status Changes</span>
+                          <input
+                            type="checkbox"
+                            checked={soundPrefs.statusChangeSound}
+                            onChange={(e) => {
+                              const newPrefs = { ...soundPrefs, statusChangeSound: e.target.checked };
+                              setSoundPrefs(newPrefs);
+                              setSoundPreferences(newPrefs);
+                            }}
+                            className="w-4 h-4 accent-primary"
+                          />
+                        </label>
+                        
+                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
+                          <span className="text-sm text-foreground">Messages</span>
+                          <input
+                            type="checkbox"
+                            checked={soundPrefs.messageSound}
+                            onChange={(e) => {
+                              const newPrefs = { ...soundPrefs, messageSound: e.target.checked };
+                              setSoundPrefs(newPrefs);
+                              setSoundPreferences(newPrefs);
+                            }}
+                            className="w-4 h-4 accent-primary"
+                          />
+                        </label>
+                      </div>
+                      
+                      {/* Test Sound Button */}
+                      <button
+                        onClick={() => playNotificationSound('hotLead')}
+                        disabled={!soundPrefs.enabled}
+                        className="mclaren-btn-secondary w-full gap-2 mt-2"
+                        data-testid="test-sound"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                        Test Sound
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
