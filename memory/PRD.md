@@ -378,9 +378,80 @@ Collections:
 - `customers` - Imported customer data
 - `vehicles` - Imported vehicle inventory
 - `data_sources` - Source configurations and health
-- `integrations` - CRM integration configurations (NEW)
-- `webhooks` - Webhook endpoint configurations (NEW)
-- `webhook_events` - Received webhook events (NEW)
+- `integrations` - CRM integration configurations
+- `webhooks` - Webhook endpoint configurations
+- `webhook_events` - Received webhook events
+- `integration_profiles` - NEW - Savable connection profiles
+
+---
+
+## Open API Data Ingestion System ✅ IMPLEMENTED (Jan 12, 2026)
+
+### Overview
+A flexible, open, read-only data ingestion layer capable of connecting to any RESTful CRM:
+
+### Features
+
+**1. OpenAPI/Swagger Import**
+- Parse OpenAPI 3.0 and Swagger 2.0 specifications (JSON/YAML)
+- Auto-detect base URL, endpoints, and authentication methods
+- Pre-fill connection wizard with detected configuration
+- Endpoint: `POST /api/integrations/parse-openapi`
+
+**2. AI-Powered Smart Field Suggest**
+- Intelligent field mapping suggestions using pattern detection
+- Optional AI enhancement via Emergent LLM
+- Confidence scoring for suggestions
+- Endpoint: `POST /api/integrations/smart-suggest`
+
+**3. Advanced Field Transformation Engine**
+Transform and clean data during import:
+- **31+ Built-in Transforms** across 9 categories:
+  - String: uppercase, lowercase, titlecase, trim
+  - Phone: normalize (+1...), US format, digits only
+  - Price: strip symbols, round to dollar
+  - Name: combine first+last
+  - Date: normalize to ISO, format
+  - Status: normalize
+  - Email: normalize
+  - Address: normalize
+  - Numeric: format numbers
+- **Composite Fields**: Combine multiple fields (e.g., first_name + last_name → name)
+- **Conditional Mapping**: Use fallback fields or logic-based mapping
+- **Default Values**: Apply fallbacks for empty source fields
+- Endpoints:
+  - `GET /api/integrations/transforms` - List available transforms
+  - `POST /api/integrations/transforms/preview` - Preview single transform
+  - `POST /api/integrations/transforms/test` - Test full mapping config
+
+**4. Connection Wizard UI**
+4-step guided setup:
+1. **Choose Method**: Quick Connect (pre-built), Custom REST API, OpenAPI Import, or Load Profile
+2. **Connection Details**: URL, auth, endpoints configuration
+3. **Map Fields**: Auto-discover fields, AI suggest, add transforms with expandable UI
+4. **Test & Save**: Verify connection, optionally save as reusable profile
+
+**5. Integration Profiles**
+Save and reuse connection configurations:
+- Share profiles across the team
+- Export/import configurations
+- Endpoint: `POST /api/integration-profiles`
+
+### New API Endpoints (Jan 12, 2026)
+```
+POST /api/integrations/discover-fields      - Auto-discover fields from API
+POST /api/integrations/discover-fields/sample - Discover from sample JSON
+POST /api/integrations/parse-openapi        - Parse OpenAPI/Swagger spec
+POST /api/integrations/smart-suggest        - AI-powered field suggestions
+GET  /api/integrations/transforms           - List available transforms
+POST /api/integrations/transforms/preview   - Preview single transform
+POST /api/integrations/transforms/test      - Test full mapping config
+GET  /api/integration-profiles              - List saved profiles
+POST /api/integration-profiles              - Create profile
+GET  /api/integration-profiles/{id}         - Get profile details
+PUT  /api/integration-profiles/{id}         - Update profile
+DELETE /api/integration-profiles/{id}       - Delete profile
+```
 
 ---
 
