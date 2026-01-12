@@ -1858,6 +1858,44 @@ async def process_scheduled_notifications():
     return {"success": True, **result}
 
 
+class DeviceRegistration(BaseModel):
+    token: str
+    platform: str
+    timestamp: str = None
+
+
+@api_router.post("/notifications/register-device")
+async def register_device(device: DeviceRegistration):
+    """Register a device for push notifications (Capacitor mobile app)"""
+    await notification_service.initialize()
+    
+    # Store device token in database
+    device_doc = {
+        "token": device.token,
+        "platform": device.platform,
+        "registered_at": datetime.utcnow(),
+        "active": True,
+    }
+    
+    # Upsert by token to avoid duplicates
+    await db.push_devices.update_one(
+        {"token": device.token},
+        {"$set": device_doc},
+        upsert=True
+    )
+    
+    logger.info(f"Device registered for push: {device.platform}")
+    return {"success": True, "message": "Device registered for push notifications"}
+
+
+@api_router.get("/notifications/devices")
+async def get_registered_devices():
+    """Get all registered push notification devices"""
+    cursor = db.push_devices.find({"active": True}, {"_id": 0})
+    devices = await cursor.to_list(100)
+    return {"devices": devices, "count": len(devices)}
+
+
 # ============== WEBHOOK TO NOTIFICATION HANDLERS ==============
 
 async def handle_hot_lead_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
