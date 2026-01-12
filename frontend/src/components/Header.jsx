@@ -142,8 +142,8 @@ export const Header = () => {
           </svg>
         </div>
 
-        {/* Right spacer + Actions */}
-        <div className="flex-1 flex items-center justify-end gap-2">
+        {/* Right side - Actions */}
+        <div className="flex items-center justify-end gap-2">
           <IntegrationHealthStatus compact={true} />
 
           {/* Supercharg'd Button with Flames */}
