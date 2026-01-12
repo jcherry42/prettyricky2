@@ -725,15 +725,15 @@ html:not(.dark) .r34-center-text span {
 /* Flames - shooting LEFT onto header - PRONOUNCED OVERFLOW */
 .btn-supercharged .flames {
   position: absolute;
-  left: -80px;
+  left: -60px;
   top: 50%;
   transform: translateY(-50%);
-  width: 100px;
-  height: 60px;
+  width: 80px;
+  height: 50px;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .btn-supercharged .flames.active {
