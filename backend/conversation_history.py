@@ -103,10 +103,11 @@ class ConversationHistoryService:
         }
         
         result = await self.collection.insert_one(doc)
-        doc["id"] = str(result.inserted_id)
-        del doc["_id"] if "_id" in doc else None
+        doc_id = str(result.inserted_id)
+        if "_id" in doc:
+            del doc["_id"]
         
-        return ConversationResponse(**{**doc, "id": str(result.inserted_id)})
+        return ConversationResponse(**{**doc, "id": doc_id})
     
     def _detect_category(self, situation: str, shortcut_used: Optional[str] = None) -> str:
         """Auto-detect category based on situation text or shortcut"""
