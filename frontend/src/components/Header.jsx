@@ -160,7 +160,7 @@ export const Header = () => {
               <div className="flame-layer-sm layer-3"></div>
             </div>
             <span className="supercharged-label vice-city-text">
-              {supercharged ? 'ES' : 'EN'}
+              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
             </span>
           </button>
 
