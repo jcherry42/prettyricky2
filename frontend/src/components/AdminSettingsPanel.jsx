@@ -732,7 +732,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
                         ) : (
                           <VolumeX className="w-5 h-5 text-muted-foreground" />
                         )}
-                        <h3 className="font-semibold text-foreground">Sound Settings</h3>
+                        <h3 className="font-semibold text-foreground vice-city-text">Sound Settings</h3>
                       </div>
                       <button
                         onClick={() => {
@@ -740,7 +740,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
                           setSoundPrefs(newPrefs);
                           setSoundPreferences(newPrefs);
                           if (newPrefs.enabled) {
-                            playNotificationSound('success');
+                            playNotificationSound();
                           }
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
@@ -764,11 +764,50 @@ export const AdminSettingsPanel = ({ onClose }) => {
                       </button>
                     </div>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-4">
+                      {/* Sound Profile Selection */}
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-3 vice-city-text">Choose Your Engine Sound:</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {getSoundProfiles().map((profile) => (
+                            <button
+                              key={profile.id}
+                              onClick={() => {
+                                const newPrefs = { ...soundPrefs, profile: profile.id };
+                                setSoundPrefs(newPrefs);
+                                setSoundPreferences(newPrefs);
+                                playNotificationSound(profile.id);
+                              }}
+                              className={`flex items-center gap-3 p-3 rounded-lg text-left transition-all ${
+                                soundPrefs.profile === profile.id
+                                  ? 'bg-primary/20 border-2 border-primary/50 shadow-lg'
+                                  : 'bg-card/50 border border-border/30 hover:border-border/60'
+                              }`}
+                              data-testid={`sound-profile-${profile.id}`}
+                            >
+                              <span className="text-2xl">{profile.icon}</span>
+                              <div className="flex-1">
+                                <p className={`font-bold vice-city-text ${
+                                  soundPrefs.profile === profile.id ? 'text-primary' : 'text-foreground'
+                                }`}>
+                                  {profile.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {profile.description}
+                                </p>
+                              </div>
+                              {soundPrefs.profile === profile.id && (
+                                <CheckCircle className="w-5 h-5 text-primary" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
                       {/* Browser Notification Permission */}
                       <div className="flex items-center justify-between p-3 rounded-lg bg-card/50">
                         <div>
-                          <p className="text-sm font-medium text-foreground">Browser Notifications</p>
+                          <p className="text-sm font-medium text-foreground vice-city-text">Browser Notifications</p>
                           <p className="text-xs text-muted-foreground">
                             {notificationPermission === 'granted' 
                               ? 'Enabled - You\'ll receive desktop alerts' 
@@ -783,7 +822,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
                             setNotificationPermission(perm);
                             if (perm === 'granted') {
                               toast.success('Browser notifications enabled!');
-                              playNotificationSound('success');
+                              playNotificationSound();
                             }
                           }}
                           disabled={notificationPermission === 'granted'}
@@ -798,56 +837,9 @@ export const AdminSettingsPanel = ({ onClose }) => {
                         </button>
                       </div>
                       
-                      {/* Sound Types */}
-                      <div className="space-y-2">
-                        <p className="text-xs text-muted-foreground mb-2">Play sounds for:</p>
-                        
-                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
-                          <span className="text-sm text-foreground">Hot Lead Alerts</span>
-                          <input
-                            type="checkbox"
-                            checked={soundPrefs.hotLeadSound}
-                            onChange={(e) => {
-                              const newPrefs = { ...soundPrefs, hotLeadSound: e.target.checked };
-                              setSoundPrefs(newPrefs);
-                              setSoundPreferences(newPrefs);
-                            }}
-                            className="w-4 h-4 accent-primary"
-                          />
-                        </label>
-                        
-                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
-                          <span className="text-sm text-foreground">Status Changes</span>
-                          <input
-                            type="checkbox"
-                            checked={soundPrefs.statusChangeSound}
-                            onChange={(e) => {
-                              const newPrefs = { ...soundPrefs, statusChangeSound: e.target.checked };
-                              setSoundPrefs(newPrefs);
-                              setSoundPreferences(newPrefs);
-                            }}
-                            className="w-4 h-4 accent-primary"
-                          />
-                        </label>
-                        
-                        <label className="flex items-center justify-between p-2 rounded-lg hover:bg-card/50 cursor-pointer">
-                          <span className="text-sm text-foreground">Messages</span>
-                          <input
-                            type="checkbox"
-                            checked={soundPrefs.messageSound}
-                            onChange={(e) => {
-                              const newPrefs = { ...soundPrefs, messageSound: e.target.checked };
-                              setSoundPrefs(newPrefs);
-                              setSoundPreferences(newPrefs);
-                            }}
-                            className="w-4 h-4 accent-primary"
-                          />
-                        </label>
-                      </div>
-                      
                       {/* Test Sound Button */}
                       <button
-                        onClick={() => playNotificationSound('hotLead')}
+                        onClick={() => playNotificationSound()}
                         disabled={!soundPrefs.enabled}
                         className="mclaren-btn-secondary w-full gap-2 mt-2"
                         data-testid="test-sound"
