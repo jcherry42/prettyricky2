@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords, BarChart3 } from 'lucide-react';
+import { Zap, Settings, Upload, Heart, Sun, Moon, Flame, Swords, BarChart3, Wrench } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 
@@ -12,6 +12,7 @@ export const Header = () => {
     toggleFavorites,
     toggleVS,
     toggleAnalytics,
+    toggleAdminSettings,
     favorites,
     theme,
     supercharged,
@@ -129,6 +130,24 @@ export const Header = () => {
             title="Analytics Dashboard"
           >
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
+          </button>
+
+          {/* Check Engine (Admin Settings) button */}
+          <button
+            onClick={() => toggleAdminSettings(true)}
+            className="btn-check-engine"
+            data-testid="open-admin-settings-btn"
+            title="Check Engine - Admin Settings"
+          >
+            <div className="hood-container">
+              <div className="hood-panel">
+                <div className="hood-surface"></div>
+              </div>
+              <div className="engine-icon">
+                <Wrench className="w-4 h-4" />
+              </div>
+            </div>
+            <span className="engine-label">CHECK</span>
           </button>
 
           {/* Import button */}
