@@ -327,10 +327,15 @@ class AnalyticsService:
         result = await integrations.aggregate(pipeline).to_list(1)
         data = result[0] if result else {}
         
-        total = data.get("total", [{}])[0].get("count", 0)
+        total_list = data.get("total", [])
+        total = total_list[0].get("count", 0) if total_list else 0
         status_counts = {item["_id"]: item["count"] for item in data.get("by_status", [])}
-        mock_count = data.get("mock_mode", [{}])[0].get("count", 0)
-        sync_data = data.get("sync_stats", [{}])[0] if data.get("sync_stats") else {}
+        
+        mock_list = data.get("mock_mode", [])
+        mock_count = mock_list[0].get("count", 0) if mock_list else 0
+        
+        sync_list = data.get("sync_stats", [])
+        sync_data = sync_list[0] if sync_list else {}
         
         healthy = status_counts.get("healthy", 0)
         degraded = status_counts.get("degraded", 0)
