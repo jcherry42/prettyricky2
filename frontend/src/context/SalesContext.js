@@ -172,6 +172,9 @@ function salesReducer(state, action) {
     case ACTIONS.TOGGLE_VS:
       return { ...state, showVS: action.payload ?? !state.showVS };
     
+    case ACTIONS.TOGGLE_ANALYTICS:
+      return { ...state, showAnalytics: action.payload ?? !state.showAnalytics };
+    
     case ACTIONS.ADD_FAVORITE:
       const newFavorites = [...state.favorites, action.payload];
       saveToStorage(STORAGE_KEYS.FAVORITES, newFavorites);
