@@ -721,10 +721,10 @@ html:not(.dark) .r34-center-text span {
 /* Flames - shooting LEFT */
 .btn-supercharged .flames {
   position: absolute;
-  left: -55px;
+  left: -65px;
   top: 50%;
   transform: translateY(-50%);
-  width: 65px;
+  width: 75px;
   height: 36px;
   opacity: 0;
   transition: opacity 0.15s ease;
