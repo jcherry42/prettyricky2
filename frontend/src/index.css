@@ -533,126 +533,117 @@ h1, h2, h3 {
 }
 
 /* ============================================
-   C8 CORVETTE Z06 TAILLIGHTS
-   Multi-element angular design (4 segments per side)
-   Based on actual 2024-2026 C8 Corvette Z06
+   R34 SKYLINE TAILLIGHTS
+   Circular ring lights with amber center
    ============================================ */
 
-.c8-taillights-container {
+.r34-taillights-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
 }
 
-.c8-taillight-unit {
-  width: 70px;
-  height: 22px;
-  transition: all 0.3s ease;
+.r34-cluster {
+  display: flex;
+  gap: 6px;
 }
 
-/* Individual LED elements - 4 per side */
-.c8-taillight-unit .c8-element {
-  transition: all 0.15s ease;
+.r34-light {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  position: relative;
+  border: 2px solid #1a1a1a;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
 }
 
-/* Lit state - all 4 elements glow */
-.c8-taillight-unit.lit .c8-element {
-  fill: #bb0000;
-  filter: drop-shadow(0 0 3px #ff0000);
+/* Red ring - outer */
+.r34-light .r34-ring {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 50%;
+  border: 4px solid #330000;
+  transition: all 0.2s ease;
 }
 
-.c8-taillight-unit.lit .c8-el-1 {
-  fill: #cc0000;
-  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
+/* Amber center */
+.r34-light .r34-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1a1000;
+  transition: all 0.2s ease;
 }
 
-.c8-taillight-unit.lit .c8-el-2 {
-  fill: #dd0000;
-  filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 10px #ff0000);
+/* Lit state */
+.r34-cluster.lit .r34-ring {
+  border-color: #dd0000;
+  box-shadow: 
+    0 0 8px #ff0000,
+    0 0 16px #ff0000,
+    inset 0 0 4px #ff0000;
 }
 
-.c8-taillight-unit.lit .c8-el-3 {
-  fill: #cc0000;
-  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
+.r34-cluster.lit .r34-center {
+  background: #ff8800;
+  box-shadow: 
+    0 0 6px #ffaa00,
+    0 0 12px #ff8800;
 }
 
-.c8-taillight-unit.lit .c8-el-4 {
-  fill: #aa0000;
-  filter: drop-shadow(0 0 3px #ff0000);
+/* Braking state - maximum brightness */
+.r34-cluster.braking .r34-ring {
+  border-color: #ff2222;
+  box-shadow: 
+    0 0 15px #ff0000,
+    0 0 30px #ff0000,
+    0 0 45px #cc0000,
+    inset 0 0 8px #ff0000;
 }
 
-/* Running state - subtle sequential pulse */
-.c8-taillight-unit.running.lit .c8-el-1 { animation: c8-pulse 2s ease-in-out infinite 0s; }
-.c8-taillight-unit.running.lit .c8-el-2 { animation: c8-pulse 2s ease-in-out infinite 0.1s; }
-.c8-taillight-unit.running.lit .c8-el-3 { animation: c8-pulse 2s ease-in-out infinite 0.2s; }
-.c8-taillight-unit.running.lit .c8-el-4 { animation: c8-pulse 2s ease-in-out infinite 0.3s; }
-
-@keyframes c8-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
-  }
-  50% {
-    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 24px #cc0000);
-  }
-}
-
-/* BRAKING STATE - Maximum brightness on screen tap! */
-.c8-taillight-unit.braking .c8-element {
-  fill: #ff0000 !important;
-  filter: 
-    drop-shadow(0 0 8px #ff0000) 
-    drop-shadow(0 0 16px #ff0000) 
-    drop-shadow(0 0 32px #ff0000) 
-    drop-shadow(0 0 48px #cc0000) !important;
-  transition: all 0.05s ease !important;
-}
-
-.c8-taillight-unit.braking .c8-el-2,
-.c8-taillight-unit.braking .c8-el-3 {
-  fill: #ff2222 !important;
-  filter: 
-    drop-shadow(0 0 12px #ff0000) 
-    drop-shadow(0 0 24px #ff0000) 
-    drop-shadow(0 0 48px #ff0000) 
-    drop-shadow(0 0 64px #ff0000) !important;
+.r34-cluster.braking .r34-center {
+  background: #ffcc00;
+  box-shadow: 
+    0 0 10px #ffdd00,
+    0 0 20px #ffaa00;
 }
 
 /* Center text */
-.c8-center-text {
-  padding: 0 6px;
-  transition: all 0.4s ease;
+.r34-center-text {
+  padding: 0 10px;
 }
 
-.c8-center-text span {
+.r34-center-text span {
   font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 14px;
-  letter-spacing: 0.18em;
+  font-size: 16px;
+  letter-spacing: 0.2em;
   color: #444;
   transition: all 0.4s ease;
 }
 
-.c8-center-text.lit span {
+.r34-center-text.lit span {
   background: linear-gradient(180deg, #ff6b9d 0%, #ff2266 50%, #ff6b9d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   filter: drop-shadow(0 0 8px rgba(255, 100, 150, 0.7));
-  animation: text-glow-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes text-glow-pulse {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 100, 150, 0.5)); }
-  50% { filter: drop-shadow(0 0 12px rgba(255, 100, 150, 0.9)); }
-}
-
-/* Light mode */
-html:not(.dark) .c8-center-text span {
+html:not(.dark) .r34-center-text span {
   color: #555;
 }
 
 /* ============================================
-   SUPERCHARG'D BUTTON - WITH FLAME ANIMATION
+   SUPERCHARG'D BUTTON
    ============================================ */
 
 .btn-supercharged {
@@ -660,109 +651,77 @@ html:not(.dark) .c8-center-text span {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  width: 374px;
-  height: 36px;
+  min-width: 280px;
+  height: 40px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
   border-radius: 8px;
   cursor: pointer;
   overflow: visible;
   transition: all 0.3s ease;
-  padding-right: 14px;
+  padding: 0 16px 0 50px;
 }
 
-/* Single realistic exhaust tip - SIDE VIEW */
-.btn-supercharged .exhaust-tip {
+/* Realistic side-view exhaust tip */
+.btn-supercharged .exhaust-tip-side {
   position: absolute;
-  left: 8px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 5;
-}
-
-.btn-supercharged .exhaust-tip .exhaust-outer {
-  width: 16px;
-  height: 22px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, 
-    #6a6a72 0%, 
-    #4a4a52 15%,
-    #3a3a42 30%,
-    #4a4a52 50%,
-    #3a3a42 70%,
-    #4a4a52 85%,
-    #5a5a62 100%
-  );
-  border: 1px solid #5a5a65;
-  box-shadow: 
-    2px 0 3px rgba(0,0,0,0.4),
-    inset 2px 0 3px rgba(0,0,0,0.3),
-    inset -1px 0 2px rgba(100,100,110,0.2);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: 2px;
-  position: relative;
 }
 
-/* Chrome lip at the opening */
-.btn-supercharged .exhaust-tip .exhaust-outer::before {
-  content: '';
-  position: absolute;
-  left: -2px;
-  top: 2px;
-  bottom: 2px;
-  width: 3px;
+.btn-supercharged .exhaust-pipe {
+  width: 24px;
+  height: 20px;
   background: linear-gradient(180deg,
-    #7a7a85 0%,
-    #5a5a65 20%,
-    #4a4a55 50%,
-    #5a5a65 80%,
-    #6a6a75 100%
+    #6a6a72 0%,
+    #4a4a52 20%,
+    #3a3a42 40%,
+    #4a4a52 60%,
+    #3a3a42 80%,
+    #5a5a62 100%
+  );
+  border-radius: 3px;
+  border: 1px solid #5a5a65;
+  position: relative;
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.1);
+}
+
+.btn-supercharged .exhaust-opening {
+  width: 8px;
+  height: 16px;
+  background: linear-gradient(180deg,
+    #1a1a20 0%,
+    #0a0a0e 40%,
+    #050508 60%,
+    #0a0a0e 100%
   );
   border-radius: 2px 0 0 2px;
+  margin-left: -2px;
+  box-shadow: inset 2px 0 4px rgba(0,0,0,0.9);
 }
 
-.btn-supercharged .exhaust-tip .exhaust-inner {
-  width: 10px;
-  height: 16px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, 
-    #1a1a20 0%, 
-    #0a0a0e 30%,
-    #050508 50%,
-    #0a0a0e 70%,
-    #151518 100%
-  );
-  box-shadow: 
-    inset 2px 0 3px rgba(0,0,0,0.9),
-    inset 0 2px 2px rgba(0,0,0,0.8),
-    inset 0 -2px 2px rgba(0,0,0,0.8);
-}
-
-.btn-supercharged .exhaust-tip .exhaust-core {
-  display: none;
-}
-
-/* Flames container - SHOOTING LEFT with overflow */
+/* Flames - shooting LEFT */
 .btn-supercharged .flames {
   position: absolute;
-  left: -60px;
+  left: -55px;
   top: 50%;
   transform: translateY(-50%);
-  width: 70px;
+  width: 65px;
   height: 36px;
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
-  z-index: 4;
 }
 
 .btn-supercharged .flames.active {
   opacity: 1;
 }
 
-/* White-hot core glow - at the RIGHT (near exhaust) */
 .btn-supercharged .flames .flame-core {
   position: absolute;
   right: 0;
@@ -772,22 +731,21 @@ html:not(.dark) .c8-center-text span {
   height: 16px;
   background: radial-gradient(ellipse at right center,
     #ffffff 0%,
-    #ffffcc 20%,
-    #ffcc00 45%,
-    #ff6600 70%,
+    #ffffcc 25%,
+    #ffcc00 50%,
+    #ff6600 75%,
     transparent 100%
   );
   border-radius: 50%;
   filter: blur(2px);
-  animation: flame-core-pulse 0.08s ease-in-out infinite alternate;
+  animation: r34-core-pulse 0.08s ease-in-out infinite alternate;
 }
 
-@keyframes flame-core-pulse {
+@keyframes r34-core-pulse {
   0% { opacity: 1; transform: translateY(-50%) scale(1); }
-  100% { opacity: 0.85; transform: translateY(-50%) scale(1.08); }
+  100% { opacity: 0.85; transform: translateY(-50%) scale(1.1); }
 }
 
-/* Flame layers - shooting LEFT */
 .btn-supercharged .flames .flame {
   position: absolute;
   top: 50%;
@@ -796,61 +754,59 @@ html:not(.dark) .c8-center-text span {
 
 .btn-supercharged .flames .flame.f1 {
   right: 5px;
-  width: 55px;
+  width: 50px;
   height: 14px;
   transform: translateY(-50%);
-  background: linear-gradient(to left, #ffee00 0%, #ff8800 35%, #ff4400 65%, transparent 100%);
+  background: linear-gradient(to left, #ffee00 0%, #ff8800 35%, #ff4400 70%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-left-1 0.1s ease-in-out infinite alternate;
+  animation: r34-flame-1 0.1s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f2 {
   right: 8px;
-  width: 42px;
+  width: 38px;
   height: 9px;
-  transform: translateY(-50%) translateY(-8px) rotate(-12deg);
-  background: linear-gradient(to left, #ffaa00 0%, #ff5500 55%, transparent 100%);
+  transform: translateY(-50%) translateY(-9px) rotate(-14deg);
+  background: linear-gradient(to left, #ffaa00 0%, #ff5500 60%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-left-2 0.12s ease-in-out infinite alternate;
+  animation: r34-flame-2 0.12s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f3 {
   right: 8px;
-  width: 42px;
+  width: 38px;
   height: 9px;
-  transform: translateY(-50%) translateY(8px) rotate(12deg);
-  background: linear-gradient(to left, #ffaa00 0%, #ff5500 55%, transparent 100%);
+  transform: translateY(-50%) translateY(9px) rotate(14deg);
+  background: linear-gradient(to left, #ffaa00 0%, #ff5500 60%, transparent 100%);
   filter: blur(1px);
-  animation: flame-dance-left-3 0.11s ease-in-out infinite alternate;
+  animation: r34-flame-3 0.11s ease-in-out infinite alternate;
 }
 
 .btn-supercharged .flames .flame.f4 {
-  right: 12px;
-  width: 32px;
-  height: 7px;
+  right: 15px;
+  width: 28px;
+  height: 6px;
   transform: translateY(-50%);
-  background: linear-gradient(to left, #ff6600 0%, #dd2200 55%, transparent 100%);
+  background: linear-gradient(to left, #ff6600 0%, #cc2200 60%, transparent 100%);
   filter: blur(2px);
-  animation: flame-dance-left-1 0.14s ease-in-out infinite alternate;
-  animation-delay: 0.05s;
+  animation: r34-flame-1 0.15s ease-in-out infinite alternate;
 }
 
-@keyframes flame-dance-left-1 {
+@keyframes r34-flame-1 {
   0% { transform: translateY(-50%) scaleX(1); opacity: 1; }
-  100% { transform: translateY(-50%) scaleX(0.88) translateX(-4px); opacity: 0.8; }
+  100% { transform: translateY(-50%) scaleX(0.85) translateX(-5px); opacity: 0.8; }
 }
 
-@keyframes flame-dance-left-2 {
-  0% { transform: translateY(-50%) translateY(-8px) rotate(-12deg) scaleX(1); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(-9px) rotate(-15deg) scaleX(0.9) translateX(-3px); opacity: 1; }
+@keyframes r34-flame-2 {
+  0% { transform: translateY(-50%) translateY(-9px) rotate(-14deg); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(-10px) rotate(-18deg) scaleX(0.9) translateX(-3px); opacity: 1; }
 }
 
-@keyframes flame-dance-left-3 {
-  0% { transform: translateY(-50%) translateY(8px) rotate(12deg) scaleX(1); opacity: 0.9; }
-  100% { transform: translateY(-50%) translateY(9px) rotate(15deg) scaleX(0.9) translateX(-3px); opacity: 1; }
+@keyframes r34-flame-3 {
+  0% { transform: translateY(-50%) translateY(9px) rotate(14deg); opacity: 0.9; }
+  100% { transform: translateY(-50%) translateY(10px) rotate(18deg) scaleX(0.9) translateX(-3px); opacity: 1; }
 }
 
-/* Flying sparks - shooting LEFT */
 .btn-supercharged .flames .sparks {
   position: absolute;
   left: 0;
@@ -866,79 +822,60 @@ html:not(.dark) .c8-center-text span {
   background: #ffee00;
   border-radius: 50%;
   opacity: 0;
-  box-shadow: 0 0 6px 2px #ff8800, 0 0 10px 3px #ff4400;
+  box-shadow: 0 0 6px 2px #ff8800;
 }
 
 .btn-supercharged .flames.active .sparks span {
-  animation: spark-fly-left 0.5s ease-out infinite;
+  animation: r34-spark 0.5s ease-out infinite;
 }
 
-.btn-supercharged .flames .sparks span:nth-child(1) { top: 15%; right: 20px; animation-delay: 0s; }
-.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; right: 15px; animation-delay: 0.1s; }
-.btn-supercharged .flames .sparks span:nth-child(3) { top: 85%; right: 18px; animation-delay: 0.2s; }
-.btn-supercharged .flames .sparks span:nth-child(4) { top: 35%; right: 10px; animation-delay: 0.15s; }
+.btn-supercharged .flames .sparks span:nth-child(1) { top: 10%; right: 15px; animation-delay: 0s; --spark-y: -12px; }
+.btn-supercharged .flames .sparks span:nth-child(2) { top: 50%; right: 10px; animation-delay: 0.1s; --spark-y: 0; }
+.btn-supercharged .flames .sparks span:nth-child(3) { top: 90%; right: 12px; animation-delay: 0.2s; --spark-y: 12px; }
+.btn-supercharged .flames .sparks span:nth-child(4) { top: 30%; right: 8px; animation-delay: 0.15s; --spark-y: -6px; }
 
-@keyframes spark-fly-left {
+@keyframes r34-spark {
   0% { opacity: 1; transform: translate(0, 0) scale(1); }
-  50% { opacity: 0.9; }
-  100% { opacity: 0; transform: translate(-25px, var(--spark-y, 0)) scale(0.4); }
+  100% { opacity: 0; transform: translate(-30px, var(--spark-y, 0)) scale(0.3); }
 }
-
-.btn-supercharged .flames .sparks span:nth-child(1) { --spark-y: -10px; }
-.btn-supercharged .flames .sparks span:nth-child(2) { --spark-y: 3px; }
-.btn-supercharged .flames .sparks span:nth-child(3) { --spark-y: 12px; }
-.btn-supercharged .flames .sparks span:nth-child(4) { --spark-y: -5px; }
 
 /* Label */
 .btn-supercharged .supercharged-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
   letter-spacing: 0.1em;
-  color: #666;
-  z-index: 6;
-  transition: all 0.3s ease;
+  color: #888;
+  white-space: nowrap;
 }
 
-/* Active state - FLAMES ON */
+/* Active state */
 .btn-supercharged.active {
   border-color: #ff6600;
   box-shadow: 
     0 0 20px rgba(255, 102, 0, 0.5),
-    0 0 40px rgba(255, 80, 0, 0.25),
-    inset 0 0 30px rgba(255, 80, 0, 0.15);
-  background: linear-gradient(180deg, #2a1a18 0%, #1a0f0d 100%);
+    0 0 40px rgba(255, 80, 0, 0.2);
+  background: linear-gradient(180deg, #2a1a15 0%, #1a0f0a 100%);
 }
 
 .btn-supercharged.active .supercharged-label {
   color: #ffcc44;
-  text-shadow: 0 0 12px rgba(255, 180, 50, 0.9);
+  text-shadow: 0 0 10px rgba(255, 180, 50, 0.8);
 }
 
-.btn-supercharged.active .exhaust-tip .exhaust-outer {
-  box-shadow: 
-    -2px 0 3px rgba(0,0,0,0.4),
-    0 0 15px rgba(255,100,0,0.5),
-    inset 2px 0 3px rgba(0,0,0,0.3);
-}
-
-.btn-supercharged.active .exhaust-tip .exhaust-inner {
-  background: linear-gradient(180deg, 
-    #3a1a12 0%, 
-    #2a0a06 30%,
-    #200505 50%,
-    #2a0a06 70%,
-    #3a1a12 100%
+.btn-supercharged.active .exhaust-opening {
+  background: linear-gradient(180deg,
+    #2a1510 0%,
+    #1a0a05 40%,
+    #150505 60%,
+    #1a0a05 100%
   );
-  box-shadow: 
-    inset -2px 0 6px rgba(255,80,0,0.6),
-    inset 0 0 10px rgba(255,60,0,0.4);
+  box-shadow: inset 2px 0 6px rgba(255,80,0,0.5);
 }
 
 .btn-supercharged:hover {
   border-color: #ff8800;
 }
 
-/* Light mode */
 html:not(.dark) .btn-supercharged {
   background: linear-gradient(180deg, #f0f0f5 0%, #e5e5ea 100%);
   border-color: #c0c0c8;
@@ -950,8 +887,7 @@ html:not(.dark) .btn-supercharged .supercharged-label {
 
 html:not(.dark) .btn-supercharged.active {
   border-color: #dd6600;
-  box-shadow: 0 0 15px rgba(221, 102, 0, 0.4);
-  background: linear-gradient(180deg, #fff5f0 0%, #ffebe5 100%);
+  background: linear-gradient(180deg, #fff8f5 0%, #ffefe8 100%);
 }
 
 html:not(.dark) .btn-supercharged.active .supercharged-label {
