@@ -1991,3 +1991,251 @@ html:not(.dark) ::-webkit-scrollbar-thumb {
 html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: hsla(220, 15%, 65%, 0.8);
 }
+
+
+/* ===================================================================
+   LIGHT MODE READABILITY FIXES
+   Ensuring all text is clearly visible in light mode
+   =================================================================== */
+
+/* Analytics Dashboard - Light Mode Fixes */
+html:not(.dark) .mclaren-metric-card {
+  background: hsla(220, 15%, 100%, 0.95);
+  border-color: hsla(220, 20%, 85%, 0.6);
+  box-shadow: 0 2px 12px hsla(220, 20%, 0%, 0.08);
+}
+
+html:not(.dark) .mclaren-metric-card p {
+  color: hsla(220, 20%, 25%, 1);
+}
+
+html:not(.dark) .mclaren-metric-card .text-2xl {
+  color: hsla(220, 25%, 15%, 1);
+}
+
+html:not(.dark) .mclaren-metric-card .text-xs {
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .mclaren-metric-card .text-\[10px\] {
+  color: hsla(220, 15%, 45%, 1);
+}
+
+/* Ensure primary color is visible in light mode */
+html:not(.dark) .text-primary {
+  color: hsl(var(--primary)) !important;
+}
+
+html:not(.dark) .text-emerald-400 {
+  color: hsla(152, 65%, 35%, 1) !important;
+}
+
+html:not(.dark) .text-amber-400 {
+  color: hsla(38, 85%, 40%, 1) !important;
+}
+
+html:not(.dark) .text-blue-400 {
+  color: hsla(217, 75%, 45%, 1) !important;
+}
+
+html:not(.dark) .text-purple-400 {
+  color: hsla(270, 65%, 50%, 1) !important;
+}
+
+html:not(.dark) .text-red-400 {
+  color: hsla(0, 70%, 45%, 1) !important;
+}
+
+html:not(.dark) .text-orange-400 {
+  color: hsla(25, 85%, 45%, 1) !important;
+}
+
+/* Muted foreground visibility in light mode */
+html:not(.dark) .text-muted-foreground {
+  color: hsla(220, 15%, 40%, 1) !important;
+}
+
+/* Light mode card content */
+html:not(.dark) .mclaren-card h3,
+html:not(.dark) .mclaren-card h4 {
+  color: hsla(220, 25%, 15%, 1);
+}
+
+html:not(.dark) .mclaren-card p {
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .mclaren-card span {
+  color: hsla(220, 15%, 40%, 1);
+}
+
+html:not(.dark) .mclaren-card .font-semibold,
+html:not(.dark) .mclaren-card .font-bold,
+html:not(.dark) .mclaren-card .font-medium {
+  color: hsla(220, 25%, 18%, 1);
+}
+
+/* Health bar labels in light mode */
+html:not(.dark) .bg-green-500\/10,
+html:not(.dark) .bg-emerald-500\/10 {
+  background-color: hsla(152, 65%, 45%, 0.15) !important;
+}
+
+html:not(.dark) .bg-amber-500\/10,
+html:not(.dark) .bg-yellow-500\/10 {
+  background-color: hsla(38, 85%, 50%, 0.15) !important;
+}
+
+html:not(.dark) .bg-red-500\/10 {
+  background-color: hsla(0, 70%, 50%, 0.15) !important;
+}
+
+html:not(.dark) .bg-blue-500\/10 {
+  background-color: hsla(217, 75%, 55%, 0.15) !important;
+}
+
+/* Text in colored backgrounds for light mode */
+html:not(.dark) .bg-green-500\/10 p,
+html:not(.dark) .bg-green-500\/10 span,
+html:not(.dark) .bg-emerald-500\/10 p,
+html:not(.dark) .bg-emerald-500\/10 span {
+  color: hsla(152, 65%, 30%, 1) !important;
+}
+
+html:not(.dark) .bg-amber-500\/10 p,
+html:not(.dark) .bg-amber-500\/10 span,
+html:not(.dark) .bg-yellow-500\/10 p,
+html:not(.dark) .bg-yellow-500\/10 span {
+  color: hsla(38, 85%, 30%, 1) !important;
+}
+
+html:not(.dark) .bg-red-500\/10 p,
+html:not(.dark) .bg-red-500\/10 span {
+  color: hsla(0, 70%, 35%, 1) !important;
+}
+
+html:not(.dark) .bg-blue-500\/10 p,
+html:not(.dark) .bg-blue-500\/10 span {
+  color: hsla(217, 75%, 35%, 1) !important;
+}
+
+/* Import Modal / CRM Panel - Light Mode */
+html:not(.dark) .glass-modal {
+  color: hsla(220, 25%, 15%, 1);
+}
+
+html:not(.dark) .glass-modal h2,
+html:not(.dark) .glass-modal h3,
+html:not(.dark) .glass-modal h4 {
+  color: hsla(220, 25%, 12%, 1);
+}
+
+html:not(.dark) .glass-modal p {
+  color: hsla(220, 15%, 35%, 1);
+}
+
+html:not(.dark) .glass-modal .text-muted-foreground {
+  color: hsla(220, 15%, 45%, 1) !important;
+}
+
+/* Connection Wizard Light Mode */
+html:not(.dark) [class*="border-border"] {
+  border-color: hsla(220, 20%, 85%, 0.6);
+}
+
+/* Button text visibility in light mode */
+html:not(.dark) .mclaren-btn-ghost {
+  color: hsla(220, 20%, 30%, 1);
+  border-color: hsla(220, 20%, 80%, 0.6);
+}
+
+html:not(.dark) .mclaren-btn-ghost:hover {
+  color: hsla(220, 20%, 15%, 1);
+  background: hsla(220, 15%, 94%, 0.9);
+}
+
+/* Tab text in light mode */
+html:not(.dark) .mclaren-tab {
+  color: hsla(220, 20%, 40%, 1);
+}
+
+html:not(.dark) .mclaren-tab:hover {
+  color: hsla(220, 20%, 20%, 1);
+  background: hsla(220, 15%, 92%, 0.8);
+}
+
+html:not(.dark) .mclaren-tab.active {
+  color: hsl(var(--primary));
+  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.12);
+}
+
+/* Integration list items in light mode */
+html:not(.dark) .rounded-lg.border {
+  background: hsla(220, 15%, 100%, 0.9);
+}
+
+html:not(.dark) .rounded-lg.border .text-sm.font-medium {
+  color: hsla(220, 25%, 18%, 1);
+}
+
+html:not(.dark) .rounded-lg.border .text-\[10px\] {
+  color: hsla(220, 15%, 45%, 1);
+}
+
+/* Status badges in light mode */
+html:not(.dark) .bg-primary\/10 {
+  background-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.12) !important;
+}
+
+html:not(.dark) .bg-primary\/20 {
+  background-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.18) !important;
+}
+
+/* Ensure opacity classes have proper contrast in light mode */
+html:not(.dark) .opacity-50 {
+  opacity: 0.6;
+}
+
+html:not(.dark) .opacity-60 {
+  opacity: 0.7;
+}
+
+html:not(.dark) .opacity-70 {
+  opacity: 0.8;
+}
+
+/* Fix select dropdowns in light mode */
+html:not(.dark) select {
+  color: hsla(220, 20%, 20%, 1);
+  background-color: hsla(220, 15%, 98%, 1);
+}
+
+html:not(.dark) select option {
+  color: hsla(220, 20%, 20%, 1);
+  background-color: white;
+}
+
+/* Footer visibility in light mode */
+html:not(.dark) .mclaren-footer span {
+  color: hsla(220, 15%, 45%, 1);
+}
+
+/* Ensure icon colors are visible */
+html:not(.dark) .mclaren-btn-icon {
+  color: hsla(220, 20%, 35%, 1);
+}
+
+html:not(.dark) .mclaren-btn-icon:hover {
+  color: hsla(220, 20%, 15%, 1);
+}
+
+/* Logo badge in light mode */
+html:not(.dark) .mclaren-logo-badge {
+  background: linear-gradient(
+    135deg,
+    hsla(var(--primary-hue, 25), 80%, 50%, 0.15) 0%,
+    hsla(var(--primary-hue, 25), 80%, 45%, 0.08) 100%
+  );
+  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.25);
+}
+
