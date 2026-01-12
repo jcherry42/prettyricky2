@@ -130,40 +130,28 @@ export const Header = () => {
             <BarChart3 className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          {/* Check Engine (Admin Settings) button */}
+          {/* Check Engine (All Settings) button - with improved hood animation */}
           <button
             onClick={() => toggleAdminSettings(true)}
-            className="btn-check-engine"
+            className="btn-check-engine-v2"
             data-testid="open-admin-settings-btn"
-            title="Check Engine - Admin Settings"
+            title="Check Engine - All Settings"
           >
-            <div className="hood-container">
-              <div className="hood-panel">
-                <div className="hood-surface"></div>
+            <div className="engine-hood-assembly">
+              <div className="hood-outer">
+                <div className="hood-inner">
+                  <div className="hood-vent-lines"></div>
+                </div>
               </div>
-              <div className="engine-icon">
-                <Wrench className="w-4 h-4" />
+              <div className="engine-block">
+                <Gauge className="engine-gauge" />
+              </div>
+              <div className="hood-hydraulics">
+                <div className="hydraulic-arm left"></div>
+                <div className="hydraulic-arm right"></div>
               </div>
             </div>
-            <span className="engine-label">CHECK</span>
-          </button>
-
-          {/* Import button */}
-          <button
-            onClick={() => toggleImport(true)}
-            className="btn-icon"
-            data-testid="open-import-btn"
-          >
-            <Upload className="w-5 h-5 text-muted-foreground" />
-          </button>
-
-          {/* Settings button */}
-          <button
-            onClick={() => toggleSetup(true)}
-            className="btn-icon"
-            data-testid="open-settings-btn"
-          >
-            <Settings className="w-5 h-5 text-muted-foreground" />
+            <span className="check-label">Check</span>
           </button>
         </div>
       </div>
