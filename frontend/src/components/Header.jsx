@@ -80,7 +80,10 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* C8 Corvette Z06 Taillights - Multi-element angular design */}
+        {/* Left spacer for centering */}
+        <div className="flex-1"></div>
+        
+        {/* C8 Corvette Z06 Taillights - CENTERED */}
         <div className="c8-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
           {/* Left taillight assembly - 4 angular elements */}
           <svg 
