@@ -1053,6 +1053,9 @@ html:not(.dark) .btn-check-engine:hover {
 .btn-check-zl1 .zl1-label {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: 'Russo One', sans-serif;
   font-size: 9px;
   font-weight: bold;
@@ -1060,6 +1063,11 @@ html:not(.dark) .btn-check-engine:hover {
   color: #666;
   text-transform: uppercase;
   margin-top: 1px;
+  transition: all 0.3s ease;
+}
+
+.btn-check-zl1 .zl1-label svg {
+  color: #aa7700;
   transition: all 0.3s ease;
 }
 
