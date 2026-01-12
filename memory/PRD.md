@@ -363,12 +363,13 @@ POST /api/webhooks/{id}/rotate            - Rotate credentials
 ├── data/salesData.js           # Mock data / templates
 └── components/
     ├── Header.jsx              # Theme + Supercharg'd + Health Status
-    ├── ImportModal.jsx         # Data import wizard + template downloads
+    ├── ImportModal.jsx         # Data import wizard + CRM settings panel
     ├── TowerTalkModal.jsx      # AI responses with translation
     ├── ResponseCards.jsx       # Response display with language toggle
     ├── VSModal.jsx             # -VS- Battle Cards
     ├── FavoritesModal.jsx
-    ├── IntegrationHealthStatus.jsx  # NEW - CRM health display
+    ├── ConnectionWizard.jsx    # NEW - 4-step CRM setup wizard
+    ├── IntegrationHealthStatus.jsx  # Enhanced CRM health display
     └── ...
 ```
 
