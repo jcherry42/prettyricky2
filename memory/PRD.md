@@ -231,13 +231,62 @@ A premium theme inspired by high-end automotive interiors:
 36. **Advanced Analytics Dashboard** ✅ (Jan 12, 2026) - Sales, Customers, Inventory, AI Insights
 37. **Porsche/McLaren Glassmorphism UI Theme** ✅ (Jan 12, 2026) - Premium sports car infotainment aesthetic
 
+### 37. Porsche/McLaren Glassmorphism UI Theme ✅ (Jan 12, 2026)
+- Deep backdrop blur (40px) with carbon fiber texture overlays
+- Premium glass cards with metallic border accents
+- Instrument cluster-inspired metric displays
+- Haptic-touch button styling
+- Light mode optimized for full readability
+
 ### 📋 Future Tasks (P3)
 - "What If" Scenario Generator for VS-Battle Cards
 - Real CRM API credentials integration (currently placeholder/mock mode)
+- Performance Leaderboard for team tracking
 
 ### 🔧 Technical Note
 - All CRM connectors currently operate in **MOCK MODE** using simulated data
 - To enable real CRM connections: provide actual API credentials for VinSolutions, DealerSocket, elead, CDK, DealerTrack, Reynolds, or ProMax
+
+---
+
+## New API Endpoints (Jan 12, 2026)
+
+### Conversation History
+```
+GET  /api/conversations/categories      - List available categories (9 categories)
+POST /api/conversations                 - Create conversation with auto-category
+GET  /api/conversations                 - List with filters (session_id, customer_id, category)
+GET  /api/conversations/stats           - Aggregated statistics
+GET  /api/conversations/session/{id}    - Session history
+GET  /api/conversations/customer/{id}   - Customer history
+DELETE /api/conversations/{id}          - Delete single conversation
+DELETE /api/conversations/session/{id}  - Delete session
+```
+
+### Analytics Dashboard
+```
+GET /api/analytics/dashboard            - Full dashboard summary
+GET /api/analytics/sales                - Sales performance (daily breakdown, shortcuts)
+GET /api/analytics/customers            - Customer engagement (funnel, contact quality)
+GET /api/analytics/inventory            - Inventory metrics (price stats, top makes)
+GET /api/analytics/conversations        - AI insights (bilingual, peak hours)
+GET /api/analytics/integrations         - Integration health summary
+GET /api/analytics/trends/{metric}      - Trend data (conversations, customers, vehicles)
+```
+
+### Webhook Event Processing
+```
+GET  /api/events/stats                  - Event processing statistics
+GET  /api/events/types                  - Available event types (11 types)
+POST /api/events/enqueue                - Manually enqueue event
+GET  /api/events/dlq                    - Dead letter queue events
+POST /api/events/dlq/{id}/replay        - Replay DLQ event
+```
+
+### Favorites Categories
+```
+GET /api/favorites/categories           - Get favorite categories (9 categories)
+```
 
 ---
 
