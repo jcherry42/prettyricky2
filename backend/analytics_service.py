@@ -201,9 +201,11 @@ class AnalyticsService:
         result = await vehicles.aggregate(pipeline).to_list(1)
         data = result[0] if result else {}
         
-        total = data.get("total", [{}])[0].get("count", 0)
+        total_list = data.get("total", [])
+        total = total_list[0].get("count", 0) if total_list else 0
         status_counts = {item["_id"]: item["count"] for item in data.get("by_status", [])}
-        price_stats = data.get("price_stats", [{}])[0] if data.get("price_stats") else {}
+        price_stats_list = data.get("price_stats", [])
+        price_stats = price_stats_list[0] if price_stats_list else {}
         
         available = status_counts.get("available", 0)
         sold = status_counts.get("sold", 0)
