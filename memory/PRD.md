@@ -145,17 +145,15 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-12**: Added JDM-style startup animation (outer→inner lights→text sweep sequence)
+- **2026-01-12**: Check Engine button - text now before icon ("CHECK ⚠")
+- **2026-01-12**: Enhanced flame animation with stronger glow and box-shadow effects
 - **2026-01-12**: Fixed header UI - added spacing between health indicator and taillights
 - **2026-01-12**: Reduced Supercharg'd button width by 25%
 - **2026-01-12**: Made exhaust tip more subtle (smaller, lower opacity)
 - **2026-01-12**: Simplified Check Engine button to inline icon+text style
 - **2026-01-12**: Verified brake light effect (taillights glow on screen tap)
 - **2026-01-12**: Verified A/B Testing Dashboard connected to backend API
-- **2026-01-12**: Implemented C8 Z06 multi-element angular taillights (4 segments per side)
-- **2026-01-12**: Added brake light flash effect on screen tap
-- **2026-01-12**: Updated Check button with 70° hood animation and icon behind text
-- **2026-01-12**: Reduced Supercharged button size
-- **2026-01-12**: Added A/B Testing Dashboard UI inside Analytics
 
 ## Next Steps (Backlog)
 
