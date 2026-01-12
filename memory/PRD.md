@@ -145,10 +145,11 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-12**: Completed Capacitor mobile builds (iOS + Android platforms added and synced)
+- **2026-01-12**: Updated capacitor.config.json - removed deprecated bundledWebRuntime, updated branding to Taillights
 - **2026-01-12**: Restored ZL1 Camaro Check Engine button with hood-opening animation on hover
-- **2026-01-12**: Hood rotates -65° to reveal orange engine bay glow
+- **2026-01-12**: Hood pops up visibly on hover (translateY -12px + 45° rotation + scale)
 - **2026-01-12**: Added JDM-style startup animation (outer→inner lights→text sweep sequence)
-- **2026-01-12**: Check Engine button - text now before icon ("CHECK ⚠")
 - **2026-01-12**: Enhanced flame animation with stronger glow and box-shadow effects
 - **2026-01-12**: Fixed header UI - added spacing between health indicator and taillights
 - **2026-01-12**: Reduced Supercharg'd button width by 25%
