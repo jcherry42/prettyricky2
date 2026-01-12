@@ -323,7 +323,7 @@ POST /api/webhooks/{id}/rotate            - Rotate credentials
 │       ├── csv_parser.py
 │       ├── json_parser.py
 │       └── google_sheets.py
-├── integrations/               # NEW - CRM Integration Layer
+├── integrations/               # CRM Integration Layer
 │   ├── __init__.py
 │   ├── base.py                 # BaseAdapter, AdapterRegistry, AuthConfig
 │   ├── generic_rest.py         # GenericRestAdapter with mock support
@@ -331,6 +331,11 @@ POST /api/webhooks/{id}/rotate            - Rotate credentials
 │   ├── mock_data.py            # Realistic test data generator
 │   ├── sync_engine.py          # Data sync orchestration
 │   ├── health.py               # Health monitoring
+│   ├── field_discovery.py      # NEW - Auto-discover fields from API
+│   ├── profiles.py             # NEW - Savable connection profiles
+│   ├── openapi_parser.py       # NEW - OpenAPI/Swagger spec parser
+│   ├── smart_suggest.py        # NEW - AI-powered field mapping
+│   ├── field_transforms.py     # NEW - Advanced data transformation engine
 │   ├── connectors/
 │   │   ├── vinsolutions.py
 │   │   ├── dealersocket.py
