@@ -664,7 +664,7 @@ html:not(.dark) .r34-center-text span {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 135px;
+  min-width: 100px;
   height: 34px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
@@ -672,36 +672,37 @@ html:not(.dark) .r34-center-text span {
   cursor: pointer;
   overflow: visible;
   transition: all 0.3s ease;
-  padding: 0 16px 0 36px;
+  padding: 0 12px 0 28px;
   z-index: 20;
 }
 
-/* Subtle exhaust tip */
+/* Subtle exhaust tip - smaller and more discreet */
 .btn-supercharged .exhaust-tip-side {
   position: absolute;
-  left: 8px;
+  left: 6px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
+  opacity: 0.6;
 }
 
 .btn-supercharged .exhaust-pipe {
-  width: 16px;
-  height: 14px;
+  width: 12px;
+  height: 10px;
   background: linear-gradient(180deg,
-    #555 0%,
-    #444 50%,
-    #555 100%
+    #444 0%,
+    #333 50%,
+    #444 100%
   );
   border-radius: 2px;
-  border: 1px solid #666;
+  border: 1px solid #555;
   position: relative;
 }
 
 .btn-supercharged .exhaust-opening {
-  width: 5px;
-  height: 10px;
+  width: 4px;
+  height: 8px;
   background: #111;
   border-radius: 1px 0 0 1px;
   margin-left: -1px;
