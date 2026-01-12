@@ -535,77 +535,84 @@ h1, h2, h3 {
 /* Supercharg'd Button - Animated Flames - LARGER */
 /* ============================================
    C8 CORVETTE TAILLIGHTS - ACCURATE L-SHAPED DESIGN
-   Distinctive contoured LED units like actual C8
+   Distinctive L-shaped LED units like actual C8 Corvette
    ============================================ */
 
 .c8-taillights-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .c8-taillight-unit {
-  width: 50px;
-  height: 28px;
+  width: 55px;
+  height: 32px;
   transition: all 0.4s ease;
 }
 
-/* Housing outline */
-.c8-taillight-unit .c8-housing {
-  transition: all 0.3s ease;
-}
-
-/* LED elements - off state */
+/* LED elements - off state (dark red) */
 .c8-taillight-unit .c8-led-main,
 .c8-taillight-unit .c8-led-vertical {
   transition: all 0.4s ease;
 }
 
-/* Lit state - bright red glow with L-shape */
+/* Lit state - bright red glow */
 .c8-taillight-unit.lit .c8-led-main {
   fill: #dd0000;
-  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
+  filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
 }
 
 .c8-taillight-unit.lit .c8-led-vertical {
   fill: #cc0000;
-  filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
-}
-
-.c8-taillight-unit.lit .c8-housing {
-  filter: drop-shadow(0 0 2px #ff000033);
+  filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 10px #ff0000);
 }
 
 /* Running animation - subtle pulse */
-.c8-taillight-unit.running.lit .c8-led-main,
+.c8-taillight-unit.running.lit .c8-led-main {
+  animation: c8-main-pulse 2s ease-in-out infinite;
+}
+
 .c8-taillight-unit.running.lit .c8-led-vertical {
-  animation: c8-glow-pulse 2s ease-in-out infinite;
+  animation: c8-vertical-pulse 2s ease-in-out infinite;
 }
 
 .c8-taillight-unit.c8-left.running.lit .c8-led-main { animation-delay: 0s; }
-.c8-taillight-unit.c8-right.running.lit .c8-led-main { animation-delay: 0.15s; }
-.c8-taillight-unit.c8-left.running.lit .c8-led-vertical { animation-delay: 0.1s; }
+.c8-taillight-unit.c8-right.running.lit .c8-led-main { animation-delay: 0.1s; }
+.c8-taillight-unit.c8-left.running.lit .c8-led-vertical { animation-delay: 0.15s; }
 .c8-taillight-unit.c8-right.running.lit .c8-led-vertical { animation-delay: 0.05s; }
 
-@keyframes c8-glow-pulse {
+@keyframes c8-main-pulse {
   0%, 100% {
-    filter: drop-shadow(0 0 4px #ff0000) drop-shadow(0 0 8px #ff0000);
+    fill: #dd0000;
+    filter: drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff0000);
   }
   50% {
-    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 24px #cc0000);
+    fill: #ff2222;
+    filter: drop-shadow(0 0 10px #ff0000) drop-shadow(0 0 20px #ff0000) drop-shadow(0 0 30px #cc0000);
+  }
+}
+
+@keyframes c8-vertical-pulse {
+  0%, 100% {
+    fill: #cc0000;
+    filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 10px #ff0000);
+  }
+  50% {
+    fill: #ee1111;
+    filter: drop-shadow(0 0 8px #ff0000) drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 25px #cc0000);
   }
 }
 
 /* Center text */
 .c8-center-text {
-  padding: 0 6px;
+  padding: 0 8px;
   transition: all 0.4s ease;
 }
 
 .c8-center-text span {
   font-family: 'Bebas Neue', 'Impact', sans-serif;
-  font-size: 14px;
-  letter-spacing: 0.18em;
+  font-size: 15px;
+  letter-spacing: 0.2em;
   color: #444;
   transition: all 0.4s ease;
 }
@@ -627,10 +634,6 @@ h1, h2, h3 {
 /* Light mode */
 html:not(.dark) .c8-center-text span {
   color: #555;
-}
-
-html:not(.dark) .c8-taillight-unit .c8-housing {
-  fill: #2a2a2a;
 }
 
 /* ============================================
