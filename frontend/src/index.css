@@ -984,14 +984,15 @@ html:not(.dark) .btn-check-engine:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100px;
-  height: 55px;
+  width: 110px;
+  height: 60px;
   background: linear-gradient(180deg, #1c1c24 0%, #121218 100%);
   border: 1px solid #2a2a35;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   overflow: visible;
+  padding-top: 4px;
 }
 
 /* Background icon - BEHIND everything */
@@ -1010,8 +1011,8 @@ html:not(.dark) .btn-check-engine:hover {
 
 .btn-check-zl1 .zl1-car-wrapper {
   position: relative;
-  width: 90px;
-  height: 36px;
+  width: 95px;
+  height: 38px;
   z-index: 1;
 }
 
