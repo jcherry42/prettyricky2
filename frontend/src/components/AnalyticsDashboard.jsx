@@ -18,6 +18,7 @@ export const AnalyticsDashboard = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [refreshing, setRefreshing] = useState(false);
+  const [abExperiments, setAbExperiments] = useState([]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
