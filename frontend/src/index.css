@@ -628,20 +628,20 @@ h1, h2, h3 {
 }
 
 /* Braking state - maximum brightness */
-.r34-cluster.braking .r34-ring {
-  border-color: #ff2222;
+.r34-cluster.braking .r34-light .r34-ring {
+  border-color: #ff2222 !important;
   box-shadow: 
     0 0 15px #ff0000,
     0 0 30px #ff0000,
     0 0 45px #cc0000,
-    inset 0 0 8px #ff0000;
+    inset 0 0 8px #ff0000 !important;
 }
 
-.r34-cluster.braking .r34-center {
-  background: #ffcc00;
+.r34-cluster.braking .r34-light .r34-center {
+  background: #ffcc00 !important;
   box-shadow: 
     0 0 10px #ffdd00,
-    0 0 20px #ffaa00;
+    0 0 20px #ffaa00 !important;
 }
 
 /* Center text */
