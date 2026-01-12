@@ -664,15 +664,15 @@ html:not(.dark) .r34-center-text span {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  min-width: 280px;
-  height: 40px;
+  width: 140px;
+  height: 36px;
   background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
   border: 1px solid #2a2a35;
   border-radius: 8px;
   cursor: pointer;
   overflow: visible;
   transition: all 0.3s ease;
-  padding: 0 16px 0 50px;
+  padding: 0 14px 0 44px;
 }
 
 /* Realistic side-view exhaust tip */
