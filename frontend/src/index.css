@@ -3,10 +3,62 @@
 @tailwind utilities;
 
 /* ============================================
-   TAILLIGHTS - Luxury Automotive Design System
-   Porsche 911 Inspired | Gran Turismo Aesthetic
-   Ambient Lighting Accents
+   TAILLIGHTS - GTA Vice City Meets JDM
+   R34 Skyline Inspired | Neon Miami Aesthetic
    ============================================ */
+
+/* Vice City Font - Pricedown style approximation */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Russo+One&display=swap');
+
+/* GTA Vice City Text Styles */
+.vice-city-title {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
+  background: linear-gradient(180deg, 
+    #ff6b9d 0%, 
+    #c44569 30%,
+    #ff6b9d 50%,
+    #c44569 70%,
+    #ff6b9d 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px hsla(340, 100%, 65%, 0.5));
+  text-shadow: none;
+}
+
+.vice-city-sub {
+  font-family: 'Russo One', sans-serif;
+  letter-spacing: 0.05em;
+  color: hsla(180, 100%, 70%, 0.9) !important;
+  text-shadow: 0 0 10px hsla(180, 100%, 50%, 0.4);
+}
+
+.vice-city-text {
+  font-family: 'Russo One', 'Arial Black', sans-serif;
+  letter-spacing: 0.08em;
+}
+
+/* Vice City neon glow for headings */
+h1, h2, h3 {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+}
+
+.text-luxury {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  letter-spacing: 0.12em;
+  background: linear-gradient(180deg, 
+    #00f5ff 0%, 
+    #00d4aa 50%,
+    #00f5ff 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 6px hsla(180, 100%, 60%, 0.4));
+}
 
 @layer base {
   :root {
