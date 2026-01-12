@@ -65,8 +65,11 @@ class AnalyticsService:
         conv_result = await conversations.aggregate(conv_pipeline).to_list(1)
         conv_data = conv_result[0] if conv_result else {}
         
-        total_responses = conv_data.get("total", [{}])[0].get("count", 0)
-        shortcut_responses = conv_data.get("shortcuts_efficiency", [{}])[0].get("count", 0)
+        total_list = conv_data.get("total", [])
+        total_responses = total_list[0].get("count", 0) if total_list else 0
+        
+        shortcuts_list = conv_data.get("shortcuts_efficiency", [])
+        shortcut_responses = shortcuts_list[0].get("count", 0) if shortcuts_list else 0
         
         return {
             "period_days": days,
