@@ -382,12 +382,22 @@ class WebhookEventProcessor:
         result = await self.events_collection.aggregate(pipeline).to_list(1)
         data = result[0] if result else {}
         
+        # Safely extract values from aggregation results
+        recent_24h_list = data.get("recent_24h", [])
+        events_24h = recent_24h_list[0].get("count", 0) if recent_24h_list else 0
+        
+        avg_processing_list = data.get("avg_processing_time", [])
+        avg_processing_ms = round(avg_processing_list[0].get("avg_ms", 0), 2) if avg_processing_list else 0
+        
+        dlq_count_list = data.get("dlq_count", [])
+        dlq_count = dlq_count_list[0].get("count", 0) if dlq_count_list else 0
+        
         return {
             "status_breakdown": {item["_id"]: item["count"] for item in data.get("by_status", [])},
             "top_event_types": data.get("by_type", []),
-            "events_24h": data.get("recent_24h", [{}])[0].get("count", 0),
-            "avg_processing_ms": round(data.get("avg_processing_time", [{}])[0].get("avg_ms", 0), 2),
-            "dlq_count": data.get("dlq_count", [{}])[0].get("count", 0),
+            "events_24h": events_24h,
+            "avg_processing_ms": avg_processing_ms,
+            "dlq_count": dlq_count,
             "registered_handlers": list(self.handlers.keys()),
         }
     
