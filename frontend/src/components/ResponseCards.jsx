@@ -101,31 +101,76 @@ export const ResponseCards = () => {
       return;
     }
     
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = isSpanish ? 'es-MX' : 'en-US';  // Mexican Spanish sounds more natural
-    utterance.rate = isSpanish ? 0.88 : 0.95;  // Slower for Spanish
-    utterance.pitch = isSpanish ? 1.05 : 1;    // Slightly higher pitch for warmth
-    utterance.volume = 1;
+    // For Spanish: Add natural pauses and soften the text
+    let processedText = text;
+    if (isSpanish) {
+      // Add micro-pauses at punctuation for more natural rhythm
+      processedText = text
+        .replace(/\./g, '... ')      // Longer pause at periods
+        .replace(/,/g, ', ')         // Slight pause at commas
+        .replace(/!/g, '! ')         // Pause after exclamation
+        .replace(/\?/g, '? ');       // Pause after question
+    }
     
-    // Try to find the most natural voice
+    const utterance = new SpeechSynthesisUtterance(processedText);
+    
+    // Spanish voice optimization for smooth, conversational tone
+    if (isSpanish) {
+      utterance.lang = 'es-US';      // US Spanish - often smoothest on mobile devices
+      utterance.rate = 0.85;         // Slower for natural conversation
+      utterance.pitch = 1.1;         // Slightly higher for warmth and friendliness
+      utterance.volume = 0.95;       // Slightly softer feels more intimate/conversational
+    } else {
+      utterance.lang = 'en-US';
+      utterance.rate = 0.92;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+    }
+    
+    // Find the smoothest, most natural voice available
     const voices = window.speechSynthesis.getVoices();
-    const langCode = isSpanish ? 'es' : 'en';
     
-    // Priority: Premium/Natural voices > Local voices > Any matching voice
-    const preferredVoice = 
-      // Look for premium/natural voices first (often have "Natural", "Premium", or "Neural" in name)
-      voices.find(v => v.lang.startsWith(langCode) && /natural|premium|neural|enhanced/i.test(v.name)) ||
-      // Then try specific high-quality voices
-      voices.find(v => isSpanish ? 
-        (v.name.includes('Paulina') || v.name.includes('Monica') || v.name.includes('Jorge')) : 
-        (v.name.includes('Samantha') || v.name.includes('Alex') || v.name.includes('Daniel'))) ||
-      // Then local service voices (usually better quality)
-      voices.find(v => v.lang.startsWith(langCode) && v.localService) ||
-      // Finally any matching voice
-      voices.find(v => v.lang.startsWith(langCode));
-    
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    if (isSpanish) {
+      // Spanish voice priority - looking for smooth, conversational voices
+      const spanishVoice = 
+        // iOS premium voices (very natural)
+        voices.find(v => v.name === 'Paulina') ||
+        voices.find(v => v.name === 'Monica') ||
+        // Google/Android natural voices
+        voices.find(v => v.name.includes('Google español')) ||
+        voices.find(v => /español.*female/i.test(v.name)) ||
+        // Any voice with "natural" or "enhanced" quality indicators
+        voices.find(v => v.lang.startsWith('es') && /natural|enhanced|premium|neural|wavenet/i.test(v.name)) ||
+        // US Spanish voices (typically smoother than Spain Spanish)
+        voices.find(v => v.lang === 'es-US' && v.localService) ||
+        voices.find(v => v.lang === 'es-US') ||
+        // Mexican Spanish (warm, friendly)
+        voices.find(v => v.lang === 'es-MX' && v.localService) ||
+        voices.find(v => v.lang === 'es-MX') ||
+        // Any local Spanish voice
+        voices.find(v => v.lang.startsWith('es') && v.localService) ||
+        // Fallback to any Spanish
+        voices.find(v => v.lang.startsWith('es'));
+      
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
+        // Adjust rate based on voice type (some voices need different speeds)
+        if (spanishVoice.name.includes('Google') || spanishVoice.name.includes('wavenet')) {
+          utterance.rate = 0.9; // Google voices are slightly faster
+        }
+      }
+    } else {
+      // English voice
+      const englishVoice = 
+        voices.find(v => v.name === 'Samantha') ||
+        voices.find(v => v.name === 'Alex') ||
+        voices.find(v => v.lang.startsWith('en') && /natural|enhanced|premium/i.test(v.name)) ||
+        voices.find(v => v.lang === 'en-US' && v.localService) ||
+        voices.find(v => v.lang.startsWith('en'));
+      
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
     }
     
     utterance.onstart = () => setSpeakingId(responseId);
