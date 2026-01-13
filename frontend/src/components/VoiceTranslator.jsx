@@ -142,7 +142,10 @@ export const VoiceTranslator = () => {
   };
 
   return (
-    <div className="voice-translator-panel">
+    <div 
+      className="voice-translator-panel"
+      style={{ position: 'fixed', right: '20px', left: 'auto', top: '50%', transform: 'translateY(-50%)', zIndex: 50 }}
+    >
       {/* Push to Start Button */}
       <button
         onClick={toggleListening}
