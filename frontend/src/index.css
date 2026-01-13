@@ -2714,8 +2714,9 @@ html:not(.dark) .header-luxury {
    ============================================ */
 
 .voice-translator-panel {
-  position: fixed;
-  right: 20px;
+  position: fixed !important;
+  right: 20px !important;
+  left: auto !important;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
