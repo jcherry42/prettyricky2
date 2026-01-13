@@ -101,7 +101,7 @@ export const Header = () => {
 
             {/* Center text */}
             <div className={`r34-center-text ${startupPhase >= 5 ? 'lit' : ''}`}>
-              <span>TAILLIGHTS</span>
+              <span>SUPERCHARG'D</span>
             </div>
 
             {/* Right taillight cluster - 2 circular lights (inner smaller) */}
@@ -120,12 +120,12 @@ export const Header = () => {
 
         {/* Right side - Actions */}
         <div className="flex items-center justify-end gap-2">
-          {/* Supercharg'd Button with Flames */}
+          {/* Sport Mode Button with Flames */}
           <button
             onClick={toggleSuperchargedMode}
             className={`btn-supercharged ${supercharged ? 'active' : ''}`}
             data-testid="toggle-supercharged-btn"
-            title={supercharged ? "Supercharg'd Mode ON (Español)" : "Enable Supercharg'd Mode"}
+            title={supercharged ? "Sport Mode ON (Español)" : "Enable Sport Mode"}
           >
             {/* Realistic side-view exhaust tip */}
             <div className="exhaust-tip-side">
@@ -143,7 +143,7 @@ export const Header = () => {
               </div>
             </div>
             <span className="supercharged-label vice-city-text">
-              {supercharged ? 'ESPAÑOL' : 'ENGLISH'}
+              {supercharged ? 'ESPAÑOL' : 'SPORT'}
             </span>
           </button>
 
