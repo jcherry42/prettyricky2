@@ -159,42 +159,6 @@ export const Header = () => {
             </div>
           </button>
 
-          {/* VS Button */}
-          <button
-            onClick={() => toggleVS(true)}
-            className="btn-vs-header"
-            data-testid="open-vs-btn"
-            title="VS Battle Cards"
-          >
-            <Swords className="w-4 h-4" />
-            <span className="text-[9px] font-black vice-city-text">VS</span>
-          </button>
-
-          {/* Favorites */}
-          <button
-            onClick={() => toggleFavorites(true)}
-            className="btn-icon relative"
-            data-testid="open-favorites-btn"
-          >
-            <Heart className="w-5 h-5 text-muted-foreground" />
-            {favorites.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
-                    style={{ background: '#cc0000', color: 'white', boxShadow: '0 0 10px rgba(255,0,0,0.4)' }}>
-                {favorites.length > 9 ? '9+' : favorites.length}
-              </span>
-            )}
-          </button>
-
-          {/* Analytics */}
-          <button
-            onClick={() => toggleAnalytics(true)}
-            className="btn-icon"
-            data-testid="open-analytics-btn"
-            title="Analytics Dashboard"
-          >
-            <BarChart3 className="w-5 h-5 text-muted-foreground" />
-          </button>
-
           {/* Check Engine Button - ZL1 Camaro with hood animation */}
           <button
             onClick={() => toggleAdminSettings(true)}
