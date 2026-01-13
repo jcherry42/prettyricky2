@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Heart, Sun, Moon, Swords, BarChart3, AlertTriangle } from 'lucide-react';
+import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 import { playNotificationSound, getSoundPreferences } from '../utils/notificationSound';
 
 export const Header = () => {
   const { 
-    toggleFavorites,
-    toggleVS,
-    toggleAnalytics,
     toggleAdminSettings,
-    favorites,
     theme,
     supercharged,
     toggleTheme,
