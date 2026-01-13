@@ -186,6 +186,49 @@ export const ResponseCards = () => {
     return response.text;
   };
 
+  const speakText = useCallback((responseId, text, isSpanish = false) => {
+    if (!isSpeechSupported) return;
+    
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+    
+    // If already speaking this response, just stop
+    if (speakingId === responseId) {
+      setSpeakingId(null);
+      return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = isSpanish ? 'es-ES' : 'en-US';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const langCode = isSpanish ? 'es' : 'en';
+    const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.localService) 
+      || voices.find(v => v.lang.startsWith(langCode));
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => setSpeakingId(responseId);
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+    
+    window.speechSynthesis.speak(utterance);
+  }, [speakingId]);
+
+  const handleSpeak = (response, e) => {
+    e.stopPropagation();
+    const key = response.id;
+    const text = getDisplayText(response);
+    const isSpanish = (editedTranslations[key] && showSpanish[key]) || 
+                      (supercharged && showSpanish[key] && translations[key]);
+    speakText(key, text, isSpanish);
+  };
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between px-1">
