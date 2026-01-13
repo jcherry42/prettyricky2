@@ -102,16 +102,28 @@ export const ResponseCards = () => {
     }
     
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = isSpanish ? 'es-ES' : 'en-US';
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
+    utterance.lang = isSpanish ? 'es-MX' : 'en-US';  // Mexican Spanish sounds more natural
+    utterance.rate = isSpanish ? 0.88 : 0.95;  // Slower for Spanish
+    utterance.pitch = isSpanish ? 1.05 : 1;    // Slightly higher pitch for warmth
     utterance.volume = 1;
     
-    // Try to find a good voice
+    // Try to find the most natural voice
     const voices = window.speechSynthesis.getVoices();
     const langCode = isSpanish ? 'es' : 'en';
-    const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.localService) 
-      || voices.find(v => v.lang.startsWith(langCode));
+    
+    // Priority: Premium/Natural voices > Local voices > Any matching voice
+    const preferredVoice = 
+      // Look for premium/natural voices first (often have "Natural", "Premium", or "Neural" in name)
+      voices.find(v => v.lang.startsWith(langCode) && /natural|premium|neural|enhanced/i.test(v.name)) ||
+      // Then try specific high-quality voices
+      voices.find(v => isSpanish ? 
+        (v.name.includes('Paulina') || v.name.includes('Monica') || v.name.includes('Jorge')) : 
+        (v.name.includes('Samantha') || v.name.includes('Alex') || v.name.includes('Daniel'))) ||
+      // Then local service voices (usually better quality)
+      voices.find(v => v.lang.startsWith(langCode) && v.localService) ||
+      // Finally any matching voice
+      voices.find(v => v.lang.startsWith(langCode));
+    
     if (preferredVoice) {
       utterance.voice = preferredVoice;
     }
