@@ -71,6 +71,9 @@ function AppContent() {
       <TowerTalkModal />
       {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
+      {/* Voice Translator - Right Side Panel */}
+      <VoiceTranslator />
+      
       {/* Toast notifications */}
       <Toaster position="top-center" />
     </div>
