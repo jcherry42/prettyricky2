@@ -45,6 +45,7 @@ export const ResponseCards = () => {
   const [editedTexts, setEditedTexts] = useState({});
   const [editedTranslations, setEditedTranslations] = useState({});
   const [translatingEdited, setTranslatingEdited] = useState({});
+  const [speakingId, setSpeakingId] = useState(null);
 
   // Translate responses when supercharged mode is active
   const translateResponse = useCallback(async (responseId, text, isFollowUp = false) => {
