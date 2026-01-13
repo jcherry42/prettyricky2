@@ -80,9 +80,10 @@ export const Header = () => {
   return (
     <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
       <div className="flex items-center h-16 px-4">
-        {/* Left side - Health Indicator */}
-        <div className="flex items-center mr-4">
+        {/* Left side - Health Indicators */}
+        <div className="flex items-center gap-2 mr-4">
           <IntegrationHealthStatus compact={true} />
+          <DataHealthIndicator />
         </div>
         
         {/* Center - R34 Skyline Taillights */}
