@@ -21,60 +21,7 @@ export const VoiceTranslator = () => {
   
   const recognitionRef = useRef(null);
   const hideTimeoutRef = useRef(null);
-
-  // Initialize speech recognition
-  useEffect(() => {
-    if (!isSpeechSupported) return;
-    
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = 'es-US'; // Spanish (US)
-    recognition.maxAlternatives = 1;
-    
-    recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join('');
-      setSpanishText(transcript);
-      setShowResults(true);
-      
-      // Clear any pending hide timeout
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
-    };
-    
-    recognition.onend = () => {
-      setIsListening(false);
-      // Translate when speech ends
-      if (spanishText) {
-        translateToEnglish(spanishText);
-      }
-    };
-    
-    recognition.onerror = (event) => {
-      setIsListening(false);
-      if (event.error === 'not-allowed') {
-        setError('Microphone access denied. Please allow microphone permission.');
-        setShowResults(true);
-      } else if (event.error === 'no-speech') {
-        setError('No speech detected. Try again.');
-        setShowResults(true);
-      } else if (event.error !== 'aborted') {
-        setError(`Error: ${event.error}`);
-        setShowResults(true);
-      }
-    };
-    
-    recognitionRef.current = recognition;
-    
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, [spanishText]);
+  const latestTextRef = useRef(''); // Track latest transcript
 
   // Translate Spanish to English
   const translateToEnglish = useCallback(async (text) => {
@@ -111,6 +58,62 @@ export const VoiceTranslator = () => {
       setIsTranslating(false);
     }
   }, []);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (!isSpeechSupported) return;
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'es-US'; // Spanish (US)
+    recognition.maxAlternatives = 1;
+    
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join('');
+      setSpanishText(transcript);
+      latestTextRef.current = transcript; // Store in ref for onend
+      setShowResults(true);
+      
+      // Clear any pending hide timeout
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+      // Use ref to get latest text (avoids stale closure)
+      const textToTranslate = latestTextRef.current;
+      if (textToTranslate) {
+        translateToEnglish(textToTranslate);
+      }
+    };
+    
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === 'not-allowed') {
+        setError('Microphone access denied. Please allow microphone permission.');
+        setShowResults(true);
+      } else if (event.error === 'no-speech') {
+        setError('No speech detected. Try again.');
+        setShowResults(true);
+      } else if (event.error !== 'aborted') {
+        setError(`Error: ${event.error}`);
+        setShowResults(true);
+      }
+    };
+    
+    recognitionRef.current = recognition;
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, [translateToEnglish]);
 
   // Toggle listening
   const toggleListening = () => {
