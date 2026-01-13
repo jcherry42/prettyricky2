@@ -2706,6 +2706,321 @@ html:not(.dark) .header-luxury {
 
 .dark .modal-luxury {
   background: hsla(20, 12%, 10%, 0.95) !important;
+
+
+/* ============================================
+   VOICE TRANSLATOR - Push to Start Button
+   Sports car ignition style
+   ============================================ */
+
+.voice-translator-panel {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 50;
+}
+
+/* Push to Start Button - Sports Car Style */
+.push-to-start-btn {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease;
+}
+
+.push-to-start-btn:hover {
+  transform: scale(1.05);
+}
+
+.push-to-start-btn:active {
+  transform: scale(0.95);
+}
+
+.push-to-start-btn .pts-outer-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #2a2a35 0%, #1a1a22 50%, #0f0f14 100%);
+  box-shadow: 
+    0 4px 15px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(255,255,255,0.05),
+    inset 0 -2px 4px rgba(0,0,0,0.3);
+  padding: 4px;
+}
+
+.push-to-start-btn .pts-inner-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #3a3a45 0%, #25252d 100%);
+  box-shadow: 
+    inset 0 2px 6px rgba(0,0,0,0.4),
+    inset 0 -1px 2px rgba(255,255,255,0.05);
+  padding: 3px;
+}
+
+.push-to-start-btn .pts-button-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #1c1c24 0%, #12121a 100%);
+  border: 2px solid #333340;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all 0.3s ease;
+}
+
+.push-to-start-btn .pts-icon {
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.push-to-start-btn .pts-label {
+  font-family: 'Russo One', sans-serif;
+  font-size: 8px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  color: #555;
+  transition: all 0.3s ease;
+}
+
+/* Glow ring */
+.push-to-start-btn .pts-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  opacity: 0;
+  background: transparent;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* Active/Listening state */
+.push-to-start-btn.active .pts-button-face {
+  background: linear-gradient(180deg, #2a1a1a 0%, #1a0f0f 100%);
+  border-color: #cc3333;
+}
+
+.push-to-start-btn.active .pts-icon {
+  color: #ff4444;
+  filter: drop-shadow(0 0 8px rgba(255,68,68,0.6));
+  animation: pulse-icon 1s ease-in-out infinite;
+}
+
+.push-to-start-btn.active .pts-label {
+  color: #ff6666;
+}
+
+.push-to-start-btn.active .pts-glow {
+  opacity: 1;
+  border-color: #ff4444;
+  box-shadow: 
+    0 0 20px rgba(255,68,68,0.4),
+    0 0 40px rgba(255,68,68,0.2),
+    inset 0 0 20px rgba(255,68,68,0.1);
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}
+
+/* Translating state */
+.push-to-start-btn.translating .pts-button-face {
+  background: linear-gradient(180deg, #1a1a2a 0%, #0f0f1a 100%);
+  border-color: #4488ff;
+}
+
+.push-to-start-btn.translating .pts-icon {
+  color: #6699ff;
+}
+
+.push-to-start-btn.translating .pts-label {
+  color: #6699ff;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Voice Results - Auto-hiding */
+.voice-results {
+  position: absolute;
+  right: 80px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+  max-width: 280px;
+  transition: all 0.3s ease;
+}
+
+.voice-results.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(20px);
+}
+
+.voice-results.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.voice-result-box {
+  background: hsla(220, 20%, 12%, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid hsla(220, 20%, 25%, 0.5);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.voice-result-box .result-label {
+  display: block;
+  font-family: 'Russo One', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.voice-result-box p {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #ddd;
+  margin: 0;
+}
+
+.voice-result-box.spanish {
+  border-color: hsla(45, 80%, 50%, 0.3);
+}
+
+.voice-result-box.spanish .result-label {
+  color: hsla(45, 80%, 55%, 1);
+}
+
+.voice-result-box.english {
+  border-color: hsla(210, 80%, 50%, 0.3);
+}
+
+.voice-result-box.english .result-label {
+  color: hsla(210, 80%, 60%, 1);
+}
+
+.voice-result-box.error {
+  border-color: hsla(0, 70%, 50%, 0.3);
+}
+
+.voice-result-box.error .result-label {
+  color: hsla(0, 70%, 60%, 1);
+}
+
+.voice-result-box.listening .listening-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.voice-result-box.listening .listening-dots span {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+  color: #888;
+}
+
+.voice-result-box.listening .listening-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.voice-result-box.listening .listening-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.3; }
+  40% { opacity: 1; }
+}
+
+.hide-results-btn {
+  align-self: flex-end;
+  font-size: 10px;
+  color: #666;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.hide-results-btn:hover {
+  color: #999;
+}
+
+/* Light mode */
+html:not(.dark) .voice-result-box {
+  background: hsla(220, 20%, 98%, 0.95);
+  border-color: hsla(220, 20%, 85%, 0.5);
+}
+
+html:not(.dark) .voice-result-box p {
+  color: #333;
+}
+
+html:not(.dark) .push-to-start-btn .pts-outer-ring {
+  background: linear-gradient(145deg, #e0e0e8 0%, #c8c8d0 50%, #b0b0b8 100%);
+}
+
+html:not(.dark) .push-to-start-btn .pts-inner-ring {
+  background: linear-gradient(180deg, #d8d8e0 0%, #c0c0c8 100%);
+}
+
+html:not(.dark) .push-to-start-btn .pts-button-face {
+  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
+  border-color: #ccccd5;
+}
+
+/* Mobile responsive - move to bottom */
+@media (max-width: 768px) {
+  .voice-translator-panel {
+    right: 12px;
+    top: auto;
+    bottom: 100px;
+    transform: none;
+  }
+  
+  .voice-results {
+    right: auto;
+    left: auto;
+    top: auto;
+    bottom: 85px;
+    transform: none;
+    right: 0;
+  }
+  
+  .voice-results.hidden {
+    transform: translateY(10px);
+  }
+  
+  .voice-results.visible {
+    transform: translateY(0);
+  }
+}
+
 }
 
 html:not(.dark) .modal-luxury {
