@@ -131,6 +131,7 @@ export const VoiceTranslator = () => {
       setSpanishText('');
       setEnglishText('');
       setError('');
+      latestTextRef.current = ''; // Clear the ref
       setShowResults(true);
       
       try {
