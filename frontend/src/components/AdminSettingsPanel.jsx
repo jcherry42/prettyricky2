@@ -43,7 +43,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
   });
   const [salespersonForm, setSalespersonForm] = useState({
     name: '',
-    preferredPhrase: 'Hey',
+    preferredPhrase: 'Good to hear from you',
   });
   
   // Notification config
@@ -127,7 +127,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
     });
     setSalespersonForm({
       name: salesperson.name || '',
-      preferredPhrase: salesperson.preferredPhrase || 'Hey',
+      preferredPhrase: salesperson.preferredPhrase || 'Good to hear from you',
     });
   }, [loadConfig, dealership, salesperson]);
 
