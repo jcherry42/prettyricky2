@@ -218,7 +218,7 @@ export const ResponseCards = () => {
       return translations[key];
     }
     return response.text;
-  };
+  }, [editedTexts, editedTranslations, showSpanish, supercharged, translations]);
 
   const handleSpeak = (response, e) => {
     e.stopPropagation();
