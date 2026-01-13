@@ -55,7 +55,13 @@ export const VoiceTranslator = () => {
     
     recognition.onerror = (event) => {
       setIsListening(false);
-      if (event.error !== 'no-speech') {
+      if (event.error === 'not-allowed') {
+        setError('Microphone access denied. Please allow microphone permission.');
+        setShowResults(true);
+      } else if (event.error === 'no-speech') {
+        setError('No speech detected. Try again.');
+        setShowResults(true);
+      } else if (event.error !== 'aborted') {
         setError(`Error: ${event.error}`);
         setShowResults(true);
       }
