@@ -68,14 +68,15 @@ export const VoiceTranslator = () => {
     
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
-    recognition.interimResults = true;
+    recognition.interimResults = !isSafari; // Safari doesn't handle interim results well
     recognition.lang = 'es-US'; // Spanish (US)
     recognition.maxAlternatives = 1;
     
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join('');
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
       setSpanishText(transcript);
       latestTextRef.current = transcript; // Store in ref for onend
       setShowResults(true);
@@ -84,24 +85,36 @@ export const VoiceTranslator = () => {
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
+      
+      // For Safari - translate immediately on final result
+      if (isSafari && event.results[event.results.length - 1].isFinal) {
+        translateToEnglish(transcript);
+      }
     };
     
     recognition.onend = () => {
       setIsListening(false);
       // Use ref to get latest text (avoids stale closure)
-      const textToTranslate = latestTextRef.current;
-      if (textToTranslate) {
-        translateToEnglish(textToTranslate);
+      // Skip if Safari already translated on final result
+      if (!isSafari) {
+        const textToTranslate = latestTextRef.current;
+        if (textToTranslate) {
+          translateToEnglish(textToTranslate);
+        }
       }
     };
     
     recognition.onerror = (event) => {
       setIsListening(false);
+      console.error('Speech recognition error:', event.error);
       if (event.error === 'not-allowed') {
-        setError('Microphone access denied. Please allow microphone permission.');
+        setError('Microphone access denied. Check Safari Settings > Websites > Microphone');
         setShowResults(true);
       } else if (event.error === 'no-speech') {
-        setError('No speech detected. Try again.');
+        setError('No speech detected. Tap and speak Spanish.');
+        setShowResults(true);
+      } else if (event.error === 'network') {
+        setError('Network error. Check your connection.');
         setShowResults(true);
       } else if (event.error !== 'aborted') {
         setError(`Error: ${event.error}`);
@@ -109,11 +122,17 @@ export const VoiceTranslator = () => {
       }
     };
     
+    recognition.onaudiostart = () => {
+      console.log('Audio capture started');
+    };
+    
     recognitionRef.current = recognition;
     
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
       }
     };
   }, [translateToEnglish]);
