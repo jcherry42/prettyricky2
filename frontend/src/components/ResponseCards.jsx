@@ -142,10 +142,35 @@ export const ResponseCards = () => {
 
   const handleTextChange = (responseId, newText) => {
     setEditedTexts(prev => ({ ...prev, [responseId]: newText }));
+    // Clear any existing translation when text changes
+    setEditedTranslations(prev => {
+      const updated = { ...prev };
+      delete updated[responseId];
+      return updated;
+    });
+  };
+
+  const translateEditedText = async (responseId, e) => {
+    e.stopPropagation();
+    const textToTranslate = editedTexts[responseId];
+    if (!textToTranslate) return;
+    
+    setTranslatingEdited(prev => ({ ...prev, [responseId]: true }));
+    
+    const translated = await translateText(textToTranslate);
+    if (translated) {
+      setEditedTranslations(prev => ({ ...prev, [responseId]: translated }));
+    }
+    
+    setTranslatingEdited(prev => ({ ...prev, [responseId]: false }));
   };
 
   const getDisplayText = (response) => {
     const key = response.id;
+    // If editing and has translation, check if showing Spanish
+    if (editedTexts[key] && editedTranslations[key] && showSpanish[key]) {
+      return editedTranslations[key];
+    }
     // If edited, use edited text
     if (editedTexts[key]) {
       return editedTexts[key];
