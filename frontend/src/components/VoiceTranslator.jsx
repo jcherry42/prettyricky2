@@ -3,9 +3,12 @@ import { Mic, MicOff } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-// Check for speech recognition support
+// Check for speech recognition support (Safari uses webkit prefix)
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const isSpeechSupported = !!SpeechRecognition;
+
+// Detect Safari
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 /**
  * Voice Translator - Push to Start Button
