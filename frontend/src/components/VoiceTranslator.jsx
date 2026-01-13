@@ -153,25 +153,70 @@ export const VoiceTranslator = () => {
         disabled={isTranslating}
         title={isListening ? 'Stop listening' : 'Push to speak Spanish'}
         data-testid="voice-translator-btn"
+        style={{
+          width: '72px',
+          height: '72px',
+          borderRadius: '50%',
+          background: 'linear-gradient(145deg, #2a2a35 0%, #1a1a22 50%, #0f0f14 100%)',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '4px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.5)',
+          position: 'relative'
+        }}
       >
-        <div className="pts-outer-ring">
-          <div className="pts-inner-ring">
-            <div className="pts-button-face">
-              <div className="pts-icon">
-                {isListening ? (
-                  <MicOff className="w-5 h-5" />
-                ) : (
-                  <Mic className="w-5 h-5" />
-                )}
-              </div>
-              <div className="pts-label">
-                {isTranslating ? 'WAIT' : isListening ? 'STOP' : 'PUSH'}
-              </div>
+        <div style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '50%',
+          background: 'linear-gradient(180deg, #3a3a45 0%, #25252d 100%)',
+          padding: '3px',
+          boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.4)'
+        }}>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            borderRadius: '50%',
+            background: isListening 
+              ? 'linear-gradient(180deg, #2a1a1a 0%, #1a0f0f 100%)' 
+              : 'linear-gradient(180deg, #1c1c24 0%, #12121a 100%)',
+            border: isListening ? '2px solid #cc3333' : '2px solid #333340',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2px'
+          }}>
+            <div style={{ color: isListening ? '#ff4444' : '#666' }}>
+              {isListening ? (
+                <MicOff className="w-5 h-5" />
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
+            </div>
+            <div style={{
+              fontFamily: "'Russo One', sans-serif",
+              fontSize: '8px',
+              fontWeight: 'bold',
+              letterSpacing: '0.1em',
+              color: isListening ? '#ff6666' : '#555'
+            }}>
+              {isTranslating ? 'WAIT' : isListening ? 'STOP' : 'PUSH'}
             </div>
           </div>
         </div>
-        {/* Engine glow effect */}
-        <div className={`pts-glow ${isListening ? 'active' : ''}`}></div>
+        {/* Glow ring when active */}
+        {isListening && (
+          <div style={{
+            position: 'absolute',
+            inset: '-4px',
+            borderRadius: '50%',
+            border: '2px solid #ff4444',
+            boxShadow: '0 0 20px rgba(255,68,68,0.4), 0 0 40px rgba(255,68,68,0.2)',
+            animation: 'glow-pulse 1.5s ease-in-out infinite',
+            pointerEvents: 'none'
+          }}></div>
+        )}
       </button>
       
       {/* Auto-hiding text results */}
