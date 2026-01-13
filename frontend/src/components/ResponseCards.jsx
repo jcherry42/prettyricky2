@@ -297,20 +297,61 @@ export const ResponseCards = () => {
               
               {/* Response text - editable or display */}
               {isEditing ? (
-                <textarea
-                  value={editedTexts[response.id] || displayedText}
-                  onChange={(e) => handleTextChange(response.id, e.target.value)}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full p-3 rounded-lg text-[15px] leading-relaxed mb-5 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                  style={{
-                    background: 'hsla(220, 10%, 12%, 0.8)',
-                    border: '1px solid hsla(40, 50%, 40%, 0.4)',
-                    color: 'inherit',
-                    minHeight: '120px'
-                  }}
-                  autoFocus
-                  data-testid={`edit-textarea-${index}`}
-                />
+                <div className="mb-5">
+                  <textarea
+                    value={editedTexts[response.id] || displayedText}
+                    onChange={(e) => handleTextChange(response.id, e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full p-3 rounded-lg text-[15px] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                    style={{
+                      background: 'hsla(220, 10%, 12%, 0.8)',
+                      border: '1px solid hsla(40, 50%, 40%, 0.4)',
+                      color: 'inherit',
+                      minHeight: '120px'
+                    }}
+                    autoFocus
+                    data-testid={`edit-textarea-${index}`}
+                  />
+                  {/* Translate edited text button */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={(e) => translateEditedText(response.id, e)}
+                      disabled={translatingEdited[response.id] || !editedTexts[response.id]}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                      style={{
+                        background: 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.2) 0%, hsla(25, 100%, 40%, 0.15) 100%)',
+                        border: '1px solid hsla(25, 100%, 50%, 0.3)',
+                        color: 'hsla(30, 100%, 60%, 1)',
+                      }}
+                      data-testid={`translate-edited-${index}`}
+                    >
+                      {translatingEdited[response.id] ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Translating...
+                        </>
+                      ) : (
+                        <>
+                          <Languages className="w-3.5 h-3.5" />
+                          Translate to Spanish
+                        </>
+                      )}
+                    </button>
+                    {editedTranslations[response.id] && (
+                      <button
+                        onClick={(e) => toggleLanguage(mainKey, e)}
+                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
+                        style={{
+                          background: showSpanish[mainKey] ? 'hsla(25, 100%, 50%, 0.25)' : 'hsla(210, 80%, 50%, 0.2)',
+                          color: showSpanish[mainKey] ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
+                          border: `1px solid ${showSpanish[mainKey] ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(210, 80%, 50%, 0.3)'}`,
+                        }}
+                      >
+                        {showSpanish[mainKey] ? '🇪🇸 Spanish' : '🇺🇸 English'}
+                      </button>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <p className="text-[15px] text-foreground leading-relaxed mb-5">
                   {displayedText}
