@@ -407,6 +407,25 @@ export const ResponseCards = () => {
               
               {/* Action buttons */}
               <div className="flex gap-2">
+                {isSpeechSupported && (
+                  <button
+                    onClick={(e) => handleSpeak(response, e)}
+                    className="btn-steel flex items-center justify-center w-10"
+                    style={speakingId === response.id ? {
+                      background: 'linear-gradient(180deg, hsla(200, 70%, 45%, 0.3) 0%, hsla(200, 70%, 35%, 0.25) 100%)',
+                      borderColor: 'hsla(200, 80%, 55%, 0.5)',
+                      color: 'hsla(200, 90%, 65%, 1)',
+                    } : {}}
+                    data-testid={`speak-response-${index}`}
+                    title={speakingId === response.id ? "Stop speaking" : "Read aloud"}
+                  >
+                    {speakingId === response.id ? (
+                      <VolumeX className="w-4 h-4" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={(e) => handleCopy(response, e)}
                   className="btn-steel flex-1 flex items-center justify-center gap-2"
