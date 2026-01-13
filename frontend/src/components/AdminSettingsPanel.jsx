@@ -493,13 +493,13 @@ export const AdminSettingsPanel = ({ onClose }) => {
                       
                       <div className="mclaren-form-group">
                         <label className="mclaren-label">Preferred Greeting</label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {['Hey', 'Hi', 'Hello'].map((phrase) => (
+                        <div className="grid grid-cols-1 gap-2">
+                          {['Good to hear from you', 'Thanks for reaching out', 'Great news'].map((phrase) => (
                             <button
                               key={phrase}
                               onClick={() => setSalespersonForm(prev => ({ ...prev, preferredPhrase: phrase }))}
                               className={`mclaren-option-btn py-3 justify-center ${salespersonForm.preferredPhrase === phrase ? 'selected' : ''}`}
-                              data-testid={`greeting-${phrase.toLowerCase()}`}
+                              data-testid={`greeting-${phrase.toLowerCase().replace(/\s+/g, '-')}`}
                             >
                               {phrase}
                             </button>
