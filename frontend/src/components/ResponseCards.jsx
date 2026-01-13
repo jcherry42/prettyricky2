@@ -219,57 +219,6 @@ export const ResponseCards = () => {
     setTranslatingEdited(prev => ({ ...prev, [responseId]: false }));
   };
 
-  const speakText = useCallback((responseId, text, isSpanish = false) => {
-    if (!isSpeechSupported) return;
-    
-    // Stop any current speech
-    window.speechSynthesis.cancel();
-    
-    // If already speaking this response, just stop
-    if (speakingId === responseId) {
-      setSpeakingId(null);
-      return;
-    }
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = isSpanish ? 'es-ES' : 'en-US';
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-    
-    // Try to find a good voice
-    const voices = window.speechSynthesis.getVoices();
-    const langCode = isSpanish ? 'es' : 'en';
-    const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.localService) 
-      || voices.find(v => v.lang.startsWith(langCode));
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-    
-    utterance.onstart = () => setSpeakingId(responseId);
-    utterance.onend = () => setSpeakingId(null);
-    utterance.onerror = () => setSpeakingId(null);
-    
-    window.speechSynthesis.speak(utterance);
-  }, [speakingId]);
-
-  const getDisplayText = useCallback((response) => {
-    const key = response.id;
-    // If editing and has translation, check if showing Spanish
-    if (editedTexts[key] && editedTranslations[key] && showSpanish[key]) {
-      return editedTranslations[key];
-    }
-    // If edited, use edited text
-    if (editedTexts[key]) {
-      return editedTexts[key];
-    }
-    // If supercharged and showing Spanish
-    if (supercharged && showSpanish[key] && translations[key]) {
-      return translations[key];
-    }
-    return response.text;
-  }, [editedTexts, editedTranslations, showSpanish, supercharged, translations]);
-
   const handleSpeak = (response, e) => {
     e.stopPropagation();
     const key = response.id;
