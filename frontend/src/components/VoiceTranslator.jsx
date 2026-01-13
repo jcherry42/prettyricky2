@@ -116,9 +116,9 @@ export const VoiceTranslator = () => {
   }, [translateToEnglish]);
 
   // Toggle listening
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (!isSpeechSupported) {
-      setError('Speech recognition not supported');
+      setError('Speech recognition not supported in this browser');
       setShowResults(true);
       return;
     }
@@ -133,6 +133,23 @@ export const VoiceTranslator = () => {
       setError('');
       latestTextRef.current = ''; // Clear the ref
       setShowResults(true);
+      
+      // Request microphone permission explicitly first (Safari requirement)
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop the stream immediately - we just needed permission
+        stream.getTracks().forEach(track => track.stop());
+      } catch (micError) {
+        console.error('Microphone error:', micError);
+        if (micError.name === 'NotAllowedError' || micError.name === 'PermissionDeniedError') {
+          setError('Microphone access denied. Please enable in Safari Settings > Websites > Microphone');
+        } else if (micError.name === 'NotFoundError') {
+          setError('No microphone found on this device');
+        } else {
+          setError(`Microphone error: ${micError.message}`);
+        }
+        return;
+      }
       
       try {
         recognitionRef.current?.start();
