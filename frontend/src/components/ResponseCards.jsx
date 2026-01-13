@@ -186,9 +186,8 @@ export const ResponseCards = () => {
           const showMainSpanish = showSpanish[mainKey];
           const showFollowUpSpanish = showSpanish[followUpKey];
           
-          const displayedText = supercharged && showMainSpanish && mainTranslation 
-            ? mainTranslation 
-            : response.text;
+          const displayedText = getDisplayText(response);
+          const isEditing = editingId === response.id;
           
           const displayedFollowUp = supercharged && showFollowUpSpanish && followUpTranslation 
             ? followUpTranslation 
@@ -197,7 +196,7 @@ export const ResponseCards = () => {
           return (
             <div
               key={response.id}
-              onClick={() => selectResponse(response)}
+              onClick={() => !isEditing && selectResponse(response)}
               className="response-card p-5 cursor-pointer"
               data-testid={`response-card-${index}`}
             >
@@ -210,7 +209,7 @@ export const ResponseCards = () => {
                   >
                     Response {index + 1}
                   </span>
-                  {supercharged && mainTranslation && (
+                  {supercharged && mainTranslation && !isEditing && (
                     <button
                       onClick={(e) => toggleLanguage(mainKey, e)}
                       className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all"
@@ -228,26 +227,68 @@ export const ResponseCards = () => {
                   {supercharged && isMainTranslating && (
                     <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
                   )}
+                  {isEditing && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      Editing
+                    </span>
+                  )}
                 </div>
-                {followUpRule && (
-                  <span 
-                    className="flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full"
-                    style={{
-                      background: 'hsla(220, 10%, 15%, 0.8)',
-                      color: 'hsla(220, 10%, 60%, 1)',
-                      border: '1px solid hsla(220, 8%, 25%, 0.5)'
-                    }}
-                  >
-                    <Clock className="w-3 h-3" />
-                    {followUpRule.label}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {followUpRule && !isEditing && (
+                    <span 
+                      className="flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full"
+                      style={{
+                        background: 'hsla(220, 10%, 15%, 0.8)',
+                        color: 'hsla(220, 10%, 60%, 1)',
+                        border: '1px solid hsla(220, 8%, 25%, 0.5)'
+                      }}
+                    >
+                      <Clock className="w-3 h-3" />
+                      {followUpRule.label}
+                    </span>
+                  )}
+                  {isEditing ? (
+                    <button
+                      onClick={cancelEditing}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
+                      title="Cancel editing"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => startEditing(response.id, displayedText, e)}
+                      className="p-1.5 rounded-lg hover:bg-amber-500/20 text-muted-foreground hover:text-amber-400 transition-colors"
+                      title="Edit before sending"
+                      data-testid={`edit-response-${index}`}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
               
-              {/* Response text */}
-              <p className="text-[15px] text-foreground leading-relaxed mb-5">
-                {displayedText}
-              </p>
+              {/* Response text - editable or display */}
+              {isEditing ? (
+                <textarea
+                  value={editedTexts[response.id] || displayedText}
+                  onChange={(e) => handleTextChange(response.id, e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full p-3 rounded-lg text-[15px] leading-relaxed mb-5 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  style={{
+                    background: 'hsla(220, 10%, 12%, 0.8)',
+                    border: '1px solid hsla(40, 50%, 40%, 0.4)',
+                    color: 'inherit',
+                    minHeight: '120px'
+                  }}
+                  autoFocus
+                  data-testid={`edit-textarea-${index}`}
+                />
+              ) : (
+                <p className="text-[15px] text-foreground leading-relaxed mb-5">
+                  {displayedText}
+                </p>
+              )}
               
               {/* Action buttons */}
               <div className="flex gap-2">
