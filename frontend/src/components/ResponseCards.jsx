@@ -88,6 +88,56 @@ export const ResponseCards = () => {
     }
   }, [supercharged]);
 
+  // Text-to-speech function
+  const speakText = useCallback((responseId, text, isSpanish = false) => {
+    if (!isSpeechSupported) return;
+    
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+    
+    // If already speaking this response, just stop
+    if (speakingId === responseId) {
+      setSpeakingId(null);
+      return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = isSpanish ? 'es-ES' : 'en-US';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const langCode = isSpanish ? 'es' : 'en';
+    const preferredVoice = voices.find(v => v.lang.startsWith(langCode) && v.localService) 
+      || voices.find(v => v.lang.startsWith(langCode));
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => setSpeakingId(responseId);
+    utterance.onend = () => setSpeakingId(null);
+    utterance.onerror = () => setSpeakingId(null);
+    
+    window.speechSynthesis.speak(utterance);
+  }, [speakingId]);
+
+  // Get display text helper
+  const getDisplayText = useCallback((response) => {
+    const key = response.id;
+    if (editedTexts[key] && editedTranslations[key] && showSpanish[key]) {
+      return editedTranslations[key];
+    }
+    if (editedTexts[key]) {
+      return editedTexts[key];
+    }
+    if (supercharged && showSpanish[key] && translations[key]) {
+      return translations[key];
+    }
+    return response.text;
+  }, [editedTexts, editedTranslations, showSpanish, supercharged, translations]);
+
   if (!selectedCustomer || currentResponses.length === 0) {
     return null;
   }
