@@ -129,6 +129,36 @@ export const ResponseCards = () => {
     setShowSpanish(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const startEditing = (responseId, text, e) => {
+    e.stopPropagation();
+    setEditingId(responseId);
+    if (!editedTexts[responseId]) {
+      setEditedTexts(prev => ({ ...prev, [responseId]: text }));
+    }
+  };
+
+  const cancelEditing = (e) => {
+    e.stopPropagation();
+    setEditingId(null);
+  };
+
+  const handleTextChange = (responseId, newText) => {
+    setEditedTexts(prev => ({ ...prev, [responseId]: newText }));
+  };
+
+  const getDisplayText = (response) => {
+    const key = response.id;
+    // If edited, use edited text
+    if (editedTexts[key]) {
+      return editedTexts[key];
+    }
+    // If supercharged and showing Spanish
+    if (supercharged && showSpanish[key] && translations[key]) {
+      return translations[key];
+    }
+    return response.text;
+  };
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between px-1">
