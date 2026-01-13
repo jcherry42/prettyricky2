@@ -9,16 +9,13 @@ import { TowerTalkButton } from './components/TowerTalkButton';
 import { TowerTalkModal } from './components/TowerTalkModal';
 import { SetupModal } from './components/SetupModal';
 import { ImportModal } from './components/ImportModal';
-import { FavoritesModal } from './components/FavoritesModal';
-import { VSModal } from './components/VSModal';
-import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { AdminSettingsPanel } from './components/AdminSettingsPanel';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 
 function AppContent() {
-  const { showAnalytics, toggleAnalytics, showAdminSettings, toggleAdminSettings, theme } = useSales();
+  const { showAdminSettings, toggleAdminSettings, theme } = useSales();
   
   // Initialize native capabilities on mount
   useEffect(() => {
@@ -71,9 +68,6 @@ function AppContent() {
       <SetupModal />
       <ImportModal />
       <TowerTalkModal />
-      <FavoritesModal />
-      <VSModal />
-      {showAnalytics && <AnalyticsDashboard onClose={() => toggleAnalytics(false)} />}
       {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
       {/* Toast notifications */}
