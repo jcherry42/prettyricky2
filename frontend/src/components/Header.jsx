@@ -20,7 +20,7 @@ export const Header = () => {
   const [brakesPressed, setBrakesPressed] = useState(false);
 
   useEffect(() => {
-    const hasPlayed = sessionStorage.getItem('taillights_startup_played');
+    const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
     if (hasPlayed) {
       setStartupComplete(true);
       setStartupPhase(5);
@@ -47,7 +47,7 @@ export const Header = () => {
           }
           setTimeout(() => {
             setStartupComplete(true);
-            sessionStorage.setItem('taillights_startup_played', 'true');
+            sessionStorage.setItem('superchargd_startup_played', 'true');
           }, 500);
         }
       }, delay);
