@@ -3,7 +3,21 @@ import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 import { DataHealthIndicator } from './DataHealthIndicator';
-import { playNotificationSound, getSoundPreferences } from '../utils/notificationSound';
+import { getSoundPreferences } from '../utils/notificationSound';
+
+// Startup sound
+const playStartupSound = () => {
+  try {
+    const prefs = getSoundPreferences();
+    if (!prefs.enabled) return;
+    
+    const audio = new Audio('/sounds/startup.wav');
+    audio.volume = prefs.volume || 0.7;
+    audio.play().catch(() => {});
+  } catch (e) {
+    console.warn('Startup sound failed:', e);
+  }
+};
 
 export const Header = () => {
   const { 
@@ -28,6 +42,9 @@ export const Header = () => {
       return;
     }
 
+    // Play startup sound at beginning
+    playStartupSound();
+
     // JDM-style startup sequence - outer lights first, then inner, then text
     // Mimics R34 Skyline boot-up sequence
     const phases = [
@@ -42,10 +59,6 @@ export const Header = () => {
       setTimeout(() => {
         setStartupPhase(phase);
         if (phase === 5) {
-          const prefs = getSoundPreferences();
-          if (prefs.enabled) {
-            playNotificationSound(prefs.profile);
-          }
           setTimeout(() => {
             setStartupComplete(true);
             sessionStorage.setItem('superchargd_startup_played', 'true');
