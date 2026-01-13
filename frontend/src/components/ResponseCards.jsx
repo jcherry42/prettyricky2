@@ -88,25 +88,21 @@ export const ResponseCards = () => {
 
   const handleCopy = async (response, e) => {
     e.stopPropagation();
-    const key = response.id;
-    const textToCopy = supercharged && showSpanish[key] && translations[key] 
-      ? translations[key] 
-      : response.text;
+    const textToCopy = getDisplayText(response);
     
     const success = await copyToClipboard(textToCopy);
     if (success) {
       setCopiedId(response.id);
+      setEditingId(null); // Close edit mode after copy
       setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
   const handleSendMessage = (response, e) => {
     e.stopPropagation();
-    const key = response.id;
-    const textToSend = supercharged && showSpanish[key] && translations[key] 
-      ? translations[key] 
-      : response.text;
+    const textToSend = getDisplayText(response);
     
+    setEditingId(null); // Close edit mode after send
     shareToMessages(textToSend);
   };
 
