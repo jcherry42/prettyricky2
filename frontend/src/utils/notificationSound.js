@@ -116,7 +116,7 @@ export const showBrowserNotification = async ({
   title,
   body,
   icon = '/icon-192.png',
-  tag = 'taillights-notification',
+  tag = 'superchargd-notification',
   playSound = true,
   requireInteraction = false,
   data = {}
@@ -183,7 +183,7 @@ export const showStatusChangeNotification = async (customerName, newStatus) => {
 };
 
 // Sound preferences stored in localStorage
-const SOUND_PREFS_KEY = 'taillights_sound_preferences';
+const SOUND_PREFS_KEY = 'superchargd_sound_preferences';
 
 export const getSoundPreferences = () => {
   try {
