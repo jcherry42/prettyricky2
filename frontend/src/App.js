@@ -10,6 +10,7 @@ import { TowerTalkModal } from './components/TowerTalkModal';
 import { SetupModal } from './components/SetupModal';
 import { ImportModal } from './components/ImportModal';
 import { AdminSettingsPanel } from './components/AdminSettingsPanel';
+import { VoiceTranslator } from './components/VoiceTranslator';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
