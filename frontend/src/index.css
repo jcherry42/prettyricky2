@@ -746,8 +746,8 @@ html:not(.dark) .r34-center-text span {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 25px;
-  height: 18px;
+  width: 30px;
+  height: 22px;
   background: radial-gradient(ellipse at right center,
     #ffffff 0%,
     #ffffaa 20%,
@@ -758,7 +758,7 @@ html:not(.dark) .r34-center-text span {
   border-radius: 50%;
   filter: blur(1px);
   animation: r34-core-pulse 0.08s ease-in-out infinite alternate;
-  box-shadow: 0 0 25px 5px #ff8800, 0 0 50px 10px rgba(255,68,0,0.5);
+  box-shadow: 0 0 30px 8px #ff8800, 0 0 60px 15px rgba(255,68,0,0.6);
 }
 
 @keyframes r34-core-pulse {
