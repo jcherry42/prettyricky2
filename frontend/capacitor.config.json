@@ -1,6 +1,6 @@
 {
-  "appId": "com.taillights.salesapp",
-  "appName": "Taillights",
+  "appId": "com.superchargd.salesapp",
+  "appName": "Supercharg'd",
   "webDir": "build",
   "backgroundColor": "#0d0d0d",
   "plugins": {
@@ -29,14 +29,14 @@
   "ios": {
     "contentInset": "automatic",
     "preferredContentMode": "mobile",
-    "scheme": "taillights"
+    "scheme": "superchargd"
   },
   "android": {
     "backgroundColor": "#0d0d0d",
     "allowMixedContent": true
   },
   "server": {
-    "hostname": "taillights.app",
+    "hostname": "superchargd.app",
     "androidScheme": "https"
   }
 }
