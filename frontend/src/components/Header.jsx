@@ -34,6 +34,8 @@ export const Header = () => {
   const [startupPhase, setStartupPhase] = useState(0);
   // Brake light state - activates on screen tap
   const [brakesPressed, setBrakesPressed] = useState(false);
+  // VIN Scanner modal state
+  const [vinScannerOpen, setVinScannerOpen] = useState(false);
 
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
