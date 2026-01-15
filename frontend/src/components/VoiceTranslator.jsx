@@ -132,7 +132,9 @@ export const VoiceTranslator = () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) {}
+        } catch (e) {
+          // Ignore cleanup errors
+        }
       }
     };
   }, [translateToEnglish]);

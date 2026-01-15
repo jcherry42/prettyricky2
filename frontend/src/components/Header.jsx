@@ -136,7 +136,7 @@ export const Header = () => {
 
             {/* Center text */}
             <div className={`r34-center-text ${startupPhase >= 5 ? 'lit' : ''}`}>
-              <span>SUPERCHARG'D</span>
+              <span>SUPERCHARG&apos;D</span>
             </div>
 
             {/* Right taillight cluster - 2 circular lights (inner smaller) */}
