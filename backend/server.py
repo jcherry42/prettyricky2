@@ -1760,7 +1760,7 @@ class VinSaveRequest(BaseModel):
 async def decode_vin(vin: str):
     """
     Decode VIN using NHTSA vPIC API (free US Government API)
-    Returns vehicle year, make, model, and specifications
+    Returns comprehensive vehicle year, make, model, and specifications
     """
     # Validate VIN format
     vin = vin.upper().strip()
@@ -1772,10 +1772,10 @@ async def decode_vin(vin: str):
         raise HTTPException(status_code=400, detail="VIN contains invalid characters (I, O, Q are not allowed)")
     
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=15.0) as http_client:
             # NHTSA vPIC API endpoint
             url = f"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json"
-            response = await client.get(url)
+            response = await http_client.get(url)
             response.raise_for_status()
             data = response.json()
         
@@ -1783,50 +1783,147 @@ async def decode_vin(vin: str):
         if not results:
             raise HTTPException(status_code=404, detail="No vehicle data found for this VIN")
         
-        # Parse NHTSA response into clean format
-        vehicle = {}
-        field_map = {
-            "Make": "make",
-            "Model": "model",
-            "Model Year": "year",
-            "Trim": "trim",
-            "Body Class": "body_class",
-            "Drive Type": "drive_type",
-            "Fuel Type - Primary": "fuel_type",
-            "Engine Number of Cylinders": "cylinders",
-            "Displacement (L)": "displacement",
-            "Engine Model": "engine_model",
-            "Transmission Style": "transmission",
-            "Plant Country": "plant_country",
-            "Plant City": "plant_city",
-            "Doors": "doors",
-            "Manufacturer Name": "manufacturer",
-            "Vehicle Type": "vehicle_type",
-            "GVWR": "gvwr",
-            "Series": "series",
-        }
-        
+        # Build a lookup dict from results
+        raw_data = {}
         for item in results:
             var_name = item.get("Variable", "")
             value = item.get("Value")
-            
-            if var_name in field_map and value:
-                vehicle[field_map[var_name]] = value
+            if value and str(value).strip() and str(value).strip().lower() not in ['not applicable', 'n/a', '-']:
+                raw_data[var_name] = str(value).strip()
         
-        # Build engine description
+        # Comprehensive field mapping
+        vehicle = {
+            # Core Identity
+            "vin": vin,
+            "year": raw_data.get("Model Year"),
+            "make": raw_data.get("Make"),
+            "model": raw_data.get("Model"),
+            "trim": raw_data.get("Trim") or raw_data.get("Series"),
+            
+            # Manufacturer Info
+            "manufacturer": raw_data.get("Manufacturer Name"),
+            "plant_country": raw_data.get("Plant Country"),
+            "plant_city": raw_data.get("Plant City"),
+            "plant_state": raw_data.get("Plant State"),
+            
+            # Body & Style
+            "vehicle_type": raw_data.get("Vehicle Type"),
+            "body_class": raw_data.get("Body Class"),
+            "doors": raw_data.get("Doors"),
+            "drive_type": raw_data.get("Drive Type"),
+            "steering": raw_data.get("Steering Location"),
+            
+            # Powertrain
+            "fuel_type": raw_data.get("Fuel Type - Primary"),
+            "electrification": raw_data.get("Electrification Level"),
+            "cylinders": raw_data.get("Engine Number of Cylinders"),
+            "displacement": raw_data.get("Displacement (L)"),
+            "engine_model": raw_data.get("Engine Model"),
+            "engine_config": raw_data.get("Engine Configuration"),
+            "horsepower": raw_data.get("Engine Brake (hp) From"),
+            "other_engine_info": raw_data.get("Other Engine Info"),
+            "transmission": raw_data.get("Transmission Style"),
+            "transmission_speeds": raw_data.get("Transmission Speeds"),
+            
+            # Safety
+            "airbags_front": raw_data.get("Front Air Bag Locations"),
+            "airbags_side": raw_data.get("Side Air Bag Locations"),
+            "airbags_knee": raw_data.get("Knee Air Bag Locations"),
+            "airbags_curtain": raw_data.get("Curtain Air Bag Locations"),
+            "seat_belts": raw_data.get("Seat Belt Type"),
+            "abs": raw_data.get("Anti-lock Braking System (ABS)"),
+            "esc": raw_data.get("Electronic Stability Control (ESC)"),
+            "traction_control": raw_data.get("Traction Control"),
+            "tpms": raw_data.get("Tire Pressure Monitoring System (TPMS) Type"),
+            "backup_camera": raw_data.get("Backup Camera"),
+            "blind_spot": raw_data.get("Blind Spot Warning (BSW)"),
+            "lane_departure": raw_data.get("Lane Departure Warning (LDW)"),
+            "forward_collision": raw_data.get("Forward Collision Warning (FCW)"),
+            "auto_emergency_braking": raw_data.get("Automatic Emergency Braking (AEB)"),
+            
+            # Dimensions & Weight
+            "gvwr": raw_data.get("Gross Vehicle Weight Rating From"),
+            "curb_weight": raw_data.get("Curb Weight (lb)"),
+            "wheelbase": raw_data.get("Wheelbase (inches)"),
+            "bed_length": raw_data.get("Bed Length (inches)"),
+            "bed_type": raw_data.get("Bed Type"),
+            
+            # Additional
+            "series": raw_data.get("Series"),
+            "series2": raw_data.get("Series2"),
+        }
+        
+        # Clean up None values and build structured response
+        vehicle = {k: v for k, v in vehicle.items() if v is not None}
+        
+        # Build formatted engine string
         engine_parts = []
         if vehicle.get("displacement"):
             engine_parts.append(f"{vehicle['displacement']}L")
         if vehicle.get("cylinders"):
-            engine_parts.append(f"V{vehicle['cylinders']}" if int(vehicle.get('cylinders', 0)) >= 6 else f"{vehicle['cylinders']}-cyl")
+            cyl = int(vehicle['cylinders'])
+            if cyl >= 6:
+                engine_parts.append(f"V{cyl}")
+            elif cyl == 4:
+                engine_parts.append("4-Cylinder")
+            else:
+                engine_parts.append(f"{cyl}-Cylinder")
+        if vehicle.get("engine_config") and "engine_config" not in str(engine_parts):
+            engine_parts.append(vehicle["engine_config"])
         if engine_parts:
-            vehicle["engine"] = " ".join(engine_parts)
+            vehicle["engine_display"] = " ".join(engine_parts)
+        elif vehicle.get("other_engine_info"):
+            vehicle["engine_display"] = vehicle["other_engine_info"]
+        elif vehicle.get("electrification"):
+            vehicle["engine_display"] = vehicle["electrification"]
+        
+        # Build location string
+        loc_parts = []
+        if vehicle.get("plant_city"):
+            loc_parts.append(vehicle["plant_city"])
+        if vehicle.get("plant_state"):
+            loc_parts.append(vehicle["plant_state"])
+        if vehicle.get("plant_country"):
+            # Simplify country name
+            country = vehicle["plant_country"]
+            if "UNITED STATES" in country.upper():
+                country = "USA"
+            elif "(" in country:
+                country = country.split("(")[1].replace(")", "").strip()
+            loc_parts.append(country)
+        if loc_parts:
+            vehicle["assembly_location"] = ", ".join(loc_parts)
+        
+        # Safety features summary
+        safety_features = []
+        if vehicle.get("airbags_front"):
+            safety_features.append("Front Airbags")
+        if vehicle.get("airbags_side"):
+            safety_features.append("Side Airbags")
+        if vehicle.get("airbags_knee"):
+            safety_features.append("Knee Airbags")
+        if vehicle.get("airbags_curtain"):
+            safety_features.append("Curtain Airbags")
+        if vehicle.get("abs"):
+            safety_features.append("ABS")
+        if vehicle.get("esc"):
+            safety_features.append("ESC")
+        if vehicle.get("backup_camera"):
+            safety_features.append("Backup Camera")
+        if vehicle.get("blind_spot"):
+            safety_features.append("Blind Spot Warning")
+        if vehicle.get("lane_departure"):
+            safety_features.append("Lane Departure Warning")
+        if vehicle.get("forward_collision"):
+            safety_features.append("Forward Collision Warning")
+        if vehicle.get("auto_emergency_braking"):
+            safety_features.append("Auto Emergency Braking")
+        if safety_features:
+            vehicle["safety_features"] = safety_features
         
         # Ensure we have minimum required data
         if not vehicle.get("make") or not vehicle.get("model"):
             raise HTTPException(status_code=404, detail="Could not decode vehicle make/model from VIN")
-        
-        vehicle["vin"] = vin
         
         logger.info(f"VIN decoded: {vin} -> {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')}")
         return vehicle
