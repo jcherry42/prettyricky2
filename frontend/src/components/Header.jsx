@@ -102,6 +102,23 @@ export const Header = () => {
           <DataHealthIndicator />
         </div>
         
+        {/* OnStar-style VIN Scanner Button */}
+        <button
+          onClick={() => setVinScannerOpen(true)}
+          className="btn-onstar"
+          data-testid="vin-scanner-btn"
+          title="VIN Scanner"
+        >
+          <div className="onstar-inner">
+            <svg viewBox="0 0 24 24" className="onstar-icon">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" />
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <span className="onstar-label">VIN</span>
+        </button>
+        
         {/* Center - R34 Skyline Taillights */}
         <div className="flex-1 flex justify-center">
           <div className="r34-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
