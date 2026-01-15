@@ -3,6 +3,7 @@ import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 import { DataHealthIndicator } from './DataHealthIndicator';
+import { VinScanner } from './VinScanner';
 import { getSoundPreferences } from '../utils/notificationSound';
 
 // Startup sound
