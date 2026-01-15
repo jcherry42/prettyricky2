@@ -109,11 +109,18 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ### Completed ✅
 - [x] Full backend API with FastAPI
-- [x] **AI Tower Talk with Persuasion Psychology** (JUST COMPLETED)
+- [x] **AI Tower Talk with Persuasion Psychology** (COMPLETED)
   - Purchasing triggers: scarcity, urgency, loss aversion, social proof
   - Relationship builders: reciprocity, commitment/consistency, liking
   - Closing psychology: assumptive framing, future pacing, question closes
   - Objection prevention with value reframing
+- [x] **VIN Scanner Feature** (JUST COMPLETED)
+  - OnStar-style button in header
+  - Camera barcode scanning (via Capacitor ML Kit)
+  - Manual VIN entry option
+  - NHTSA vPIC API integration (free, no API key needed)
+  - Vehicle info display (year, make, model, engine, transmission, etc.)
+  - Save to inventory functionality
 - [x] CRM integration layer (mock + real mode)
 - [x] Webhook processing and notifications
 - [x] R34 Skyline taillight logo with JDM startup animation
@@ -160,6 +167,7 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-13**: Added VIN Scanner feature with OnStar-style button, barcode/manual entry, NHTSA decoder
 - **2026-01-13**: Enhanced AI with persuasion psychology (purchasing triggers, relationship builders, closing techniques)
 - **2026-01-12**: Completed Capacitor mobile builds (iOS + Android platforms added and synced)
 - **2026-01-12**: Rebranded from "Taillights" to "Supercharg'd"
