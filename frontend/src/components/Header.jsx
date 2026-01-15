@@ -257,6 +257,9 @@ export const Header = () => {
           </button>
         </div>
       </div>
+      
+      {/* VIN Scanner Modal */}
+      <VinScanner isOpen={vinScannerOpen} onClose={() => setVinScannerOpen(false)} />
     </header>
   );
 };
