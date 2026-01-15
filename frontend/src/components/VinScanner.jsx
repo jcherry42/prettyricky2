@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine } from 'lucide-react';
+import { X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine, Shield, Fuel, Gauge, MapPin, Settings2, Zap } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -14,7 +14,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
-  const [scannerReady, setScannerReady] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -38,7 +37,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     try {
       const { BarcodeScanner } = await import('@capacitor-mlkit/barcode-scanning');
       
-      // Check permissions
       const { camera } = await BarcodeScanner.checkPermissions();
       if (camera !== 'granted') {
         const { camera: newPermission } = await BarcodeScanner.requestPermissions();
@@ -48,14 +46,12 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
       }
 
-      // Check if scanning is supported
       const { supported } = await BarcodeScanner.isSupported();
       if (!supported) {
         setError('Barcode scanning is not supported on this device');
         return false;
       }
 
-      setScannerReady(true);
       return true;
     } catch (err) {
       console.error('Scanner init error:', err);
@@ -79,8 +75,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
 
     try {
       const { BarcodeScanner } = await import('@capacitor-mlkit/barcode-scanning');
-      
-      // Add scanning UI class to body
       document.body.classList.add('barcode-scanning');
 
       const result = await BarcodeScanner.scan({
@@ -91,7 +85,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
 
       if (result.barcodes && result.barcodes.length > 0) {
         const scannedVin = result.barcodes[0].rawValue;
-        // VINs are 17 characters
         if (scannedVin && scannedVin.length === 17) {
           setVin(scannedVin.toUpperCase());
           await lookupVin(scannedVin.toUpperCase());
@@ -105,7 +98,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
       }
     } catch (err) {
       document.body.classList.remove('barcode-scanning');
-      console.error('Scan error:', err);
       if (err.message !== 'scan canceled') {
         setError('Scanning failed. Try again or enter manually.');
       }
@@ -199,66 +191,44 @@ export const VinScanner = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-md"
         onClick={mode === 'scanning' ? stopScanning : onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 animate-fade-in">
-        <div 
-          className="rounded-2xl overflow-hidden"
-          style={{
-            background: 'linear-gradient(180deg, hsla(220, 15%, 13%, 0.98) 0%, hsla(220, 15%, 8%, 0.98) 100%)',
-            border: '1px solid hsla(220, 20%, 25%, 0.5)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px hsla(200, 100%, 50%, 0.1)',
-          }}
-        >
+      <div className="relative w-full max-w-lg animate-fade-in">
+        <div className="liquid-glass-container rounded-3xl overflow-hidden">
           {/* Header */}
-          <div 
-            className="flex items-center justify-between px-5 py-4"
-            style={{ borderBottom: '1px solid hsla(220, 15%, 20%, 0.5)' }}
-          >
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(180deg, hsla(200, 80%, 50%, 0.2) 0%, hsla(200, 80%, 40%, 0.15) 100%)',
-                  border: '1px solid hsla(200, 80%, 50%, 0.3)',
-                }}
+          <div className="liquid-glass-header px-6 py-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="liquid-glass-icon-circle">
+                  <ScanLine className="w-6 h-6 text-cyan-300" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">VIN Scanner</h2>
+                  <p className="text-xs text-white/50">Instant Vehicle Lookup</p>
+                </div>
+              </div>
+              <button
+                onClick={mode === 'scanning' ? stopScanning : onClose}
+                className="liquid-glass-close"
               >
-                <ScanLine className="w-5 h-5" style={{ color: 'hsla(200, 90%, 60%, 1)' }} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold" style={{ color: 'hsla(200, 90%, 70%, 1)' }}>
-                  VIN Scanner
-                </h2>
-                <p className="text-xs text-muted-foreground">Decode any vehicle</p>
-              </div>
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={mode === 'scanning' ? stopScanning : onClose}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
           </div>
 
           {/* Content */}
-          <div className="p-5">
+          <div className="px-6 pb-6">
             {/* Error Display */}
             {error && (
-              <div 
-                className="mb-4 p-3 rounded-lg flex items-start gap-2"
-                style={{
-                  background: 'hsla(0, 70%, 50%, 0.15)',
-                  border: '1px solid hsla(0, 70%, 50%, 0.3)',
-                }}
-              >
-                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'hsla(0, 80%, 60%, 1)' }} />
-                <p className="text-sm" style={{ color: 'hsla(0, 80%, 70%, 1)' }}>{error}</p>
+              <div className="liquid-glass-error mb-4">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <p className="text-sm">{error}</p>
               </div>
             )}
 
@@ -268,72 +238,46 @@ export const VinScanner = ({ isOpen, onClose }) => {
                 <button
                   onClick={startBarcodeScanning}
                   disabled={loading}
-                  className="w-full p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(180deg, hsla(200, 70%, 45%, 0.2) 0%, hsla(200, 70%, 35%, 0.15) 100%)',
-                    border: '1px solid hsla(200, 70%, 50%, 0.3)',
-                  }}
+                  className="liquid-glass-option-btn w-full"
                   data-testid="scan-barcode-btn"
                 >
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ background: 'hsla(200, 80%, 50%, 0.2)' }}
-                  >
-                    <Camera className="w-6 h-6" style={{ color: 'hsla(200, 90%, 65%, 1)' }} />
+                  <div className="liquid-glass-option-icon cyan">
+                    <Camera className="w-6 h-6" />
                   </div>
-                  <div className="text-left">
-                    <p className="font-semibold" style={{ color: 'hsla(200, 90%, 70%, 1)' }}>
-                      Scan Barcode
-                    </p>
-                    <p className="text-xs text-muted-foreground">Door jamb sticker or window</p>
+                  <div className="text-left flex-1">
+                    <p className="font-semibold text-white">Scan Barcode</p>
+                    <p className="text-xs text-white/50">Door jamb sticker or window</p>
                   </div>
+                  <div className="liquid-glass-arrow">→</div>
                 </button>
 
                 <button
                   onClick={() => setMode('manual')}
-                  className="w-full p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: 'linear-gradient(180deg, hsla(40, 60%, 45%, 0.15) 0%, hsla(40, 60%, 35%, 0.1) 100%)',
-                    border: '1px solid hsla(40, 60%, 50%, 0.25)',
-                  }}
+                  className="liquid-glass-option-btn w-full"
                   data-testid="manual-entry-btn"
                 >
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ background: 'hsla(40, 70%, 50%, 0.15)' }}
-                  >
-                    <Keyboard className="w-6 h-6" style={{ color: 'hsla(40, 80%, 60%, 1)' }} />
+                  <div className="liquid-glass-option-icon amber">
+                    <Keyboard className="w-6 h-6" />
                   </div>
-                  <div className="text-left">
-                    <p className="font-semibold" style={{ color: 'hsla(40, 80%, 65%, 1)' }}>
-                      Enter Manually
-                    </p>
-                    <p className="text-xs text-muted-foreground">Type the 17-digit VIN</p>
+                  <div className="text-left flex-1">
+                    <p className="font-semibold text-white">Enter Manually</p>
+                    <p className="text-xs text-white/50">Type the 17-digit VIN</p>
                   </div>
+                  <div className="liquid-glass-arrow">→</div>
                 </button>
               </div>
             )}
 
             {/* Scanning Mode */}
             {mode === 'scanning' && (
-              <div className="text-center py-8">
-                <div className="relative mx-auto w-48 h-32 mb-4 rounded-lg overflow-hidden" style={{ border: '2px solid hsla(200, 80%, 50%, 0.5)' }}>
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/20 to-transparent animate-scan" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'hsla(200, 90%, 60%, 1)' }} />
-                  </div>
+              <div className="text-center py-10">
+                <div className="liquid-glass-scan-box mx-auto mb-6">
+                  <div className="scan-line" />
+                  <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Point camera at VIN barcode</p>
-                <button
-                  onClick={stopScanning}
-                  className="px-4 py-2 rounded-lg text-sm font-medium"
-                  style={{
-                    background: 'hsla(0, 70%, 50%, 0.2)',
-                    border: '1px solid hsla(0, 70%, 50%, 0.3)',
-                    color: 'hsla(0, 80%, 70%, 1)',
-                  }}
-                >
-                  Cancel
+                <p className="text-white/70 mb-4">Point camera at VIN barcode</p>
+                <button onClick={stopScanning} className="liquid-glass-cancel-btn">
+                  Cancel Scan
                 </button>
               </div>
             )}
@@ -342,8 +286,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
             {mode === 'manual' && (
               <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-2">
-                    Enter 17-digit VIN
+                  <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">
+                    Vehicle Identification Number
                   </label>
                   <input
                     type="text"
@@ -351,107 +295,186 @@ export const VinScanner = ({ isOpen, onClose }) => {
                     onChange={(e) => setManualVin(e.target.value.toUpperCase())}
                     placeholder="1HGCM82633A123456"
                     maxLength={17}
-                    className="w-full px-4 py-3 rounded-lg text-lg font-mono tracking-wider focus:outline-none focus:ring-2"
-                    style={{
-                      background: 'hsla(220, 15%, 12%, 0.8)',
-                      border: '1px solid hsla(220, 15%, 25%, 0.5)',
-                      color: 'inherit',
-                    }}
+                    className="liquid-glass-input"
                     autoFocus
                     data-testid="vin-input"
                   />
-                  <p className="mt-2 text-xs text-muted-foreground text-right">
-                    {manualVin.length}/17 characters
-                  </p>
+                  <div className="flex justify-between mt-2">
+                    <p className="text-xs text-white/40">Letters I, O, Q are not valid</p>
+                    <p className="text-xs text-cyan-400 font-mono">{manualVin.length}/17</p>
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setMode('menu')}
-                    className="flex-1 py-3 rounded-lg font-medium transition-colors"
-                    style={{
-                      background: 'hsla(220, 15%, 20%, 0.5)',
-                      border: '1px solid hsla(220, 15%, 30%, 0.5)',
-                    }}
-                  >
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setMode('menu')} className="liquid-glass-back-btn flex-1">
                     Back
                   </button>
                   <button
                     type="submit"
                     disabled={manualVin.length !== 17 || loading}
-                    className="flex-1 py-3 rounded-lg font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    style={{
-                      background: 'linear-gradient(180deg, hsla(200, 70%, 45%, 0.3) 0%, hsla(200, 70%, 35%, 0.25) 100%)',
-                      border: '1px solid hsla(200, 70%, 50%, 0.4)',
-                      color: 'hsla(200, 90%, 70%, 1)',
-                    }}
+                    className="liquid-glass-submit-btn flex-1"
                     data-testid="decode-vin-btn"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ScanLine className="w-4 h-4" />}
-                    Decode VIN
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ScanLine className="w-5 h-5" />}
+                    <span>Decode VIN</span>
                   </button>
                 </div>
               </form>
             )}
 
-            {/* Result Mode */}
+            {/* Result Mode - Liquid Glass Cards */}
             {mode === 'result' && vehicleData && (
               <div className="space-y-4">
-                {/* Vehicle Summary Card */}
-                <div 
-                  className="p-4 rounded-xl"
-                  style={{
-                    background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.15) 0%, hsla(145, 50%, 25%, 0.1) 100%)',
-                    border: '1px solid hsla(145, 50%, 40%, 0.25)',
-                  }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div 
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'hsla(145, 60%, 40%, 0.2)' }}
-                    >
-                      <Car className="w-6 h-6" style={{ color: 'hsla(145, 70%, 55%, 1)' }} />
+                {/* Main Vehicle Card */}
+                <div className="liquid-glass-card-hero">
+                  <div className="flex items-start gap-4">
+                    <div className="liquid-glass-car-badge">
+                      <Car className="w-8 h-8" />
                     </div>
-                    <div>
-                      <h3 className="font-bold text-lg" style={{ color: 'hsla(145, 70%, 60%, 1)' }}>
-                        {vehicleData.year} {vehicleData.make}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-cyan-300/80 font-medium">{vehicleData.year}</p>
+                      <h3 className="text-2xl font-bold text-white leading-tight">
+                        {vehicleData.make} {vehicleData.model}
                       </h3>
-                      <p className="text-sm text-foreground">{vehicleData.model}</p>
-                      <p className="text-xs text-muted-foreground font-mono mt-1">{vin}</p>
+                      {vehicleData.trim && (
+                        <p className="text-white/60">{vehicleData.trim}</p>
+                      )}
+                      <p className="text-xs font-mono text-white/40 mt-2 tracking-wider">{vin}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Vehicle Details */}
-                <div className="grid grid-cols-2 gap-2">
-                  {vehicleData.trim && (
-                    <DetailItem label="Trim" value={vehicleData.trim} />
+                {/* Specs Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Powertrain Card */}
+                  {(vehicleData.engine_display || vehicleData.fuel_type) && (
+                    <div className="liquid-glass-card">
+                      <div className="liquid-glass-card-header">
+                        <Gauge className="w-4 h-4 text-amber-400" />
+                        <span>Powertrain</span>
+                      </div>
+                      <div className="space-y-2">
+                        {vehicleData.engine_display && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Engine</span>
+                            <span className="value">{vehicleData.engine_display}</span>
+                          </div>
+                        )}
+                        {vehicleData.horsepower && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Power</span>
+                            <span className="value">{vehicleData.horsepower} HP</span>
+                          </div>
+                        )}
+                        {vehicleData.transmission && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Trans</span>
+                            <span className="value">{vehicleData.transmission}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  {vehicleData.body_class && (
-                    <DetailItem label="Body" value={vehicleData.body_class} />
+
+                  {/* Fuel Card */}
+                  {(vehicleData.fuel_type || vehicleData.electrification) && (
+                    <div className="liquid-glass-card">
+                      <div className="liquid-glass-card-header">
+                        {vehicleData.electrification ? <Zap className="w-4 h-4 text-green-400" /> : <Fuel className="w-4 h-4 text-orange-400" />}
+                        <span>Fuel</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="liquid-glass-spec">
+                          <span className="label">Type</span>
+                          <span className="value">{vehicleData.fuel_type || 'Electric'}</span>
+                        </div>
+                        {vehicleData.electrification && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">EV Type</span>
+                            <span className="value">{vehicleData.electrification}</span>
+                          </div>
+                        )}
+                        {vehicleData.drive_type && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Drive</span>
+                            <span className="value">{vehicleData.drive_type}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  {vehicleData.drive_type && (
-                    <DetailItem label="Drive" value={vehicleData.drive_type} />
+
+                  {/* Body Card */}
+                  {(vehicleData.body_class || vehicleData.doors) && (
+                    <div className="liquid-glass-card">
+                      <div className="liquid-glass-card-header">
+                        <Settings2 className="w-4 h-4 text-purple-400" />
+                        <span>Body</span>
+                      </div>
+                      <div className="space-y-2">
+                        {vehicleData.body_class && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Style</span>
+                            <span className="value">{vehicleData.body_class}</span>
+                          </div>
+                        )}
+                        {vehicleData.doors && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Doors</span>
+                            <span className="value">{vehicleData.doors}</span>
+                          </div>
+                        )}
+                        {vehicleData.vehicle_type && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">Type</span>
+                            <span className="value">{vehicleData.vehicle_type}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
-                  {vehicleData.engine && (
-                    <DetailItem label="Engine" value={vehicleData.engine} />
-                  )}
-                  {vehicleData.fuel_type && (
-                    <DetailItem label="Fuel" value={vehicleData.fuel_type} />
-                  )}
-                  {vehicleData.transmission && (
-                    <DetailItem label="Trans" value={vehicleData.transmission} />
-                  )}
-                  {vehicleData.plant_country && (
-                    <DetailItem label="Made In" value={vehicleData.plant_country} />
-                  )}
-                  {vehicleData.doors && (
-                    <DetailItem label="Doors" value={vehicleData.doors} />
+
+                  {/* Assembly Card */}
+                  {vehicleData.assembly_location && (
+                    <div className="liquid-glass-card">
+                      <div className="liquid-glass-card-header">
+                        <MapPin className="w-4 h-4 text-rose-400" />
+                        <span>Assembly</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="liquid-glass-spec">
+                          <span className="label">Built In</span>
+                          <span className="value">{vehicleData.assembly_location}</span>
+                        </div>
+                        {vehicleData.manufacturer && (
+                          <div className="liquid-glass-spec">
+                            <span className="label">By</span>
+                            <span className="value text-xs">{vehicleData.manufacturer}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
 
+                {/* Safety Features */}
+                {vehicleData.safety_features && vehicleData.safety_features.length > 0 && (
+                  <div className="liquid-glass-card">
+                    <div className="liquid-glass-card-header">
+                      <Shield className="w-4 h-4 text-emerald-400" />
+                      <span>Safety Features</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {vehicleData.safety_features.map((feature, idx) => (
+                        <span key={idx} className="liquid-glass-tag">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => {
                       setMode('menu');
@@ -459,40 +482,27 @@ export const VinScanner = ({ isOpen, onClose }) => {
                       setVin('');
                       setSaved(false);
                     }}
-                    className="flex-1 py-3 rounded-lg font-medium transition-colors"
-                    style={{
-                      background: 'hsla(220, 15%, 20%, 0.5)',
-                      border: '1px solid hsla(220, 15%, 30%, 0.5)',
-                    }}
+                    className="liquid-glass-back-btn flex-1"
                   >
                     Scan Another
                   </button>
                   <button
                     onClick={saveToInventory}
                     disabled={loading || saved}
-                    className="flex-1 py-3 rounded-lg font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                    style={{
-                      background: saved 
-                        ? 'linear-gradient(180deg, hsla(145, 60%, 40%, 0.3) 0%, hsla(145, 60%, 30%, 0.25) 100%)'
-                        : 'linear-gradient(180deg, hsla(200, 70%, 45%, 0.3) 0%, hsla(200, 70%, 35%, 0.25) 100%)',
-                      border: saved
-                        ? '1px solid hsla(145, 60%, 45%, 0.4)'
-                        : '1px solid hsla(200, 70%, 50%, 0.4)',
-                      color: saved ? 'hsla(145, 80%, 60%, 1)' : 'hsla(200, 90%, 70%, 1)',
-                    }}
+                    className={`liquid-glass-save-btn flex-1 ${saved ? 'saved' : ''}`}
                     data-testid="save-vehicle-btn"
                   >
                     {loading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : saved ? (
                       <>
-                        <Check className="w-4 h-4" />
-                        Saved!
+                        <Check className="w-5 h-5" />
+                        <span>Saved!</span>
                       </>
                     ) : (
                       <>
-                        <Save className="w-4 h-4" />
-                        Save to Inventory
+                        <Save className="w-5 h-5" />
+                        <span>Save to Inventory</span>
                       </>
                     )}
                   </button>
@@ -504,36 +514,316 @@ export const VinScanner = ({ isOpen, onClose }) => {
       </div>
 
       <style>{`
-        @keyframes scan {
-          0%, 100% { transform: translateY(-100%); }
-          50% { transform: translateY(100%); }
+        /* Liquid Glass Container */
+        .liquid-glass-container {
+          background: linear-gradient(
+            135deg,
+            rgba(30, 41, 59, 0.85) 0%,
+            rgba(15, 23, 42, 0.9) 50%,
+            rgba(30, 41, 59, 0.85) 100%
+          );
+          backdrop-filter: blur(20px) saturate(180%);
+          border: 1px solid rgba(148, 163, 184, 0.15);
+          box-shadow: 
+            0 32px 64px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+            0 1px 0 rgba(255, 255, 255, 0.1) inset;
         }
-        .animate-scan {
-          animation: scan 2s ease-in-out infinite;
+
+        .liquid-glass-header {
+          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+          border-bottom: 1px solid rgba(148, 163, 184, 0.1);
         }
-        body.barcode-scanning {
-          background: transparent !important;
+
+        .liquid-glass-icon-circle {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%);
+          border: 1px solid rgba(34, 211, 238, 0.3);
+          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
         }
-        body.barcode-scanning > *:not(.barcode-scanner-active) {
-          visibility: hidden;
+
+        .liquid-glass-close {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.6);
+          transition: all 0.2s ease;
+        }
+        .liquid-glass-close:hover {
+          background: rgba(239, 68, 68, 0.2);
+          border-color: rgba(239, 68, 68, 0.4);
+          color: #ef4444;
+        }
+
+        .liquid-glass-error {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 14px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+          border: 1px solid rgba(239, 68, 68, 0.25);
+          color: #fca5a5;
+        }
+
+        /* Option Buttons */
+        .liquid-glass-option-btn {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 18px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .liquid-glass-option-btn:hover {
+          background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+          border-color: rgba(255, 255, 255, 0.15);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .liquid-glass-option-icon {
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .liquid-glass-option-icon.cyan {
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0.05) 100%);
+          border: 1px solid rgba(34, 211, 238, 0.3);
+          color: #22d3ee;
+        }
+        .liquid-glass-option-icon.amber {
+          background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.05) 100%);
+          border: 1px solid rgba(251, 191, 36, 0.3);
+          color: #fbbf24;
+        }
+
+        .liquid-glass-arrow {
+          font-size: 20px;
+          color: rgba(255, 255, 255, 0.3);
+          transition: all 0.2s ease;
+        }
+        .liquid-glass-option-btn:hover .liquid-glass-arrow {
+          color: rgba(255, 255, 255, 0.7);
+          transform: translateX(4px);
+        }
+
+        /* Scan Box */
+        .liquid-glass-scan-box {
+          width: 200px;
+          height: 140px;
+          border-radius: 16px;
+          border: 2px solid rgba(34, 211, 238, 0.4);
+          background: rgba(34, 211, 238, 0.05);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+        }
+        .scan-line {
+          position: absolute;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #22d3ee, transparent);
+          animation: scanMove 2s ease-in-out infinite;
+          box-shadow: 0 0 20px #22d3ee;
+        }
+        @keyframes scanMove {
+          0%, 100% { top: 10%; }
+          50% { top: 90%; }
+        }
+
+        /* Input */
+        .liquid-glass-input {
+          width: 100%;
+          padding: 16px 20px;
+          border-radius: 14px;
+          font-size: 18px;
+          font-family: 'SF Mono', 'Fira Code', monospace;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(148, 163, 184, 0.2);
+          color: white;
+          transition: all 0.2s ease;
+        }
+        .liquid-glass-input:focus {
+          outline: none;
+          border-color: rgba(34, 211, 238, 0.5);
+          box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1), 0 0 20px rgba(34, 211, 238, 0.1);
+        }
+        .liquid-glass-input::placeholder {
+          color: rgba(148, 163, 184, 0.4);
+          letter-spacing: 1px;
+        }
+
+        /* Buttons */
+        .liquid-glass-back-btn, .liquid-glass-cancel-btn {
+          padding: 14px 20px;
+          border-radius: 12px;
+          font-weight: 600;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.7);
+          transition: all 0.2s ease;
+        }
+        .liquid-glass-back-btn:hover, .liquid-glass-cancel-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .liquid-glass-submit-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 14px 20px;
+          border-radius: 12px;
+          font-weight: 600;
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0.1) 100%);
+          border: 1px solid rgba(34, 211, 238, 0.4);
+          color: #22d3ee;
+          transition: all 0.2s ease;
+        }
+        .liquid-glass-submit-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0.15) 100%);
+          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+        }
+        .liquid-glass-submit-btn:disabled {
+          opacity: 0.5;
+        }
+
+        .liquid-glass-save-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 14px 20px;
+          border-radius: 12px;
+          font-weight: 600;
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0.1) 100%);
+          border: 1px solid rgba(34, 211, 238, 0.4);
+          color: #22d3ee;
+          transition: all 0.3s ease;
+        }
+        .liquid-glass-save-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0.15) 100%);
+          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+        }
+        .liquid-glass-save-btn.saved {
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.1) 100%);
+          border-color: rgba(34, 197, 94, 0.4);
+          color: #22c55e;
+        }
+        .liquid-glass-save-btn:disabled {
+          opacity: 0.6;
+        }
+
+        /* Hero Card */
+        .liquid-glass-card-hero {
+          padding: 24px;
+          border-radius: 20px;
+          background: linear-gradient(
+            135deg,
+            rgba(34, 211, 238, 0.08) 0%,
+            rgba(59, 130, 246, 0.05) 50%,
+            rgba(139, 92, 246, 0.05) 100%
+          );
+          border: 1px solid rgba(34, 211, 238, 0.2);
+          box-shadow: 
+            0 0 40px rgba(34, 211, 238, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .liquid-glass-car-badge {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
+          border: 1px solid rgba(34, 197, 94, 0.3);
+          color: #22c55e;
+          box-shadow: 0 0 24px rgba(34, 197, 94, 0.2);
+        }
+
+        /* Info Cards */
+        .liquid-glass-card {
+          padding: 16px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          backdrop-filter: blur(10px);
+        }
+
+        .liquid-glass-card-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: rgba(255, 255, 255, 0.5);
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .liquid-glass-spec {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 6px 0;
+        }
+        .liquid-glass-spec .label {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.4);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .liquid-glass-spec .value {
+          font-size: 13px;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.9);
+          text-align: right;
+          max-width: 60%;
+        }
+
+        /* Safety Tags */
+        .liquid-glass-tag {
+          display: inline-block;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 500;
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.25);
+          color: #86efac;
         }
       `}</style>
     </div>
   );
 };
-
-// Helper component for detail items
-const DetailItem = ({ label, value }) => (
-  <div 
-    className="p-2 rounded-lg"
-    style={{
-      background: 'hsla(220, 15%, 15%, 0.5)',
-      border: '1px solid hsla(220, 15%, 22%, 0.4)',
-    }}
-  >
-    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
-    <p className="text-sm font-medium truncate">{value}</p>
-  </div>
-);
 
 export default VinScanner;
