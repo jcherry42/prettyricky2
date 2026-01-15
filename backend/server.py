@@ -1748,6 +1748,151 @@ async def get_event_types():
     return {"event_types": [e.value for e in EventType]}
 
 
+# ============== VIN DECODER (NHTSA vPIC API) ==============
+
+import httpx
+
+class VinSaveRequest(BaseModel):
+    vin: str
+    vehicle_data: Dict[str, Any]
+
+@api_router.get("/vin/decode/{vin}")
+async def decode_vin(vin: str):
+    """
+    Decode VIN using NHTSA vPIC API (free US Government API)
+    Returns vehicle year, make, model, and specifications
+    """
+    # Validate VIN format
+    vin = vin.upper().strip()
+    if len(vin) != 17:
+        raise HTTPException(status_code=400, detail="VIN must be exactly 17 characters")
+    
+    # Invalid characters for VIN (I, O, Q are never used)
+    if any(c in vin for c in ['I', 'O', 'Q']):
+        raise HTTPException(status_code=400, detail="VIN contains invalid characters (I, O, Q are not allowed)")
+    
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            # NHTSA vPIC API endpoint
+            url = f"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json"
+            response = await client.get(url)
+            response.raise_for_status()
+            data = response.json()
+        
+        results = data.get("Results", [])
+        if not results:
+            raise HTTPException(status_code=404, detail="No vehicle data found for this VIN")
+        
+        # Parse NHTSA response into clean format
+        vehicle = {}
+        field_map = {
+            "Make": "make",
+            "Model": "model",
+            "Model Year": "year",
+            "Trim": "trim",
+            "Body Class": "body_class",
+            "Drive Type": "drive_type",
+            "Fuel Type - Primary": "fuel_type",
+            "Engine Number of Cylinders": "cylinders",
+            "Displacement (L)": "displacement",
+            "Engine Model": "engine_model",
+            "Transmission Style": "transmission",
+            "Plant Country": "plant_country",
+            "Plant City": "plant_city",
+            "Doors": "doors",
+            "Manufacturer Name": "manufacturer",
+            "Vehicle Type": "vehicle_type",
+            "GVWR": "gvwr",
+            "Series": "series",
+        }
+        
+        for item in results:
+            var_name = item.get("Variable", "")
+            value = item.get("Value")
+            
+            if var_name in field_map and value:
+                vehicle[field_map[var_name]] = value
+        
+        # Build engine description
+        engine_parts = []
+        if vehicle.get("displacement"):
+            engine_parts.append(f"{vehicle['displacement']}L")
+        if vehicle.get("cylinders"):
+            engine_parts.append(f"V{vehicle['cylinders']}" if int(vehicle.get('cylinders', 0)) >= 6 else f"{vehicle['cylinders']}-cyl")
+        if engine_parts:
+            vehicle["engine"] = " ".join(engine_parts)
+        
+        # Ensure we have minimum required data
+        if not vehicle.get("make") or not vehicle.get("model"):
+            raise HTTPException(status_code=404, detail="Could not decode vehicle make/model from VIN")
+        
+        vehicle["vin"] = vin
+        
+        logger.info(f"VIN decoded: {vin} -> {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')}")
+        return vehicle
+        
+    except httpx.HTTPError as e:
+        logger.error(f"NHTSA API error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to connect to VIN decoder service")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"VIN decode error: {e}")
+        raise HTTPException(status_code=500, detail=f"VIN decode failed: {str(e)}")
+
+
+@api_router.post("/vin/save")
+async def save_vin_vehicle(request: VinSaveRequest):
+    """
+    Save a decoded vehicle to inventory
+    """
+    try:
+        vin = request.vin.upper().strip()
+        vdata = request.vehicle_data
+        
+        # Build vehicle record for inventory
+        vehicle_record = {
+            "vin": vin,
+            "year": int(vdata.get("year", 0)) if vdata.get("year") else None,
+            "make": vdata.get("make", ""),
+            "model": vdata.get("model", ""),
+            "trim": vdata.get("trim"),
+            "body_class": vdata.get("body_class"),
+            "drive_type": vdata.get("drive_type"),
+            "fuel_type": vdata.get("fuel_type"),
+            "engine": vdata.get("engine"),
+            "transmission": vdata.get("transmission"),
+            "doors": vdata.get("doors"),
+            "plant_country": vdata.get("plant_country"),
+            "source_id": "vin_scanner",
+            "is_new": True,  # Assume new unless specified
+            "status": "available",
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        
+        # Check if VIN already exists
+        existing = await db.vehicles.find_one({"vin": vin})
+        if existing:
+            # Update existing record
+            await db.vehicles.update_one(
+                {"vin": vin},
+                {"$set": {**vehicle_record, "updated_at": datetime.now(timezone.utc)}}
+            )
+            logger.info(f"Updated existing vehicle: {vin}")
+            return {"success": True, "message": "Vehicle updated", "vin": vin}
+        else:
+            # Insert new record
+            vehicle_record["id"] = str(uuid.uuid4())
+            await db.vehicles.insert_one(vehicle_record)
+            logger.info(f"Saved new vehicle: {vin}")
+            return {"success": True, "message": "Vehicle saved to inventory", "vin": vin}
+        
+    except Exception as e:
+        logger.error(f"Save VIN error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to save vehicle: {str(e)}")
+
+
 # ============== FAVORITES CATEGORIES ==============
 
 # Favorites categories matching the existing patterns
