@@ -2175,6 +2175,190 @@ async def get_registered_devices():
     return {"devices": devices, "count": len(devices)}
 
 
+# ============== EJECT - SEND CUSTOMER SNAPSHOT VIA SMS ==============
+
+class EjectRequest(BaseModel):
+    customer_id: str
+    recipient_phone: str  # User's phone number to receive the snapshot
+
+
+@api_router.post("/eject/customer")
+async def eject_customer_snapshot(request: EjectRequest):
+    """
+    Eject - Send a customer profile snapshot via SMS
+    Includes: Name, Phone, Email, and attached vehicle VINs
+    """
+    try:
+        # Get customer
+        customer = await db.customers.find_one({"id": request.customer_id}, {"_id": 0})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Get attached vehicles
+        vehicle_vins = []
+        if customer.get("vehicle_interests"):
+            vehicles = await db.vehicles.find(
+                {"id": {"$in": customer["vehicle_interests"]}},
+                {"_id": 0, "vin": 1, "year": 1, "make": 1, "model": 1}
+            ).to_list(10)
+            for v in vehicles:
+                if v.get("vin"):
+                    vehicle_vins.append(f"{v.get('year', '')} {v.get('make', '')} {v.get('model', '')} - {v['vin']}")
+                else:
+                    vehicle_vins.append(f"{v.get('year', '')} {v.get('make', '')} {v.get('model', '')}")
+        
+        # Get trade-in if exists
+        trade_in_info = None
+        if customer.get("trade_in_vehicle_id"):
+            trade_in = await db.vehicles.find_one(
+                {"id": customer["trade_in_vehicle_id"]},
+                {"_id": 0, "vin": 1, "year": 1, "make": 1, "model": 1}
+            )
+            if trade_in:
+                trade_in_info = f"{trade_in.get('year', '')} {trade_in.get('make', '')} {trade_in.get('model', '')} - {trade_in.get('vin', 'No VIN')}"
+        
+        # Build snapshot message
+        name = f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip()
+        phone = customer.get('phone', 'N/A')
+        email = customer.get('email', 'N/A')
+        status = customer.get('lead_status', 'N/A').upper()
+        
+        message_lines = [
+            f"🚗 SUPERCHARG'D SNAPSHOT",
+            f"━━━━━━━━━━━━━━━━",
+            f"👤 {name}",
+            f"📱 {phone}",
+            f"✉️ {email}",
+            f"📊 Status: {status}",
+        ]
+        
+        if vehicle_vins:
+            message_lines.append(f"━━━━━━━━━━━━━━━━")
+            message_lines.append(f"🎯 INTERESTED IN:")
+            for vin in vehicle_vins:
+                message_lines.append(f"  • {vin}")
+        
+        if trade_in_info:
+            message_lines.append(f"━━━━━━━━━━━━━━━━")
+            message_lines.append(f"🔄 TRADE-IN:")
+            message_lines.append(f"  • {trade_in_info}")
+        
+        message_lines.append(f"━━━━━━━━━━━━━━━━")
+        message_lines.append(f"Sent via Supercharg'd")
+        
+        sms_message = "\n".join(message_lines)
+        
+        # Initialize notification service and send SMS
+        await notification_service.initialize()
+        
+        result = await notification_service.send_sms(
+            to_number=request.recipient_phone,
+            message=sms_message
+        )
+        
+        if result.get("success"):
+            # Log the eject action
+            await db.customers.update_one(
+                {"id": request.customer_id},
+                {
+                    "$push": {
+                        "interactions": {
+                            "id": str(uuid.uuid4()),
+                            "interaction_type": "eject",
+                            "content": f"Profile snapshot sent to {request.recipient_phone}",
+                            "created_at": datetime.now(timezone.utc)
+                        }
+                    }
+                }
+            )
+            
+            return {
+                "success": True,
+                "message": "Snapshot sent successfully",
+                "sent_to": request.recipient_phone
+            }
+        else:
+            return {
+                "success": False,
+                "error": result.get("error", "Failed to send SMS"),
+                "hint": "Make sure Twilio is configured in settings"
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Eject error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/eject/preview/{customer_id}")
+async def preview_eject_snapshot(customer_id: str):
+    """Preview the snapshot message before sending"""
+    try:
+        customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Get attached vehicles
+        vehicle_vins = []
+        if customer.get("vehicle_interests"):
+            vehicles = await db.vehicles.find(
+                {"id": {"$in": customer["vehicle_interests"]}},
+                {"_id": 0, "vin": 1, "year": 1, "make": 1, "model": 1}
+            ).to_list(10)
+            for v in vehicles:
+                if v.get("vin"):
+                    vehicle_vins.append(f"{v.get('year', '')} {v.get('make', '')} {v.get('model', '')} - {v['vin']}")
+                else:
+                    vehicle_vins.append(f"{v.get('year', '')} {v.get('make', '')} {v.get('model', '')}")
+        
+        name = f"{customer.get('first_name', '')} {customer.get('last_name', '')}".strip()
+        
+        return {
+            "customer_name": name,
+            "phone": customer.get('phone'),
+            "email": customer.get('email'),
+            "status": customer.get('lead_status'),
+            "vehicles": vehicle_vins,
+            "trade_in_vehicle_id": customer.get("trade_in_vehicle_id")
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Preview error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== USER SETTINGS (Phone Number) ==============
+
+class UserSettingsUpdate(BaseModel):
+    phone_number: Optional[str] = None
+    name: Optional[str] = None
+
+
+@api_router.get("/user/settings")
+async def get_user_settings():
+    """Get user settings including phone number for eject"""
+    settings = await db.user_settings.find_one({"type": "user_profile"}, {"_id": 0})
+    return settings or {"phone_number": None, "name": None}
+
+
+@api_router.patch("/user/settings")
+async def update_user_settings(updates: UserSettingsUpdate):
+    """Update user settings"""
+    update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+    update_data["type"] = "user_profile"
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.user_settings.update_one(
+        {"type": "user_profile"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    return {"success": True, "updated": update_data}
+
+
 # ============== WEBHOOK TO NOTIFICATION HANDLERS ==============
 
 async def handle_hot_lead_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
