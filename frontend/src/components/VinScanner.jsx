@@ -2,12 +2,10 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine, Shield, Fuel, Gauge, MapPin, Settings2, Zap } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-// Check if we're running in Capacitor
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform();
 
 export const VinScanner = ({ isOpen, onClose }) => {
-  const [mode, setMode] = useState('menu'); // 'menu', 'scanning', 'manual', 'result'
+  const [mode, setMode] = useState('menu');
   const [vin, setVin] = useState('');
   const [manualVin, setManualVin] = useState('');
   const [vehicleData, setVehicleData] = useState(null);
@@ -15,7 +13,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
 
-  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setMode('menu');
@@ -27,10 +24,9 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Initialize barcode scanner
   const initScanner = useCallback(async () => {
     if (!isCapacitor) {
-      setError('Camera scanning requires the mobile app. Use manual entry instead.');
+      setError('Camera scanning requires the mobile app. Use manual entry.');
       return false;
     }
 
@@ -41,14 +37,14 @@ export const VinScanner = ({ isOpen, onClose }) => {
       if (camera !== 'granted') {
         const { camera: newPermission } = await BarcodeScanner.requestPermissions();
         if (newPermission !== 'granted') {
-          setError('Camera permission is required for scanning');
+          setError('Camera permission required');
           return false;
         }
       }
 
       const { supported } = await BarcodeScanner.isSupported();
       if (!supported) {
-        setError('Barcode scanning is not supported on this device');
+        setError('Barcode scanning not supported');
         return false;
       }
 
@@ -60,7 +56,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   }, []);
 
-  // Start barcode scanning
   const startBarcodeScanning = useCallback(async () => {
     setError(null);
     setLoading(true);
@@ -83,23 +78,23 @@ export const VinScanner = ({ isOpen, onClose }) => {
 
       document.body.classList.remove('barcode-scanning');
 
-      if (result.barcodes && result.barcodes.length > 0) {
+      if (result.barcodes?.length > 0) {
         const scannedVin = result.barcodes[0].rawValue;
-        if (scannedVin && scannedVin.length === 17) {
+        if (scannedVin?.length === 17) {
           setVin(scannedVin.toUpperCase());
           await lookupVin(scannedVin.toUpperCase());
         } else {
-          setError('Invalid VIN format. VIN must be 17 characters.');
+          setError('Invalid VIN. Must be 17 characters.');
           setMode('menu');
         }
       } else {
-        setError('No barcode detected. Try again or enter manually.');
+        setError('No barcode detected. Try manual entry.');
         setMode('menu');
       }
     } catch (err) {
       document.body.classList.remove('barcode-scanning');
       if (err.message !== 'scan canceled') {
-        setError('Scanning failed. Try again or enter manually.');
+        setError('Scan failed. Try manual entry.');
       }
       setMode('menu');
     } finally {
@@ -107,7 +102,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   }, [initScanner]);
 
-  // Stop scanning
   const stopScanning = useCallback(async () => {
     try {
       if (isCapacitor) {
@@ -122,7 +116,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     setLoading(false);
   }, []);
 
-  // Lookup VIN via NHTSA API
   const lookupVin = async (vinNumber) => {
     setLoading(true);
     setError(null);
@@ -131,14 +124,11 @@ export const VinScanner = ({ isOpen, onClose }) => {
       const res = await fetch(`${BACKEND_URL}/api/vin/decode/${vinNumber}`);
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.detail || 'VIN lookup failed');
-      }
+      if (!res.ok) throw new Error(data.detail || 'VIN lookup failed');
 
       setVehicleData(data);
       setMode('result');
     } catch (err) {
-      console.error('VIN lookup error:', err);
       setError(err.message || 'Failed to decode VIN');
       setMode('menu');
     } finally {
@@ -146,13 +136,12 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle manual VIN entry
   const handleManualSubmit = async (e) => {
     e.preventDefault();
     const cleanVin = manualVin.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
     
     if (cleanVin.length !== 17) {
-      setError('VIN must be exactly 17 characters');
+      setError('VIN must be 17 characters');
       return;
     }
 
@@ -160,7 +149,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     await lookupVin(cleanVin);
   };
 
-  // Save vehicle to inventory
   const saveToInventory = async () => {
     if (!vehicleData) return;
 
@@ -169,15 +157,12 @@ export const VinScanner = ({ isOpen, onClose }) => {
       const res = await fetch(`${BACKEND_URL}/api/vin/save`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vin: vin,
-          vehicle_data: vehicleData,
-        }),
+        body: JSON.stringify({ vin, vehicle_data: vehicleData }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.detail || 'Failed to save vehicle');
+        throw new Error(data.detail || 'Failed to save');
       }
 
       setSaved(true);
@@ -191,635 +176,615 @@ export const VinScanner = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-md"
-        onClick={mode === 'scanning' ? stopScanning : onClose}
-      />
+    <div className="vin-modal-overlay" onClick={mode === 'scanning' ? stopScanning : onClose}>
+      <div className="vin-modal" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="vin-modal-header">
+          <div className="vin-header-icon">
+            <ScanLine className="w-5 h-5" />
+          </div>
+          <div>
+            <h2>VIN Scanner</h2>
+            <p>Decode any vehicle</p>
+          </div>
+          <button onClick={mode === 'scanning' ? stopScanning : onClose} className="vin-close-btn">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-      {/* Modal */}
-      <div className="relative w-full max-w-lg animate-fade-in">
-        <div className="liquid-glass-container rounded-3xl overflow-hidden">
-          {/* Header */}
-          <div className="liquid-glass-header px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="liquid-glass-icon-circle">
-                  <ScanLine className="w-6 h-6 text-cyan-300" />
+        {/* Content */}
+        <div className="vin-modal-content">
+          {error && (
+            <div className="vin-error">
+              <AlertCircle className="w-4 h-4" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Menu Mode */}
+          {mode === 'menu' && (
+            <div className="vin-menu">
+              <button onClick={startBarcodeScanning} disabled={loading} className="vin-option">
+                <div className="vin-option-icon cyan">
+                  <Camera className="w-6 h-6" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">VIN Scanner</h2>
-                  <p className="text-xs text-white/50">Instant Vehicle Lookup</p>
+                <div className="vin-option-text">
+                  <span className="title">Scan Barcode</span>
+                  <span className="subtitle">Door jamb or window sticker</span>
                 </div>
-              </div>
-              <button
-                onClick={mode === 'scanning' ? stopScanning : onClose}
-                className="liquid-glass-close"
-              >
-                <X className="w-5 h-5" />
+              </button>
+
+              <button onClick={() => setMode('manual')} className="vin-option">
+                <div className="vin-option-icon amber">
+                  <Keyboard className="w-6 h-6" />
+                </div>
+                <div className="vin-option-text">
+                  <span className="title">Enter Manually</span>
+                  <span className="subtitle">Type the 17-digit VIN</span>
+                </div>
               </button>
             </div>
-          </div>
+          )}
 
-          {/* Content */}
-          <div className="px-6 pb-6">
-            {/* Error Display */}
-            {error && (
-              <div className="liquid-glass-error mb-4">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <p className="text-sm">{error}</p>
+          {/* Scanning Mode */}
+          {mode === 'scanning' && (
+            <div className="vin-scanning">
+              <div className="scan-box">
+                <div className="scan-line" />
+                <Loader2 className="w-8 h-8 animate-spin" />
               </div>
-            )}
+              <p>Point camera at VIN barcode</p>
+              <button onClick={stopScanning} className="vin-cancel-btn">Cancel</button>
+            </div>
+          )}
 
-            {/* Menu Mode */}
-            {mode === 'menu' && (
-              <div className="space-y-3">
-                <button
-                  onClick={startBarcodeScanning}
-                  disabled={loading}
-                  className="liquid-glass-option-btn w-full"
-                  data-testid="scan-barcode-btn"
-                >
-                  <div className="liquid-glass-option-icon cyan">
-                    <Camera className="w-6 h-6" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-white">Scan Barcode</p>
-                    <p className="text-xs text-white/50">Door jamb sticker or window</p>
-                  </div>
-                  <div className="liquid-glass-arrow">→</div>
-                </button>
-
-                <button
-                  onClick={() => setMode('manual')}
-                  className="liquid-glass-option-btn w-full"
-                  data-testid="manual-entry-btn"
-                >
-                  <div className="liquid-glass-option-icon amber">
-                    <Keyboard className="w-6 h-6" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-semibold text-white">Enter Manually</p>
-                    <p className="text-xs text-white/50">Type the 17-digit VIN</p>
-                  </div>
-                  <div className="liquid-glass-arrow">→</div>
+          {/* Manual Entry */}
+          {mode === 'manual' && (
+            <form onSubmit={handleManualSubmit} className="vin-manual">
+              <label>Vehicle Identification Number</label>
+              <input
+                type="text"
+                value={manualVin}
+                onChange={(e) => setManualVin(e.target.value.toUpperCase())}
+                placeholder="1HGCM82633A123456"
+                maxLength={17}
+                autoFocus
+                data-testid="vin-input"
+              />
+              <div className="vin-input-info">
+                <span>Letters I, O, Q not valid</span>
+                <span className="count">{manualVin.length}/17</span>
+              </div>
+              <div className="vin-form-btns">
+                <button type="button" onClick={() => setMode('menu')} className="vin-back-btn">Back</button>
+                <button type="submit" disabled={manualVin.length !== 17 || loading} className="vin-submit-btn" data-testid="decode-vin-btn">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ScanLine className="w-4 h-4" />}
+                  Decode
                 </button>
               </div>
-            )}
+            </form>
+          )}
 
-            {/* Scanning Mode */}
-            {mode === 'scanning' && (
-              <div className="text-center py-10">
-                <div className="liquid-glass-scan-box mx-auto mb-6">
-                  <div className="scan-line" />
-                  <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
+          {/* Results */}
+          {mode === 'result' && vehicleData && (
+            <div className="vin-results">
+              {/* Vehicle Hero */}
+              <div className="vin-hero">
+                <div className="vin-hero-icon">
+                  <Car className="w-6 h-6" />
                 </div>
-                <p className="text-white/70 mb-4">Point camera at VIN barcode</p>
-                <button onClick={stopScanning} className="liquid-glass-cancel-btn">
-                  Cancel Scan
-                </button>
+                <div className="vin-hero-info">
+                  <span className="year">{vehicleData.year}</span>
+                  <h3>{vehicleData.make} {vehicleData.model}</h3>
+                  {vehicleData.trim && <span className="trim">{vehicleData.trim}</span>}
+                  <span className="vin-number">{vin}</span>
+                </div>
               </div>
-            )}
 
-            {/* Manual Entry Mode */}
-            {mode === 'manual' && (
-              <form onSubmit={handleManualSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">
-                    Vehicle Identification Number
-                  </label>
-                  <input
-                    type="text"
-                    value={manualVin}
-                    onChange={(e) => setManualVin(e.target.value.toUpperCase())}
-                    placeholder="1HGCM82633A123456"
-                    maxLength={17}
-                    className="liquid-glass-input"
-                    autoFocus
-                    data-testid="vin-input"
-                  />
-                  <div className="flex justify-between mt-2">
-                    <p className="text-xs text-white/40">Letters I, O, Q are not valid</p>
-                    <p className="text-xs text-cyan-400 font-mono">{manualVin.length}/17</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setMode('menu')} className="liquid-glass-back-btn flex-1">
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={manualVin.length !== 17 || loading}
-                    className="liquid-glass-submit-btn flex-1"
-                    data-testid="decode-vin-btn"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ScanLine className="w-5 h-5" />}
-                    <span>Decode VIN</span>
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Result Mode - Liquid Glass Cards */}
-            {mode === 'result' && vehicleData && (
-              <div className="space-y-4">
-                {/* Main Vehicle Card */}
-                <div className="liquid-glass-card-hero">
-                  <div className="flex items-start gap-4">
-                    <div className="liquid-glass-car-badge">
-                      <Car className="w-8 h-8" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-cyan-300/80 font-medium">{vehicleData.year}</p>
-                      <h3 className="text-2xl font-bold text-white leading-tight">
-                        {vehicleData.make} {vehicleData.model}
-                      </h3>
-                      {vehicleData.trim && (
-                        <p className="text-white/60">{vehicleData.trim}</p>
-                      )}
-                      <p className="text-xs font-mono text-white/40 mt-2 tracking-wider">{vin}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Specs Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Powertrain Card */}
-                  {(vehicleData.engine_display || vehicleData.fuel_type) && (
-                    <div className="liquid-glass-card">
-                      <div className="liquid-glass-card-header">
-                        <Gauge className="w-4 h-4 text-amber-400" />
-                        <span>Powertrain</span>
-                      </div>
-                      <div className="space-y-2">
-                        {vehicleData.engine_display && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Engine</span>
-                            <span className="value">{vehicleData.engine_display}</span>
-                          </div>
-                        )}
-                        {vehicleData.horsepower && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Power</span>
-                            <span className="value">{vehicleData.horsepower} HP</span>
-                          </div>
-                        )}
-                        {vehicleData.transmission && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Trans</span>
-                            <span className="value">{vehicleData.transmission}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Fuel Card */}
-                  {(vehicleData.fuel_type || vehicleData.electrification) && (
-                    <div className="liquid-glass-card">
-                      <div className="liquid-glass-card-header">
-                        {vehicleData.electrification ? <Zap className="w-4 h-4 text-green-400" /> : <Fuel className="w-4 h-4 text-orange-400" />}
-                        <span>Fuel</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="liquid-glass-spec">
-                          <span className="label">Type</span>
-                          <span className="value">{vehicleData.fuel_type || 'Electric'}</span>
-                        </div>
-                        {vehicleData.electrification && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">EV Type</span>
-                            <span className="value">{vehicleData.electrification}</span>
-                          </div>
-                        )}
-                        {vehicleData.drive_type && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Drive</span>
-                            <span className="value">{vehicleData.drive_type}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Body Card */}
-                  {(vehicleData.body_class || vehicleData.doors) && (
-                    <div className="liquid-glass-card">
-                      <div className="liquid-glass-card-header">
-                        <Settings2 className="w-4 h-4 text-purple-400" />
-                        <span>Body</span>
-                      </div>
-                      <div className="space-y-2">
-                        {vehicleData.body_class && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Style</span>
-                            <span className="value">{vehicleData.body_class}</span>
-                          </div>
-                        )}
-                        {vehicleData.doors && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Doors</span>
-                            <span className="value">{vehicleData.doors}</span>
-                          </div>
-                        )}
-                        {vehicleData.vehicle_type && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">Type</span>
-                            <span className="value">{vehicleData.vehicle_type}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Assembly Card */}
-                  {vehicleData.assembly_location && (
-                    <div className="liquid-glass-card">
-                      <div className="liquid-glass-card-header">
-                        <MapPin className="w-4 h-4 text-rose-400" />
-                        <span>Assembly</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="liquid-glass-spec">
-                          <span className="label">Built In</span>
-                          <span className="value">{vehicleData.assembly_location}</span>
-                        </div>
-                        {vehicleData.manufacturer && (
-                          <div className="liquid-glass-spec">
-                            <span className="label">By</span>
-                            <span className="value text-xs">{vehicleData.manufacturer}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Safety Features */}
-                {vehicleData.safety_features && vehicleData.safety_features.length > 0 && (
-                  <div className="liquid-glass-card">
-                    <div className="liquid-glass-card-header">
-                      <Shield className="w-4 h-4 text-emerald-400" />
-                      <span>Safety Features</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {vehicleData.safety_features.map((feature, idx) => (
-                        <span key={idx} className="liquid-glass-tag">
-                          {feature}
-                        </span>
-                      ))}
+              {/* Specs Grid */}
+              <div className="vin-specs">
+                {vehicleData.engine_display && (
+                  <div className="spec-item">
+                    <Gauge className="w-4 h-4 text-amber-400" />
+                    <div>
+                      <span className="label">Engine</span>
+                      <span className="value">{vehicleData.engine_display}</span>
                     </div>
                   </div>
                 )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => {
-                      setMode('menu');
-                      setVehicleData(null);
-                      setVin('');
-                      setSaved(false);
-                    }}
-                    className="liquid-glass-back-btn flex-1"
-                  >
-                    Scan Another
-                  </button>
-                  <button
-                    onClick={saveToInventory}
-                    disabled={loading || saved}
-                    className={`liquid-glass-save-btn flex-1 ${saved ? 'saved' : ''}`}
-                    data-testid="save-vehicle-btn"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : saved ? (
-                      <>
-                        <Check className="w-5 h-5" />
-                        <span>Saved!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-5 h-5" />
-                        <span>Save to Inventory</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                {vehicleData.transmission && (
+                  <div className="spec-item">
+                    <Settings2 className="w-4 h-4 text-purple-400" />
+                    <div>
+                      <span className="label">Trans</span>
+                      <span className="value">{vehicleData.transmission}</span>
+                    </div>
+                  </div>
+                )}
+                {vehicleData.fuel_type && (
+                  <div className="spec-item">
+                    <Fuel className="w-4 h-4 text-orange-400" />
+                    <div>
+                      <span className="label">Fuel</span>
+                      <span className="value">{vehicleData.fuel_type}</span>
+                    </div>
+                  </div>
+                )}
+                {vehicleData.drive_type && (
+                  <div className="spec-item">
+                    <Zap className="w-4 h-4 text-green-400" />
+                    <div>
+                      <span className="label">Drive</span>
+                      <span className="value">{vehicleData.drive_type}</span>
+                    </div>
+                  </div>
+                )}
+                {vehicleData.body_class && (
+                  <div className="spec-item">
+                    <Car className="w-4 h-4 text-blue-400" />
+                    <div>
+                      <span className="label">Body</span>
+                      <span className="value">{vehicleData.body_class}</span>
+                    </div>
+                  </div>
+                )}
+                {vehicleData.assembly_location && (
+                  <div className="spec-item">
+                    <MapPin className="w-4 h-4 text-rose-400" />
+                    <div>
+                      <span className="label">Built In</span>
+                      <span className="value">{vehicleData.assembly_location}</span>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+
+              {/* Safety */}
+              {vehicleData.safety_features?.length > 0 && (
+                <div className="vin-safety">
+                  <div className="safety-header">
+                    <Shield className="w-4 h-4 text-emerald-400" />
+                    <span>Safety</span>
+                  </div>
+                  <div className="safety-tags">
+                    {vehicleData.safety_features.map((f, i) => (
+                      <span key={i} className="safety-tag">{f}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="vin-actions">
+                <button onClick={() => { setMode('menu'); setVehicleData(null); setVin(''); setSaved(false); }} className="vin-back-btn">
+                  Scan Another
+                </button>
+                <button onClick={saveToInventory} disabled={loading || saved} className={`vin-save-btn ${saved ? 'saved' : ''}`} data-testid="save-vehicle-btn">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {saved ? 'Saved!' : 'Save'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       <style>{`
-        /* Liquid Glass Container */
-        .liquid-glass-container {
-          background: linear-gradient(
-            135deg,
-            rgba(30, 41, 59, 0.85) 0%,
-            rgba(15, 23, 42, 0.9) 50%,
-            rgba(30, 41, 59, 0.85) 100%
-          );
-          backdrop-filter: blur(20px) saturate(180%);
-          border: 1px solid rgba(148, 163, 184, 0.15);
-          box-shadow: 
-            0 32px 64px -12px rgba(0, 0, 0, 0.5),
-            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-            0 1px 0 rgba(255, 255, 255, 0.1) inset;
+        .vin-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.85);
+          backdrop-filter: blur(8px);
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
         }
 
-        .liquid-glass-header {
-          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-          border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        .vin-modal {
+          width: 100%;
+          max-width: 360px;
+          max-height: 90vh;
+          overflow-y: auto;
+          background: linear-gradient(180deg, rgba(28,30,38,0.98) 0%, rgba(18,20,26,0.98) 100%);
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
 
-        .liquid-glass-icon-circle {
+        .vin-modal-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .vin-header-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: rgba(34,211,238,0.15);
+          border: 1px solid rgba(34,211,238,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #22d3ee;
+        }
+
+        .vin-modal-header h2 {
+          font-size: 16px;
+          font-weight: 600;
+          color: #fff;
+          margin: 0;
+        }
+
+        .vin-modal-header p {
+          font-size: 11px;
+          color: #666;
+          margin: 0;
+        }
+
+        .vin-close-btn {
+          margin-left: auto;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.08);
+          border: none;
+          color: #888;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .vin-modal-content {
+          padding: 16px;
+        }
+
+        .vin-error {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 12px;
+          margin-bottom: 12px;
+          border-radius: 10px;
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.2);
+          color: #fca5a5;
+          font-size: 13px;
+        }
+
+        .vin-menu {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .vin-option {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          cursor: pointer;
+          text-align: left;
+          transition: all 0.2s;
+        }
+
+        .vin-option:active {
+          transform: scale(0.98);
+        }
+
+        .vin-option-icon {
           width: 48px;
           height: 48px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.15) 0%, rgba(34, 211, 238, 0.05) 100%);
-          border: 1px solid rgba(34, 211, 238, 0.3);
-          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-        }
-
-        .liquid-glass-close {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.6);
-          transition: all 0.2s ease;
-        }
-        .liquid-glass-close:hover {
-          background: rgba(239, 68, 68, 0.2);
-          border-color: rgba(239, 68, 68, 0.4);
-          color: #ef4444;
-        }
-
-        .liquid-glass-error {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          padding: 14px;
           border-radius: 12px;
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-          border: 1px solid rgba(239, 68, 68, 0.25);
-          color: #fca5a5;
-        }
-
-        /* Option Buttons */
-        .liquid-glass-option-btn {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 18px;
-          border-radius: 16px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .liquid-glass-option-btn:hover {
-          background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-          border-color: rgba(255, 255, 255, 0.15);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        .liquid-glass-option-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
-        .liquid-glass-option-icon.cyan {
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0.05) 100%);
-          border: 1px solid rgba(34, 211, 238, 0.3);
+
+        .vin-option-icon.cyan {
+          background: rgba(34,211,238,0.15);
+          border: 1px solid rgba(34,211,238,0.3);
           color: #22d3ee;
         }
-        .liquid-glass-option-icon.amber {
-          background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0.05) 100%);
-          border: 1px solid rgba(251, 191, 36, 0.3);
+
+        .vin-option-icon.amber {
+          background: rgba(251,191,36,0.15);
+          border: 1px solid rgba(251,191,36,0.3);
           color: #fbbf24;
         }
 
-        .liquid-glass-arrow {
-          font-size: 20px;
-          color: rgba(255, 255, 255, 0.3);
-          transition: all 0.2s ease;
-        }
-        .liquid-glass-option-btn:hover .liquid-glass-arrow {
-          color: rgba(255, 255, 255, 0.7);
-          transform: translateX(4px);
+        .vin-option-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
-        /* Scan Box */
-        .liquid-glass-scan-box {
-          width: 200px;
-          height: 140px;
-          border-radius: 16px;
-          border: 2px solid rgba(34, 211, 238, 0.4);
-          background: rgba(34, 211, 238, 0.05);
+        .vin-option-text .title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .vin-option-text .subtitle {
+          font-size: 11px;
+          color: #666;
+        }
+
+        .vin-scanning {
+          text-align: center;
+          padding: 20px 0;
+        }
+
+        .scan-box {
+          width: 160px;
+          height: 100px;
+          margin: 0 auto 16px;
+          border-radius: 12px;
+          border: 2px solid rgba(34,211,238,0.4);
+          background: rgba(34,211,238,0.05);
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
           overflow: hidden;
+          color: #22d3ee;
         }
+
         .scan-line {
           position: absolute;
           left: 0;
           right: 0;
           height: 2px;
           background: linear-gradient(90deg, transparent, #22d3ee, transparent);
-          animation: scanMove 2s ease-in-out infinite;
-          box-shadow: 0 0 20px #22d3ee;
+          animation: scan 2s ease-in-out infinite;
         }
-        @keyframes scanMove {
+
+        @keyframes scan {
           0%, 100% { top: 10%; }
           50% { top: 90%; }
         }
 
-        /* Input */
-        .liquid-glass-input {
-          width: 100%;
-          padding: 16px 20px;
-          border-radius: 14px;
-          font-size: 18px;
-          font-family: 'SF Mono', 'Fira Code', monospace;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          background: rgba(15, 23, 42, 0.6);
-          border: 1px solid rgba(148, 163, 184, 0.2);
-          color: white;
-          transition: all 0.2s ease;
-        }
-        .liquid-glass-input:focus {
-          outline: none;
-          border-color: rgba(34, 211, 238, 0.5);
-          box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1), 0 0 20px rgba(34, 211, 238, 0.1);
-        }
-        .liquid-glass-input::placeholder {
-          color: rgba(148, 163, 184, 0.4);
-          letter-spacing: 1px;
+        .vin-scanning p {
+          font-size: 13px;
+          color: #888;
+          margin-bottom: 12px;
         }
 
-        /* Buttons */
-        .liquid-glass-back-btn, .liquid-glass-cancel-btn {
-          padding: 14px 20px;
-          border-radius: 12px;
+        .vin-cancel-btn {
+          padding: 8px 20px;
+          border-radius: 8px;
+          background: rgba(239,68,68,0.15);
+          border: 1px solid rgba(239,68,68,0.3);
+          color: #f87171;
+          font-size: 13px;
+          cursor: pointer;
+        }
+
+        .vin-manual label {
+          display: block;
+          font-size: 10px;
           font-weight: 600;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.7);
-          transition: all 0.2s ease;
-        }
-        .liquid-glass-back-btn:hover, .liquid-glass-cancel-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.2);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #666;
+          margin-bottom: 8px;
         }
 
-        .liquid-glass-submit-btn {
+        .vin-manual input {
+          width: 100%;
+          padding: 14px;
+          border-radius: 12px;
+          font-size: 16px;
+          font-family: monospace;
+          letter-spacing: 2px;
+          background: rgba(15,17,23,0.8);
+          border: 1px solid rgba(255,255,255,0.15);
+          color: #fff;
+          outline: none;
+        }
+
+        .vin-manual input:focus {
+          border-color: rgba(34,211,238,0.5);
+        }
+
+        .vin-input-info {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 6px;
+          font-size: 11px;
+          color: #555;
+        }
+
+        .vin-input-info .count {
+          color: #22d3ee;
+        }
+
+        .vin-form-btns {
+          display: flex;
+          gap: 10px;
+          margin-top: 16px;
+        }
+
+        .vin-back-btn {
+          flex: 1;
+          padding: 12px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #888;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .vin-submit-btn, .vin-save-btn {
+          flex: 1;
+          padding: 12px;
+          border-radius: 10px;
+          background: rgba(34,211,238,0.2);
+          border: 1px solid rgba(34,211,238,0.4);
+          color: #22d3ee;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          padding: 14px 20px;
-          border-radius: 12px;
-          font-weight: 600;
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0.1) 100%);
-          border: 1px solid rgba(34, 211, 238, 0.4);
-          color: #22d3ee;
-          transition: all 0.2s ease;
+          gap: 6px;
         }
-        .liquid-glass-submit-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0.15) 100%);
-          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-        }
-        .liquid-glass-submit-btn:disabled {
+
+        .vin-submit-btn:disabled, .vin-save-btn:disabled {
           opacity: 0.5;
         }
 
-        .liquid-glass-save-btn {
+        .vin-save-btn.saved {
+          background: rgba(34,197,94,0.2);
+          border-color: rgba(34,197,94,0.4);
+          color: #22c55e;
+        }
+
+        .vin-results {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          padding: 14px 20px;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .vin-hero {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 14px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%);
+          border: 1px solid rgba(34,197,94,0.2);
+        }
+
+        .vin-hero-icon {
+          width: 48px;
+          height: 48px;
           border-radius: 12px;
-          font-weight: 600;
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.25) 0%, rgba(34, 211, 238, 0.1) 100%);
-          border: 1px solid rgba(34, 211, 238, 0.4);
-          color: #22d3ee;
-          transition: all 0.3s ease;
-        }
-        .liquid-glass-save-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(34, 211, 238, 0.35) 0%, rgba(34, 211, 238, 0.15) 100%);
-          box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-        }
-        .liquid-glass-save-btn.saved {
-          background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.1) 100%);
-          border-color: rgba(34, 197, 94, 0.4);
-          color: #22c55e;
-        }
-        .liquid-glass-save-btn:disabled {
-          opacity: 0.6;
-        }
-
-        /* Hero Card */
-        .liquid-glass-card-hero {
-          padding: 24px;
-          border-radius: 20px;
-          background: linear-gradient(
-            135deg,
-            rgba(34, 211, 238, 0.08) 0%,
-            rgba(59, 130, 246, 0.05) 50%,
-            rgba(139, 92, 246, 0.05) 100%
-          );
-          border: 1px solid rgba(34, 211, 238, 0.2);
-          box-shadow: 
-            0 0 40px rgba(34, 211, 238, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .liquid-glass-car-badge {
-          width: 64px;
-          height: 64px;
-          border-radius: 16px;
+          background: rgba(34,197,94,0.2);
           display: flex;
           align-items: center;
           justify-content: center;
-          flex-shrink: 0;
-          background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
-          border: 1px solid rgba(34, 197, 94, 0.3);
           color: #22c55e;
-          box-shadow: 0 0 24px rgba(34, 197, 94, 0.2);
+          flex-shrink: 0;
         }
 
-        /* Info Cards */
-        .liquid-glass-card {
-          padding: 16px;
-          border-radius: 16px;
-          background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          backdrop-filter: blur(10px);
-        }
-
-        .liquid-glass-card-header {
+        .vin-hero-info {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
+          flex-direction: column;
+        }
+
+        .vin-hero-info .year {
+          font-size: 12px;
+          color: #22c55e;
+          font-weight: 500;
+        }
+
+        .vin-hero-info h3 {
+          font-size: 18px;
+          font-weight: 700;
+          color: #fff;
+          margin: 2px 0;
+        }
+
+        .vin-hero-info .trim {
+          font-size: 13px;
+          color: #aaa;
+        }
+
+        .vin-hero-info .vin-number {
+          font-size: 10px;
+          font-family: monospace;
+          color: #555;
+          margin-top: 6px;
           letter-spacing: 1px;
-          color: rgba(255, 255, 255, 0.5);
-          margin-bottom: 12px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .liquid-glass-spec {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 6px 0;
+        .vin-specs {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
         }
-        .liquid-glass-spec .label {
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.4);
+
+        .spec-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .spec-item > div {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .spec-item .label {
+          font-size: 9px;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-        }
-        .liquid-glass-spec .value {
-          font-size: 13px;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.9);
-          text-align: right;
-          max-width: 60%;
+          color: #555;
         }
 
-        /* Safety Tags */
-        .liquid-glass-tag {
-          display: inline-block;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 500;
-          background: rgba(34, 197, 94, 0.1);
-          border: 1px solid rgba(34, 197, 94, 0.25);
+        .spec-item .value {
+          font-size: 12px;
+          color: #ddd;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .vin-safety {
+          padding: 12px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .safety-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #666;
+          margin-bottom: 10px;
+        }
+
+        .safety-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+
+        .safety-tag {
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 10px;
+          background: rgba(34,197,94,0.1);
+          border: 1px solid rgba(34,197,94,0.2);
           color: #86efac;
+        }
+
+        .vin-actions {
+          display: flex;
+          gap: 10px;
+          margin-top: 4px;
         }
       `}</style>
     </div>
