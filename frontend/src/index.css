@@ -130,53 +130,60 @@ h1, h2, h3 {
     --text-shadow: 0 0% 100%;
   }
 
-  /* ========== DARK MODE ========== */
+  /* ========== DARK MODE - Midnight Run ========== */
+  /* Warm, Luxury Interior, Amber Glow, Wood Grain */
   .dark {
-    --background: 12 8% 6%;
-    --foreground: 40 20% 92%;
+    --background: 20 18% 5%;
+    --foreground: 35 30% 92%;
     
-    --card: 20 12% 10%;
-    --card-foreground: 40 20% 92%;
+    --card: 22 20% 9%;
+    --card-foreground: 35 30% 92%;
     
-    --muted: 25 10% 15%;
-    --muted-foreground: 35 10% 55%;
+    --muted: 25 18% 13%;
+    --muted-foreground: 32 20% 55%;
     
-    --border: 30 8% 18%;
-    --input: 25 10% 12%;
-    --ring: 35 60% 50%;
+    --border: 28 15% 18%;
+    --input: 24 18% 10%;
+    --ring: 40 100% 50%;
     
-    --primary: 35 70% 55%;
-    --primary-foreground: 12 8% 6%;
+    /* Primary - JDM Amber */
+    --primary: 40 100% 50%;
+    --primary-foreground: 20 18% 5%;
     
-    --secondary: 220 5% 35%;
-    --secondary-foreground: 40 20% 92%;
+    /* Secondary - Turbo Red */
+    --secondary: 8 100% 55%;
+    --secondary-foreground: 0 0% 100%;
     
-    --accent: 210 80% 55%;
-    --accent-foreground: 12 8% 6%;
+    /* Accent - Warm amber glow */
+    --accent: 35 90% 55%;
+    --accent-foreground: 20 18% 5%;
     
-    --success: 145 65% 42%;
+    --success: 145 70% 45%;
     --success-foreground: 145 100% 95%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 38 100% 10%;
-    --destructive: 0 72% 51%;
+    --warning: 45 100% 55%;
+    --warning-foreground: 45 100% 8%;
+    --destructive: 0 80% 55%;
     --destructive-foreground: 0 0% 100%;
     
-    --tower: 0 85% 45%;
+    --tower: 0 85% 50%;
     --tower-foreground: 0 0% 100%;
     
-    --wood-light: 28 35% 25%;
-    --wood-dark: 20 30% 12%;
-    --carbon: 220 10% 8%;
-    --steel: 220 8% 45%;
-    --steel-highlight: 220 15% 70%;
-    --chrome: 220 5% 85%;
+    /* Wood Grain - Rich Mahogany */
+    --wood-light: 25 40% 28%;
+    --wood-dark: 20 35% 15%;
+    --wood-accent: 28 45% 35%;
+    --carbon: 220 15% 7%;
+    --steel: 30 10% 45%;
+    --steel-highlight: 35 20% 65%;
+    --chrome: 35 15% 80%;
     
-    --ambient-gold: 40 100% 50%;
-    --ambient-blue: 210 100% 60%;
-    --ambient-red: 0 100% 55%;
-    --ambient-white: 0 0% 95%;
+    /* Ambient Lighting - Warm Interior */
+    --ambient-gold: 38 100% 55%;
+    --ambient-blue: 200 90% 55%;
+    --ambient-red: 5 100% 55%;
+    --ambient-white: 35 30% 90%;
     
-    --overlay-bg: 0 0% 0%;
+    --overlay-bg: 20 20% 3%;
     --text-shadow: 0 0% 0%;
   }
 
