@@ -133,6 +133,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     { id: 'inventory', label: 'Inventory', icon: Car },
     { id: 'import', label: 'Import', icon: Upload },
     { id: 'integrations', label: 'CRM', icon: Link2 },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const filteredCustomers = customers.filter(c => {
