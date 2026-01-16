@@ -1509,12 +1509,36 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
           }
 
           .detail-actions {
+            display: flex;
+            gap: 10px;
             padding: 16px 20px;
             border-top: 1px solid rgba(255,255,255,0.06);
           }
 
+          .btn-eject {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(244,63,94,0.2) 0%, rgba(251,146,60,0.2) 100%);
+            border: 1px solid rgba(244,63,94,0.4);
+            color: #fb7185;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .btn-eject:hover {
+            background: linear-gradient(135deg, rgba(244,63,94,0.3) 0%, rgba(251,146,60,0.3) 100%);
+            box-shadow: 0 0 20px rgba(244,63,94,0.2);
+          }
+
           .btn-edit {
-            width: 100%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1527,6 +1551,194 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
+          }
+
+          /* Eject Modal */
+          .eject-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 120;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+          }
+
+          .eject-modal {
+            width: 100%;
+            max-width: 360px;
+            background: linear-gradient(180deg, rgba(28,30,38,0.99) 0%, rgba(18,20,26,0.99) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(244,63,94,0.2);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 40px rgba(244,63,94,0.1);
+            overflow: hidden;
+          }
+
+          .eject-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #fb7185;
+          }
+
+          .eject-header h3 {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin: 0;
+          }
+
+          .eject-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: none;
+            color: #888;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .eject-content {
+            padding: 20px;
+          }
+
+          .eject-desc {
+            font-size: 13px;
+            color: #aaa;
+            margin: 0 0 16px 0;
+          }
+
+          .eject-desc strong {
+            color: #fff;
+          }
+
+          .eject-preview {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+          }
+
+          .preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+          }
+
+          .preview-item:last-child {
+            border-bottom: none;
+          }
+
+          .preview-label {
+            color: #666;
+          }
+
+          .preview-item span:last-child {
+            color: #ddd;
+          }
+
+          .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: capitalize;
+          }
+
+          .status-badge.new { background: rgba(34,211,238,0.15); color: #22d3ee; }
+          .status-badge.contacted { background: rgba(251,191,36,0.15); color: #fbbf24; }
+          .status-badge.qualified { background: rgba(168,85,247,0.15); color: #a855f7; }
+          .status-badge.sold { background: rgba(34,197,94,0.15); color: #22c55e; }
+
+          .eject-phone-input {
+            margin-bottom: 16px;
+          }
+
+          .eject-phone-input label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .eject-phone-input input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+          }
+
+          .eject-phone-input input:focus {
+            border-color: rgba(244,63,94,0.5);
+          }
+
+          .phone-hint {
+            display: block;
+            font-size: 10px;
+            color: #555;
+            margin-top: 6px;
+          }
+
+          .eject-result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+          }
+
+          .eject-result.success {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #22c55e;
+          }
+
+          .eject-result.error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #ef4444;
+          }
+
+          .eject-send-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(244,63,94,0.25) 0%, rgba(251,146,60,0.2) 100%);
+            border: 1px solid rgba(244,63,94,0.4);
+            color: #fb7185;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .eject-send-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(244,63,94,0.35) 0%, rgba(251,146,60,0.3) 100%);
+            box-shadow: 0 0 20px rgba(244,63,94,0.2);
+          }
+
+          .eject-send-btn:disabled {
+            opacity: 0.5;
           }
         `}</style>
       </div>
