@@ -346,7 +346,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                   title="Email Parser"
                   description="Parse lead emails"
                   color="amber"
-                  onClick={() => setShowImportModal(true)}
+                  onClick={() => setShowEmailParser(true)}
                 />
                 <ImportOption 
                   icon={UserPlus}
