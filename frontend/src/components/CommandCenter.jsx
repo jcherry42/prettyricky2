@@ -5,8 +5,18 @@ import {
   Search, Plus, ChevronRight, Settings, Database,
   FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
   Clock, Tag, MessageSquare, CheckCircle2, AlertCircle,
-  Send, Smartphone, Zap
+  Send, Smartphone, Zap, Bell, Volume2, VolumeX, Building2,
+  User, Save, Eye, EyeOff, TestTube, Loader2, ToggleLeft, ToggleRight
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSales } from '../context/SalesContext';
+import { 
+  playNotificationSound, 
+  requestNotificationPermission,
+  getSoundPreferences, 
+  setSoundPreferences,
+  getSoundProfiles
+} from '../utils/notificationSound';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
