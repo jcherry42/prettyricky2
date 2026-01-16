@@ -2,7 +2,6 @@
   "appId": "com.superchargd.app",
   "appName": "Supercharg'd",
   "webDir": "dist",
-  "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https"
   },
