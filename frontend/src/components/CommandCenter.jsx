@@ -390,6 +390,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
               </div>
             </div>
           )}
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <SettingsTab />
+          )}
         </div>
 
         {/* Customer Form Modal */}
