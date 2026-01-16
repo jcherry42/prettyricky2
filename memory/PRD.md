@@ -227,7 +227,7 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ## Pending Issues
 
 ### P0 - Critical
-- [ ] **Eject Button Testing**: Backend endpoint and frontend UI implemented. Needs Twilio credentials for full testing.
+- [ ] **Eject Button Testing**: Backend endpoint and frontend UI implemented. Needs Twilio credentials for full testing. Button is visible in Customer Detail view (inside Command Center > Customers tab > click on customer).
 
 ### P1 - High Priority
 - [ ] **Real CRM Integration**: Remove mock-only mode, enable live data ingestion from user CRMs
