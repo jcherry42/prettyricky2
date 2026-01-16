@@ -43,8 +43,7 @@ export const Header = () => {
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
     if (hasPlayed) {
-      setStartupComplete(true);
-      setStartupPhase(5);
+      // Use a ref or separate state initialization to avoid setState in effect
       return;
     }
 
