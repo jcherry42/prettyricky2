@@ -2809,26 +2809,32 @@ html:not(.dark) .btn-check-engine-v2:hover {
 
 .response-card {
   @apply relative rounded-xl overflow-hidden transition-all duration-300;
-  background: linear-gradient(180deg,
-    hsla(20, 12%, 11%, 0.98) 0%,
-    hsla(20, 10%, 8%, 0.99) 100%
-  );
-  border: 1px solid hsla(30, 15%, 18%, 0.5);
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(180deg,
+      hsla(22, 18%, 13%, 0.98) 0%,
+      hsla(20, 15%, 9%, 0.99) 100%
+    );
+  background-size: 120px 120px, 100% 100%;
+  background-blend-mode: soft-light, normal;
+  border: 1px solid hsla(35, 25%, 22%, 0.6);
   box-shadow: 
-    0 4px 20px hsla(20, 30%, 5%, 0.35),
-    inset 0 1px 0 hsla(40, 30%, 25%, 0.05);
+    0 4px 20px hsla(20, 30%, 5%, 0.4),
+    0 0 40px hsla(40, 100%, 50%, 0.03),
+    inset 0 1px 0 hsla(40, 40%, 30%, 0.1);
 }
 
 .response-card:hover {
-  border-color: hsla(40, 50%, 40%, 0.3);
+  border-color: hsla(40, 60%, 45%, 0.4);
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 30px hsla(20, 30%, 5%, 0.45),
-    0 0 25px hsla(40, 100%, 50%, 0.05),
-    inset 0 1px 0 hsla(40, 30%, 30%, 0.08);
+    0 8px 35px hsla(20, 30%, 5%, 0.5),
+    0 0 50px hsla(40, 100%, 50%, 0.08),
+    0 0 80px hsla(38, 100%, 45%, 0.04),
+    inset 0 1px 0 hsla(40, 40%, 35%, 0.15);
 }
 
-/* Response card accent bar */
+/* Response card accent bar - glowing */
 .response-card::before {
   content: '';
   position: absolute;
@@ -2837,16 +2843,27 @@ html:not(.dark) .btn-check-engine-v2:hover {
   bottom: 0;
   width: 3px;
   background: linear-gradient(180deg,
-    hsla(40, 70%, 50%, 0.8) 0%,
-    hsla(35, 70%, 40%, 0.6) 100%
+    hsla(42, 100%, 55%, 0.9) 0%,
+    hsla(38, 90%, 45%, 0.7) 100%
   );
   opacity: 0;
   transition: opacity 0.3s ease;
+  box-shadow: 0 0 15px hsla(40, 100%, 50%, 0.5);
 }
 
 .response-card:hover::before,
 .response-card.selected::before {
   opacity: 1;
+}
+
+/* Selected state with stronger glow */
+.response-card.selected {
+  border-color: hsla(40, 70%, 50%, 0.5);
+  box-shadow: 
+    0 8px 35px hsla(20, 30%, 5%, 0.5),
+    0 0 60px hsla(40, 100%, 50%, 0.12),
+    0 0 100px hsla(38, 100%, 45%, 0.06),
+    inset 0 1px 0 hsla(40, 50%, 40%, 0.2);
 }
 
 /* ============================================
