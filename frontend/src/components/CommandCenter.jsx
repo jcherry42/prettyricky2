@@ -1237,10 +1237,91 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
         </div>
 
         <div className="detail-actions">
+          <button onClick={() => setShowEjectModal(true)} className="btn-eject">
+            <Send className="w-4 h-4" /> Eject
+          </button>
           <button onClick={onEdit} className="btn-edit">
             <Edit3 className="w-4 h-4" /> Edit
           </button>
         </div>
+
+        {/* Eject Modal */}
+        {showEjectModal && (
+          <div className="eject-overlay" onClick={() => setShowEjectModal(false)}>
+            <div className="eject-modal" onClick={e => e.stopPropagation()}>
+              <div className="eject-header">
+                <Send className="w-5 h-5" />
+                <h3>Eject Snapshot</h3>
+                <button onClick={() => setShowEjectModal(false)} className="eject-close">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="eject-content">
+                <p className="eject-desc">
+                  Send a snapshot of <strong>{customer.first_name}'s</strong> profile to your phone via SMS.
+                </p>
+                
+                <div className="eject-preview">
+                  <div className="preview-item">
+                    <span className="preview-label">Name</span>
+                    <span>{customer.first_name} {customer.last_name}</span>
+                  </div>
+                  <div className="preview-item">
+                    <span className="preview-label">Phone</span>
+                    <span>{customer.phone || 'N/A'}</span>
+                  </div>
+                  <div className="preview-item">
+                    <span className="preview-label">Email</span>
+                    <span>{customer.email || 'N/A'}</span>
+                  </div>
+                  <div className="preview-item">
+                    <span className="preview-label">Status</span>
+                    <span className={`status-badge ${customer.lead_status}`}>{customer.lead_status}</span>
+                  </div>
+                </div>
+                
+                <div className="eject-phone-input">
+                  <label>
+                    <Smartphone className="w-4 h-4" />
+                    Your Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={ejectPhone}
+                    onChange={e => setEjectPhone(e.target.value)}
+                    placeholder="+1 555-123-4567"
+                  />
+                  <span className="phone-hint">Include country code for best results</span>
+                </div>
+                
+                {ejectResult && (
+                  <div className={`eject-result ${ejectResult.success ? 'success' : 'error'}`}>
+                    {ejectResult.success ? (
+                      <>
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span>Snapshot sent to {ejectPhone}</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertCircle className="w-5 h-5" />
+                        <span>{ejectResult.error || ejectResult.hint || 'Failed to send'}</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                
+                <button 
+                  onClick={handleEject} 
+                  disabled={!ejectPhone.trim() || ejecting}
+                  className="eject-send-btn"
+                >
+                  {ejecting ? 'Sending...' : 'Send Snapshot'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <style>{`
           .detail-overlay {
