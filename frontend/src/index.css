@@ -752,8 +752,8 @@ html:not(.dark) .header-btn.amber {
 /* Exhaust Housing */
 .exhaust-housing {
   position: relative;
-  width: 28px;
-  height: 14px;
+  width: 50px;
+  height: 25px;
   margin-bottom: 2px;
 }
 
@@ -762,49 +762,45 @@ html:not(.dark) .header-btn.amber {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 24px;
-  height: 10px;
+  width: 45px;
+  height: 20px;
   background: linear-gradient(180deg,
     hsla(220, 10%, 45%, 1) 0%,
     hsla(220, 10%, 35%, 1) 50%,
     hsla(220, 10%, 25%, 1) 100%
   );
-  border-radius: 3px 3px 4px 4px;
+  border-radius: 5px 5px 7px 7px;
   border: 1px solid hsla(220, 10%, 55%, 0.4);
 }
 
 .exhaust-inner {
   position: absolute;
-  bottom: 2px;
+  bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
-  width: 18px;
-  height: 6px;
+  width: 35px;
+  height: 12px;
   background: radial-gradient(ellipse at center,
     hsla(0, 0%, 5%, 1) 0%,
     hsla(0, 0%, 15%, 1) 100%
   );
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 /* Flame Container - Overlaps to the left */
 .flame-container {
   position: absolute;
-  bottom: 18px;
-  left: -60px;
-  width: 180px;
-  height: 120px;
+  bottom: 22px;
+  left: -100px;
+  width: 200px;
+  height: 140px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 10;
 }
 
-.sport-exhaust-btn:hover .flame-container,
-.sport-exhaust-btn.active .flame-container {
-  opacity: 1;
-}
-
+.sport-exhaust-btn.active .flame-container,
 .sport-exhaust-btn.active .flame-container.firing {
   opacity: 1;
 }
@@ -819,9 +815,9 @@ html:not(.dark) .header-btn.amber {
 }
 
 .flame-1 {
-  left: 60px;
-  width: 64px;
-  height: 96px;
+  left: 70px;
+  width: 70px;
+  height: 105px;
   background: linear-gradient(0deg,
     hsla(45, 100%, 60%, 0.9) 0%,
     hsla(30, 100%, 55%, 0.8) 30%,
@@ -832,9 +828,9 @@ html:not(.dark) .header-btn.amber {
 }
 
 .flame-2 {
-  left: 44px;
-  width: 52px;
-  height: 76px;
+  left: 52px;
+  width: 58px;
+  height: 85px;
   background: linear-gradient(0deg,
     hsla(50, 100%, 70%, 1) 0%,
     hsla(40, 100%, 60%, 0.9) 40%,
@@ -844,9 +840,9 @@ html:not(.dark) .header-btn.amber {
 }
 
 .flame-3 {
-  left: 76px;
-  width: 44px;
-  height: 64px;
+  left: 88px;
+  width: 50px;
+  height: 72px;
   background: linear-gradient(0deg,
     hsla(55, 100%, 80%, 1) 0%,
     hsla(45, 100%, 65%, 0.8) 50%,
@@ -873,51 +869,51 @@ html:not(.dark) .header-btn.amber {
 /* Sparks */
 .spark {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background: hsla(45, 100%, 70%, 1);
   border-radius: 50%;
-  box-shadow: 0 0 12px hsla(45, 100%, 60%, 0.8);
+  box-shadow: 0 0 14px hsla(45, 100%, 60%, 0.8);
 }
 
 .spark-1 {
-  left: 28px;
+  left: 35px;
   animation: spark-fly-1 0.6s ease-out infinite;
 }
 
 .spark-2 {
-  left: 56px;
+  left: 65px;
   animation: spark-fly-2 0.5s ease-out infinite 0.1s;
 }
 
 .spark-3 {
-  left: 80px;
+  left: 92px;
   animation: spark-fly-3 0.7s ease-out infinite 0.2s;
 }
 
 .spark-4 {
-  left: 40px;
+  left: 48px;
   animation: spark-fly-4 0.55s ease-out infinite 0.15s;
 }
 
 @keyframes spark-fly-1 {
-  0% { bottom: 16px; opacity: 1; transform: translateX(0); }
-  100% { bottom: 140px; opacity: 0; transform: translateX(-48px); }
+  0% { bottom: 18px; opacity: 1; transform: translateX(0); }
+  100% { bottom: 160px; opacity: 0; transform: translateX(-55px); }
 }
 
 @keyframes spark-fly-2 {
-  0% { bottom: 24px; opacity: 1; transform: translateX(0); }
-  100% { bottom: 152px; opacity: 0; transform: translateX(-32px); }
+  0% { bottom: 28px; opacity: 1; transform: translateX(0); }
+  100% { bottom: 175px; opacity: 0; transform: translateX(-38px); }
 }
 
 @keyframes spark-fly-3 {
-  0% { bottom: 8px; opacity: 1; transform: translateX(0); }
-  100% { bottom: 128px; opacity: 0; transform: translateX(-60px); }
+  0% { bottom: 10px; opacity: 1; transform: translateX(0); }
+  100% { bottom: 148px; opacity: 0; transform: translateX(-70px); }
 }
 
 @keyframes spark-fly-4 {
-  0% { bottom: 20px; opacity: 1; transform: translateX(0); }
-  100% { bottom: 144px; opacity: 0; transform: translateX(-40px); }
+  0% { bottom: 24px; opacity: 1; transform: translateX(0); }
+  100% { bottom: 168px; opacity: 0; transform: translateX(-48px); }
 }
 
 /* Sport Label */
