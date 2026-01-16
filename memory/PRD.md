@@ -233,9 +233,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ## Next Steps (Backlog)
 
+### P0 - Immediate
+- [ ] **Email Parsing for Lead Ingestion**: Create backend mechanism to parse forwarded lead emails and auto-create customer profiles
+
 ### P1 - Enhancement
 - [ ] Response Analytics: Track which AI responses are used most
 - [ ] Full push notification integration (Firebase via Capacitor)
+- [ ] Refine Liquid Glass UI further based on user feedback
 
 ### P2 - Future
 - [ ] Native mobile app builds (cap add ios/android, build, sync)
