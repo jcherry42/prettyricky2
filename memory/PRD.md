@@ -198,6 +198,17 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-16**: Comprehensive Review & Luxury Polish
+  - Enhanced ambient lighting effects across all UI elements
+  - Added stronger gold/amber glow to header accent line with underglow
+  - Enhanced response card styling with wood grain texture and hover glow
+  - Enhanced Tower Talk button with stronger red ambient glow
+  - Enhanced modal styling with ambient glow above modal
+  - Added luxury-glow-animated keyframe animation
+  - Fixed ESLint warning in SetupModal.jsx
+  - All 24 backend tests pass (VIN decoder, dashboard, customers, vehicles)
+  - All frontend UI elements verified working correctly
+  - Mobile builds synced (iOS + Android)
 - **2026-01-16**: VIN Scanner Enhancement & Settings Tab
   - Enhanced VIN decoder with multi-source cross-reference validation
     - ISO 3779 checksum validation
