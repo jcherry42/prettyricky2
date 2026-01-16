@@ -442,27 +442,52 @@ h1, h2, h3 {
    ============================================ */
 
 .header-luxury {
-  @apply texture-carbon backdrop-blur-xl;
-  border-bottom: 1px solid hsla(220, 8%, 20%, 0.5);
+  @apply backdrop-blur-xl;
+  position: relative;
+  border-bottom: 1px solid hsla(30, 20%, 25%, 0.5);
   box-shadow: 
     0 4px 20px hsla(0, 0%, 0%, 0.3),
-    inset 0 -1px 0 hsla(40, 30%, 30%, 0.05);
+    inset 0 -1px 0 hsla(40, 30%, 30%, 0.1);
   overflow: visible !important;
 }
 
-/* Chrome accent line */
+/* Wood grain overlay for header - dark mode */
+.dark .header-luxury {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(180deg, 
+      hsla(22, 25%, 12%, 0.95) 0%,
+      hsla(20, 20%, 8%, 0.98) 100%
+    );
+  background-size: 180px 180px, 100% 100%;
+  background-blend-mode: overlay, normal;
+}
+
+/* Wood grain overlay for header - light mode */
+html:not(.dark) .header-luxury {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(180deg, 
+      hsla(35, 30%, 88%, 0.95) 0%,
+      hsla(32, 25%, 82%, 0.98) 100%
+    );
+  background-size: 180px 180px, 100% 100%;
+  background-blend-mode: multiply, normal;
+}
+
+/* Chrome accent line - amber glow */
 .header-luxury::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 5%;
   right: 5%;
-  height: 1px;
+  height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    hsla(40, 60%, 50%, 0.3) 20%,
-    hsla(40, 60%, 50%, 0.5) 50%,
-    hsla(40, 60%, 50%, 0.3) 80%,
+    hsla(40, 100%, 50%, 0.3) 20%,
+    hsla(40, 100%, 55%, 0.6) 50%,
+    hsla(40, 100%, 50%, 0.3) 80%,
     transparent 100%
   );
 }
