@@ -26,8 +26,16 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [showVehicleForm, setShowVehicleForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showEmailParser, setShowEmailParser] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  
+  // Email parser state
+  const [emailBody, setEmailBody] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailFrom, setEmailFrom] = useState('');
+  const [parsingEmail, setParsingEmail] = useState(false);
+  const [parseResult, setParseResult] = useState(null);
 
   // Fetch data on tab change
   useEffect(() => {
