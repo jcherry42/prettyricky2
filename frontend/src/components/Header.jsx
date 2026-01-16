@@ -30,9 +30,10 @@ export const Header = () => {
     toggleSuperchargedMode,
   } = useSales();
 
-  // Startup animation state
-  const [startupComplete, setStartupComplete] = useState(false);
-  const [startupPhase, setStartupPhase] = useState(0);
+  // Startup animation state - check session storage for initial values
+  const hasPlayedStartup = typeof window !== 'undefined' && sessionStorage.getItem('superchargd_startup_played');
+  const [startupComplete, setStartupComplete] = useState(hasPlayedStartup ? true : false);
+  const [startupPhase, setStartupPhase] = useState(hasPlayedStartup ? 5 : 0);
   // Brake light state - activates on screen tap
   const [brakesPressed, setBrakesPressed] = useState(false);
   // VIN Scanner modal state
@@ -43,7 +44,7 @@ export const Header = () => {
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
     if (hasPlayed) {
-      // Use a ref or separate state initialization to avoid setState in effect
+      // Already initialized via useState
       return;
     }
 
