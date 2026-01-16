@@ -539,17 +539,19 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           max-width: 420px;
           max-height: 80vh;
           margin: auto;
-          background: 
-            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
-          background-size: 180px 180px, 100% 100%;
-          background-blend-mode: overlay, normal;
+          background: linear-gradient(180deg, 
+            rgba(25, 28, 35, 0.92) 0%, 
+            rgba(18, 20, 26, 0.96) 100%
+          );
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-radius: 24px;
-          border: 1px solid rgba(255,191,0,0.15);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow: 
-            0 30px 60px rgba(0,0,0,0.6), 
-            0 0 0 1px rgba(255,191,0,0.08) inset,
-            0 0 40px rgba(255,150,0,0.08);
+            0 30px 60px rgba(0,0,0,0.5), 
+            0 0 0 1px rgba(255,255,255,0.05) inset,
+            0 0 80px rgba(255,191,0,0.05),
+            inset 0 1px 0 rgba(255,255,255,0.1);
           display: flex;
           flex-direction: column;
           overflow: hidden;
