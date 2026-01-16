@@ -2399,8 +2399,8 @@ async def eject_customer_snapshot(request: EjectRequest):
         status = customer.get('lead_status', 'N/A').upper()
         
         message_lines = [
-            f"🚗 SUPERCHARG'D SNAPSHOT",
-            f"━━━━━━━━━━━━━━━━",
+            "🚗 SUPERCHARG'D SNAPSHOT",
+            "━━━━━━━━━━━━━━━━",
             f"👤 {name}",
             f"📱 {phone}",
             f"✉️ {email}",
@@ -2408,18 +2408,18 @@ async def eject_customer_snapshot(request: EjectRequest):
         ]
         
         if vehicle_vins:
-            message_lines.append(f"━━━━━━━━━━━━━━━━")
-            message_lines.append(f"🎯 INTERESTED IN:")
+            message_lines.append("━━━━━━━━━━━━━━━━")
+            message_lines.append("🎯 INTERESTED IN:")
             for vin in vehicle_vins:
                 message_lines.append(f"  • {vin}")
         
         if trade_in_info:
-            message_lines.append(f"━━━━━━━━━━━━━━━━")
-            message_lines.append(f"🔄 TRADE-IN:")
+            message_lines.append("━━━━━━━━━━━━━━━━")
+            message_lines.append("🔄 TRADE-IN:")
             message_lines.append(f"  • {trade_in_info}")
         
-        message_lines.append(f"━━━━━━━━━━━━━━━━")
-        message_lines.append(f"Sent via Supercharg'd")
+        message_lines.append("━━━━━━━━━━━━━━━━")
+        message_lines.append("Sent via Supercharg'd")
         
         sms_message = "\n".join(message_lines)
         
@@ -2730,7 +2730,6 @@ from models import (
 )
 import pandas as pd
 import io
-import re
 
 class AddInteractionRequest(BaseModel):
     interaction_type: str
