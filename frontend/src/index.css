@@ -209,25 +209,91 @@ h1, h2, h3 {
    TEXTURE PATTERNS
    ============================================ */
 
-/* Wood Grain Texture */
+/* Wood Grain Texture - Enhanced Realistic Look */
 .texture-wood {
   background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
     linear-gradient(90deg, 
       transparent 0%, 
-      hsl(var(--wood-light) / 0.03) 20%,
-      transparent 40%,
-      hsl(var(--wood-light) / 0.02) 60%,
-      transparent 80%,
-      hsl(var(--wood-light) / 0.03) 100%
+      hsl(var(--wood-light) / 0.15) 15%,
+      transparent 30%,
+      hsl(var(--wood-light) / 0.1) 50%,
+      transparent 70%,
+      hsl(var(--wood-light) / 0.15) 85%,
+      transparent 100%
     ),
     linear-gradient(180deg,
       hsl(var(--wood-dark)) 0%,
-      hsl(var(--wood-light)) 25%,
-      hsl(var(--wood-dark)) 50%,
-      hsl(var(--wood-light)) 75%,
-      hsl(var(--wood-dark)) 100%
+      hsl(var(--wood-light)) 20%,
+      hsl(var(--wood-dark)) 40%,
+      hsl(var(--wood-light)) 60%,
+      hsl(var(--wood-dark)) 80%,
+      hsl(var(--wood-light)) 100%
     );
-  background-size: 100px 100%, 100% 100%;
+  background-size: 200px 200px, 80px 100%, 100% 100%;
+  background-blend-mode: overlay, normal, normal;
+}
+
+/* Light Wood - Lighter oak/maple for light mode */
+.texture-wood-light {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(210, 180, 140, 0.2) 20%,
+      transparent 40%,
+      rgba(210, 180, 140, 0.15) 60%,
+      transparent 80%,
+      rgba(210, 180, 140, 0.2) 100%
+    ),
+    linear-gradient(180deg,
+      #D2B48C 0%,
+      #E5C3A6 25%,
+      #D2B48C 50%,
+      #E5C3A6 75%,
+      #D2B48C 100%
+    );
+  background-size: 200px 200px, 60px 100%, 100% 100%;
+  background-blend-mode: multiply, normal, normal;
+}
+
+/* Dark Wood - Rich mahogany for dark mode */
+.texture-wood-dark {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(62, 39, 35, 0.3) 20%,
+      transparent 40%,
+      rgba(62, 39, 35, 0.2) 60%,
+      transparent 80%,
+      rgba(62, 39, 35, 0.3) 100%
+    ),
+    linear-gradient(180deg,
+      #3E2723 0%,
+      #5D4037 25%,
+      #3E2723 50%,
+      #5D4037 75%,
+      #3E2723 100%
+    );
+  background-size: 200px 200px, 60px 100%, 100% 100%;
+  background-blend-mode: overlay, normal, normal;
+}
+
+/* Wood Trim Accent - For borders and highlights */
+.wood-trim {
+  position: relative;
+}
+
+.wood-trim::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+  background-size: 150px 150px;
+  background-blend-mode: overlay;
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 /* Carbon Fiber Pattern */
