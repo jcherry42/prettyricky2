@@ -198,6 +198,18 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-16**: VIN Scanner Enhancement & Settings Tab
+  - Enhanced VIN decoder with multi-source cross-reference validation
+    - ISO 3779 checksum validation
+    - World Manufacturer Identifier (WMI) database lookup
+    - Confidence score displayed (0-100%)
+  - Added Settings tab to Command Center with:
+    - Dealership Profile (name, brand, location)
+    - Salesperson Profile (name, preferred greeting)
+    - Sound Effects toggle & Engine Sound profiles (USA, Euro, JDM)
+    - Browser Notifications enable
+    - Twilio SMS configuration (Account SID, Auth Token, From Number)
+  - Mobile builds synced
 - **2026-01-16**: Quick Add Button Feature
   - Added floating Bluetooth-emblem button for quick customer addition
   - Cyan/blue tech-style design with pulsing glow effect
