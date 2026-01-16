@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Taillights</string>
-    <string name="title_activity_main">Taillights</string>
-    <string name="package_name">com.taillights.salesapp</string>
-    <string name="custom_url_scheme">com.taillights.salesapp</string>
-</resources>

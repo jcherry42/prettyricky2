@@ -1,8 +1,0 @@
-year,make,model,trim,price,stock_number,vin,mileage,exterior_color,interior_color,status
-2024,Honda,Accord,Sport,32490,H1234,1HGCV1F34RA000001,15,Crystal Black Pearl,Black,available
-2024,Toyota,Camry,XLE,35070,T5678,4T1BZ1HK8RU000002,22,Wind Chill Pearl,Ash,available
-2024,Ford,F-150,XLT,49995,F9012,1FTFW1E86RFA00003,45,Oxford White,Black,available
-2024,Chevrolet,Equinox,LT,33100,C3456,2GNAXUEV1R6000004,8,Summit White,Jet Black,available
-2024,BMW,X3,xDrive30i,48900,B7890,5UXTY5C09R9E00005,12,Alpine White,Black,pending
-2023,Toyota,RAV4,Limited,39500,T2345,2T3P1RFV8PC000006,5500,Lunar Rock,Nutmeg,available
-2023,Honda,CR-V,Touring,38750,H5678,7FARW2H96PE000007,3200,Sonic Gray Pearl,Gray,sold
