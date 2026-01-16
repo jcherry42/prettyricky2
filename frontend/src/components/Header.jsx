@@ -4,6 +4,7 @@ import { useSales } from '../context/SalesContext';
 import { IntegrationHealthStatus } from './IntegrationHealthStatus';
 import { DataHealthIndicator } from './DataHealthIndicator';
 import { VinScanner } from './VinScanner';
+import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
 // Startup sound
