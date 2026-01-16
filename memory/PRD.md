@@ -220,11 +220,16 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ## Pending Issues
 
+### P0 - Critical
+- [ ] **Eject Button Testing**: Backend endpoint and frontend UI implemented. Needs Twilio credentials for full testing.
+
 ### P1 - High Priority
 - [ ] **Real CRM Integration**: Remove mock-only mode, enable live data ingestion from user CRMs
+- [ ] **iOS Build "Sandbox deny" Error**: User needs to set "User Script Sandboxing" to "No" in Xcode Build Settings
 
 ### P2 - Medium Priority  
 - [ ] **Voice Translator Safari Issues**: User reported microphone access issues on Safari (fixes applied, pending verification)
+- [ ] **VIN Barcode Scanner Verification**: Needs testing on physical iOS device
 
 ## Next Steps (Backlog)
 
