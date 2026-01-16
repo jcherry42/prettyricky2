@@ -199,10 +199,10 @@ export const Header = () => {
 
           {/* Check Engine Button - ZL1 Camaro with hood animation */}
           <button
-            onClick={() => toggleAdminSettings(true)}
+            onClick={() => setCommandCenterOpen(true)}
             className="btn-check-zl1"
             data-testid="open-admin-settings-btn"
-            title="Check Engine - All Settings"
+            title="Command Center"
           >
             <div className="zl1-car-wrapper">
               <svg viewBox="0 0 100 40" className="zl1-car-svg">
