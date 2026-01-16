@@ -411,10 +411,15 @@ export const VinScanner = ({ isOpen, onClose }) => {
       <style>{`
         .vin-modal-overlay {
           position: fixed;
-          inset: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100vw;
+          height: 100vh;
           background: rgba(10,8,6,0.9);
           backdrop-filter: blur(16px);
-          z-index: 100;
+          z-index: 9999;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -422,9 +427,11 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
 
         .vin-modal {
-          width: 100%;
+          position: relative;
+          width: calc(100% - 32px);
           max-width: 340px;
           max-height: 85vh;
+          margin: auto;
           overflow-y: auto;
           background: 
             url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
