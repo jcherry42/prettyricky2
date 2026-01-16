@@ -75,6 +75,9 @@ function AppContent() {
       {/* Voice Translator - Right Side Panel */}
       <VoiceTranslator />
       
+      {/* Quick Add Customer - Floating Bluetooth Button */}
+      <QuickAddButton />
+      
       {/* Toast notifications */}
       <Toaster position="top-center" />
     </div>
