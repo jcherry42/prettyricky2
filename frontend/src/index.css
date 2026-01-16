@@ -2867,19 +2867,39 @@ html:not(.dark) .btn-check-engine-v2:hover {
 }
 
 /* ============================================
-   MODAL / BOTTOM SHEET
+   MODAL / BOTTOM SHEET - LUXURY EDITION
    ============================================ */
 
 .modal-luxury {
   @apply fixed inset-x-0 bottom-0 rounded-t-3xl overflow-hidden;
-  background: linear-gradient(180deg,
-    hsla(20, 12%, 10%, 0.98) 0%,
-    hsla(20, 10%, 7%, 0.99) 100%
-  );
-  border-top: 1px solid hsla(40, 30%, 25%, 0.3);
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(180deg,
+      hsla(22, 15%, 12%, 0.98) 0%,
+      hsla(20, 12%, 8%, 0.99) 100%
+    );
+  background-size: 150px 150px, 100% 100%;
+  background-blend-mode: soft-light, normal;
+  border-top: 1px solid hsla(40, 40%, 30%, 0.35);
   box-shadow: 
-    0 -8px 40px hsla(0, 0%, 0%, 0.5),
-    inset 0 1px 0 hsla(40, 30%, 30%, 0.08);
+    0 -8px 50px hsla(0, 0%, 0%, 0.6),
+    0 -2px 30px hsla(40, 100%, 50%, 0.08),
+    inset 0 1px 0 hsla(40, 40%, 35%, 0.12);
+}
+
+/* Ambient glow above modal */
+.modal-luxury::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 10%;
+  right: 10%;
+  height: 30px;
+  background: radial-gradient(ellipse at center bottom, 
+    hsla(40, 100%, 50%, 0.15) 0%, 
+    transparent 70%
+  );
+  pointer-events: none;
 }
 
 /* Modal drag handle */
