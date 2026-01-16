@@ -159,17 +159,13 @@ export const Header = () => {
           <span>CHECK</span>
         </button>
 
-        {/* Sport Mode with Exhaust & Flames */}
+        {/* Sport Mode with Fire Effect */}
         <button
           onClick={toggleSuperchargedMode}
-          className={`sport-exhaust-btn ${supercharged ? 'active' : ''}`}
+          className={`sport-fire-btn ${supercharged ? 'active' : ''}`}
           data-testid="toggle-supercharged-btn"
         >
-          <div className="exhaust-housing">
-            <div className="exhaust-tip"></div>
-            <div className="exhaust-inner"></div>
-          </div>
-          <div className={`flame-container ${supercharged ? 'firing' : ''}`}>
+          <div className="flame-container">
             <div className="flame flame-1"></div>
             <div className="flame flame-2"></div>
             <div className="flame flame-3"></div>
@@ -178,6 +174,14 @@ export const Header = () => {
             <div className="spark spark-3"></div>
             <div className="spark spark-4"></div>
           </div>
+          <svg viewBox="0 0 24 24" className="header-btn-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
+            {/* Simple race car icon */}
+            <path d="M5 12h14" strokeLinecap="round" />
+            <path d="M5 12c0-.55.45-1 1-1h2l2-3h4l2 3h2c.55 0 1 .45 1 1" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="7.5" cy="14.5" r="1.5" fill="currentColor" stroke="none" />
+            <circle cx="16.5" cy="14.5" r="1.5" fill="currentColor" stroke="none" />
+            <path d="M4 12v2c0 .55.45 1 1 1h14c.55 0 1-.45 1-1v-2" strokeLinecap="round" />
+          </svg>
           <span className="sport-label">{supercharged ? 'ESP' : 'SPORT'}</span>
         </button>
 
