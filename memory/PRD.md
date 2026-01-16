@@ -10,6 +10,25 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ## Core Features
 
+### Data Entry & Integration System (NEW)
+- **File Upload**: CSV and Excel (.xlsx) import for bulk customers/vehicles
+- **Email Parsing**: AI-powered lead email parsing with auto-customer creation
+- **Manual Entry**: Premium liquid glass forms for customers and vehicles
+- **CRM Integration**: Connect via API keys to VinSolutions, DealerSocket, eLeadCRM, custom APIs
+
+### Vehicle Database (Enhanced)
+- **Active Inventory**: Vehicles for sale on lot
+- **Trade-Ins**: Customer trade-in vehicles (linked to customer profiles)
+- **VIN Scanner**: Scan/decode VINs with category selection before saving
+- **Full NHTSA Data**: Engine, transmission, safety features, assembly location
+
+### Customer Profiles (NEW)
+- Store: Name, Address, Phone, Email, Lead Source, Lead Status
+- Notes with interaction history tracking
+- Attach up to 2 vehicles of interest per customer
+- Link trade-in vehicles to customers
+- Auto-delete 30 days after marked as sold
+
 ### AI Integration (Enhanced with Persuasion Psychology)
 - **Tower Talk**: AI-powered conversation assistance using OpenAI GPT (via emergentintegrations)
 - **Persuasion Tactics**: Built-in sales psychology including:
