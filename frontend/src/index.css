@@ -585,7 +585,7 @@ html:not(.dark) .header-luxury {
   background-blend-mode: multiply, normal;
 }
 
-/* Chrome accent line - amber glow */
+/* Chrome accent line - amber glow - Enhanced */
 .header-luxury::after {
   content: '';
   position: absolute;
@@ -595,11 +595,29 @@ html:not(.dark) .header-luxury {
   height: 2px;
   background: linear-gradient(90deg,
     transparent 0%,
-    hsla(40, 100%, 50%, 0.3) 20%,
-    hsla(40, 100%, 55%, 0.6) 50%,
-    hsla(40, 100%, 50%, 0.3) 80%,
+    hsla(40, 100%, 50%, 0.4) 20%,
+    hsla(40, 100%, 60%, 0.8) 50%,
+    hsla(40, 100%, 50%, 0.4) 80%,
     transparent 100%
   );
+  box-shadow: 
+    0 0 15px hsla(40, 100%, 55%, 0.5),
+    0 0 30px hsla(40, 100%, 50%, 0.3);
+}
+
+/* Additional header ambient underglow */
+.header-luxury::before {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 10%;
+  right: 10%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, 
+    hsla(40, 100%, 50%, 0.15) 0%, 
+    transparent 70%
+  );
+  pointer-events: none;
 }
 
 /* ============================================
