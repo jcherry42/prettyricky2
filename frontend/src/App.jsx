@@ -34,12 +34,12 @@ function AppContent() {
   }, [theme]);
   
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
       {/* Header */}
       <Header />
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-4 max-w-lg pb-safe space-y-4">
+      {/* Main Content - with padding for fixed header */}
+      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '120px', maxWidth: '100%' }}>
         {/* Step 1: Select Customer */}
         <section>
           <CustomerSelector />
