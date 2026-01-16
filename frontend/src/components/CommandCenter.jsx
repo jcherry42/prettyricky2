@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   X, Users, Car, Upload, Mail, Link2, BarChart3, 
   Search, Plus, ChevronRight, Settings, Database,
