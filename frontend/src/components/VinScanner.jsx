@@ -185,7 +185,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
+  // Use portal to render outside header context
+  return createPortal(
     <div className="vin-modal-overlay" onClick={mode === 'scanning' ? stopScanning : onClose}>
       <div className="vin-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
