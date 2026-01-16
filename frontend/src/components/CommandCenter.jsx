@@ -2421,4 +2421,528 @@ const ImportModal = ({ onClose, onSuccess }) => {
   );
 };
 
+// Settings Tab Component
+const SettingsTab = () => {
+  const { 
+    dealership, 
+    salesperson, 
+    setDealership, 
+    setSalesperson 
+  } = useSales();
+  
+  const [dealershipForm, setDealershipForm] = useState({
+    name: dealership?.name || '',
+    brand: dealership?.brand || '',
+    location: dealership?.location || '',
+  });
+  
+  const [salespersonForm, setSalespersonForm] = useState({
+    name: salesperson?.name || '',
+    preferredPhrase: salesperson?.preferredPhrase || 'Good to hear from you',
+  });
+  
+  const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
+  const [notificationPermission, setNotificationPermission] = useState('default');
+  const [twilioForm, setTwilioForm] = useState({
+    account_sid: '',
+    auth_token: '',
+    from_number: '',
+  });
+  const [showSecret, setShowSecret] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [twilioConfigured, setTwilioConfigured] = useState(false);
+  
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+    // Check Twilio config
+    fetch(`${BACKEND_URL}/api/notifications/config`)
+      .then(res => res.json())
+      .then(data => setTwilioConfigured(data.sms_configured))
+      .catch(() => {});
+  }, []);
+  
+  const handleSaveProfile = () => {
+    setDealership(dealershipForm);
+    setSalesperson(salespersonForm);
+    toast.success('Profile settings saved!');
+  };
+  
+  const handleSaveTwilio = async () => {
+    if (!twilioForm.account_sid || !twilioForm.auth_token || !twilioForm.from_number) {
+      toast.error('Please fill all Twilio fields');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/notifications/config/twilio`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(twilioForm),
+      });
+      if (res.ok) {
+        toast.success('Twilio configured!');
+        setTwilioConfigured(true);
+        setTwilioForm({ account_sid: '', auth_token: '', from_number: '' });
+      } else {
+        toast.error('Failed to configure Twilio');
+      }
+    } catch (e) {
+      toast.error('Error saving configuration');
+    } finally {
+      setSaving(false);
+    }
+  };
+  
+  return (
+    <div className="settings-tab">
+      {/* Profile Section */}
+      <div className="settings-section">
+        <div className="section-header">
+          <Building2 className="w-5 h-5" style={{ color: '#FFBF00' }} />
+          <h4>Dealership Profile</h4>
+        </div>
+        <div className="settings-form">
+          <div className="s-field">
+            <label>Dealership Name</label>
+            <input 
+              type="text"
+              placeholder="Premier Motors"
+              value={dealershipForm.name}
+              onChange={e => setDealershipForm({...dealershipForm, name: e.target.value})}
+            />
+          </div>
+          <div className="s-field">
+            <label>Brand / Makes</label>
+            <input 
+              type="text"
+              placeholder="Toyota, Honda, etc."
+              value={dealershipForm.brand}
+              onChange={e => setDealershipForm({...dealershipForm, brand: e.target.value})}
+            />
+          </div>
+          <div className="s-field">
+            <label>Location</label>
+            <input 
+              type="text"
+              placeholder="Los Angeles, CA"
+              value={dealershipForm.location}
+              onChange={e => setDealershipForm({...dealershipForm, location: e.target.value})}
+            />
+          </div>
+        </div>
+      </div>
+      
+      {/* Salesperson Section */}
+      <div className="settings-section">
+        <div className="section-header">
+          <User className="w-5 h-5" style={{ color: '#FFBF00' }} />
+          <h4>Your Profile</h4>
+        </div>
+        <div className="settings-form">
+          <div className="s-field">
+            <label>Your Name</label>
+            <input 
+              type="text"
+              placeholder="Alex Johnson"
+              value={salespersonForm.name}
+              onChange={e => setSalespersonForm({...salespersonForm, name: e.target.value})}
+            />
+          </div>
+          <div className="s-field">
+            <label>Preferred Greeting</label>
+            <div className="greeting-options">
+              {['Good to hear from you', 'Thanks for reaching out', 'Great news'].map(phrase => (
+                <button
+                  key={phrase}
+                  type="button"
+                  className={`greeting-btn ${salespersonForm.preferredPhrase === phrase ? 'active' : ''}`}
+                  onClick={() => setSalespersonForm({...salespersonForm, preferredPhrase: phrase})}
+                >
+                  {phrase}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button className="save-settings-btn" onClick={handleSaveProfile}>
+          <Save className="w-4 h-4" /> Save Profile
+        </button>
+      </div>
+      
+      {/* Notifications Section */}
+      <div className="settings-section">
+        <div className="section-header">
+          <Bell className="w-5 h-5" style={{ color: '#FFBF00' }} />
+          <h4>Notifications</h4>
+        </div>
+        
+        {/* Sound Settings */}
+        <div className="sound-settings">
+          <div className="sound-toggle">
+            <span>Sound Effects</span>
+            <button 
+              className={`toggle-btn ${soundPrefs.enabled ? 'on' : 'off'}`}
+              onClick={() => {
+                const newPrefs = { ...soundPrefs, enabled: !soundPrefs.enabled };
+                setSoundPrefsState(newPrefs);
+                setSoundPreferences(newPrefs);
+                if (newPrefs.enabled) playNotificationSound();
+              }}
+            >
+              {soundPrefs.enabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+              {soundPrefs.enabled ? 'On' : 'Off'}
+            </button>
+          </div>
+          
+          <div className="sound-profiles">
+            <label>Engine Sound Profile</label>
+            <div className="profile-grid">
+              {getSoundProfiles().map(profile => (
+                <button
+                  key={profile.id}
+                  className={`profile-btn ${soundPrefs.profile === profile.id ? 'active' : ''}`}
+                  onClick={() => {
+                    const newPrefs = { ...soundPrefs, profile: profile.id };
+                    setSoundPrefsState(newPrefs);
+                    setSoundPreferences(newPrefs);
+                    playNotificationSound(profile.id);
+                  }}
+                >
+                  <span className="profile-icon">{profile.icon}</span>
+                  <span className="profile-name">{profile.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="browser-notif">
+            <span>Browser Notifications</span>
+            <button
+              className={`notif-btn ${notificationPermission === 'granted' ? 'enabled' : ''}`}
+              onClick={async () => {
+                const perm = await requestNotificationPermission();
+                setNotificationPermission(perm);
+                if (perm === 'granted') {
+                  toast.success('Notifications enabled!');
+                }
+              }}
+              disabled={notificationPermission === 'granted'}
+            >
+              {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Twilio SMS Section */}
+      <div className="settings-section">
+        <div className="section-header">
+          <Phone className="w-5 h-5" style={{ color: '#FFBF00' }} />
+          <h4>SMS Notifications (Twilio)</h4>
+          {twilioConfigured && <span className="config-badge">Configured</span>}
+        </div>
+        <div className="settings-form">
+          <div className="s-field">
+            <label>Account SID</label>
+            <input 
+              type="text"
+              placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              value={twilioForm.account_sid}
+              onChange={e => setTwilioForm({...twilioForm, account_sid: e.target.value})}
+            />
+          </div>
+          <div className="s-field">
+            <label>Auth Token</label>
+            <div className="secret-input">
+              <input 
+                type={showSecret ? 'text' : 'password'}
+                placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                value={twilioForm.auth_token}
+                onChange={e => setTwilioForm({...twilioForm, auth_token: e.target.value})}
+              />
+              <button type="button" onClick={() => setShowSecret(!showSecret)}>
+                {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <div className="s-field">
+            <label>From Phone Number</label>
+            <input 
+              type="text"
+              placeholder="+15551234567"
+              value={twilioForm.from_number}
+              onChange={e => setTwilioForm({...twilioForm, from_number: e.target.value})}
+            />
+          </div>
+        </div>
+        <button 
+          className="save-settings-btn" 
+          onClick={handleSaveTwilio}
+          disabled={saving}
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {twilioConfigured ? 'Update Twilio' : 'Configure Twilio'}
+        </button>
+      </div>
+      
+      <style>{`
+        .settings-tab {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        
+        .settings-section {
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(255,191,0,0.1);
+          border-radius: 14px;
+          padding: 16px;
+        }
+        
+        .section-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        
+        .section-header h4 {
+          flex: 1;
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255,220,180,0.9);
+        }
+        
+        .config-badge {
+          font-size: 10px;
+          padding: 3px 8px;
+          background: rgba(34,197,94,0.2);
+          color: #22c55e;
+          border-radius: 6px;
+        }
+        
+        .settings-form {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        
+        .s-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        
+        .s-field label {
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,191,0,0.7);
+          text-transform: uppercase;
+        }
+        
+        .s-field input {
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.4);
+          border: 1px solid rgba(255,191,0,0.15);
+          color: #fff;
+          font-size: 14px;
+          outline: none;
+        }
+        
+        .s-field input:focus {
+          border-color: rgba(255,191,0,0.4);
+        }
+        
+        .secret-input {
+          position: relative;
+        }
+        
+        .secret-input input {
+          width: 100%;
+          padding-right: 40px;
+        }
+        
+        .secret-input button {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          color: rgba(255,255,255,0.5);
+          cursor: pointer;
+        }
+        
+        .greeting-options {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        
+        .greeting-btn {
+          padding: 10px 12px;
+          border-radius: 8px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.7);
+          font-size: 13px;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .greeting-btn.active {
+          background: rgba(255,191,0,0.15);
+          border-color: rgba(255,191,0,0.4);
+          color: #FFBF00;
+        }
+        
+        .save-settings-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          padding: 12px;
+          margin-top: 12px;
+          border-radius: 10px;
+          background: rgba(255,191,0,0.2);
+          border: 1px solid rgba(255,191,0,0.4);
+          color: #FFBF00;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        
+        .save-settings-btn:hover {
+          background: rgba(255,191,0,0.3);
+        }
+        
+        .sound-settings {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        
+        .sound-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        
+        .sound-toggle span {
+          font-size: 13px;
+          color: rgba(255,255,255,0.8);
+        }
+        
+        .toggle-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 8px;
+          border: none;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        
+        .toggle-btn.on {
+          background: rgba(34,197,94,0.2);
+          color: #22c55e;
+        }
+        
+        .toggle-btn.off {
+          background: rgba(255,255,255,0.1);
+          color: rgba(255,255,255,0.5);
+        }
+        
+        .sound-profiles label {
+          display: block;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,191,0,0.7);
+          margin-bottom: 8px;
+          text-transform: uppercase;
+        }
+        
+        .profile-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+        
+        .profile-btn {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding: 10px 8px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .profile-btn.active {
+          background: rgba(255,191,0,0.15);
+          border-color: rgba(255,191,0,0.4);
+        }
+        
+        .profile-icon {
+          font-size: 20px;
+        }
+        
+        .profile-name {
+          font-size: 10px;
+          color: rgba(255,255,255,0.7);
+        }
+        
+        .profile-btn.active .profile-name {
+          color: #FFBF00;
+        }
+        
+        .browser-notif {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 10px;
+          background: rgba(0,0,0,0.2);
+          border-radius: 10px;
+        }
+        
+        .browser-notif span {
+          font-size: 13px;
+          color: rgba(255,255,255,0.7);
+        }
+        
+        .notif-btn {
+          padding: 6px 14px;
+          border-radius: 6px;
+          border: none;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          background: rgba(255,191,0,0.2);
+          color: #FFBF00;
+        }
+        
+        .notif-btn.enabled {
+          background: rgba(34,197,94,0.2);
+          color: #22c55e;
+        }
+        
+        .notif-btn:disabled {
+          cursor: default;
+        }
+      `}</style>
+    </div>
+  );
+};
+
 export default CommandCenter;
