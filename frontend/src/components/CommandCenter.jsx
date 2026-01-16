@@ -425,9 +425,9 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           width: 32px;
           height: 32px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.06);
+          background: rgba(255,191,0,0.1);
           border: none;
-          color: #888;
+          color: #FFBF00;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -444,8 +444,9 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           display: flex;
           gap: 2px;
           padding: 8px 12px;
-          background: rgba(0,0,0,0.2);
+          background: rgba(0,0,0,0.25);
           overflow-x: auto;
+          border-bottom: 1px solid rgba(255,191,0,0.08);
         }
 
         .cc-tab {
@@ -456,7 +457,8 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           border-radius: 8px;
           background: transparent;
           border: none;
-          color: #666;
+          color: rgba(255,220,180,0.5);
+          font-family: 'Manrope', sans-serif;
           font-size: 12px;
           font-weight: 500;
           cursor: pointer;
@@ -465,13 +467,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-tab:hover {
-          color: #999;
-          background: rgba(255,255,255,0.05);
+          color: rgba(255,220,180,0.8);
+          background: rgba(255,191,0,0.08);
         }
 
         .cc-tab.active {
-          color: #22d3ee;
-          background: rgba(34,211,238,0.1);
+          color: #FFBF00;
+          background: rgba(255,191,0,0.15);
+          box-shadow: 0 0 10px rgba(255,191,0,0.15);
         }
 
         .cc-content {
