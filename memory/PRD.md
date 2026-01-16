@@ -198,6 +198,15 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-16**: UI/UX Enhancement - Wood Grain and Warm Theme Update
+  - Fixed Check Engine button (simplified, works consistently)
+  - Fixed modal centering (VIN Scanner and Command Center now use React Portals)
+  - Added wood grain texture to body background (both light and dark modes)
+  - Enhanced dark mode with warm amber/gold accents (JDM luxury interior feel)
+  - Enhanced light mode with vibrant cyan/magenta Vice City colors
+  - Wood grain texture applied to header and modal backgrounds
+  - Updated font family to include Chakra Petch and Manrope
+  - Fixed Vite allowedHosts configuration for preview
 - **2026-01-13**: Added VIN Scanner feature with OnStar-style button, barcode/manual entry, NHTSA decoder
 - **2026-01-13**: Enhanced AI with persuasion psychology (purchasing triggers, relationship builders, closing techniques)
 - **2026-01-12**: Completed Capacitor mobile builds (iOS + Android platforms added and synced)
