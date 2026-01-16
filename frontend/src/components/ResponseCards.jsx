@@ -3,7 +3,7 @@ import { Copy, Check, MessageSquare, Clock, ChevronDown, ChevronUp, Languages, F
 import { useSales } from '../context/SalesContext';
 import { FOLLOW_UP_RULES } from '../data/salesData';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Check if browser supports speech synthesis
 const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;

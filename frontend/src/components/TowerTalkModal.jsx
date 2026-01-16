@@ -3,7 +3,7 @@ import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languag
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Quick Response Shortcuts - Common objections and situations
 const QUICK_SHORTCUTS = [

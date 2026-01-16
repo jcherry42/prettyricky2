@@ -92,7 +92,7 @@ export const requestPushPermissions = async () => {
  * Send push token to backend for storage
  */
 const sendTokenToBackend = async (token) => {
-  const API_URL = process.env.REACT_APP_BACKEND_URL;
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
   if (!API_URL || !token) return;
   
   try {

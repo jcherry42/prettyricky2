@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Check for speech recognition support (Safari uses webkit prefix)
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

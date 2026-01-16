@@ -4,7 +4,7 @@ import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 import { ConnectionWizard } from './ConnectionWizard';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // CRM Integration Settings Panel Component
 const CRMIntegrationPanel = () => {

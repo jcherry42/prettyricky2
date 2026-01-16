@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine, Shield, Fuel, Gauge, MapPin, Settings2, Zap } from 'lucide-react';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Check if we're running in Capacitor
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform();
