@@ -61,42 +61,48 @@ h1, h2, h3 {
 
 @layer base {
   :root {
-    /* ========== LIGHT MODE (Default for :root) ========== */
-    --background: 30 15% 95%;
-    --foreground: 20 20% 15%;
+    /* ========== LIGHT MODE - Daytona Beach Day ========== */
+    /* Vibrant, Punchy, High-Visibility */
+    --background: 195 100% 97%;
+    --foreground: 20 25% 12%;
     
-    /* Card - Cream/Tan leather inspired */
-    --card: 35 25% 92%;
-    --card-foreground: 20 20% 15%;
+    /* Card - Clean with warmth */
+    --card: 30 40% 96%;
+    --card-foreground: 20 25% 12%;
     
-    /* Muted - Warm undertones */
-    --muted: 30 15% 88%;
-    --muted-foreground: 25 10% 45%;
+    /* Muted - Soft cream */
+    --muted: 35 30% 92%;
+    --muted-foreground: 25 15% 40%;
     
-    /* Borders - Subtle metallic */
-    --border: 30 12% 78%;
-    --input: 35 20% 90%;
-    --ring: 35 60% 45%;
+    /* Borders - Warm gold tint */
+    --border: 35 25% 82%;
+    --input: 35 30% 94%;
+    --ring: 190 100% 45%;
     
-    /* Primary - Brushed Gold/Amber */
-    --primary: 35 70% 42%;
-    --primary-foreground: 35 25% 98%;
+    /* Primary - Vice Cyan */
+    --primary: 190 100% 50%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Secondary - Stainless Steel */
-    --secondary: 220 8% 55%;
-    --secondary-foreground: 20 20% 15%;
+    /* Secondary - Vice Pink/Magenta */
+    --secondary: 300 100% 50%;
+    --secondary-foreground: 0 0% 100%;
     
-    /* Accent - Cool Ambient Blue */
-    --accent: 210 70% 45%;
-    --accent-foreground: 210 100% 98%;
+    /* Accent - Electric Blue */
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 100%;
     
     /* Status Colors */
-    --success: 145 55% 38%;
+    --success: 145 85% 40%;
     --success-foreground: 145 100% 98%;
-    --warning: 38 85% 45%;
-    --warning-foreground: 38 100% 10%;
-    --destructive: 0 65% 48%;
+    --warning: 45 100% 50%;
+    --warning-foreground: 45 100% 10%;
+    --destructive: 350 100% 50%;
     --destructive-foreground: 0 0% 100%;
+    
+    /* Wood Grain - Light Oak */
+    --wood-light: 30 35% 75%;
+    --wood-dark: 28 30% 60%;
+    --wood-accent: 32 40% 65%;
     
     /* Tower Talk - Deep Red */
     --tower: 0 75% 42%;
