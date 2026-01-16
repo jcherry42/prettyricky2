@@ -37,6 +37,8 @@ export const Header = () => {
   const [brakesPressed, setBrakesPressed] = useState(false);
   // VIN Scanner modal state
   const [vinScannerOpen, setVinScannerOpen] = useState(false);
+  // Command Center modal state
+  const [commandCenterOpen, setCommandCenterOpen] = useState(false);
 
   useEffect(() => {
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
