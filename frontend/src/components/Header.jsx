@@ -263,6 +263,9 @@ export const Header = () => {
       
       {/* VIN Scanner Modal */}
       <VinScanner isOpen={vinScannerOpen} onClose={() => setVinScannerOpen(false)} />
+      
+      {/* Command Center Modal */}
+      <CommandCenter isOpen={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
     </header>
   );
 };
