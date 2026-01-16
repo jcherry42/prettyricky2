@@ -3,7 +3,8 @@ import {
   X, Users, Car, Upload, Mail, Link2, BarChart3, 
   Search, Plus, ChevronRight, Settings, Database,
   FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
-  Clock, Tag, MessageSquare, CheckCircle2, AlertCircle
+  Clock, Tag, MessageSquare, CheckCircle2, AlertCircle,
+  Send, Smartphone
 } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
