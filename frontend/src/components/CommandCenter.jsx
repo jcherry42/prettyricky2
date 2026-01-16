@@ -1089,6 +1089,24 @@ const CustomerForm = ({ onClose, customer }) => {
 const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   const [newNote, setNewNote] = useState('');
   const [addingNote, setAddingNote] = useState(false);
+  const [showEjectModal, setShowEjectModal] = useState(false);
+  const [ejectPhone, setEjectPhone] = useState('');
+  const [ejecting, setEjecting] = useState(false);
+  const [ejectResult, setEjectResult] = useState(null);
+
+  // Load saved phone number
+  useEffect(() => {
+    const loadUserSettings = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/settings`);
+        const data = await res.json();
+        if (data.phone_number) setEjectPhone(data.phone_number);
+      } catch (e) {
+        console.error('Failed to load user settings:', e);
+      }
+    };
+    loadUserSettings();
+  }, []);
 
   const addNote = async () => {
     if (!newNote.trim()) return;
@@ -1108,6 +1126,46 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
       console.error('Add note error:', e);
     } finally {
       setAddingNote(false);
+    }
+  };
+
+  const handleEject = async () => {
+    if (!ejectPhone.trim()) return;
+    setEjecting(true);
+    setEjectResult(null);
+    
+    try {
+      // Save phone number for future use
+      await fetch(`${BACKEND_URL}/api/user/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone_number: ejectPhone })
+      });
+      
+      // Send the snapshot
+      const res = await fetch(`${BACKEND_URL}/api/eject/customer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_id: customer.id,
+          recipient_phone: ejectPhone
+        })
+      });
+      
+      const data = await res.json();
+      setEjectResult(data);
+      
+      if (data.success) {
+        setTimeout(() => {
+          setShowEjectModal(false);
+          setEjectResult(null);
+          onRefresh();
+        }, 2000);
+      }
+    } catch (e) {
+      setEjectResult({ success: false, error: e.message });
+    } finally {
+      setEjecting(false);
     }
   };
 
