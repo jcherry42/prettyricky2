@@ -679,22 +679,28 @@ html:not(.dark) .header-luxury {
 .btn-tower {
   @apply relative px-6 py-3.5 rounded-xl font-bold text-white transition-all duration-300;
   background: linear-gradient(180deg,
-    hsla(0, 75%, 45%, 1) 0%,
-    hsla(0, 80%, 35%, 1) 100%
+    hsla(0, 80%, 48%, 1) 0%,
+    hsla(355, 85%, 38%, 1) 100%
   );
-  border: 1px solid hsla(0, 70%, 55%, 0.3);
+  border: 1px solid hsla(0, 75%, 58%, 0.35);
   box-shadow: 
-    0 0 30px hsla(0, 100%, 50%, 0.2),
-    0 4px 15px hsla(0, 80%, 40%, 0.3),
-    inset 0 1px 0 hsla(0, 70%, 65%, 0.3);
+    0 0 40px hsla(0, 100%, 50%, 0.25),
+    0 0 80px hsla(0, 100%, 50%, 0.12),
+    0 4px 18px hsla(0, 85%, 40%, 0.35),
+    inset 0 1px 0 hsla(5, 80%, 70%, 0.35);
 }
 
 .btn-tower:hover {
   transform: translateY(-2px);
   box-shadow: 
-    0 0 50px hsla(0, 100%, 50%, 0.3),
-    0 8px 25px hsla(0, 80%, 40%, 0.4),
-    inset 0 1px 0 hsla(0, 70%, 65%, 0.4);
+    0 0 60px hsla(0, 100%, 50%, 0.35),
+    0 0 100px hsla(0, 100%, 50%, 0.18),
+    0 8px 28px hsla(0, 85%, 40%, 0.45),
+    inset 0 1px 0 hsla(5, 80%, 75%, 0.4);
+}
+
+.btn-tower:active {
+  transform: scale(0.98);
 }
 
 /* Icon Button */
