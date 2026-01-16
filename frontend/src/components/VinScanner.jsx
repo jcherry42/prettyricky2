@@ -412,8 +412,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
         .vin-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.85);
-          backdrop-filter: blur(8px);
+          background: rgba(10,8,6,0.9);
+          backdrop-filter: blur(16px);
           z-index: 100;
           display: flex;
           align-items: center;
@@ -423,13 +423,19 @@ export const VinScanner = ({ isOpen, onClose }) => {
 
         .vin-modal {
           width: 100%;
-          max-width: 360px;
-          max-height: 90vh;
+          max-width: 340px;
+          max-height: 85vh;
           overflow-y: auto;
-          background: linear-gradient(180deg, rgba(28,30,38,0.98) 0%, rgba(18,20,26,0.98) 100%);
+          background: 
+            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
+          background-size: 180px 180px, 100% 100%;
+          background-blend-mode: overlay, normal;
           border-radius: 20px;
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+          border: 1px solid rgba(255,191,0,0.15);
+          box-shadow: 
+            0 25px 50px rgba(0,0,0,0.6),
+            0 0 40px rgba(255,150,0,0.08);
         }
 
         .vin-modal-header {
@@ -437,26 +443,28 @@ export const VinScanner = ({ isOpen, onClose }) => {
           align-items: center;
           gap: 12px;
           padding: 16px;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
+          border-bottom: 1px solid rgba(255,191,0,0.12);
         }
 
         .vin-header-icon {
           width: 40px;
           height: 40px;
           border-radius: 12px;
-          background: rgba(34,211,238,0.15);
-          border: 1px solid rgba(34,211,238,0.3);
+          background: rgba(255,191,0,0.15);
+          border: 1px solid rgba(255,191,0,0.3);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #22d3ee;
+          color: #FFBF00;
         }
 
         .vin-modal-header h2 {
+          font-family: 'Chakra Petch', sans-serif;
           font-size: 16px;
           font-weight: 600;
-          color: #fff;
+          color: #FFBF00;
           margin: 0;
+          text-shadow: 0 0 10px rgba(255,191,0,0.3);
         }
 
         .vin-modal-header p {
