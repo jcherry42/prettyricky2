@@ -171,7 +171,7 @@ frontend:
     file: "/app/frontend/src/components/ResponseCards.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
@@ -182,6 +182,9 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Translation on edited text feature needs re-testing. Logic appears correct but user reported it wasn't working."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Translation on edited text feature verified working. Edit mode accessible via pencil icon, 'Translate to Spanish' button appears when editing text, translation functionality implemented correctly. Feature allows editing response text and translating the edited version (not original). Language toggle between English/Spanish working as expected."
 
   - task: "Flame Animation Size - Adjust flame size to be proportional to Sport Mode button"
     implemented: true
