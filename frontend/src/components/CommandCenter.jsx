@@ -597,27 +597,40 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         .cc-tabs {
           display: flex;
           gap: 2px;
-          padding: 8px 12px;
+          padding: 6px 8px;
           background: rgba(0,0,0,0.25);
           overflow-x: auto;
           border-bottom: 1px solid rgba(255,191,0,0.08);
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        
+        .cc-tabs::-webkit-scrollbar {
+          display: none;
         }
 
         .cc-tab {
           display: flex;
           align-items: center;
-          gap: 6px;
-          padding: 8px 12px;
+          gap: 4px;
+          padding: 6px 8px;
           border-radius: 8px;
           background: transparent;
           border: none;
           color: rgba(255,220,180,0.5);
           font-family: 'Manrope', sans-serif;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 500;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s;
+          flex-shrink: 0;
+        }
+        
+        .cc-tab svg {
+          width: 14px;
+          height: 14px;
+        }
         }
 
         .cc-tab:hover {
