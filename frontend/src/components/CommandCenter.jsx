@@ -371,10 +371,15 @@ export const CommandCenter = ({ isOpen, onClose }) => {
       <style>{`
         .cc-overlay {
           position: fixed;
-          inset: 0;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          width: 100vw;
+          height: 100vh;
           background: rgba(10,8,6,0.9);
           backdrop-filter: blur(16px);
-          z-index: 100;
+          z-index: 9999;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -382,9 +387,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-modal {
-          width: 100%;
+          position: relative;
+          width: calc(100% - 32px);
           max-width: 420px;
           max-height: 80vh;
+          margin: auto;
           background: 
             url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
             linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
