@@ -985,14 +985,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           width: 100%;
           max-width: 400px;
           max-height: 85vh;
-          background: 
-            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
-          background-size: 180px 180px, 100% 100%;
-          background-blend-mode: overlay, normal;
+          background: rgba(20,18,16,0.75);
+          backdrop-filter: blur(16px);
           border-radius: 20px;
-          border: 1px solid rgba(255,191,0,0.2);
-          box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+          border: 1px solid rgba(255,191,0,0.25);
+          box-shadow: 
+            0 25px 50px rgba(0,0,0,0.6),
+            0 0 40px rgba(255,191,0,0.12),
+            inset 0 1px 0 rgba(255,255,255,0.08);
           overflow: hidden;
           display: flex;
           flex-direction: column;
