@@ -813,7 +813,8 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           color: #22c55e;
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 
