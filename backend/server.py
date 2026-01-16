@@ -2361,6 +2361,774 @@ async def toggle_experiment(experiment_id: str, is_active: bool = True):
     return result
 
 
+# ============== ENHANCED CUSTOMER MANAGEMENT ==============
+
+from models import (
+    CustomerCreate, CustomerUpdate, Customer as CustomerModel,
+    VehicleCreate, VehicleUpdate, Vehicle as VehicleModel,
+    VehicleCategory, LeadStatus, LeadSource, InteractionType,
+    CustomerInteraction, CRMConfig
+)
+import pandas as pd
+import io
+import re
+
+class AddInteractionRequest(BaseModel):
+    interaction_type: str
+    content: str
+    created_by: Optional[str] = None
+
+
+class AttachVehicleRequest(BaseModel):
+    vehicle_id: str
+
+
+@api_router.get("/customers/list")
+async def list_customers(
+    status: Optional[str] = None,
+    source: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0
+):
+    """List all customers with optional filtering"""
+    try:
+        query = {}
+        if status:
+            query["lead_status"] = status
+        if source:
+            query["lead_source"] = source
+        
+        # Get customers
+        cursor = db.customers.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+        customers = await cursor.to_list(limit)
+        
+        # Search filter
+        if search:
+            search_lower = search.lower()
+            customers = [c for c in customers if 
+                search_lower in c.get('first_name', '').lower() or
+                search_lower in c.get('last_name', '').lower() or
+                search_lower in c.get('phone', '').lower() or
+                search_lower in c.get('email', '').lower()
+            ]
+        
+        # Get total count
+        total = await db.customers.count_documents(query)
+        
+        return {"customers": customers, "total": total}
+    except Exception as e:
+        logger.error(f"List customers error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/create")
+async def create_customer(customer: CustomerCreate):
+    """Create a new customer"""
+    try:
+        customer_data = customer.model_dump()
+        customer_data["id"] = str(uuid.uuid4())
+        customer_data["created_at"] = datetime.now(timezone.utc)
+        customer_data["updated_at"] = datetime.now(timezone.utc)
+        customer_data["interactions"] = []
+        
+        await db.customers.insert_one(customer_data)
+        
+        return {"success": True, "customer": {k: v for k, v in customer_data.items() if k != "_id"}}
+    except Exception as e:
+        logger.error(f"Create customer error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/customers/{customer_id}")
+async def get_customer(customer_id: str):
+    """Get a single customer with full details"""
+    try:
+        customer = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Get attached vehicles
+        if customer.get("vehicle_interests"):
+            vehicles = await db.vehicles.find(
+                {"id": {"$in": customer["vehicle_interests"]}},
+                {"_id": 0}
+            ).to_list(10)
+            customer["attached_vehicles"] = vehicles
+        
+        # Get trade-in vehicle if exists
+        if customer.get("trade_in_vehicle_id"):
+            trade_in = await db.vehicles.find_one(
+                {"id": customer["trade_in_vehicle_id"]},
+                {"_id": 0}
+            )
+            customer["trade_in_vehicle"] = trade_in
+        
+        return customer
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get customer error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.patch("/customers/{customer_id}")
+async def update_customer(customer_id: str, updates: CustomerUpdate):
+    """Update a customer"""
+    try:
+        update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        # If status changed to sold, set sold_at for auto-deletion
+        if updates.lead_status == LeadStatus.SOLD:
+            update_data["sold_at"] = datetime.now(timezone.utc)
+        
+        result = await db.customers.update_one(
+            {"id": customer_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        return {"success": True, "updated": update_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update customer error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/customers/{customer_id}")
+async def delete_customer(customer_id: str):
+    """Delete a customer"""
+    try:
+        result = await db.customers.delete_one({"id": customer_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete customer error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/{customer_id}/interaction")
+async def add_customer_interaction(customer_id: str, interaction: AddInteractionRequest):
+    """Add an interaction to customer history"""
+    try:
+        interaction_data = {
+            "id": str(uuid.uuid4()),
+            "interaction_type": interaction.interaction_type,
+            "content": interaction.content,
+            "created_at": datetime.now(timezone.utc),
+            "created_by": interaction.created_by
+        }
+        
+        result = await db.customers.update_one(
+            {"id": customer_id},
+            {
+                "$push": {"interactions": interaction_data},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        return {"success": True, "interaction": interaction_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Add interaction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/customers/{customer_id}/attach-vehicle")
+async def attach_vehicle_to_customer(customer_id: str, request: AttachVehicleRequest):
+    """Attach a vehicle of interest to a customer (max 2)"""
+    try:
+        customer = await db.customers.find_one({"id": customer_id})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        current_vehicles = customer.get("vehicle_interests", [])
+        if len(current_vehicles) >= 2:
+            raise HTTPException(status_code=400, detail="Maximum 2 vehicles allowed per customer")
+        
+        if request.vehicle_id in current_vehicles:
+            raise HTTPException(status_code=400, detail="Vehicle already attached")
+        
+        await db.customers.update_one(
+            {"id": customer_id},
+            {
+                "$push": {"vehicle_interests": request.vehicle_id},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Attach vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/customers/{customer_id}/detach-vehicle/{vehicle_id}")
+async def detach_vehicle_from_customer(customer_id: str, vehicle_id: str):
+    """Remove a vehicle of interest from a customer"""
+    try:
+        result = await db.customers.update_one(
+            {"id": customer_id},
+            {
+                "$pull": {"vehicle_interests": vehicle_id},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Detach vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== ENHANCED VEHICLE MANAGEMENT ==============
+
+@api_router.get("/vehicles/inventory")
+async def list_inventory(
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 50,
+    skip: int = 0
+):
+    """List vehicles in inventory"""
+    try:
+        query = {}
+        if category:
+            query["category"] = category
+        
+        cursor = db.vehicles.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+        vehicles = await cursor.to_list(limit)
+        
+        # Search filter
+        if search:
+            search_lower = search.lower()
+            vehicles = [v for v in vehicles if 
+                search_lower in v.get('make', '').lower() or
+                search_lower in v.get('model', '').lower() or
+                search_lower in v.get('vin', '').lower() or
+                search_lower in str(v.get('year', ''))
+            ]
+        
+        # Get counts by category
+        active_count = await db.vehicles.count_documents({"category": "active_inventory"})
+        trade_in_count = await db.vehicles.count_documents({"category": "trade_in"})
+        
+        return {
+            "vehicles": vehicles,
+            "counts": {
+                "active_inventory": active_count,
+                "trade_in": trade_in_count,
+                "total": active_count + trade_in_count
+            }
+        }
+    except Exception as e:
+        logger.error(f"List inventory error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/vehicles/create")
+async def create_vehicle(vehicle: VehicleCreate):
+    """Create a new vehicle"""
+    try:
+        vehicle_data = vehicle.model_dump()
+        vehicle_data["id"] = str(uuid.uuid4())
+        vehicle_data["created_at"] = datetime.now(timezone.utc)
+        vehicle_data["updated_at"] = datetime.now(timezone.utc)
+        vehicle_data["status"] = "available"
+        
+        await db.vehicles.insert_one(vehicle_data)
+        
+        return {"success": True, "vehicle": {k: v for k, v in vehicle_data.items() if k != "_id"}}
+    except Exception as e:
+        logger.error(f"Create vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/vehicles/{vehicle_id}")
+async def get_vehicle(vehicle_id: str):
+    """Get a single vehicle"""
+    try:
+        vehicle = await db.vehicles.find_one({"id": vehicle_id}, {"_id": 0})
+        if not vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        # Get linked customer if trade-in
+        if vehicle.get("customer_id"):
+            customer = await db.customers.find_one(
+                {"id": vehicle["customer_id"]},
+                {"_id": 0, "first_name": 1, "last_name": 1, "phone": 1}
+            )
+            vehicle["linked_customer"] = customer
+        
+        return vehicle
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.patch("/vehicles/{vehicle_id}")
+async def update_vehicle(vehicle_id: str, updates: VehicleUpdate):
+    """Update a vehicle"""
+    try:
+        update_data = {k: v for k, v in updates.model_dump().items() if v is not None}
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        
+        result = await db.vehicles.update_one(
+            {"id": vehicle_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        return {"success": True, "updated": update_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Update vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/vehicles/{vehicle_id}")
+async def delete_vehicle(vehicle_id: str):
+    """Delete a vehicle"""
+    try:
+        result = await db.vehicles.delete_one({"id": vehicle_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete vehicle error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Enhanced VIN save with category support
+class VinSaveWithCategoryRequest(BaseModel):
+    vin: str
+    vehicle_data: Dict[str, Any]
+    category: str = "active_inventory"  # "active_inventory" or "trade_in"
+    customer_id: Optional[str] = None  # For trade-ins
+    trade_in_value: Optional[float] = None
+    condition: Optional[str] = None
+
+
+@api_router.post("/vin/save-to-inventory")
+async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
+    """Save VIN-decoded vehicle to inventory with category"""
+    try:
+        vin = request.vin.upper().strip()
+        vdata = request.vehicle_data
+        
+        vehicle_record = {
+            "id": str(uuid.uuid4()),
+            "vin": vin,
+            "year": int(vdata.get("year", 0)) if vdata.get("year") else None,
+            "make": vdata.get("make", ""),
+            "model": vdata.get("model", ""),
+            "trim": vdata.get("trim"),
+            "category": request.category,
+            "body_class": vdata.get("body_class"),
+            "drive_type": vdata.get("drive_type"),
+            "fuel_type": vdata.get("fuel_type"),
+            "engine_display": vdata.get("engine_display"),
+            "transmission": vdata.get("transmission"),
+            "assembly_location": vdata.get("assembly_location"),
+            "safety_features": vdata.get("safety_features", []),
+            "customer_id": request.customer_id,
+            "trade_in_value": request.trade_in_value,
+            "condition": request.condition,
+            "status": "available",
+            "source_id": "vin_scanner",
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        }
+        
+        # Check if VIN already exists
+        existing = await db.vehicles.find_one({"vin": vin})
+        if existing:
+            await db.vehicles.update_one(
+                {"vin": vin},
+                {"$set": {**vehicle_record, "id": existing.get("id")}}
+            )
+            return {"success": True, "message": "Vehicle updated", "id": existing.get("id")}
+        else:
+            await db.vehicles.insert_one(vehicle_record)
+            return {"success": True, "message": "Vehicle saved", "id": vehicle_record["id"]}
+            
+    except Exception as e:
+        logger.error(f"Save VIN to inventory error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== DATA IMPORT (File Upload, Email Parsing) ==============
+
+@api_router.post("/import/file")
+async def import_file(
+    file: UploadFile = File(...),
+    import_type: str = Form("customers")  # "customers" or "vehicles"
+):
+    """Import data from CSV or Excel file"""
+    try:
+        content = await file.read()
+        filename = file.filename.lower()
+        
+        # Parse file
+        if filename.endswith('.csv'):
+            df = pd.read_csv(io.BytesIO(content))
+        elif filename.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(io.BytesIO(content))
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format. Use CSV or Excel.")
+        
+        imported = 0
+        errors = []
+        
+        if import_type == "customers":
+            # Map common column names
+            column_map = {
+                'first name': 'first_name', 'firstname': 'first_name', 'fname': 'first_name',
+                'last name': 'last_name', 'lastname': 'last_name', 'lname': 'last_name',
+                'name': 'full_name',
+                'phone': 'phone', 'telephone': 'phone', 'cell': 'phone', 'mobile': 'phone',
+                'email': 'email', 'e-mail': 'email',
+                'address': 'address', 'street': 'address',
+                'source': 'lead_source', 'lead source': 'lead_source',
+                'status': 'lead_status', 'lead status': 'lead_status',
+            }
+            
+            df.columns = [column_map.get(c.lower().strip(), c.lower().replace(' ', '_')) for c in df.columns]
+            
+            for idx, row in df.iterrows():
+                try:
+                    # Handle full name split
+                    if 'full_name' in row and pd.notna(row['full_name']):
+                        name_parts = str(row['full_name']).strip().split(' ', 1)
+                        first_name = name_parts[0]
+                        last_name = name_parts[1] if len(name_parts) > 1 else ''
+                    else:
+                        first_name = str(row.get('first_name', '')).strip() if pd.notna(row.get('first_name')) else ''
+                        last_name = str(row.get('last_name', '')).strip() if pd.notna(row.get('last_name')) else ''
+                    
+                    if not first_name:
+                        continue
+                    
+                    customer_data = {
+                        "id": str(uuid.uuid4()),
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "phone": str(row.get('phone', '')).strip() if pd.notna(row.get('phone')) else '',
+                        "email": str(row.get('email', '')).strip() if pd.notna(row.get('email')) else None,
+                        "address": str(row.get('address', '')).strip() if pd.notna(row.get('address')) else None,
+                        "lead_source": "file_import",
+                        "lead_status": "new",
+                        "interactions": [],
+                        "vehicle_interests": [],
+                        "created_at": datetime.now(timezone.utc),
+                        "updated_at": datetime.now(timezone.utc),
+                        "source_id": f"import_{file.filename}",
+                    }
+                    
+                    await db.customers.insert_one(customer_data)
+                    imported += 1
+                except Exception as e:
+                    errors.append(f"Row {idx + 2}: {str(e)}")
+        
+        elif import_type == "vehicles":
+            column_map = {
+                'vin': 'vin',
+                'year': 'year',
+                'make': 'make',
+                'model': 'model',
+                'trim': 'trim',
+                'price': 'price',
+                'mileage': 'mileage', 'miles': 'mileage', 'odometer': 'mileage',
+                'color': 'color', 'ext color': 'color', 'exterior': 'color',
+                'stock': 'stock_number', 'stock #': 'stock_number', 'stock number': 'stock_number',
+            }
+            
+            df.columns = [column_map.get(c.lower().strip(), c.lower().replace(' ', '_')) for c in df.columns]
+            
+            for idx, row in df.iterrows():
+                try:
+                    make = str(row.get('make', '')).strip() if pd.notna(row.get('make')) else ''
+                    model = str(row.get('model', '')).strip() if pd.notna(row.get('model')) else ''
+                    
+                    if not make or not model:
+                        continue
+                    
+                    vehicle_data = {
+                        "id": str(uuid.uuid4()),
+                        "vin": str(row.get('vin', '')).strip().upper() if pd.notna(row.get('vin')) else None,
+                        "year": int(row['year']) if pd.notna(row.get('year')) else None,
+                        "make": make,
+                        "model": model,
+                        "trim": str(row.get('trim', '')).strip() if pd.notna(row.get('trim')) else None,
+                        "price": float(row['price']) if pd.notna(row.get('price')) else None,
+                        "mileage": int(row['mileage']) if pd.notna(row.get('mileage')) else None,
+                        "color": str(row.get('color', '')).strip() if pd.notna(row.get('color')) else None,
+                        "stock_number": str(row.get('stock_number', '')).strip() if pd.notna(row.get('stock_number')) else None,
+                        "category": "active_inventory",
+                        "status": "available",
+                        "created_at": datetime.now(timezone.utc),
+                        "updated_at": datetime.now(timezone.utc),
+                        "source_id": f"import_{file.filename}",
+                    }
+                    
+                    await db.vehicles.insert_one(vehicle_data)
+                    imported += 1
+                except Exception as e:
+                    errors.append(f"Row {idx + 2}: {str(e)}")
+        
+        return {
+            "success": True,
+            "imported": imported,
+            "errors": errors[:10] if errors else [],
+            "total_errors": len(errors)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"File import error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/import/email")
+async def parse_lead_email(email_body: str = Form(...), email_subject: str = Form(""), email_from: str = Form("")):
+    """Parse a lead email and extract customer info"""
+    try:
+        # Use LLM to parse email
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="LLM not configured")
+        
+        chat = LlmChat(api_key=api_key, model="gpt-4o-mini")
+        
+        parse_prompt = f"""Parse this automotive lead email and extract customer information in JSON format.
+        
+Email From: {email_from}
+Subject: {email_subject}
+Body:
+{email_body}
+
+Extract and return ONLY valid JSON with these fields:
+{{
+    "first_name": "",
+    "last_name": "",
+    "phone": "",
+    "email": "",
+    "address": "",
+    "vehicle_interest": "",
+    "notes": ""
+}}
+
+If a field cannot be found, use empty string. Do not include any other text."""
+
+        response = await chat.send_message_async(UserMessage(text=parse_prompt))
+        
+        # Parse JSON response
+        json_match = re.search(r'\{[\s\S]*\}', response.text)
+        if json_match:
+            import json
+            parsed = json.loads(json_match.group())
+            
+            # Create customer if we have enough info
+            if parsed.get("first_name") or parsed.get("phone") or parsed.get("email"):
+                customer_data = {
+                    "id": str(uuid.uuid4()),
+                    "first_name": parsed.get("first_name", "Unknown"),
+                    "last_name": parsed.get("last_name", ""),
+                    "phone": parsed.get("phone", ""),
+                    "email": parsed.get("email", email_from) or email_from,
+                    "address": parsed.get("address"),
+                    "lead_source": "email",
+                    "lead_status": "new",
+                    "notes": parsed.get("notes"),
+                    "interactions": [{
+                        "id": str(uuid.uuid4()),
+                        "interaction_type": "email",
+                        "content": f"Lead email: {email_subject}\n\n{email_body[:500]}",
+                        "created_at": datetime.now(timezone.utc)
+                    }],
+                    "vehicle_interests": [],
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
+                    "source_id": "email_import",
+                }
+                
+                await db.customers.insert_one(customer_data)
+                
+                return {
+                    "success": True,
+                    "parsed": parsed,
+                    "customer_id": customer_data["id"],
+                    "message": "Customer created from email"
+                }
+            
+            return {"success": True, "parsed": parsed, "message": "Email parsed but insufficient data to create customer"}
+        
+        raise HTTPException(status_code=400, detail="Could not parse email content")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Email parse error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== CRM INTEGRATION ==============
+
+@api_router.get("/crm/configs")
+async def list_crm_configs():
+    """List all CRM configurations"""
+    try:
+        configs = await db.crm_configs.find({}, {"_id": 0, "api_key": 0, "api_secret": 0}).to_list(20)
+        return {"configs": configs}
+    except Exception as e:
+        logger.error(f"List CRM configs error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/crm/configs")
+async def create_crm_config(config: CRMConfig):
+    """Create a new CRM configuration"""
+    try:
+        config_data = config.model_dump()
+        config_data["created_at"] = datetime.now(timezone.utc)
+        
+        await db.crm_configs.insert_one(config_data)
+        
+        # Remove sensitive data from response
+        config_data.pop("api_key", None)
+        config_data.pop("api_secret", None)
+        config_data.pop("_id", None)
+        
+        return {"success": True, "config": config_data}
+    except Exception as e:
+        logger.error(f"Create CRM config error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/crm/configs/{config_id}")
+async def delete_crm_config(config_id: str):
+    """Delete a CRM configuration"""
+    try:
+        result = await db.crm_configs.delete_one({"id": config_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Config not found")
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete CRM config error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/crm/configs/{config_id}/test")
+async def test_crm_connection(config_id: str):
+    """Test a CRM connection"""
+    try:
+        config = await db.crm_configs.find_one({"id": config_id})
+        if not config:
+            raise HTTPException(status_code=404, detail="Config not found")
+        
+        # Test connection based on provider
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            try:
+                # Simple health check
+                response = await client.get(
+                    f"{config['api_url']}/health",
+                    headers={"Authorization": f"Bearer {config['api_key']}"}
+                )
+                return {"success": True, "status": "connected", "status_code": response.status_code}
+            except Exception as e:
+                return {"success": False, "status": "failed", "error": str(e)}
+                
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Test CRM connection error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== DASHBOARD STATS ==============
+
+@api_router.get("/dashboard/stats")
+async def get_dashboard_stats():
+    """Get dashboard statistics"""
+    try:
+        # Customer stats
+        total_customers = await db.customers.count_documents({})
+        new_leads = await db.customers.count_documents({"lead_status": "new"})
+        contacted = await db.customers.count_documents({"lead_status": "contacted"})
+        qualified = await db.customers.count_documents({"lead_status": "qualified"})
+        sold = await db.customers.count_documents({"lead_status": "sold"})
+        
+        # Vehicle stats
+        active_inventory = await db.vehicles.count_documents({"category": "active_inventory"})
+        trade_ins = await db.vehicles.count_documents({"category": "trade_in"})
+        
+        return {
+            "customers": {
+                "total": total_customers,
+                "new": new_leads,
+                "contacted": contacted,
+                "qualified": qualified,
+                "sold": sold
+            },
+            "vehicles": {
+                "active_inventory": active_inventory,
+                "trade_ins": trade_ins,
+                "total": active_inventory + trade_ins
+            }
+        }
+    except Exception as e:
+        logger.error(f"Dashboard stats error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== CLEANUP SOLD CUSTOMERS (30 days) ==============
+
+@api_router.post("/maintenance/cleanup-sold")
+async def cleanup_sold_customers():
+    """Delete customers marked as sold more than 30 days ago"""
+    try:
+        from datetime import timedelta
+        cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+        
+        result = await db.customers.delete_many({
+            "lead_status": "sold",
+            "sold_at": {"$lt": cutoff}
+        })
+        
+        return {"success": True, "deleted": result.deleted_count}
+    except Exception as e:
+        logger.error(f"Cleanup error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 app.include_router(api_router)
