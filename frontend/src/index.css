@@ -1111,14 +1111,6 @@ html:not(.dark) .header-btn.amber {
 }
 
 /* Individual Flames - Multiple layers for realism */
-  background: linear-gradient(180deg, 
-    hsla(0, 50%, 25%, 0.95) 0%, 
-    hsla(0, 55%, 18%, 1) 100%
-  );
-  border-color: hsla(0, 70%, 45%, 0.6);
-  box-shadow: 
-    0 0 20px hsla(0, 100%, 50%, 0.3),
-    0 0 40px hsla(0, 100%, 45%, 0.15);
 
 /* ============================================
    BUTTONS - LUXURY EDITION
