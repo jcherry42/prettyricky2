@@ -621,30 +621,32 @@ html:not(.dark) .header-luxury {
 }
 
 /* ============================================
-   BUTTONS
+   BUTTONS - LUXURY EDITION
    ============================================ */
 
-/* Primary Button - Gold ambient */
+/* Primary Button - Gold ambient with enhanced glow */
 .btn-luxury {
   @apply relative px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-300;
   background: linear-gradient(180deg,
-    hsla(35, 70%, 50%, 1) 0%,
-    hsla(30, 75%, 40%, 1) 100%
+    hsla(38, 75%, 52%, 1) 0%,
+    hsla(32, 80%, 42%, 1) 100%
   );
   color: hsla(20, 30%, 8%, 1);
-  border: 1px solid hsla(40, 80%, 60%, 0.3);
+  border: 1px solid hsla(40, 80%, 60%, 0.4);
   box-shadow: 
-    0 4px 15px hsla(35, 80%, 40%, 0.3),
-    0 2px 4px hsla(35, 80%, 30%, 0.2),
-    inset 0 1px 0 hsla(45, 100%, 70%, 0.3);
+    0 4px 20px hsla(38, 90%, 45%, 0.35),
+    0 2px 6px hsla(35, 80%, 30%, 0.25),
+    0 0 30px hsla(40, 100%, 50%, 0.15),
+    inset 0 1px 0 hsla(45, 100%, 75%, 0.4);
 }
 
 .btn-luxury:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 
-    0 6px 25px hsla(35, 80%, 40%, 0.4),
-    0 3px 8px hsla(35, 80%, 30%, 0.3),
-    inset 0 1px 0 hsla(45, 100%, 70%, 0.4);
+    0 8px 30px hsla(38, 90%, 45%, 0.45),
+    0 4px 10px hsla(35, 80%, 30%, 0.3),
+    0 0 50px hsla(40, 100%, 50%, 0.25),
+    inset 0 1px 0 hsla(45, 100%, 80%, 0.5);
 }
 
 .btn-luxury:active {
