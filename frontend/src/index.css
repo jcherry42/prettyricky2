@@ -742,6 +742,15 @@ html:not(.dark) .header-btn.amber {
   color: hsla(35, 80%, 35%, 1);
 }
 
+html:not(.dark) .header-btn.electric-green {
+  background: linear-gradient(180deg, 
+    hsla(145, 40%, 82%, 0.9) 0%, 
+    hsla(145, 45%, 75%, 0.95) 100%
+  );
+  border-color: hsla(145, 70%, 45%, 0.5);
+  color: hsla(145, 80%, 30%, 1);
+}
+
 /* ============================================
    SPORT MODE FIRE BUTTON WITH IMPLOSION EFFECT
    ============================================ */
