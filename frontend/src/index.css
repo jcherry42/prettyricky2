@@ -1077,6 +1077,101 @@ html:not(.dark) .btn-check-engine:hover {
 }
 
 /* ============================================
+   CHECK ENGINE BUTTON - Simplified Amber Style
+   Clean, responsive button with glowing amber effect
+   ============================================ */
+
+.btn-check-engine-simple {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 16px;
+  min-width: 64px;
+  height: 48px;
+  background: linear-gradient(180deg, 
+    hsla(30, 25%, 15%, 0.95) 0%, 
+    hsla(25, 20%, 10%, 0.98) 100%
+  );
+  border: 1px solid hsla(40, 100%, 50%, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: visible;
+  z-index: 20;
+}
+
+.btn-check-engine-simple .check-icon-wrapper {
+  color: #FFBF00;
+  filter: drop-shadow(0 0 4px rgba(255, 191, 0, 0.5));
+  animation: check-pulse 2s ease-in-out infinite;
+}
+
+.btn-check-engine-simple .check-label {
+  font-family: 'Russo One', 'Chakra Petch', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #FFBF00;
+  text-transform: uppercase;
+}
+
+@keyframes check-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 4px rgba(255, 191, 0, 0.5));
+  }
+  50% { 
+    filter: drop-shadow(0 0 8px rgba(255, 191, 0, 0.8));
+  }
+}
+
+.btn-check-engine-simple:hover {
+  background: linear-gradient(180deg, 
+    hsla(35, 30%, 18%, 0.98) 0%, 
+    hsla(30, 25%, 12%, 1) 100%
+  );
+  border-color: hsla(40, 100%, 55%, 0.5);
+  box-shadow: 
+    0 0 25px rgba(255, 191, 0, 0.25),
+    inset 0 1px 0 rgba(255, 191, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.btn-check-engine-simple:hover .check-icon-wrapper {
+  animation: none;
+  filter: drop-shadow(0 0 12px rgba(255, 191, 0, 1));
+}
+
+.btn-check-engine-simple:active {
+  transform: scale(0.96) translateY(0);
+}
+
+/* Light mode */
+html:not(.dark) .btn-check-engine-simple {
+  background: linear-gradient(180deg, 
+    hsla(35, 35%, 92%, 0.98) 0%, 
+    hsla(30, 30%, 86%, 1) 100%
+  );
+  border-color: hsla(35, 80%, 50%, 0.4);
+}
+
+html:not(.dark) .btn-check-engine-simple .check-icon-wrapper {
+  color: #CC8800;
+  filter: drop-shadow(0 0 3px rgba(204, 136, 0, 0.5));
+}
+
+html:not(.dark) .btn-check-engine-simple .check-label {
+  color: #996600;
+}
+
+html:not(.dark) .btn-check-engine-simple:hover {
+  border-color: hsla(35, 90%, 45%, 0.6);
+  box-shadow: 0 0 20px rgba(204, 136, 0, 0.2);
+}
+
+/* ============================================
    ONSTAR-STYLE VIN SCANNER BUTTON
    Inspired by GM OnStar button aesthetic
    ============================================ */
