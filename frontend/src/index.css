@@ -1,14 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Russo+One&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================
-   TAILLIGHTS - GTA Vice City Meets JDM
+   SUPERCHARG'D - GTA Vice City Meets JDM
    R34 Skyline Inspired | Neon Miami Aesthetic
    ============================================ */
-
-/* Vice City Font - Pricedown style approximation */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Russo+One&display=swap');
 
 /* GTA Vice City Text Styles */
 .vice-city-title {
