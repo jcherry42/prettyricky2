@@ -363,9 +363,39 @@ export const VinScanner = ({ isOpen, onClose }) => {
                 </div>
               )}
 
+              {/* Category Selector */}
+              <div className="vin-category-selector">
+                <span className="category-label">Save to:</span>
+                <div className="category-options">
+                  <button 
+                    className={`category-btn ${saveCategory === 'active_inventory' ? 'active' : ''}`}
+                    onClick={() => setSaveCategory('active_inventory')}
+                  >
+                    <Car className="w-4 h-4" />
+                    Inventory
+                  </button>
+                  <button 
+                    className={`category-btn trade ${saveCategory === 'trade_in' ? 'active' : ''}`}
+                    onClick={() => setSaveCategory('trade_in')}
+                  >
+                    <Car className="w-4 h-4" />
+                    Trade-In
+                  </button>
+                </div>
+                {saveCategory === 'trade_in' && (
+                  <input
+                    type="number"
+                    placeholder="Trade-in value ($)"
+                    value={tradeInValue}
+                    onChange={e => setTradeInValue(e.target.value)}
+                    className="trade-value-input"
+                  />
+                )}
+              </div>
+
               {/* Actions */}
               <div className="vin-actions">
-                <button onClick={() => { setMode('menu'); setVehicleData(null); setVin(''); setSaved(false); }} className="vin-back-btn">
+                <button onClick={() => { setMode('menu'); setVehicleData(null); setVin(''); setSaved(false); setSaveCategory('active_inventory'); setTradeInValue(''); }} className="vin-back-btn">
                   Scan Another
                 </button>
                 <button onClick={saveToInventory} disabled={loading || saved} className={`vin-save-btn ${saved ? 'saved' : ''}`} data-testid="save-vehicle-btn">
