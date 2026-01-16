@@ -132,10 +132,10 @@ export const Header = () => {
 
       {/* Row 2: Action Buttons */}
       <div className="header-row-2">
-        {/* VIN Scanner */}
+        {/* VIN Scanner - Electric Green */}
         <button
           onClick={() => setVinScannerOpen(true)}
-          className="header-btn"
+          className="header-btn electric-green"
           data-testid="vin-scanner-btn"
         >
           <svg viewBox="0 0 24 24" className="header-btn-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
