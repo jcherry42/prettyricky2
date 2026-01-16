@@ -1,35 +1,91 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useEffect } from 'react';
+import { SalesProvider } from './context/SalesContext';
+import { Header } from './components/Header';
+import { CustomerSelector } from './components/CustomerSelector';
+import { InquiryTypeSelector } from './components/InquiryTypeSelector';
+import { ToneSelector } from './components/ToneSelector';
+import { ResponseCards } from './components/ResponseCards';
+import { TowerTalkButton } from './components/TowerTalkButton';
+import { TowerTalkModal } from './components/TowerTalkModal';
+import { SetupModal } from './components/SetupModal';
+import { ImportModal } from './components/ImportModal';
+import { AdminSettingsPanel } from './components/AdminSettingsPanel';
+import { VoiceTranslator } from './components/VoiceTranslator';
+import { Toaster } from './components/ui/sonner';
+import { useSales } from './context/SalesContext';
+import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function AppContent() {
+  const { showAdminSettings, toggleAdminSettings, theme } = useSales();
+  
+  // Initialize native capabilities on mount
+  useEffect(() => {
+    if (isNative) {
+      initializeNative();
+    }
+  }, []);
+  
+  // Update status bar when theme changes
+  useEffect(() => {
+    if (isNative) {
+      updateStatusBarTheme(theme === 'dark');
+    }
+  }, [theme]);
+  
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-4 max-w-lg pb-safe space-y-4">
+        {/* Step 1: Select Customer */}
+        <section>
+          <CustomerSelector />
+        </section>
+
+        {/* Step 2: Select Inquiry Type */}
+        <section>
+          <InquiryTypeSelector />
+        </section>
+
+        {/* Step 3: Select Tone */}
+        <section>
+          <ToneSelector />
+        </section>
+
+        {/* Step 4: Response Cards */}
+        <section>
+          <ResponseCards />
+        </section>
+
+        {/* Tower Talk Button */}
+        <section className="pt-2">
+          <TowerTalkButton />
+        </section>
+      </main>
+
+      {/* Modals */}
+      <SetupModal />
+      <ImportModal />
+      <TowerTalkModal />
+      {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
+      
+      {/* Voice Translator - Right Side Panel */}
+      <VoiceTranslator />
+      
+      {/* Toast notifications */}
+      <Toaster position="top-center" />
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <SalesProvider>
+      <AppContent />
+    </SalesProvider>
+  );
+}
+
+export default App;
