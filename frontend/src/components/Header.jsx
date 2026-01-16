@@ -97,120 +97,89 @@ export const Header = () => {
   }, [handleBrakePress]);
 
   return (
-    <header className="header-luxury sticky top-0 z-50 safe-area-top relative">
-      <div className="flex items-center h-16 px-4">
-        {/* Left side - Health Indicators */}
-        <div className="flex items-center gap-2 mr-4">
-          <IntegrationHealthStatus compact={true} />
-          <DataHealthIndicator />
-        </div>
-        
-        {/* OnStar-style VIN Scanner Button */}
-        <button
-          onClick={() => setVinScannerOpen(true)}
-          className="btn-onstar"
-          data-testid="vin-scanner-btn"
-          title="VIN Scanner"
-        >
-          <svg viewBox="0 0 24 24" className="onstar-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="9" />
-            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
-            <line x1="12" y1="3" x2="12" y2="6" strokeLinecap="round" />
-            <line x1="12" y1="18" x2="12" y2="21" strokeLinecap="round" />
-            <line x1="3" y1="12" x2="6" y2="12" strokeLinecap="round" />
-            <line x1="18" y1="12" x2="21" y2="12" strokeLinecap="round" />
-          </svg>
-          <span className="onstar-label">VIN</span>
-        </button>
-        
-        {/* Center - R34 Skyline Taillights */}
-        <div className="flex-1 flex justify-center">
-          <div className="r34-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
-            {/* Left taillight cluster - 2 circular lights (outer larger) */}
-            <div className={`r34-cluster left ${brakesPressed ? 'braking' : ''}`}>
-              <div className={`r34-light outer ${startupPhase >= 1 ? 'dim' : ''} ${startupPhase >= 2 ? 'lit' : ''}`}>
-                <div className="r34-ring"></div>
-                <div className="r34-center"></div>
-              </div>
-              <div className={`r34-light inner ${startupPhase >= 3 ? 'dim' : ''} ${startupPhase >= 4 ? 'lit' : ''}`}>
-                <div className="r34-ring"></div>
-                <div className="r34-center"></div>
-              </div>
+    <header className="header-luxury fixed top-0 left-0 right-0 z-50 safe-area-top">
+      {/* Row 1: Taillights Logo */}
+      <div className="header-row-1">
+        <div className="r34-taillights-container" data-testid="taillights-logo" onClick={handleBrakePress}>
+          {/* Left taillight cluster */}
+          <div className={`r34-cluster left ${brakesPressed ? 'braking' : ''}`}>
+            <div className={`r34-light outer ${startupPhase >= 1 ? 'dim' : ''} ${startupPhase >= 2 ? 'lit' : ''}`}>
+              <div className="r34-ring"></div>
+              <div className="r34-center"></div>
             </div>
-
-            {/* Center text */}
-            <div className={`r34-center-text ${startupPhase >= 5 ? 'lit' : ''}`}>
-              <span>SUPERCHARG&apos;D</span>
+            <div className={`r34-light inner ${startupPhase >= 3 ? 'dim' : ''} ${startupPhase >= 4 ? 'lit' : ''}`}>
+              <div className="r34-ring"></div>
+              <div className="r34-center"></div>
             </div>
+          </div>
 
-            {/* Right taillight cluster - 2 circular lights (inner smaller) */}
-            <div className={`r34-cluster right ${brakesPressed ? 'braking' : ''}`}>
-              <div className={`r34-light inner ${startupPhase >= 3 ? 'dim' : ''} ${startupPhase >= 4 ? 'lit' : ''}`}>
-                <div className="r34-ring"></div>
-                <div className="r34-center"></div>
-              </div>
-              <div className={`r34-light outer ${startupPhase >= 1 ? 'dim' : ''} ${startupPhase >= 2 ? 'lit' : ''}`}>
-                <div className="r34-ring"></div>
-                <div className="r34-center"></div>
-              </div>
+          {/* Center text */}
+          <div className={`r34-center-text ${startupPhase >= 5 ? 'lit' : ''}`}>
+            <span>SUPERCHARG&apos;D</span>
+          </div>
+
+          {/* Right taillight cluster */}
+          <div className={`r34-cluster right ${brakesPressed ? 'braking' : ''}`}>
+            <div className={`r34-light inner ${startupPhase >= 3 ? 'dim' : ''} ${startupPhase >= 4 ? 'lit' : ''}`}>
+              <div className="r34-ring"></div>
+              <div className="r34-center"></div>
+            </div>
+            <div className={`r34-light outer ${startupPhase >= 1 ? 'dim' : ''} ${startupPhase >= 2 ? 'lit' : ''}`}>
+              <div className="r34-ring"></div>
+              <div className="r34-center"></div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Right side - Actions */}
-        <div className="flex items-center justify-end gap-2">
-          {/* Sport Mode Button with Flames */}
-          <button
-            onClick={toggleSuperchargedMode}
-            className={`btn-supercharged ${supercharged ? 'active' : ''}`}
-            data-testid="toggle-supercharged-btn"
-            title={supercharged ? "Sport Mode ON (Español)" : "Enable Sport Mode"}
-          >
-            {/* Realistic side-view exhaust tip */}
-            <div className="exhaust-tip-side">
-              <div className="exhaust-pipe"></div>
-              <div className="exhaust-opening"></div>
-            </div>
-            <div className={`flames ${supercharged ? 'active' : ''}`}>
-              <div className="flame-core"></div>
-              <div className="flame f1"></div>
-              <div className="flame f2"></div>
-              <div className="flame f3"></div>
-              <div className="flame f4"></div>
-              <div className="sparks">
-                <span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <span className="supercharged-label vice-city-text">
-              {supercharged ? 'ESPAÑOL' : 'SPORT'}
-            </span>
-          </button>
+      {/* Row 2: Action Buttons */}
+      <div className="header-row-2">
+        {/* VIN Scanner */}
+        <button
+          onClick={() => setVinScannerOpen(true)}
+          className="header-btn"
+          data-testid="vin-scanner-btn"
+        >
+          <svg viewBox="0 0 24 24" className="header-btn-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+            <line x1="12" y1="4" x2="12" y2="7" strokeLinecap="round" />
+            <line x1="12" y1="17" x2="12" y2="20" strokeLinecap="round" />
+            <line x1="4" y1="12" x2="7" y2="12" strokeLinecap="round" />
+            <line x1="17" y1="12" x2="20" y2="12" strokeLinecap="round" />
+          </svg>
+          <span>VIN</span>
+        </button>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="btn-chrome"
-            data-testid="toggle-theme-btn"
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          >
-            <div className="chrome-inner">
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </div>
-          </button>
+        {/* Command Center */}
+        <button
+          onClick={() => setCommandCenterOpen(true)}
+          className="header-btn amber"
+          data-testid="open-admin-settings-btn"
+        >
+          <AlertTriangle className="header-btn-icon" />
+          <span>CHECK</span>
+        </button>
 
-          {/* Check Engine Button - Simplified with amber glow */}
-          <button
-            onClick={() => setCommandCenterOpen(true)}
-            className="btn-check-engine-simple"
-            data-testid="open-admin-settings-btn"
-            title="Command Center"
-          >
-            <div className="check-icon-wrapper">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <span className="check-label">CHECK</span>
-          </button>
-        </div>
+        {/* Sport Mode */}
+        <button
+          onClick={toggleSuperchargedMode}
+          className={`header-btn ${supercharged ? 'active red' : ''}`}
+          data-testid="toggle-supercharged-btn"
+        >
+          <Flame className="header-btn-icon" />
+          <span>{supercharged ? 'ESP' : 'SPORT'}</span>
+        </button>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="header-btn"
+          data-testid="toggle-theme-btn"
+        >
+          {theme === 'dark' ? <Sun className="header-btn-icon" /> : <Moon className="header-btn-icon" />}
+          <span>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+        </button>
       </div>
       
       {/* VIN Scanner Modal */}
