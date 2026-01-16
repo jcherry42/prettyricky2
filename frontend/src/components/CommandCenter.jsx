@@ -595,41 +595,36 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-tabs {
-          display: flex;
-          gap: 2px;
-          padding: 6px 8px;
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 4px;
+          padding: 8px 10px;
           background: rgba(0,0,0,0.25);
-          overflow-x: auto;
           border-bottom: 1px solid rgba(255,191,0,0.08);
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        
-        .cc-tabs::-webkit-scrollbar {
-          display: none;
         }
 
         .cc-tab {
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: 4px;
-          padding: 6px 8px;
+          justify-content: center;
+          gap: 2px;
+          padding: 8px 4px;
           border-radius: 8px;
           background: transparent;
           border: none;
           color: rgba(255,220,180,0.5);
           font-family: 'Manrope', sans-serif;
-          font-size: 11px;
-          font-weight: 500;
+          font-size: 9px;
+          font-weight: 600;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s;
-          flex-shrink: 0;
         }
         
         .cc-tab svg {
-          width: 14px;
-          height: 14px;
+          width: 18px;
+          height: 18px;
         }
         }
 
