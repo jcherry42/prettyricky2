@@ -76,24 +76,29 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
     └── connectors/           # CRM-specific adapters
 ```
 
-### Frontend (React)
+## Technical Architecture
+
+### Frontend (Vite + React + Capacitor)
+**Migrated from CRA to Vite for better Capacitor compatibility**
 ```
 /app/frontend/
 ├── capacitor.config.json     # Mobile wrapper config
-├── public/assets/sounds/     # Audio files (merica.wav, euro.wav, jdm.wav, startup.wav)
+├── vite.config.js            # Vite configuration
+├── tailwind.config.js        # Tailwind CSS config
+├── postcss.config.js         # PostCSS config
+├── dist/                     # Production build output
+├── public/sounds/            # Audio files
+├── ios/                      # Native iOS project
+├── android/                  # Native Android project
 └── src/
-    ├── App.js
-    ├── index.css             # Custom styling + animations
-    ├── components/
-    │   ├── Header.jsx        # R34 taillights, Check Engine, Sport Mode
-    │   ├── ResponseCards.jsx # Editable responses with TTS
-    │   ├── VoiceTranslator.jsx # Push to Start voice translator
-    │   ├── DataHealthIndicator.jsx # Lead data quality
-    │   └── AdminSettingsPanel.jsx # CRM configuration
-    ├── context/
-    │   └── SalesContext.js   # Global state
-    └── utils/
-        └── notificationSound.js # .wav audio playback
+    ├── main.jsx              # Entry point
+    ├── App.jsx               # Main app component
+    ├── index.css             # Global styles + animations
+    ├── components/           # React components
+    ├── context/              # React context (SalesContext)
+    ├── data/                 # Sales data & templates
+    ├── utils/                # Utilities (messaging, sounds, native)
+    └── lib/                  # Shared utilities (cn)
 ```
 
 ## Database Collections
