@@ -171,7 +171,7 @@ frontend:
     file: "/app/frontend/src/components/ResponseCards.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "testing"
@@ -179,6 +179,33 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ iOS TEST PASSED: Response cards working correctly. Found Copy and iMessage buttons (2 of each). Follow-up timing displayed (e.g., 'Same Day'). Copy functionality working - buttons are clickable. Minor: Copy feedback message may be very brief but core functionality works."
+      - working: "NA"
+        agent: "main"
+        comment: "Translation on edited text feature needs re-testing. Logic appears correct but user reported it wasn't working."
+
+  - task: "Flame Animation Size - Adjust flame size to be proportional to Sport Mode button"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/index.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "User reported flames are perfect but need size adjustment. Reduced flame container from 60px to 45px width, 40px to 30px height. Adjusted individual flame sizes proportionally (flame-1: 20->16px wide, 30->24px high; flame-2: 16->13px wide, 24->19px high; flame-3: 14->11px wide, 20->16px high). Reduced spark sizes and adjusted positions."
+
+  - task: "Liquid Glass Effect - Replace wood grain with liquid glass on modals"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/VinScanner.jsx, /app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Replaced wood grain texture with liquid glass effect on VIN Scanner modal (rgba(20,18,16,0.75) + blur(16px)) and Email Parser modal in CommandCenter. CommandCenter main modal already had liquid glass effect. Both modals now use semi-transparent backgrounds with backdrop blur for the liquid glass aesthetic."
 
   - task: "Tower Talk Button - Red button at bottom opens AI modal"
     implemented: true
