@@ -149,15 +149,24 @@ export const VinScanner = ({ isOpen, onClose }) => {
     await lookupVin(cleanVin);
   };
 
+  // State for category selection
+  const [saveCategory, setSaveCategory] = useState('active_inventory');
+  const [tradeInValue, setTradeInValue] = useState('');
+
   const saveToInventory = async () => {
     if (!vehicleData) return;
 
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/vin/save`, {
+      const res = await fetch(`${BACKEND_URL}/api/vin/save-to-inventory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vin, vehicle_data: vehicleData }),
+        body: JSON.stringify({ 
+          vin, 
+          vehicle_data: vehicleData,
+          category: saveCategory,
+          trade_in_value: saveCategory === 'trade_in' && tradeInValue ? parseFloat(tradeInValue) : null
+        }),
       });
 
       if (!res.ok) {
