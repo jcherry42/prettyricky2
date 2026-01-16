@@ -366,55 +366,138 @@ html:not(.dark) body {
 }
 
 /* ============================================
-   AMBIENT LIGHTING EFFECTS
+   AMBIENT LIGHTING EFFECTS - LUXURY EDITION
    ============================================ */
 
-/* Gold Ambient Glow */
+/* Gold Ambient Glow - Luxury Interior */
 .ambient-gold {
   box-shadow: 
-    0 0 20px hsla(40, 100%, 50%, 0.15),
-    0 0 40px hsla(40, 100%, 50%, 0.08),
-    inset 0 1px 0 hsla(40, 100%, 70%, 0.1);
+    0 0 25px hsla(40, 100%, 50%, 0.2),
+    0 0 50px hsla(40, 100%, 50%, 0.1),
+    0 0 80px hsla(38, 100%, 45%, 0.05),
+    inset 0 1px 0 hsla(40, 100%, 70%, 0.15);
 }
 
 .ambient-gold-strong {
   box-shadow: 
-    0 0 30px hsla(40, 100%, 50%, 0.25),
-    0 0 60px hsla(40, 100%, 50%, 0.15),
-    0 0 100px hsla(40, 100%, 50%, 0.05);
+    0 0 40px hsla(40, 100%, 50%, 0.3),
+    0 0 80px hsla(40, 100%, 50%, 0.2),
+    0 0 120px hsla(40, 100%, 50%, 0.1),
+    inset 0 2px 0 hsla(40, 100%, 70%, 0.2);
 }
 
-/* Blue Ambient Glow */
+/* Subtle Gold Underglow */
+.glow-gold-subtle {
+  position: relative;
+}
+
+.glow-gold-subtle::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, 
+    hsla(40, 100%, 50%, 0.15) 0%, 
+    transparent 50%,
+    hsla(35, 100%, 45%, 0.1) 100%
+  );
+  z-index: -1;
+  filter: blur(8px);
+}
+
+/* Blue Ambient Glow - Tech Accent */
 .ambient-blue {
   box-shadow: 
-    0 0 20px hsla(210, 100%, 60%, 0.15),
-    0 0 40px hsla(210, 100%, 60%, 0.08),
-    inset 0 1px 0 hsla(210, 100%, 80%, 0.1);
+    0 0 25px hsla(200, 100%, 55%, 0.2),
+    0 0 50px hsla(200, 100%, 55%, 0.1),
+    0 0 80px hsla(200, 100%, 50%, 0.05),
+    inset 0 1px 0 hsla(200, 100%, 80%, 0.15);
 }
 
-/* Red Ambient Glow (Tower Talk) */
+/* Red Ambient Glow (Tower Talk) - Performance */
 .ambient-red {
   box-shadow: 
-    0 0 20px hsla(0, 100%, 55%, 0.2),
-    0 0 40px hsla(0, 100%, 55%, 0.1),
-    inset 0 1px 0 hsla(0, 100%, 70%, 0.15);
+    0 0 30px hsla(0, 100%, 55%, 0.25),
+    0 0 60px hsla(0, 100%, 50%, 0.15),
+    0 0 100px hsla(0, 100%, 45%, 0.08),
+    inset 0 1px 0 hsla(0, 100%, 70%, 0.2);
 }
 
-/* White Ambient Glow */
+/* White Ambient Glow - Clean Luxury */
 .ambient-white {
   box-shadow: 
-    0 0 15px hsla(0, 0%, 100%, 0.1),
-    0 0 30px hsla(0, 0%, 100%, 0.05);
+    0 0 20px hsla(0, 0%, 100%, 0.15),
+    0 0 40px hsla(0, 0%, 100%, 0.08),
+    0 0 60px hsla(0, 0%, 100%, 0.03);
 }
 
-/* Animated Ambient Pulse */
+/* Cyan Neon - Vice City Accent */
+.ambient-cyan {
+  box-shadow: 
+    0 0 30px hsla(180, 100%, 55%, 0.25),
+    0 0 60px hsla(180, 100%, 50%, 0.15),
+    0 0 100px hsla(180, 100%, 45%, 0.08);
+}
+
+/* Magenta Neon - Vice City Accent */
+.ambient-magenta {
+  box-shadow: 
+    0 0 30px hsla(320, 100%, 55%, 0.25),
+    0 0 60px hsla(320, 100%, 50%, 0.15),
+    0 0 100px hsla(320, 100%, 45%, 0.08);
+}
+
+/* Animated Ambient Pulse - Luxury Breathing */
 @keyframes ambient-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% { 
+    opacity: 0.7;
+    filter: brightness(1);
+  }
+  50% { 
+    opacity: 1;
+    filter: brightness(1.1);
+  }
 }
 
 .ambient-pulse {
   animation: ambient-pulse 3s ease-in-out infinite;
+}
+
+/* Luxury Glow Border */
+@keyframes luxury-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px hsla(40, 100%, 50%, 0.2),
+      0 0 40px hsla(40, 100%, 50%, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px hsla(40, 100%, 55%, 0.3),
+      0 0 60px hsla(40, 100%, 50%, 0.15);
+  }
+}
+
+.luxury-glow-animated {
+  animation: luxury-glow 4s ease-in-out infinite;
+}
+
+/* Gradient Shine Effect */
+@keyframes gradient-shine {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shine-effect {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsla(40, 100%, 70%, 0.1) 25%,
+    hsla(40, 100%, 80%, 0.2) 50%,
+    hsla(40, 100%, 70%, 0.1) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: gradient-shine 3s linear infinite;
 }
 
 /* ============================================
