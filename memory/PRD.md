@@ -198,6 +198,11 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-16**: Quick Add Button Feature
+  - Added floating Bluetooth-emblem button for quick customer addition
+  - Cyan/blue tech-style design with pulsing glow effect
+  - Opens modal with all essential fields (name, phone, email, source, notes)
+  - Mobile builds updated
 - **2026-01-16**: Email Parser Feature & UI Improvements
   - Added Email Lead Parser modal with AI-powered extraction (uses GPT to parse lead emails)
   - Improved Inquiry Type button readability (warmer amber tones, better contrast)
