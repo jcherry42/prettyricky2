@@ -109,7 +109,8 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     );
   });
 
-  return (
+  // Use portal to render outside header context
+  return createPortal(
     <div className="cc-overlay" onClick={onClose}>
       <div className="cc-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
