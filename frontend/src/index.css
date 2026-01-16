@@ -199,10 +199,30 @@ h1, h2, h3 {
 
   body {
     @apply bg-background text-foreground;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'kern' 1, 'liga' 1;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+}
+
+/* Body background with subtle wood grain */
+.dark body {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    hsl(var(--background));
+  background-size: 250px 250px, 100% 100%;
+  background-blend-mode: overlay;
+  background-attachment: fixed;
+}
+
+html:not(.dark) body {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    hsl(var(--background));
+  background-size: 250px 250px, 100% 100%;
+  background-blend-mode: multiply;
+  background-attachment: fixed;
+  background-color: hsl(var(--background));
 }
 
 /* ============================================
