@@ -648,6 +648,30 @@ html:not(.dark) body {
     0 4px 12px hsla(35, 60%, 20%, 0.4);
 }
 
+/* Electric Green variant (VIN button) */
+.header-btn.electric-green {
+  background: linear-gradient(180deg, 
+    hsla(145, 70%, 20%, 0.9) 0%, 
+    hsla(145, 75%, 12%, 0.95) 100%
+  );
+  border-color: hsla(145, 80%, 45%, 0.5);
+  color: hsla(145, 100%, 65%, 1);
+}
+
+.header-btn.electric-green .header-btn-icon {
+  filter: drop-shadow(0 0 5px hsla(145, 100%, 50%, 0.6));
+}
+
+.header-btn.electric-green:hover {
+  background: linear-gradient(180deg, 
+    hsla(145, 72%, 25%, 0.95) 0%, 
+    hsla(145, 77%, 15%, 1) 100%
+  );
+  box-shadow: 
+    0 0 25px hsla(145, 100%, 50%, 0.35),
+    0 4px 12px hsla(145, 60%, 20%, 0.4);
+}
+
 /* Active/Red variant (SPORT mode on) */
 .header-btn.active.red {
   background: linear-gradient(180deg, 
