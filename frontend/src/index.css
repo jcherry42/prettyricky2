@@ -1367,6 +1367,7 @@ html:not(.dark) .btn-check-engine-simple:hover {
   justify-content: center;
   width: 28px;
   height: 28px;
+  margin-top: -2px;
 }
 
 .btn-onstar .onstar-icon {
@@ -1375,11 +1376,12 @@ html:not(.dark) .btn-check-engine-simple:hover {
   color: hsla(200, 90%, 70%, 1);
   transition: all 0.3s ease;
   filter: drop-shadow(0 0 3px hsla(200, 100%, 60%, 0.5));
+  display: block;
 }
 
 .btn-onstar .onstar-label {
   position: absolute;
-  bottom: -2px;
+  bottom: 4px;
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.5px;
