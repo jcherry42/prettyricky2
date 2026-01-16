@@ -548,41 +548,124 @@ html:not(.dark) body {
 }
 
 /* ============================================
-   HEADER & NAVIGATION
+   HEADER & NAVIGATION - TWO ROW LAYOUT
    ============================================ */
 
 .header-luxury {
   @apply backdrop-blur-xl;
-  position: relative;
-  border-bottom: 1px solid hsla(30, 20%, 25%, 0.5);
-  box-shadow: 
-    0 4px 20px hsla(0, 0%, 0%, 0.3),
-    inset 0 -1px 0 hsla(40, 30%, 30%, 0.1);
-  overflow: visible !important;
-}
-
-/* Wood grain overlay for header - dark mode */
-.dark .header-luxury {
   background: 
     url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
     linear-gradient(180deg, 
-      hsla(22, 25%, 12%, 0.95) 0%,
-      hsla(20, 20%, 8%, 0.98) 100%
+      hsla(22, 25%, 10%, 0.98) 0%,
+      hsla(20, 20%, 7%, 0.99) 100%
     );
   background-size: 180px 180px, 100% 100%;
   background-blend-mode: overlay, normal;
+  border-bottom: 1px solid hsla(30, 20%, 25%, 0.5);
+  box-shadow: 
+    0 4px 20px hsla(0, 0%, 0%, 0.4),
+    inset 0 -1px 0 hsla(40, 30%, 30%, 0.1);
 }
 
-/* Wood grain overlay for header - light mode */
-html:not(.dark) .header-luxury {
-  background: 
-    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-    linear-gradient(180deg, 
-      hsla(35, 30%, 88%, 0.95) 0%,
-      hsla(32, 25%, 82%, 0.98) 100%
-    );
-  background-size: 180px 180px, 100% 100%;
-  background-blend-mode: multiply, normal;
+/* Row 1: Taillights */
+.header-row-1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px 4px;
+}
+
+/* Row 2: Action Buttons */
+.header-row-2 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 6px 12px 10px;
+  border-top: 1px solid hsla(40, 30%, 20%, 0.3);
+}
+
+/* Header Button Style */
+.header-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  background: linear-gradient(180deg, 
+    hsla(200, 40%, 20%, 0.8) 0%, 
+    hsla(200, 50%, 15%, 0.9) 100%
+  );
+  border: 1px solid hsla(200, 60%, 35%, 0.4);
+  border-radius: 10px;
+  color: hsla(200, 80%, 70%, 1);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 2px 8px hsla(200, 60%, 20%, 0.3),
+    inset 0 1px 0 hsla(200, 60%, 50%, 0.15);
+}
+
+.header-btn-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.header-btn:hover {
+  background: linear-gradient(180deg, 
+    hsla(200, 45%, 25%, 0.9) 0%, 
+    hsla(200, 55%, 18%, 0.95) 100%
+  );
+  box-shadow: 
+    0 0 15px hsla(200, 80%, 50%, 0.2),
+    0 4px 12px hsla(200, 60%, 20%, 0.4);
+}
+
+.header-btn:active {
+  transform: scale(0.96);
+}
+
+/* Amber variant (CHECK button) */
+.header-btn.amber {
+  background: linear-gradient(180deg, 
+    hsla(35, 50%, 22%, 0.9) 0%, 
+    hsla(30, 55%, 15%, 0.95) 100%
+  );
+  border-color: hsla(40, 80%, 45%, 0.5);
+  color: hsla(40, 100%, 65%, 1);
+}
+
+.header-btn.amber .header-btn-icon {
+  filter: drop-shadow(0 0 4px hsla(40, 100%, 50%, 0.5));
+}
+
+.header-btn.amber:hover {
+  box-shadow: 
+    0 0 20px hsla(40, 100%, 50%, 0.25),
+    0 4px 12px hsla(35, 60%, 20%, 0.4);
+}
+
+/* Active/Red variant (SPORT mode on) */
+.header-btn.active.red {
+  background: linear-gradient(180deg, 
+    hsla(0, 60%, 35%, 0.95) 0%, 
+    hsla(0, 65%, 25%, 1) 100%
+  );
+  border-color: hsla(0, 80%, 50%, 0.6);
+  color: hsla(0, 100%, 80%, 1);
+  animation: sport-pulse 1.5s ease-in-out infinite;
+}
+
+.header-btn.active.red .header-btn-icon {
+  filter: drop-shadow(0 0 6px hsla(0, 100%, 55%, 0.7));
+}
+
+@keyframes sport-pulse {
+  0%, 100% { box-shadow: 0 0 15px hsla(0, 100%, 50%, 0.3); }
+  50% { box-shadow: 0 0 25px hsla(0, 100%, 55%, 0.5); }
 }
 
 /* Chrome accent line - amber glow - Enhanced */
@@ -605,19 +688,34 @@ html:not(.dark) .header-luxury {
     0 0 30px hsla(40, 100%, 50%, 0.3);
 }
 
-/* Additional header ambient underglow */
-.header-luxury::before {
-  content: '';
-  position: absolute;
-  bottom: -20px;
-  left: 10%;
-  right: 10%;
-  height: 20px;
-  background: radial-gradient(ellipse at center, 
-    hsla(40, 100%, 50%, 0.15) 0%, 
-    transparent 70%
+/* Light mode header */
+html:not(.dark) .header-luxury {
+  background: 
+    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    linear-gradient(180deg, 
+      hsla(35, 30%, 88%, 0.95) 0%,
+      hsla(32, 25%, 82%, 0.98) 100%
+    );
+  background-size: 180px 180px, 100% 100%;
+  background-blend-mode: multiply, normal;
+}
+
+html:not(.dark) .header-btn {
+  background: linear-gradient(180deg, 
+    hsla(200, 30%, 85%, 0.9) 0%, 
+    hsla(200, 35%, 78%, 0.95) 100%
   );
-  pointer-events: none;
+  border-color: hsla(200, 50%, 55%, 0.4);
+  color: hsla(200, 70%, 35%, 1);
+}
+
+html:not(.dark) .header-btn.amber {
+  background: linear-gradient(180deg, 
+    hsla(35, 40%, 85%, 0.9) 0%, 
+    hsla(30, 45%, 78%, 0.95) 100%
+  );
+  border-color: hsla(40, 70%, 50%, 0.5);
+  color: hsla(35, 80%, 35%, 1);
 }
 
 /* ============================================
