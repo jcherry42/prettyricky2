@@ -584,6 +584,37 @@ export const VinScanner = ({ isOpen, onClose }) => {
           color: #666;
         }
 
+        /* Confidence Badge */
+        .confidence-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 10px;
+          font-size: 12px;
+          font-weight: 600;
+          margin-bottom: 14px;
+        }
+        
+        .confidence-badge.high {
+          background: rgba(34,197,94,0.15);
+          border: 1px solid rgba(34,197,94,0.3);
+          color: #22c55e;
+        }
+        
+        .confidence-badge.medium {
+          background: rgba(255,191,0,0.15);
+          border: 1px solid rgba(255,191,0,0.3);
+          color: #FFBF00;
+        }
+        
+        .confidence-badge.low {
+          background: rgba(239,68,68,0.15);
+          border: 1px solid rgba(239,68,68,0.3);
+          color: #ef4444;
+        }
+
         .vin-scanning {
           text-align: center;
           padding: 20px 0;
