@@ -205,24 +205,31 @@ h1, h2, h3 {
   }
 }
 
-/* Body background with subtle wood grain */
+/* Body background with visible wood grain */
 .dark body {
   background: 
     url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-    hsl(var(--background));
-  background-size: 250px 250px, 100% 100%;
-  background-blend-mode: overlay;
+    linear-gradient(180deg, 
+      hsl(22, 20%, 8%) 0%, 
+      hsl(20, 18%, 6%) 50%,
+      hsl(18, 15%, 5%) 100%
+    );
+  background-size: 150px 150px, 100% 100%;
+  background-blend-mode: soft-light;
   background-attachment: fixed;
 }
 
 html:not(.dark) body {
   background: 
     url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-    hsl(var(--background));
-  background-size: 250px 250px, 100% 100%;
+    linear-gradient(180deg,
+      hsl(35, 40%, 92%) 0%,
+      hsl(32, 35%, 88%) 50%,
+      hsl(30, 30%, 85%) 100%
+    );
+  background-size: 150px 150px, 100% 100%;
   background-blend-mode: multiply;
   background-attachment: fixed;
-  background-color: hsl(var(--background));
 }
 
 /* ============================================
