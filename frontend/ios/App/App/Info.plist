@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Supercharg'd</string>
+        <string>Supercharg'd</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,11 +45,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>Supercharg'd needs camera access to scan VIN barcodes</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Supercharg'd needs microphone access for voice translation</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Supercharg'd uses speech recognition for Spanish to English translation</string>
 </dict>
 </plist>
