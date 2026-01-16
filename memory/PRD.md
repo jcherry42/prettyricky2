@@ -240,7 +240,7 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ## Next Steps (Backlog)
 
 ### P0 - Immediate
-- [ ] **Email Parsing for Lead Ingestion**: Create backend mechanism to parse forwarded lead emails and auto-create customer profiles
+- [x] **Email Parsing for Lead Ingestion**: ✅ COMPLETED - AI-powered email parser modal added to Import tab
 
 ### P1 - Enhancement
 - [ ] Response Analytics: Track which AI responses are used most
