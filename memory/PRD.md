@@ -198,6 +198,12 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-16**: Email Parser Feature & UI Improvements
+  - Added Email Lead Parser modal with AI-powered extraction (uses GPT to parse lead emails)
+  - Improved Inquiry Type button readability (warmer amber tones, better contrast)
+  - Enhanced wood grain visibility (soft-light blend mode, smaller pattern size)
+  - Fixed ESLint warnings (setState in effect, escaped entities)
+  - Updated mobile builds (Capacitor sync completed)
 - **2026-01-16**: UI/UX Enhancement - Wood Grain and Warm Theme Update
   - Fixed Check Engine button (simplified, works consistently)
   - Fixed modal centering (VIN Scanner and Command Center now use React Portals)
