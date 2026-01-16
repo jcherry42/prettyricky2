@@ -820,6 +820,74 @@ export const VinScanner = ({ isOpen, onClose }) => {
           color: #86efac;
         }
 
+        /* Category Selector */
+        .vin-category-selector {
+          padding: 14px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .category-label {
+          display: block;
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #888;
+          margin-bottom: 10px;
+        }
+
+        .category-options {
+          display: flex;
+          gap: 8px;
+        }
+
+        .category-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 12px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.05);
+          border: 2px solid transparent;
+          color: #888;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .category-btn.active {
+          background: rgba(34,197,94,0.15);
+          border-color: rgba(34,197,94,0.4);
+          color: #22c55e;
+        }
+
+        .category-btn.trade.active {
+          background: rgba(251,191,36,0.15);
+          border-color: rgba(251,191,36,0.4);
+          color: #fbbf24;
+        }
+
+        .trade-value-input {
+          width: 100%;
+          margin-top: 10px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #fff;
+          font-size: 14px;
+          outline: none;
+        }
+
+        .trade-value-input:focus {
+          border-color: rgba(251,191,36,0.5);
+        }
+
         .vin-actions {
           display: flex;
           gap: 10px;
