@@ -372,8 +372,8 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         .cc-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.85);
-          backdrop-filter: blur(12px);
+          background: rgba(10,8,6,0.9);
+          backdrop-filter: blur(16px);
           z-index: 100;
           display: flex;
           align-items: center;
@@ -383,12 +383,19 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
         .cc-modal {
           width: 100%;
-          max-width: 480px;
-          max-height: 85vh;
-          background: linear-gradient(180deg, rgba(22,24,30,0.98) 0%, rgba(14,16,20,0.98) 100%);
+          max-width: 420px;
+          max-height: 80vh;
+          background: 
+            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
+          background-size: 180px 180px, 100% 100%;
+          background-blend-mode: overlay, normal;
           border-radius: 24px;
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset;
+          border: 1px solid rgba(255,191,0,0.15);
+          box-shadow: 
+            0 30px 60px rgba(0,0,0,0.6), 
+            0 0 0 1px rgba(255,191,0,0.08) inset,
+            0 0 40px rgba(255,150,0,0.08);
           display: flex;
           flex-direction: column;
           overflow: hidden;
@@ -399,17 +406,19 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           align-items: center;
           justify-content: space-between;
           padding: 16px 20px;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+          border-bottom: 1px solid rgba(255,191,0,0.12);
+          background: linear-gradient(180deg, rgba(255,191,0,0.05) 0%, transparent 100%);
         }
 
         .cc-header-title {
           display: flex;
           align-items: center;
           gap: 10px;
+          font-family: 'Chakra Petch', sans-serif;
           font-size: 16px;
           font-weight: 600;
-          color: #fff;
+          color: #FFBF00;
+          text-shadow: 0 0 10px rgba(255,191,0,0.3);
         }
 
         .cc-close {
