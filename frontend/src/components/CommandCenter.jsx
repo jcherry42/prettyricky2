@@ -5,7 +5,7 @@ import {
   Search, Plus, ChevronRight, Settings, Database,
   FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
   Clock, Tag, MessageSquare, CheckCircle2, AlertCircle,
-  Send, Smartphone
+  Send, Smartphone, Zap
 } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
