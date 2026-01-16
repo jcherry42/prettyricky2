@@ -941,6 +941,180 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           background: rgba(34,197,94,0.15);
           color: #22c55e;
         }
+
+        /* Email Parser Modal */
+        .email-parser-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(10,8,6,0.95);
+          backdrop-filter: blur(12px);
+          z-index: 200;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+        }
+
+        .email-parser-modal {
+          width: 100%;
+          max-width: 400px;
+          max-height: 85vh;
+          background: 
+            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
+          background-size: 180px 180px, 100% 100%;
+          background-blend-mode: overlay, normal;
+          border-radius: 20px;
+          border: 1px solid rgba(255,191,0,0.2);
+          box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .email-parser-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 16px 20px;
+          border-bottom: 1px solid rgba(255,191,0,0.15);
+        }
+
+        .email-parser-header h3 {
+          flex: 1;
+          font-family: 'Chakra Petch', sans-serif;
+          font-size: 16px;
+          font-weight: 600;
+          color: #FFBF00;
+          margin: 0;
+        }
+
+        .email-parser-close {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: rgba(255,191,0,0.1);
+          border: none;
+          color: rgba(255,200,150,0.6);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .email-parser-content {
+          padding: 20px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .email-parser-desc {
+          font-size: 13px;
+          color: rgba(255,220,180,0.7);
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .email-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .email-field label {
+          font-size: 12px;
+          font-weight: 600;
+          color: rgba(255,191,0,0.8);
+        }
+
+        .email-field input,
+        .email-field textarea {
+          width: 100%;
+          padding: 12px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.4);
+          border: 1px solid rgba(255,191,0,0.15);
+          color: #fff;
+          font-size: 14px;
+          outline: none;
+          resize: none;
+        }
+
+        .email-field input:focus,
+        .email-field textarea:focus {
+          border-color: rgba(255,191,0,0.4);
+          box-shadow: 0 0 10px rgba(255,191,0,0.1);
+        }
+
+        .email-field textarea {
+          min-height: 120px;
+        }
+
+        .parse-result {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 12px;
+          border-radius: 10px;
+          font-size: 13px;
+        }
+
+        .parse-result.success {
+          background: rgba(34,197,94,0.15);
+          border: 1px solid rgba(34,197,94,0.3);
+          color: #22c55e;
+        }
+
+        .parse-result.error {
+          background: rgba(239,68,68,0.15);
+          border: 1px solid rgba(239,68,68,0.3);
+          color: #ef4444;
+        }
+
+        .parsed-data {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          margin-top: 8px;
+          padding-top: 8px;
+          border-top: 1px solid rgba(255,255,255,0.1);
+          font-size: 12px;
+          color: rgba(255,255,255,0.7);
+        }
+
+        .email-parser-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        .btn-parse {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 14px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(255,191,0,0.25) 0%, rgba(255,140,0,0.2) 100%);
+          border: 1px solid rgba(255,191,0,0.5);
+          color: #FFBF00;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .btn-parse:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(255,191,0,0.35) 0%, rgba(255,140,0,0.3) 100%);
+          box-shadow: 0 0 20px rgba(255,191,0,0.2);
+        }
+
+        .btn-parse:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
       `}</style>
     </div>,
     document.body
