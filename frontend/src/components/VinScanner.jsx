@@ -279,6 +279,15 @@ export const VinScanner = ({ isOpen, onClose }) => {
           {/* Results */}
           {mode === 'result' && vehicleData && (
             <div className="vin-results">
+              {/* Confidence Badge */}
+              {vehicleData.validation && (
+                <div className={`confidence-badge ${vehicleData.validation.confidence_score >= 70 ? 'high' : vehicleData.validation.confidence_score >= 40 ? 'medium' : 'low'}`}>
+                  <Shield className="w-4 h-4" />
+                  <span>{vehicleData.validation.confidence_score}% Confidence</span>
+                  {vehicleData.validation.checksum_valid && <CheckCircle2 className="w-3 h-3" />}
+                </div>
+              )}
+              
               {/* Vehicle Hero */}
               <div className="vin-hero">
                 <div className="vin-hero-icon">
