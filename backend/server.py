@@ -2742,7 +2742,7 @@ class AttachVehicleRequest(BaseModel):
 
 
 @api_router.get("/customers/list")
-async def list_customers(
+async def list_customers_filtered(
     status: Optional[str] = None,
     source: Optional[str] = None,
     search: Optional[str] = None,
