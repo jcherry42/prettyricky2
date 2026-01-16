@@ -159,14 +159,26 @@ export const Header = () => {
           <span>CHECK</span>
         </button>
 
-        {/* Sport Mode */}
+        {/* Sport Mode with Exhaust & Flames */}
         <button
           onClick={toggleSuperchargedMode}
-          className={`header-btn ${supercharged ? 'active red' : ''}`}
+          className={`sport-exhaust-btn ${supercharged ? 'active' : ''}`}
           data-testid="toggle-supercharged-btn"
         >
-          <Flame className="header-btn-icon" />
-          <span>{supercharged ? 'ESP' : 'SPORT'}</span>
+          <div className="exhaust-housing">
+            <div className="exhaust-tip"></div>
+            <div className="exhaust-inner"></div>
+          </div>
+          <div className={`flame-container ${supercharged ? 'firing' : ''}`}>
+            <div className="flame flame-1"></div>
+            <div className="flame flame-2"></div>
+            <div className="flame flame-3"></div>
+            <div className="spark spark-1"></div>
+            <div className="spark spark-2"></div>
+            <div className="spark spark-3"></div>
+            <div className="spark spark-4"></div>
+          </div>
+          <span className="sport-label">{supercharged ? 'ESP' : 'SPORT'}</span>
         </button>
 
         {/* Theme Toggle */}
