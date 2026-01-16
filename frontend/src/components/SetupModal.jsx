@@ -18,7 +18,9 @@ export const SetupModal = () => {
   } = useSales();
   
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  
+  // Initialize form data from context values
+  const getInitialFormData = () => ({
     dealershipName: dealership.name,
     dealershipAddress: dealership.address,
     dealershipHours: dealership.hours,
@@ -29,23 +31,16 @@ export const SetupModal = () => {
     defaultTone: preferences.defaultTone,
     signOff: preferences.signOff,
   });
+  
+  const [formData, setFormData] = useState(getInitialFormData);
 
+  // Only sync when modal opens (not on every render)
   useEffect(() => {
-    const newFormData = {
-      dealershipName: dealership.name,
-      dealershipAddress: dealership.address,
-      dealershipHours: dealership.hours,
-      appointmentPhrase: dealership.appointmentPhrase,
-      salespersonName: salesperson.name,
-      salespersonTitle: salesperson.title,
-      salespersonStyle: salesperson.style,
-      defaultTone: preferences.defaultTone,
-      signOff: preferences.signOff,
-    };
     if (showSetup) {
-      setFormData(newFormData);
+      setFormData(getInitialFormData());
     }
-  }, [showSetup, dealership, salesperson, preferences]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSetup]);
 
   if (!showSetup) return null;
 
