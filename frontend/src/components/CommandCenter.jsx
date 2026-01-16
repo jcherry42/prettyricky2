@@ -1281,7 +1281,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
               
               <div className="eject-content">
                 <p className="eject-desc">
-                  Send a snapshot of <strong>{customer.first_name}'s</strong> profile to your phone via SMS.
+                  Send a snapshot of <strong>{customer.first_name}&apos;s</strong> profile to your phone via SMS.
                 </p>
                 
                 <div className="eject-preview">
