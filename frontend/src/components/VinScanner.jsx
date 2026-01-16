@@ -911,7 +911,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
           margin-top: 4px;
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 
