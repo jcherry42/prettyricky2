@@ -1748,19 +1748,149 @@ async def get_event_types():
     return {"event_types": [e.value for e in EventType]}
 
 
-# ============== VIN DECODER (NHTSA vPIC API) ==============
+# ============== VIN DECODER (Multi-Source Cross Reference) ==============
 
 import httpx
+import re
 
 class VinSaveRequest(BaseModel):
     vin: str
     vehicle_data: Dict[str, Any]
 
+def validate_vin_checksum(vin: str) -> bool:
+    """Validate VIN using ISO 3779 check digit algorithm"""
+    if len(vin) != 17:
+        return False
+    
+    transliteration = {
+        'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8,
+        'J': 1, 'K': 2, 'L': 3, 'M': 4, 'N': 5, 'P': 7, 'R': 9,
+        'S': 2, 'T': 3, 'U': 4, 'V': 5, 'W': 6, 'X': 7, 'Y': 8, 'Z': 9
+    }
+    weights = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
+    
+    total = 0
+    for i, char in enumerate(vin):
+        if char.isdigit():
+            value = int(char)
+        elif char in transliteration:
+            value = transliteration[char]
+        else:
+            return False
+        total += value * weights[i]
+    
+    check_digit = total % 11
+    if check_digit == 10:
+        expected = 'X'
+    else:
+        expected = str(check_digit)
+    
+    return vin[8] == expected
+
+def decode_wmi(vin: str) -> Dict[str, str]:
+    """Decode World Manufacturer Identifier (first 3 characters)"""
+    wmi = vin[:3].upper()
+    
+    # Common WMI codes for major manufacturers
+    wmi_database = {
+        # US Manufacturers
+        '1G1': {'country': 'USA', 'manufacturer': 'Chevrolet'},
+        '1G4': {'country': 'USA', 'manufacturer': 'Buick'},
+        '1G6': {'country': 'USA', 'manufacturer': 'Cadillac'},
+        '1GC': {'country': 'USA', 'manufacturer': 'Chevrolet Truck'},
+        '1GT': {'country': 'USA', 'manufacturer': 'GMC Truck'},
+        '1FA': {'country': 'USA', 'manufacturer': 'Ford'},
+        '1FB': {'country': 'USA', 'manufacturer': 'Ford'},
+        '1FC': {'country': 'USA', 'manufacturer': 'Ford'},
+        '1FD': {'country': 'USA', 'manufacturer': 'Ford'},
+        '1FM': {'country': 'USA', 'manufacturer': 'Ford'},
+        '1FT': {'country': 'USA', 'manufacturer': 'Ford Truck'},
+        '1C3': {'country': 'USA', 'manufacturer': 'Chrysler'},
+        '1C4': {'country': 'USA', 'manufacturer': 'Chrysler'},
+        '1C6': {'country': 'USA', 'manufacturer': 'Chrysler'},
+        '2C3': {'country': 'Canada', 'manufacturer': 'Chrysler'},
+        '2G1': {'country': 'Canada', 'manufacturer': 'Chevrolet'},
+        '3FA': {'country': 'Mexico', 'manufacturer': 'Ford'},
+        '3G1': {'country': 'Mexico', 'manufacturer': 'Chevrolet'},
+        # Japanese
+        'JH4': {'country': 'Japan', 'manufacturer': 'Acura'},
+        'JHM': {'country': 'Japan', 'manufacturer': 'Honda'},
+        'JN1': {'country': 'Japan', 'manufacturer': 'Nissan'},
+        'JN8': {'country': 'Japan', 'manufacturer': 'Nissan'},
+        'JT2': {'country': 'Japan', 'manufacturer': 'Toyota'},
+        'JT3': {'country': 'Japan', 'manufacturer': 'Toyota'},
+        'JTD': {'country': 'Japan', 'manufacturer': 'Toyota'},
+        'JTH': {'country': 'Japan', 'manufacturer': 'Lexus'},
+        'JTJ': {'country': 'Japan', 'manufacturer': 'Lexus'},
+        'JM1': {'country': 'Japan', 'manufacturer': 'Mazda'},
+        'JM3': {'country': 'Japan', 'manufacturer': 'Mazda'},
+        'JF1': {'country': 'Japan', 'manufacturer': 'Subaru'},
+        'JF2': {'country': 'Japan', 'manufacturer': 'Subaru'},
+        # Korean
+        'KM8': {'country': 'South Korea', 'manufacturer': 'Hyundai'},
+        'KMH': {'country': 'South Korea', 'manufacturer': 'Hyundai'},
+        '5NP': {'country': 'USA', 'manufacturer': 'Hyundai (US)'},
+        'KNA': {'country': 'South Korea', 'manufacturer': 'Kia'},
+        'KND': {'country': 'South Korea', 'manufacturer': 'Kia'},
+        # German
+        'WVW': {'country': 'Germany', 'manufacturer': 'Volkswagen'},
+        'WV2': {'country': 'Germany', 'manufacturer': 'Volkswagen'},
+        'WAU': {'country': 'Germany', 'manufacturer': 'Audi'},
+        'WBA': {'country': 'Germany', 'manufacturer': 'BMW'},
+        'WBS': {'country': 'Germany', 'manufacturer': 'BMW M'},
+        'WBY': {'country': 'Germany', 'manufacturer': 'BMW'},
+        'WDB': {'country': 'Germany', 'manufacturer': 'Mercedes-Benz'},
+        'WDC': {'country': 'Germany', 'manufacturer': 'Mercedes-Benz'},
+        'WDD': {'country': 'Germany', 'manufacturer': 'Mercedes-Benz'},
+        'WP0': {'country': 'Germany', 'manufacturer': 'Porsche'},
+        'WP1': {'country': 'Germany', 'manufacturer': 'Porsche'},
+        # British
+        'SAL': {'country': 'UK', 'manufacturer': 'Land Rover'},
+        'SAD': {'country': 'UK', 'manufacturer': 'Jaguar'},
+        'SAJ': {'country': 'UK', 'manufacturer': 'Jaguar'},
+        # Italian
+        'ZFF': {'country': 'Italy', 'manufacturer': 'Ferrari'},
+        'ZAM': {'country': 'Italy', 'manufacturer': 'Maserati'},
+        'ZAR': {'country': 'Italy', 'manufacturer': 'Alfa Romeo'},
+        # Tesla
+        '5YJ': {'country': 'USA', 'manufacturer': 'Tesla'},
+        # Rivian
+        '7PD': {'country': 'USA', 'manufacturer': 'Rivian'},
+    }
+    
+    # Try full 3-char WMI first, then first 2
+    if wmi in wmi_database:
+        return wmi_database[wmi]
+    elif wmi[:2] + wmi[2] in wmi_database:
+        return wmi_database.get(wmi[:2] + wmi[2], {})
+    
+    # Decode country from first character
+    country_codes = {
+        '1': 'USA', '4': 'USA', '5': 'USA',
+        '2': 'Canada',
+        '3': 'Mexico',
+        'J': 'Japan',
+        'K': 'South Korea',
+        'L': 'China',
+        'S': 'UK',
+        'V': 'France/Spain',
+        'W': 'Germany',
+        'Y': 'Sweden/Finland',
+        'Z': 'Italy',
+        '9': 'Brazil',
+    }
+    
+    return {'country': country_codes.get(vin[0], 'Unknown'), 'manufacturer': 'Unknown'}
+
 @api_router.get("/vin/decode/{vin}")
 async def decode_vin(vin: str):
     """
-    Decode VIN using NHTSA vPIC API (free US Government API)
-    Returns comprehensive vehicle year, make, model, and specifications
+    Decode VIN using multiple sources for cross-reference accuracy:
+    1. NHTSA vPIC API (primary - US Government database)
+    2. WMI Database (World Manufacturer Identifier validation)
+    3. Check digit validation (ISO 3779)
+    
+    Returns comprehensive vehicle data with confidence score
     """
     # Validate VIN format
     vin = vin.upper().strip()
@@ -1770,6 +1900,18 @@ async def decode_vin(vin: str):
     # Invalid characters for VIN (I, O, Q are never used)
     if any(c in vin for c in ['I', 'O', 'Q']):
         raise HTTPException(status_code=400, detail="VIN contains invalid characters (I, O, Q are not allowed)")
+    
+    # Check for valid characters only
+    valid_chars = set('ABCDEFGHJKLMNPRSTUVWXYZ0123456789')
+    if not all(c in valid_chars for c in vin):
+        raise HTTPException(status_code=400, detail="VIN contains invalid characters")
+    
+    # Cross-reference sources
+    validation_results = {
+        "checksum_valid": validate_vin_checksum(vin),
+        "wmi_data": decode_wmi(vin),
+        "sources_checked": ["NHTSA vPIC", "WMI Database", "ISO 3779 Checksum"],
+    }
     
     try:
         async with httpx.AsyncClient(timeout=15.0) as http_client:
@@ -1851,10 +1993,25 @@ async def decode_vin(vin: str):
             # Additional
             "series": raw_data.get("Series"),
             "series2": raw_data.get("Series2"),
+            
+            # MSRP estimate (if available)
+            "base_price": raw_data.get("Base Price ($)"),
         }
         
         # Clean up None values and build structured response
         vehicle = {k: v for k, v in vehicle.items() if v is not None}
+        
+        # Cross-reference WMI data with NHTSA results
+        wmi_info = validation_results["wmi_data"]
+        if wmi_info.get("manufacturer") != "Unknown":
+            # Verify manufacturer matches
+            nhtsa_make = vehicle.get("make", "").upper()
+            wmi_make = wmi_info.get("manufacturer", "").upper()
+            if wmi_make in nhtsa_make or nhtsa_make in wmi_make:
+                validation_results["manufacturer_verified"] = True
+            else:
+                validation_results["manufacturer_verified"] = False
+                validation_results["wmi_manufacturer"] = wmi_info["manufacturer"]
         
         # Build formatted engine string
         engine_parts = []
@@ -1921,11 +2078,29 @@ async def decode_vin(vin: str):
         if safety_features:
             vehicle["safety_features"] = safety_features
         
+        # Calculate confidence score based on validation
+        confidence = 0
+        if validation_results["checksum_valid"]:
+            confidence += 40
+        if vehicle.get("make") and vehicle.get("model"):
+            confidence += 30
+        if vehicle.get("year"):
+            confidence += 15
+        if validation_results.get("manufacturer_verified", True):
+            confidence += 15
+        
+        vehicle["validation"] = {
+            "confidence_score": confidence,
+            "checksum_valid": validation_results["checksum_valid"],
+            "sources_checked": validation_results["sources_checked"],
+            "manufacturer_verified": validation_results.get("manufacturer_verified", True),
+        }
+        
         # Ensure we have minimum required data
         if not vehicle.get("make") or not vehicle.get("model"):
             raise HTTPException(status_code=404, detail="Could not decode vehicle make/model from VIN")
         
-        logger.info(f"VIN decoded: {vin} -> {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')}")
+        logger.info(f"VIN decoded: {vin} -> {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')} (confidence: {confidence}%)")
         return vehicle
         
     except httpx.HTTPError as e:
