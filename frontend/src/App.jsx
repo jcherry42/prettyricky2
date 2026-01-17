@@ -33,6 +33,30 @@ function AppContent() {
     if (isNative) {
       initializeNative();
     }
+    
+    // Optimize scroll performance
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          // Handle scroll events here if needed
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Preconnect to backend for faster API calls
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001';
+    document.head.appendChild(link);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
   
   // Update status bar when theme changes
