@@ -34,12 +34,14 @@ function AppContent() {
   }, [theme]);
   
   return (
-    <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
-      {/* Header */}
-      <Header />
+    <div className="h-screen flex flex-col bg-background max-w-[100vw] overflow-hidden">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0">
+        <Header />
+      </div>
 
-      {/* Main Content - with padding for fixed header */}
-      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '120px', maxWidth: '100%' }}>
+      {/* Scrollable Main Content */}
+      <main className="flex-1 overflow-y-auto px-4 py-4 pb-safe space-y-4">
         {/* Step 1: Select Customer */}
         <section>
           <CustomerSelector />
@@ -55,13 +57,13 @@ function AppContent() {
           <ToneSelector />
         </section>
 
-        {/* Step 4: Response Cards */}
+        {/* Step 4: Review Generated Responses */}
         <section>
           <ResponseCards />
         </section>
 
-        {/* Tower Talk Button */}
-        <section className="pt-2">
+        {/* Tower Talk Button (appears when customer selected) */}
+        <section>
           <TowerTalkButton />
         </section>
       </main>
