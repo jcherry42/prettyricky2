@@ -124,6 +124,49 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  // Define lookupVin BEFORE it's used
+  const lookupVin = useCallback(async (vinNumber) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('[VIN] Attempting to decode:', vinNumber);
+      console.log('[VIN] Backend URL:', BACKEND_URL);
+      
+      const res = await fetch(`${BACKEND_URL}/api/vin/decode/${vinNumber}`, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      console.log('[VIN] Response status:', res.status);
+      
+      const data = await res.json();
+      console.log('[VIN] Response data:', data);
+
+      if (!res.ok) {
+        const errorMsg = data.detail || data.message || 'VIN lookup failed';
+        console.error('[VIN] Error:', errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      if (!data.make || !data.model) {
+        throw new Error('Invalid VIN - could not decode vehicle information');
+      }
+
+      setVehicleData(data);
+      addToRecentScans(data);
+      setMode('result');
+    } catch (err) {
+      console.error('[VIN] Exception:', err);
+      const errorMessage = err.message || 'Failed to decode VIN. Check your internet connection.';
+      setError(errorMessage);
+      setMode('menu');
+    } finally {
+      setLoading(false);
+    }
+  }, [addToRecentScans]);
+
   const startBarcodeScanning = useCallback(async () => {
     setError(null);
     setLoading(true);
@@ -183,48 +226,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     setMode('menu');
     setLoading(false);
   }, []);
-
-  const lookupVin = useCallback(async (vinNumber) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      console.log('[VIN] Attempting to decode:', vinNumber);
-      console.log('[VIN] Backend URL:', BACKEND_URL);
-      
-      const res = await fetch(`${BACKEND_URL}/api/vin/decode/${vinNumber}`, {
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-      
-      console.log('[VIN] Response status:', res.status);
-      
-      const data = await res.json();
-      console.log('[VIN] Response data:', data);
-
-      if (!res.ok) {
-        const errorMsg = data.detail || data.message || 'VIN lookup failed';
-        console.error('[VIN] Error:', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      if (!data.make || !data.model) {
-        throw new Error('Invalid VIN - could not decode vehicle information');
-      }
-
-      setVehicleData(data);
-      addToRecentScans(data);
-      setMode('result');
-    } catch (err) {
-      console.error('[VIN] Exception:', err);
-      const errorMessage = err.message || 'Failed to decode VIN. Check your internet connection.';
-      setError(errorMessage);
-      setMode('menu');
-    } finally {
-      setLoading(false);
-    }
-  }, [addToRecentScans]);
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
