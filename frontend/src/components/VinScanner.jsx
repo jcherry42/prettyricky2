@@ -372,7 +372,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
               </div>
               <div className="vin-form-btns">
                 <button type="button" onClick={() => setMode('menu')} className="vin-back-btn">Back</button>
-                <button type="submit" disabled={manualVin.length !== 17 || loading} className="vin-submit-btn" data-testid="decode-vin-btn">
+                <button type="submit" disabled={!vinValidation.valid || loading} className="vin-submit-btn" data-testid="decode-vin-btn">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ScanLine className="w-4 h-4" />}
                   Decode
                 </button>
