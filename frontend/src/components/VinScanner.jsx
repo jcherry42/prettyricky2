@@ -179,7 +179,11 @@ export const VinScanner = ({ isOpen, onClose }) => {
     if (!vehicleData) return;
 
     setLoading(true);
+    setError(null);
+    
     try {
+      console.log('[VIN Save] Attempting to save VIN to inventory:', vin);
+      
       const res = await fetch(`${BACKEND_URL}/api/vin/save-to-inventory`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -191,13 +195,23 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }),
       });
 
+      const data = await res.json();
+      
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || 'Failed to save');
+        console.error('[VIN Save] Error response:', data);
+        
+        // Special handling for duplicate VIN (409 Conflict)
+        if (res.status === 409) {
+          throw new Error(`⚠️ DUPLICATE VIN\n\n${data.detail || 'This VIN already exists in inventory'}`);
+        }
+        
+        throw new Error(data.detail || 'Failed to save vehicle to inventory');
       }
 
+      console.log('[VIN Save] Success:', data.message);
       setSaved(true);
     } catch (err) {
+      console.error('[VIN Save] Exception:', err);
       setError(err.message);
     } finally {
       setLoading(false);
