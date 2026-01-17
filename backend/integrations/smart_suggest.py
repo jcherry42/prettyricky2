@@ -340,9 +340,6 @@ Be concise and precise. Return JSON only."""
         """
         result = SmartSuggestResult(success=True)
         
-        # Get valid targets
-        valid_targets = CUSTOMER_FIELDS if data_type == "customers" else VEHICLE_FIELDS
-        
         # Track what's been suggested
         suggested_targets = set()
         fields_needing_ai = []

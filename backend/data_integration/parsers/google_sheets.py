@@ -59,7 +59,7 @@ class GoogleSheetsParser(BaseParser):
             
             # Add source info
             if result.success:
-                result.warnings.insert(0, f"Fetched from Google Sheets")
+                result.warnings.insert(0, "Fetched from Google Sheets")
             
             return result
             
