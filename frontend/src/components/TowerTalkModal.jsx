@@ -289,7 +289,7 @@ export const TowerTalkModal = () => {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
     }
-  }, [showTranslated]);
+  }, [showTranslated, isSpeaking]);
 
   useEffect(() => {
     if (isSpeechSynthesisSupported) {

@@ -584,7 +584,7 @@ export const ImportModal = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       processFile(e.dataTransfer.files[0]);
     }
-  }, [dataType]);
+  }, [dataType, processFile]);
 
   const handleFileInput = (e) => {
     if (e.target.files && e.target.files[0]) {
