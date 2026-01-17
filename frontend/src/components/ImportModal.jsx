@@ -574,7 +574,7 @@ export const ImportModal = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dataType]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
