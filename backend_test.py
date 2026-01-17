@@ -268,14 +268,18 @@ class BackendTester:
     async def test_vin_save_workflow(self):
         """Test VIN Scanner workflow: Save to inventory and duplicate rejection"""
         try:
-            # Test saving a VIN to inventory
-            test_vin = "1HGBH41JXMN109999"  # Different VIN to avoid conflicts
+            # Test saving a VIN to inventory with correct payload structure
+            test_vin = "1HGBH41JXMN109888"  # Different VIN to avoid conflicts
             test_payload = {
                 "vin": test_vin,
-                "year": 2023,
-                "make": "Honda",
-                "model": "Civic",
-                "category": "sedan"
+                "vehicle_data": {
+                    "year": 2023,
+                    "make": "Honda",
+                    "model": "Civic",
+                    "trim": "LX",
+                    "price": 25000
+                },
+                "category": "active_inventory"
             }
             
             # First save attempt - should succeed
