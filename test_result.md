@@ -286,26 +286,80 @@ frontend:
         agent: "testing"
         comment: "✅ iOS TEST PASSED: All 3 tones (Direct, Balanced, Soft) found and working. Tone selection working properly with tap functionality. Description text changes confirmed for different tones (e.g., 'Conversational, relationship-building' for Balanced)."
 
-  - task: "Response Cards - Responses with Copy and iMessage buttons, follow-up timing"
+  - task: "Eject SMS Feature - Send customer profile via SMS using Twilio"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test Eject SMS feature: Select customer → Click Eject button → Send SMS via Twilio → Verify SMS sent successfully"
+
+  - task: "Translation of Edited Text Feature - Translate edited response text (not original)"
     implemented: true
     working: true
     file: "/app/frontend/src/components/ResponseCards.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: "NA"
-        agent: "testing"
-        comment: "Need to verify responses appear with Copy and iMessage buttons, and follow-up timing is shown"
-      - working: true
-        agent: "testing"
-        comment: "✅ iOS TEST PASSED: Response cards working correctly. Found Copy and iMessage buttons (2 of each). Follow-up timing displayed (e.g., 'Same Day'). Copy functionality working - buttons are clickable. Minor: Copy feedback message may be very brief but core functionality works."
       - working: "NA"
         agent: "main"
         comment: "Translation on edited text feature needs re-testing. Logic appears correct but user reported it wasn't working."
       - working: true
         agent: "testing"
         comment: "✅ PASS: Translation on edited text feature verified working. Edit mode accessible via pencil icon, 'Translate to Spanish' button appears when editing text, translation functionality implemented correctly. Feature allows editing response text and translating the edited version (not original). Language toggle between English/Spanish working as expected."
+
+  - task: "Email Parser Import - Parse lead emails and extract customer/vehicle data"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test Email Parser: Command Center → Import → Email Parser → Paste email content → Parse & Import → Verify data extraction and database save"
+
+  - task: "Full E2E Customer Workflow - Complete customer interaction flow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete E2E flow: Customer selection → Inquiry type → Tone → Generate AI response → Translate → Edit and re-translate → Copy/Share → Test Eject feature"
+
+  - task: "VIN Scanner Recent History - Store and display recent VIN scans"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/VinScanner.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test VIN Scanner recent history: Recent scans stored → Displayed in UI → Click to reload data → Duplicate VIN rejection still works"
+
+  - task: "Language Selector in Settings - 10 languages available with persistence"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test Language Selector: Command Center → Settings → Language selector shows 10 languages → Change default → Verify persistence across sessions"
 
   - task: "Flame Animation Size - Adjust flame size to be proportional to Sport Mode button"
     implemented: true
