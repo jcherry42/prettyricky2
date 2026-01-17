@@ -29,7 +29,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
   }, []);
 
   // Save to recent scans
-  const addToRecentScans = (vinData) => {
+  const addToRecentScans = useCallback((vinData) => {
     const scan = {
       vin: vinData.vin,
       vehicle: `${vinData.year} ${vinData.make} ${vinData.model}`,
@@ -39,7 +39,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
     const updated = [scan, ...recentScans.filter(s => s.vin !== vinData.vin)].slice(0, 5);
     setRecentScans(updated);
     localStorage.setItem('recentVinScans', JSON.stringify(updated));
-  };
+  }, [recentScans]);
 
   // Real-time VIN validation as user types
   const validateVin = (value) => {
