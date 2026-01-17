@@ -2445,7 +2445,7 @@ const ImportModal = ({ onClose, onSuccess }) => {
 };
 
 // Settings Tab Component
-const SettingsTab = () => {
+const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   const { 
     dealership, 
     salesperson, 
