@@ -1,22 +1,21 @@
 {
-  "timestamp": "2026-01-17T22:07:45.240924",
+  "timestamp": "2026-01-17T22:08:28.619470",
   "backend_url": "https://salesace.preview.emergentagent.com/api",
-  "total_tests": 10,
-  "passed": 8,
-  "failed": 2,
+  "total_tests": 11,
+  "passed": 10,
+  "failed": 1,
   "failed_tests": [
-    "GET /vin/decode",
-    "POST /vin/save-to-inventory (first save)"
+    "GET /vin/decode"
   ],
   "detailed_results": [
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: healthy",
-      "timestamp": "2026-01-17T22:07:42.314912",
+      "timestamp": "2026-01-17T22:08:26.106032",
       "response_data": {
         "status": "healthy",
-        "timestamp": "2026-01-17T22:07:42.311408+00:00",
+        "timestamp": "2026-01-17T22:08:26.102176+00:00",
         "scheduler": {
           "isRunning": true,
           "nextRefresh": "2026-01-19T10:00:00-05:00",
@@ -34,7 +33,7 @@
       "test": "GET /customers",
       "success": true,
       "details": "Retrieved 2 customers",
-      "timestamp": "2026-01-17T22:07:42.365533",
+      "timestamp": "2026-01-17T22:08:26.118163",
       "response_data": {
         "count": 2,
         "sample": [
@@ -73,7 +72,7 @@
       "test": "GET /vehicles",
       "success": true,
       "details": "Retrieved 3 vehicles",
-      "timestamp": "2026-01-17T22:07:42.388766",
+      "timestamp": "2026-01-17T22:08:26.129704",
       "response_data": {
         "count": 3,
         "sample": [
@@ -131,21 +130,21 @@
     {
       "test": "POST /tower-talk",
       "success": true,
-      "details": "Generated response (373 chars)",
-      "timestamp": "2026-01-17T22:07:44.042425",
+      "details": "Generated response (344 chars)",
+      "timestamp": "2026-01-17T22:08:27.476366",
       "response_data": {
-        "response_length": 373,
-        "preview": "Hi Alex, I understand the price might feel like a lot upfront, but since you mentioned loving the le..."
+        "response_length": 344,
+        "preview": "Hey Alex, I totally get where you\u2019re coming from on the price\u2014these X3s hold value because of their ..."
       }
     },
     {
       "test": "POST /translate",
       "success": true,
       "details": "Translated to Spanish (confidence: 0.95)",
-      "timestamp": "2026-01-17T22:07:44.743878",
+      "timestamp": "2026-01-17T22:08:28.192121",
       "response_data": {
         "original": "Hello, I'm interested in this vehicle. Can you tel...",
-        "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuede da...",
+        "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuedes d...",
         "detected_lang": "en",
         "confidence": 0.95
       }
@@ -154,7 +153,7 @@
       "test": "GET /analytics/dashboard",
       "success": true,
       "details": "Analytics dashboard loaded with 4/4 sections",
-      "timestamp": "2026-01-17T22:07:44.783199",
+      "timestamp": "2026-01-17T22:08:28.204321",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -162,28 +161,41 @@
           "inventory_metrics",
           "conversation_insights"
         ],
-        "generated_at": "2026-01-17T22:07:44.779575+00:00"
+        "generated_at": "2026-01-17T22:08:28.200854+00:00"
       }
     },
     {
       "test": "GET /vin/decode",
       "success": false,
-      "details": "HTTP 404: {\"detail\":\"Could not decode vehicle make/model from VIN\"}",
-      "timestamp": "2026-01-17T22:07:45.132086",
+      "details": "Missing VIN decode fields. Found: ['vin']",
+      "timestamp": "2026-01-17T22:08:28.519456",
       "response_data": null
     },
     {
       "test": "POST /vin/save-to-inventory (first save)",
-      "success": false,
-      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"vehicle_data\"],\"msg\":\"Field required\",\"input\":{\"vin\":\"1HGBH41JXMN109999\",\"year\":2023,\"make\":\"Honda\",\"model\":\"Civic\",\"category\":\"sedan\"},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}",
-      "timestamp": "2026-01-17T22:07:45.182663",
-      "response_data": null
+      "success": true,
+      "details": "VIN saved to inventory successfully",
+      "timestamp": "2026-01-17T22:08:28.553305",
+      "response_data": {
+        "vin": "1HGBH41JXMN109888",
+        "message": "Vehicle saved to inventory"
+      }
+    },
+    {
+      "test": "POST /vin/save-to-inventory (duplicate rejection)",
+      "success": true,
+      "details": "Duplicate VIN correctly rejected",
+      "timestamp": "2026-01-17T22:08:28.563127",
+      "response_data": {
+        "vin": "1HGBH41JXMN109888",
+        "error": "This VIN already exists in inventory. Vehicle: 2023 Honda Civic"
+      }
     },
     {
       "test": "GET /customers/stats",
       "success": true,
       "details": "Customer stats loaded with 2/2 expected fields",
-      "timestamp": "2026-01-17T22:07:45.191684",
+      "timestamp": "2026-01-17T22:08:28.610955",
       "response_data": {
         "total": 2,
         "byStatus": {
@@ -195,7 +207,7 @@
       "test": "GET /vehicles/stats",
       "success": true,
       "details": "Vehicle stats loaded successfully",
-      "timestamp": "2026-01-17T22:07:45.240761",
+      "timestamp": "2026-01-17T22:08:28.619320",
       "response_data": {
         "stats_keys": [
           "total",
