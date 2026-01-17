@@ -4323,13 +4323,15 @@ html:not(.dark) .tone-pill.active {
 
 /* Voice Input Button */
 .voice-input-btn {
-  @apply flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 relative overflow-hidden;
+  @apply flex items-center gap-1 px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-200 relative overflow-hidden;
   background: linear-gradient(180deg, 
     hsla(220, 10%, 18%, 0.9) 0%,
     hsla(220, 10%, 14%, 0.95) 100%
   );
   border: 1px solid hsla(220, 8%, 28%, 0.5);
   color: hsla(220, 10%, 60%, 1);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .voice-input-btn:hover {
@@ -4353,9 +4355,11 @@ html:not(.dark) .tone-pill.active {
     0 0 40px hsla(0, 100%, 50%, 0.15);
 }
 
-/* Voice Pulse Animation */
+/* Optimized pulse animation with GPU acceleration */
 .voice-pulse {
-  @apply absolute inset-0;
+  @apply absolute inset-0 rounded-lg;
+  will-change: transform, opacity;
+  transform: translateZ(0);
   animation: voice-pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -4367,16 +4371,16 @@ html:not(.dark) .tone-pill.active {
 
 @keyframes voice-pulse-ring {
   0% {
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
     opacity: 0.8;
   }
   50% {
-    transform: scale(1.15);
+    transform: scale(1.05) translateZ(0);
     opacity: 0.4;
   }
   100% {
-    transform: scale(1);
-    opacity: 0.8;
+    transform: scale(1.1) translateZ(0);
+    opacity: 0;
   }
 }
 
@@ -4388,7 +4392,7 @@ html:not(.dark) .tone-pill.active {
     0 0 20px hsla(0, 100%, 50%, 0.15) !important;
 }
 
-/* Voice Indicator Dots */
+/* Optimized voice indicator */
 .voice-indicator {
   @apply flex items-center gap-1;
 }
@@ -4396,16 +4400,18 @@ html:not(.dark) .tone-pill.active {
 .voice-dot {
   @apply w-1.5 h-1.5 rounded-full;
   background: hsla(0, 80%, 55%, 1);
+  will-change: transform;
+  transform: translateZ(0);
   animation: voice-dot-bounce 1s ease-in-out infinite;
 }
 
 @keyframes voice-dot-bounce {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
     opacity: 0.5;
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-4px) translateZ(0);
     opacity: 1;
   }
 }
