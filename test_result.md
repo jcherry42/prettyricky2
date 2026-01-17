@@ -318,15 +318,18 @@ frontend:
 
   - task: "Email Parser Import - Parse lead emails and extract customer/vehicle data"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/CommandCenter.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test Email Parser: Command Center → Import → Email Parser → Paste email content → Parse & Import → Verify data extraction and database save"
+      - working: false
+        agent: "testing"
+        comment: "❌ FAIL: Email Parser option not found in Import tab. Command Center → Import tab accessible, but Email Parser option missing from the import options. Backend endpoint /api/import/email exists but frontend UI component not visible."
 
   - task: "Full E2E Customer Workflow - Complete customer interaction flow"
     implemented: true
