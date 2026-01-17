@@ -267,10 +267,10 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus: []
+  current_focus: ["Performance Optimization", "Code Quality Scan"]
   stuck_tasks: []
   test_all: false
-  test_priority: "completed"
+  test_priority: "high"
 
 agent_communication:
   - agent: "testing"
