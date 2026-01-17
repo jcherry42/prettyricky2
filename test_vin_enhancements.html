@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIN Scanner Enhancement Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            border-radius: 5px;
+        }
+        .validation-message {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .valid { background: #1a5a1a; color: #4ade80; }
+        .invalid { background: #5a1a1a; color: #f87171; }
+        .recent-scan {
+            background: #333;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>VIN Scanner Enhancement Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Real-time VIN Validation Test</h2>
+        <p>Test the VIN validation as you type:</p>
+        <input type="text" id="vinInput" class="test-input" placeholder="Enter VIN (e.g., 1HGCM82633A123456)" maxlength="17">
+        <div id="validationResult" class="validation-message"></div>
+        
+        <h3>Test Cases:</h3>
+        <ul>
+            <li><strong>Valid VIN:</strong> 1HGCM82633A123456</li>
+            <li><strong>Invalid chars:</strong> 1HGCM82633I123456 (contains I)</li>
+            <li><strong>Too short:</strong> 1HGCM82633A12</li>
+            <li><strong>Mixed case:</strong> 1hgcm82633a123456</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Recent Scans Storage Test</h2>
+        <p>Simulate adding recent scans to localStorage:</p>
+        <button onclick="addTestScan()">Add Test Scan</button>
+        <button onclick="clearScans()">Clear All Scans</button>
+        <div id="recentScans"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Features Added</h2>
+        <ul>
+            <li>✅ Real-time VIN validation with character count</li>
+            <li>✅ Invalid character detection (I, O, Q not allowed)</li>
+            <li>✅ Visual feedback for valid/invalid VINs</li>
+            <li>✅ Recent scans storage in localStorage</li>
+            <li>✅ Recent scans display in menu</li>
+            <li>✅ Quick re-scan from recent history</li>
+            <li>✅ Automatic VIN formatting (uppercase, clean)</li>
+        </ul>
+    </div>
+
+    <script>
+        // VIN validation function (copied from component)
+        function validateVin(value) {
+            const clean = value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+            
+            if (clean.length === 0) {
+                return { valid: false, message: '' };
+            }
+            
+            if (clean.length < 17) {
+                return { 
+                    valid: false, 
+                    message: `${clean.length}/17 characters` 
+                };
+            }
+            
+            if (clean.length === 17) {
+                // Check for invalid characters (I, O, Q not allowed in VINs)
+                if (/[IOQ]/.test(clean)) {
+                    return { 
+                        valid: false, 
+                        message: 'Invalid: VINs cannot contain I, O, or Q' 
+                    };
+                }
+                
+                return { 
+                    valid: true, 
+                    message: '✓ Valid VIN format' 
+                };
+            }
+        }
+
+        // Handle VIN input
+        document.getElementById('vinInput').addEventListener('input', function(e) {
+            const value = e.target.value;
+            const formatted = value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+            e.target.value = formatted;
+            
+            const validation = validateVin(formatted);
+            const resultDiv = document.getElementById('validationResult');
+            
+            resultDiv.textContent = validation.message || '';
+            resultDiv.className = `validation-message ${validation.valid ? 'valid' : 'invalid'}`;
+        });
+
+        // Recent scans functions
+        function addTestScan() {
+            const scans = JSON.parse(localStorage.getItem('recentVinScans') || '[]');
+            const newScan = {
+                vin: '1HGCM82633A' + Math.floor(Math.random() * 1000000),
+                vehicle: `${2020 + Math.floor(Math.random() * 5)} Honda Civic`,
+                timestamp: Date.now()
+            };
+            
+            const updated = [newScan, ...scans.filter(s => s.vin !== newScan.vin)].slice(0, 5);
+            localStorage.setItem('recentVinScans', JSON.stringify(updated));
+            displayRecentScans();
+        }
+
+        function clearScans() {
+            localStorage.removeItem('recentVinScans');
+            displayRecentScans();
+        }
+
+        function displayRecentScans() {
+            const scans = JSON.parse(localStorage.getItem('recentVinScans') || '[]');
+            const container = document.getElementById('recentScans');
+            
+            if (scans.length === 0) {
+                container.innerHTML = '<p>No recent scans</p>';
+                return;
+            }
+            
+            container.innerHTML = '<h3>Recent Scans:</h3>' + 
+                scans.map(scan => `
+                    <div class="recent-scan">
+                        <strong>${scan.vehicle}</strong><br>
+                        <small>VIN: ${scan.vin}</small><br>
+                        <small>Date: ${new Date(scan.timestamp).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+        }
+
+        // Initialize
+        displayRecentScans();
+    </script>
+</body>
+</html>
