@@ -363,15 +363,18 @@ frontend:
 
   - task: "Language Selector in Settings - 10 languages available with persistence"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/CommandCenter.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Need to test Language Selector: Command Center → Settings → Language selector shows 10 languages → Change default → Verify persistence across sessions"
+      - working: false
+        agent: "testing"
+        comment: "❌ FAIL: Language selector not found in Settings tab. Command Center → Settings tab accessible but language selector component is missing from the UI. LanguageSelector component exists in codebase but not rendered in Settings tab."
 
   - task: "Flame Animation Size - Adjust flame size to be proportional to Sport Mode button"
     implemented: true
