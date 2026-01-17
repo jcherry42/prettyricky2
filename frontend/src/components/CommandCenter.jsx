@@ -17,6 +17,7 @@ import {
   setSoundPreferences,
   getSoundProfiles
 } from '../utils/notificationSound';
+import LanguageSelector from './LanguageSelector';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -31,6 +32,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Language preferences
+  const [defaultTargetLanguage, setDefaultTargetLanguage] = useState(
+    () => localStorage.getItem('defaultTargetLanguage') || 'es'
+  );
   
   // Sub-modals
   const [showCustomerForm, setShowCustomerForm] = useState(false);
