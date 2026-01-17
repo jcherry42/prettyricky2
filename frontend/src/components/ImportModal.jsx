@@ -535,7 +535,7 @@ export const ImportModal = () => {
     }
   }, []);
 
-  const processFile = async (file) => {
+  const processFile = useCallback(async (file) => {
     setIsLoading(true);
     setStatus({ type: null, message: '', details: null });
 
