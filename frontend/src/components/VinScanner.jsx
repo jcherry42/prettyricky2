@@ -358,7 +358,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
               <input
                 type="text"
                 value={manualVin}
-                onChange={(e) => setManualVin(e.target.value.toUpperCase())}
+                onChange={(e) => handleManualVinChange(e.target.value)}
                 placeholder="1HGCM82633A123456"
                 maxLength={17}
                 autoFocus
@@ -366,7 +366,9 @@ export const VinScanner = ({ isOpen, onClose }) => {
               />
               <div className="vin-input-info">
                 <span>Letters I, O, Q not valid</span>
-                <span className="count">{manualVin.length}/17</span>
+                <span className={`validation-message ${vinValidation.valid ? 'valid' : 'invalid'}`}>
+                  {vinValidation.message || `${manualVin.length}/17 characters`}
+                </span>
               </div>
               <div className="vin-form-btns">
                 <button type="button" onClick={() => setMode('menu')} className="vin-back-btn">Back</button>
