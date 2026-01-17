@@ -435,13 +435,7 @@ export const ResponseCards = () => {
                     value={editedTexts[response.id] || displayedText}
                     onChange={(e) => handleTextChange(response.id, e.target.value)}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full p-3 rounded-lg text-[15px] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                    style={{
-                      background: 'hsla(220, 10%, 12%, 0.8)',
-                      border: '1px solid hsla(40, 50%, 40%, 0.4)',
-                      color: 'inherit',
-                      minHeight: '120px'
-                    }}
+                    className="edit-response-textarea w-full p-3 rounded-lg text-[15px] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     autoFocus
                     data-testid={`edit-textarea-${index}`}
                   />
