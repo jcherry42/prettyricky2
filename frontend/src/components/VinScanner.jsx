@@ -831,6 +831,78 @@ export const VinScanner = ({ isOpen, onClose }) => {
           color: #22d3ee;
         }
 
+        .validation-message {
+          font-weight: 500;
+        }
+
+        .validation-message.valid {
+          color: #22c55e;
+        }
+
+        .validation-message.invalid {
+          color: #ef4444;
+        }
+
+        /* Recent Scans */
+        .recent-scans {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .recent-header {
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #888;
+          margin-bottom: 10px;
+        }
+
+        .recent-scan-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding: 10px 12px;
+          margin-bottom: 6px;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.06);
+          cursor: pointer;
+          text-align: left;
+          transition: all 0.2s;
+        }
+
+        .recent-scan-item:hover {
+          background: rgba(255,255,255,0.06);
+          border-color: rgba(255,191,0,0.2);
+        }
+
+        .recent-scan-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .recent-vehicle {
+          font-size: 12px;
+          font-weight: 500;
+          color: #fff;
+        }
+
+        .recent-vin {
+          font-size: 10px;
+          font-family: monospace;
+          color: #666;
+          letter-spacing: 1px;
+        }
+
+        .recent-time {
+          font-size: 10px;
+          color: #888;
+        }
+
         .vin-form-btns {
           display: flex;
           gap: 10px;
