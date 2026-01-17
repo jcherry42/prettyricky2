@@ -3099,6 +3099,15 @@ async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
         vin = request.vin.upper().strip()
         vdata = request.vehicle_data
         
+        # Check if VIN already exists - REJECT duplicates
+        existing = await db.vehicles.find_one({"vin": vin}, {"_id": 0})
+        if existing:
+            logger.warning(f"Duplicate VIN rejected: {vin}")
+            raise HTTPException(
+                status_code=409, 
+                detail=f"This VIN already exists in inventory. Vehicle: {existing.get('year')} {existing.get('make')} {existing.get('model')}"
+            )
+        
         vehicle_record = {
             "id": str(uuid.uuid4()),
             "vin": vin,
@@ -3123,18 +3132,12 @@ async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
             "updated_at": datetime.now(timezone.utc),
         }
         
-        # Check if VIN already exists
-        existing = await db.vehicles.find_one({"vin": vin})
-        if existing:
-            await db.vehicles.update_one(
-                {"vin": vin},
-                {"$set": {**vehicle_record, "id": existing.get("id")}}
-            )
-            return {"success": True, "message": "Vehicle updated", "id": existing.get("id")}
-        else:
-            await db.vehicles.insert_one(vehicle_record)
-            return {"success": True, "message": "Vehicle saved", "id": vehicle_record["id"]}
+        await db.vehicles.insert_one(vehicle_record)
+        logger.info(f"Vehicle added to inventory: {vin}")
+        return {"success": True, "message": "Vehicle saved to inventory", "id": vehicle_record["id"]}
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Save VIN to inventory error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
