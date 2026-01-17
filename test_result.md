@@ -442,10 +442,10 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus: ["Pending Features Testing", "Eject SMS", "Email Parser", "Translation Features", "End-to-End Testing"]
+  current_focus: ["Eject SMS Feature", "Email Parser Import", "Translation of Edited Text Feature", "Full E2E Customer Workflow", "VIN Scanner Recent History", "Language Selector in Settings"]
   stuck_tasks: []
   test_all: true
-  test_priority: "high"
+  test_priority: "high_first"
 
 agent_communication:
   - agent: "testing"
