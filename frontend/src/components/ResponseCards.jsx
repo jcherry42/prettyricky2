@@ -264,16 +264,34 @@ export const ResponseCards = () => {
   const translateEditedText = async (responseId, e) => {
     e.stopPropagation();
     const textToTranslate = editedTexts[responseId];
-    if (!textToTranslate) return;
+    
+    console.log('[Translation] Translating edited text for response:', responseId);
+    console.log('[Translation] Text to translate:', textToTranslate);
+    
+    if (!textToTranslate) {
+      console.log('[Translation] No text to translate');
+      return;
+    }
     
     setTranslatingEdited(prev => ({ ...prev, [responseId]: true }));
     
-    const translated = await translateText(textToTranslate);
-    if (translated) {
-      setEditedTranslations(prev => ({ ...prev, [responseId]: translated }));
+    try {
+      const translated = await translateText(textToTranslate);
+      console.log('[Translation] Translated result:', translated);
+      
+      if (translated) {
+        setEditedTranslations(prev => ({ ...prev, [responseId]: translated }));
+        // Automatically show Spanish after translating
+        setShowSpanish(prev => ({ ...prev, [responseId]: true }));
+        console.log('[Translation] Translation saved and Spanish view enabled');
+      } else {
+        console.error('[Translation] Translation returned empty/null');
+      }
+    } catch (err) {
+      console.error('[Translation] Translation error:', err);
+    } finally {
+      setTranslatingEdited(prev => ({ ...prev, [responseId]: false }));
     }
-    
-    setTranslatingEdited(prev => ({ ...prev, [responseId]: false }));
   };
 
   const handleSpeak = (response, e) => {
