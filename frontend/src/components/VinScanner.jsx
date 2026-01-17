@@ -13,6 +13,73 @@ export const VinScanner = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
+  const [recentScans, setRecentScans] = useState([]);
+  const [vinValidation, setVinValidation] = useState({ valid: false, message: '' });
+
+  // Load recent scans from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentVinScans');
+    if (stored) {
+      try {
+        setRecentScans(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to load recent scans:', e);
+      }
+    }
+  }, []);
+
+  // Save to recent scans
+  const addToRecentScans = (vinData) => {
+    const scan = {
+      vin: vinData.vin,
+      vehicle: `${vinData.year} ${vinData.make} ${vinData.model}`,
+      timestamp: Date.now(),
+    };
+    
+    const updated = [scan, ...recentScans.filter(s => s.vin !== vinData.vin)].slice(0, 5);
+    setRecentScans(updated);
+    localStorage.setItem('recentVinScans', JSON.stringify(updated));
+  };
+
+  // Real-time VIN validation as user types
+  const validateVin = (value) => {
+    const clean = value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+    
+    if (clean.length === 0) {
+      setVinValidation({ valid: false, message: '' });
+      return;
+    }
+    
+    if (clean.length < 17) {
+      setVinValidation({ 
+        valid: false, 
+        message: `${clean.length}/17 characters` 
+      });
+      return;
+    }
+    
+    if (clean.length === 17) {
+      // Check for invalid characters (I, O, Q not allowed in VINs)
+      if (/[IOQ]/.test(clean)) {
+        setVinValidation({ 
+          valid: false, 
+          message: 'Invalid: VINs cannot contain I, O, or Q' 
+        });
+        return;
+      }
+      
+      setVinValidation({ 
+        valid: true, 
+        message: '✓ Valid VIN format' 
+      });
+    }
+  };
+
+  const handleManualVinChange = (value) => {
+    const formatted = value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+    setManualVin(formatted);
+    validateVin(formatted);
+  };
 
   useEffect(() => {
     if (isOpen) {
