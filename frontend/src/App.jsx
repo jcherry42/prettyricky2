@@ -36,12 +36,10 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-background">
-        <Header />
-      </div>
+      <Header />
 
-      {/* Main Content */}
-      <main className="px-4 py-4 pb-safe space-y-4">
+      {/* Main Content - padding-top accounts for fixed header */}
+      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '120px' }}>
         {/* Step 1: Select Customer */}
         <section>
           <CustomerSelector />
