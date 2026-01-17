@@ -399,7 +399,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
           {/* Settings Tab */}
           {activeTab === 'settings' && (
-            <SettingsTab />
+            <SettingsTab 
+              defaultTargetLanguage={defaultTargetLanguage}
+              onLanguageChange={(lang) => {
+                setDefaultTargetLanguage(lang);
+                localStorage.setItem('defaultTargetLanguage', lang);
+                toast.success(`Default translation language set to ${lang.toUpperCase()}`);
+              }}
+            />
           )}
         </div>
 
