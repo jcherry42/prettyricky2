@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Performance Optimization Verification - Test backend APIs after comprehensive performance optimization and code quality scan. Fixed all critical linting errors and React anti-patterns. Need to verify core APIs still working after backend analytics fix and VIN Scanner workflow functionality."
+user_problem_statement: "Comprehensive Pending Features Testing - Test all pending features before final mobile build update including Eject SMS, Translation of Edited Text, Email Parser Import, Full E2E Customer Workflow, VIN Scanner Recent History, and Language Selector in Settings."
 
 backend:
   - task: "Core Customer API - GET /api/customers endpoint functionality"
