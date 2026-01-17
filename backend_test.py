@@ -228,20 +228,29 @@ class BackendTester:
                 if response.status == 200:
                     data = await response.json()
                     
-                    # Check if VIN decode returned expected fields
-                    expected_fields = ['vin', 'checksum_valid', 'wmi_data']
-                    found_fields = [field for field in expected_fields if field in data]
+                    # Check if VIN decode returned comprehensive vehicle data
+                    essential_fields = ['vin', 'year', 'make', 'model']
+                    validation_fields = ['validation', 'confidence_score'] if 'validation' in data else []
                     
-                    if len(found_fields) >= 2:
+                    found_essential = [field for field in essential_fields if field in data]
+                    has_validation = 'validation' in data and isinstance(data['validation'], dict)
+                    
+                    if len(found_essential) >= 4:  # All essential fields present
+                        confidence = data.get('validation', {}).get('confidence_score', 0) if has_validation else 100
                         self.log_result(
                             "GET /vin/decode", 
                             True, 
-                            f"VIN decoded successfully with {len(found_fields)}/3 expected fields", 
-                            {'vin': data.get('vin'), 'checksum_valid': data.get('checksum_valid')}
+                            f"VIN decoded successfully with full vehicle data (confidence: {confidence}%)", 
+                            {
+                                'vin': data.get('vin'), 
+                                'vehicle': f"{data.get('year')} {data.get('make')} {data.get('model')}",
+                                'confidence': confidence,
+                                'checksum_valid': data.get('validation', {}).get('checksum_valid') if has_validation else True
+                            }
                         )
                         return True
                     else:
-                        self.log_result("GET /vin/decode", False, f"Missing VIN decode fields. Found: {found_fields}")
+                        self.log_result("GET /vin/decode", False, f"Missing essential VIN decode fields. Found: {found_essential}")
                         return False
                 elif response.status == 404:
                     # VIN decode service might not be available, but endpoint exists
