@@ -2594,6 +2594,32 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
         </button>
       </div>
       
+      {/* Translation Settings Section */}
+      <div className="settings-section">
+        <div className="section-header">
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#FFBF00' }}>
+            <path d="M5 8h14M5 16h6m-6-4h10" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="16" cy="16" r="4"/>
+            <path d="M16 14v4M14 16h4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <h4>Translation</h4>
+        </div>
+        <div className="settings-form">
+          <div className="s-field">
+            <label>Default Translation Language</label>
+            <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '12px' }}>
+              Choose which language AI responses will be translated to when Sport Mode is active
+            </p>
+            <LanguageSelector
+              selectedLanguage={defaultTargetLanguage}
+              onLanguageChange={onLanguageChange}
+              label="Translate to"
+              showAuto={false}
+            />
+          </div>
+        </div>
+      </div>
+      
       {/* Notifications Section */}
       <div className="settings-section">
         <div className="section-header">
