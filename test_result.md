@@ -388,9 +388,9 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus: ["Performance Optimization Verification", "Backend API Testing"]
+  current_focus: ["Pending Features Testing", "Eject SMS", "Email Parser", "Translation Features", "End-to-End Testing"]
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high"
 
 agent_communication:
