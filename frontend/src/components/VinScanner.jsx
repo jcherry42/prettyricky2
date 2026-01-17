@@ -184,7 +184,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
     setLoading(false);
   }, []);
 
-  const lookupVin = async (vinNumber) => {
+  const lookupVin = useCallback(async (vinNumber) => {
     setLoading(true);
     setError(null);
 
@@ -224,7 +224,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToRecentScans]);
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
