@@ -277,8 +277,11 @@ class BackendTester:
     async def test_vin_save_workflow(self):
         """Test VIN Scanner workflow: Save to inventory and duplicate rejection"""
         try:
-            # Test saving a VIN to inventory with correct payload structure
-            test_vin = "1HGBH41JXMN109888"  # Different VIN to avoid conflicts
+            # Generate a unique VIN for testing to avoid conflicts
+            import random
+            unique_suffix = str(random.randint(100000, 999999))
+            test_vin = f"1HGBH41JXMN{unique_suffix}"  # Unique VIN for each test run
+            
             test_payload = {
                 "vin": test_vin,
                 "vehicle_data": {
