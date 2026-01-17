@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
 import { CustomerSelector } from './components/CustomerSelector';
