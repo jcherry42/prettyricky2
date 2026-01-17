@@ -4245,6 +4245,16 @@ html:not(.dark) .input-luxury {
 
 html:not(.dark) .input-luxury::placeholder {
   color: hsla(25, 10%, 55%, 1);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+html:not(.dark) .input-luxury:focus::placeholder {
+  opacity: 0.5;
+}
+
+html:not(.dark) .input-luxury:not(:placeholder-shown)::placeholder {
+  opacity: 0;
 }
 
 /* Editable response textarea */
