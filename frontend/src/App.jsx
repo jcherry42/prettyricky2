@@ -91,22 +91,16 @@ function AppContent() {
       </main>
 
       {/* Modals */}
-      <Suspense fallback={null}>
-        <SetupModal />
-        <ImportModal />
-        <TowerTalkModal />
-        {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
-      </Suspense>
+      <SetupModal />
+      <ImportModal />
+      <TowerTalkModal />
+      {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
       {/* Voice Translator - Right Side Panel */}
-      <Suspense fallback={null}>
-        <VoiceTranslator />
-      </Suspense>
+      <VoiceTranslator />
       
       {/* Quick Add Customer - Floating Bluetooth Button */}
-      <Suspense fallback={null}>
-        <QuickAddButton />
-      </Suspense>
+      <QuickAddButton />
       
       {/* Toast notifications */}
       <Toaster position="top-center" />
