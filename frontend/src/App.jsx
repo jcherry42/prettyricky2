@@ -34,14 +34,14 @@ function AppContent() {
   }, [theme]);
   
   return (
-    <div className="h-screen flex flex-col bg-background max-w-[100vw] overflow-hidden">
+    <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
       {/* Fixed Header */}
-      <div className="flex-shrink-0">
+      <div className="sticky top-0 z-50 bg-background">
         <Header />
       </div>
 
-      {/* Scrollable Main Content */}
-      <main className="flex-1 overflow-y-auto px-4 py-4 pb-safe space-y-4">
+      {/* Main Content */}
+      <main className="px-4 py-4 pb-safe space-y-4">
         {/* Step 1: Select Customer */}
         <section>
           <CustomerSelector />
