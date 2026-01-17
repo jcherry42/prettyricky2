@@ -337,6 +337,30 @@ export const VinScanner = ({ isOpen, onClose }) => {
                   <span className="subtitle">Type the 17-digit VIN</span>
                 </div>
               </button>
+
+              {/* Recent Scans */}
+              {recentScans.length > 0 && (
+                <div className="recent-scans">
+                  <div className="recent-header">
+                    <span>Recent Scans</span>
+                  </div>
+                  {recentScans.map((scan, index) => (
+                    <button 
+                      key={scan.vin} 
+                      onClick={() => lookupVin(scan.vin)}
+                      className="recent-scan-item"
+                    >
+                      <div className="recent-scan-info">
+                        <span className="recent-vehicle">{scan.vehicle}</span>
+                        <span className="recent-vin">{scan.vin}</span>
+                      </div>
+                      <span className="recent-time">
+                        {new Date(scan.timestamp).toLocaleDateString()}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
