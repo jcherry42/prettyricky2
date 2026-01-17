@@ -158,6 +158,7 @@ class TranslateRequest(BaseModel):
 class TranslateResponse(BaseModel):
     translated_text: str
     detected_lang: Optional[str] = None
+    confidence: Optional[float] = None
 
 
 # ============== HEALTH & STATUS ==============
