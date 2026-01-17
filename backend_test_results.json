@@ -1,0 +1,210 @@
+{
+  "timestamp": "2026-01-17T22:07:45.240924",
+  "backend_url": "https://salesace.preview.emergentagent.com/api",
+  "total_tests": 10,
+  "passed": 8,
+  "failed": 2,
+  "failed_tests": [
+    "GET /vin/decode",
+    "POST /vin/save-to-inventory (first save)"
+  ],
+  "detailed_results": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "details": "Status: healthy",
+      "timestamp": "2026-01-17T22:07:42.314912",
+      "response_data": {
+        "status": "healthy",
+        "timestamp": "2026-01-17T22:07:42.311408+00:00",
+        "scheduler": {
+          "isRunning": true,
+          "nextRefresh": "2026-01-19T10:00:00-05:00",
+          "schedule": "Mon-Sat 10:00 AM ET"
+        },
+        "dataSources": {
+          "total": 0,
+          "active": 0,
+          "healthy": 0,
+          "needsAttention": 0
+        }
+      }
+    },
+    {
+      "test": "GET /customers",
+      "success": true,
+      "details": "Retrieved 2 customers",
+      "timestamp": "2026-01-17T22:07:42.365533",
+      "response_data": {
+        "count": 2,
+        "sample": [
+          {
+            "id": "696a91a017e2b69adbc56cd4",
+            "name": "John Smith",
+            "firstName": "John",
+            "lastName": "Smith",
+            "phone": "555-123-4567",
+            "email": "john@example.com",
+            "address": null,
+            "vehicleInterest": null,
+            "status": "new",
+            "notes": null,
+            "currentVehicle": null,
+            "tradeIn": null
+          },
+          {
+            "id": "696aa14082c526d792c53b7c",
+            "name": "Josh Cherry",
+            "firstName": "Josh",
+            "lastName": "Cherry",
+            "phone": "7069683824",
+            "email": "infohub@442services.com",
+            "address": null,
+            "vehicleInterest": null,
+            "status": "new",
+            "notes": "",
+            "currentVehicle": null,
+            "tradeIn": null
+          }
+        ]
+      }
+    },
+    {
+      "test": "GET /vehicles",
+      "success": true,
+      "details": "Retrieved 3 vehicles",
+      "timestamp": "2026-01-17T22:07:42.388766",
+      "response_data": {
+        "count": 3,
+        "sample": [
+          {
+            "id": "6969025527a911ff10df150d",
+            "year": 2025,
+            "make": "MAZDA",
+            "model": "CX-50",
+            "trim": "Premium",
+            "title": "2025 MAZDA CX-50",
+            "price": null,
+            "formattedPrice": "Call",
+            "msrp": null,
+            "vin": "7MMVABDY7SN393788",
+            "stockNumber": "",
+            "mileage": null,
+            "exteriorColor": "",
+            "interiorColor": "",
+            "transmission": "Automatic",
+            "engine": null,
+            "fuelType": "Gasoline",
+            "bodyStyle": "",
+            "drivetrain": "",
+            "status": "available",
+            "isNew": true,
+            "imageUrl": ""
+          },
+          {
+            "id": "696a91a917e2b69adbc56cd5",
+            "year": 2021,
+            "make": "TESLA",
+            "model": "Model S",
+            "trim": "Long Range",
+            "title": "2021 TESLA Model S",
+            "price": null,
+            "formattedPrice": "Call",
+            "msrp": null,
+            "vin": "5YJSA1E26MF420042",
+            "stockNumber": "",
+            "mileage": null,
+            "exteriorColor": "",
+            "interiorColor": "",
+            "transmission": null,
+            "engine": "",
+            "fuelType": "Electric",
+            "bodyStyle": "",
+            "drivetrain": "",
+            "status": "available",
+            "isNew": true,
+            "imageUrl": ""
+          }
+        ]
+      }
+    },
+    {
+      "test": "POST /tower-talk",
+      "success": true,
+      "details": "Generated response (373 chars)",
+      "timestamp": "2026-01-17T22:07:44.042425",
+      "response_data": {
+        "response_length": 373,
+        "preview": "Hi Alex, I understand the price might feel like a lot upfront, but since you mentioned loving the le..."
+      }
+    },
+    {
+      "test": "POST /translate",
+      "success": true,
+      "details": "Translated to Spanish (confidence: 0.95)",
+      "timestamp": "2026-01-17T22:07:44.743878",
+      "response_data": {
+        "original": "Hello, I'm interested in this vehicle. Can you tel...",
+        "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuede da...",
+        "detected_lang": "en",
+        "confidence": 0.95
+      }
+    },
+    {
+      "test": "GET /analytics/dashboard",
+      "success": true,
+      "details": "Analytics dashboard loaded with 4/4 sections",
+      "timestamp": "2026-01-17T22:07:44.783199",
+      "response_data": {
+        "sections": [
+          "sales_performance",
+          "customer_engagement",
+          "inventory_metrics",
+          "conversation_insights"
+        ],
+        "generated_at": "2026-01-17T22:07:44.779575+00:00"
+      }
+    },
+    {
+      "test": "GET /vin/decode",
+      "success": false,
+      "details": "HTTP 404: {\"detail\":\"Could not decode vehicle make/model from VIN\"}",
+      "timestamp": "2026-01-17T22:07:45.132086",
+      "response_data": null
+    },
+    {
+      "test": "POST /vin/save-to-inventory (first save)",
+      "success": false,
+      "details": "HTTP 422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"vehicle_data\"],\"msg\":\"Field required\",\"input\":{\"vin\":\"1HGBH41JXMN109999\",\"year\":2023,\"make\":\"Honda\",\"model\":\"Civic\",\"category\":\"sedan\"},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}",
+      "timestamp": "2026-01-17T22:07:45.182663",
+      "response_data": null
+    },
+    {
+      "test": "GET /customers/stats",
+      "success": true,
+      "details": "Customer stats loaded with 2/2 expected fields",
+      "timestamp": "2026-01-17T22:07:45.191684",
+      "response_data": {
+        "total": 2,
+        "byStatus": {
+          "new": 2
+        }
+      }
+    },
+    {
+      "test": "GET /vehicles/stats",
+      "success": true,
+      "details": "Vehicle stats loaded successfully",
+      "timestamp": "2026-01-17T22:07:45.240761",
+      "response_data": {
+        "stats_keys": [
+          "total",
+          "new",
+          "used",
+          "available",
+          "avgPrice"
+        ]
+      }
+    }
+  ]
+}
