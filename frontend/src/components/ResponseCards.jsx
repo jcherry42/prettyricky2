@@ -258,16 +258,17 @@ export const ResponseCards = () => {
     setTranslatingEdited(prev => ({ ...prev, [responseId]: true }));
     
     try {
-      const translated = await translateText(textToTranslate);
-      console.log('[Translation] Translated result:', translated);
+      const result = await translateText(textToTranslate, 'en', 'es');
+      console.log('[Translation] Translation result:', result);
       
-      if (translated) {
-        setEditedTranslations(prev => ({ ...prev, [responseId]: translated }));
+      if (result.success && result.translatedText) {
+        setEditedTranslations(prev => ({ ...prev, [responseId]: result.translatedText }));
         // Automatically show Spanish after translating
         setShowSpanish(prev => ({ ...prev, [responseId]: true }));
         console.log('[Translation] Translation saved and Spanish view enabled');
+        console.log('[Translation] Confidence:', result.confidence, 'Cached:', result.cached);
       } else {
-        console.error('[Translation] Translation returned empty/null');
+        console.error('[Translation] Translation failed:', result.error);
       }
     } catch (err) {
       console.error('[Translation] Translation error:', err);
