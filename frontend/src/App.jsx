@@ -16,13 +16,6 @@ import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 
-// Loading skeleton component
-const LoadingSkeleton = () => (
-  <div className="space-y-4 animate-pulse">
-    <div className="h-24 bg-gray-700/50 rounded-lg skeleton"></div>
-  </div>
-);
-
 function AppContent() {
   const { showAdminSettings, toggleAdminSettings, theme } = useSales();
   
