@@ -64,32 +64,30 @@ function AppContent() {
 
       {/* Main Content - padding-top accounts for fixed header */}
       <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '120px' }}>
-        <Suspense fallback={<LoadingSkeleton />}>
-          {/* Step 1: Select Customer */}
-          <section>
-            <CustomerSelector />
-          </section>
+        {/* Step 1: Select Customer */}
+        <section>
+          <CustomerSelector />
+        </section>
 
-          {/* Step 2: Select Inquiry Type */}
-          <section>
-            <InquiryTypeSelector />
-          </section>
+        {/* Step 2: Select Inquiry Type */}
+        <section>
+          <InquiryTypeSelector />
+        </section>
 
-          {/* Step 3: Select Tone */}
-          <section>
-            <ToneSelector />
-          </section>
+        {/* Step 3: Select Tone */}
+        <section>
+          <ToneSelector />
+        </section>
 
-          {/* Step 4: Review Generated Responses */}
-          <section>
-            <ResponseCards />
-          </section>
+        {/* Step 4: Review Generated Responses */}
+        <section>
+          <ResponseCards />
+        </section>
 
-          {/* Tower Talk Button (appears when customer selected) */}
-          <section>
-            <TowerTalkButton />
-          </section>
-        </Suspense>
+        {/* Tower Talk Button (appears when customer selected) */}
+        <section>
+          <TowerTalkButton />
+        </section>
       </main>
 
       {/* Modals */}
