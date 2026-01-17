@@ -168,7 +168,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  }, [initScanner]);
+  }, [initScanner, lookupVin]);
 
   const stopScanning = useCallback(async () => {
     try {
