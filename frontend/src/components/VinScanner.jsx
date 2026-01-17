@@ -214,6 +214,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
       }
 
       setVehicleData(data);
+      addToRecentScans(data);
       setMode('result');
     } catch (err) {
       console.error('[VIN] Exception:', err);
