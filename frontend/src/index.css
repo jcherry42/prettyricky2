@@ -4236,6 +4236,24 @@ html:not(.dark) .input-luxury::placeholder {
   color: hsla(25, 10%, 55%, 1);
 }
 
+/* Editable response textarea */
+.edit-response-textarea {
+  background: hsla(220, 10%, 12%, 0.8);
+  border: 1px solid hsla(40, 50%, 40%, 0.4);
+  color: hsla(220, 20%, 85%, 1);
+  min-height: 120px;
+}
+
+html:not(.dark) .edit-response-textarea {
+  background: hsla(35, 30%, 96%, 0.95);
+  border: 1px solid hsla(30, 25%, 75%, 0.6);
+  color: hsla(20, 25%, 20%, 1);
+}
+
+html:not(.dark) .edit-response-textarea::placeholder {
+  color: hsla(25, 15%, 50%, 1);
+}
+
 /* Light mode button adjustments */
 html:not(.dark) .btn-icon {
   background: hsla(220, 10%, 92%, 0.9);
