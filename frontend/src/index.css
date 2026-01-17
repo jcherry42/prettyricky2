@@ -586,7 +586,10 @@ html:not(.dark) body {
   border-top: 1px solid hsla(40, 30%, 20%, 0.3);
 }
 
-/* Header Button Style */
+/* ============================================
+   HEADER BUTTONS - WORLD-CLASS MICRO-INTERACTIONS
+   ============================================ */
+
 .header-btn {
   display: flex;
   flex-direction: column;
@@ -605,15 +608,38 @@ html:not(.dark) body {
   font-weight: 700;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 
-    0 2px 8px hsla(200, 60%, 20%, 0.3),
-    inset 0 1px 0 hsla(200, 60%, 50%, 0.15);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .header-btn-icon {
   width: 20px;
   height: 20px;
+  transition: transform var(--transition-base);
+}
+
+/* Ripple effect */
+.header-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: hsla(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+}
+
+.header-btn:active::after {
+  width: 200px;
+  height: 200px;
 }
 
 .header-btn:hover {
@@ -621,13 +647,17 @@ html:not(.dark) body {
     hsla(200, 45%, 25%, 0.9) 0%, 
     hsla(200, 55%, 18%, 0.95) 100%
   );
-  box-shadow: 
-    0 0 15px hsla(200, 80%, 50%, 0.2),
-    0 4px 12px hsla(200, 60%, 20%, 0.4);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.header-btn:hover .header-btn-icon {
+  transform: scale(1.1);
 }
 
 .header-btn:active {
   transform: scale(0.96);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Amber variant (CHECK button) */
