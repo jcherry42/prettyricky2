@@ -457,9 +457,9 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus: ["Eject SMS Feature", "Email Parser Import", "Translation of Edited Text Feature", "Full E2E Customer Workflow", "VIN Scanner Recent History", "Language Selector in Settings"]
-  stuck_tasks: []
-  test_all: true
+  current_focus: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings", "Translation of Edited Text Feature"]
+  stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
