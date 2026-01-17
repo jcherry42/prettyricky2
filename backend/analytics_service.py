@@ -98,11 +98,11 @@ class AnalyticsService:
                         {"$count": "count"}
                     ],
                     "with_email": [
-                        {"$match": {"email": {"$exists": True, "$ne": None}, "email": {"$ne": ""}}},
+                        {"$match": {"email": {"$exists": True, "$ne": None, "$ne": ""}}},
                         {"$count": "count"}
                     ],
                     "with_phone": [
-                        {"$match": {"phone": {"$exists": True, "$ne": None}, "phone": {"$ne": ""}}},
+                        {"$match": {"phone": {"$exists": True, "$ne": None, "$ne": ""}}},
                         {"$count": "count"}
                     ],
                     "recent_leads": [
