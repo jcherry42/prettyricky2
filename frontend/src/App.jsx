@@ -1,19 +1,17 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect } from 'react';
 import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
-
-// Lazy load components for better performance
-const CustomerSelector = lazy(() => import('./components/CustomerSelector'));
-const InquiryTypeSelector = lazy(() => import('./components/InquiryTypeSelector'));
-const ToneSelector = lazy(() => import('./components/ToneSelector'));
-const ResponseCards = lazy(() => import('./components/ResponseCards'));
-const TowerTalkButton = lazy(() => import('./components/TowerTalkButton'));
-const TowerTalkModal = lazy(() => import('./components/TowerTalkModal'));
-const SetupModal = lazy(() => import('./components/SetupModal'));
-const ImportModal = lazy(() => import('./components/ImportModal'));
-const AdminSettingsPanel = lazy(() => import('./components/AdminSettingsPanel'));
-const VoiceTranslator = lazy(() => import('./components/VoiceTranslator'));
-const QuickAddButton = lazy(() => import('./components/QuickAddButton'));
+import CustomerSelector from './components/CustomerSelector';
+import InquiryTypeSelector from './components/InquiryTypeSelector';
+import ToneSelector from './components/ToneSelector';
+import ResponseCards from './components/ResponseCards';
+import TowerTalkButton from './components/TowerTalkButton';
+import TowerTalkModal from './components/TowerTalkModal';
+import SetupModal from './components/SetupModal';
+import ImportModal from './components/ImportModal';
+import AdminSettingsPanel from './components/AdminSettingsPanel';
+import VoiceTranslator from './components/VoiceTranslator';
+import QuickAddButton from './components/QuickAddButton';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
