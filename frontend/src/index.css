@@ -3424,6 +3424,17 @@ html:not(.dark) .btn-check-engine-v2:hover {
 
 .input-luxury::placeholder {
   color: hsla(30, 10%, 40%, 1);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.input-luxury:focus::placeholder {
+  opacity: 0.5;
+}
+
+/* Hide placeholder when typing (when input has value) */
+.input-luxury:not(:placeholder-shown)::placeholder {
+  opacity: 0;
 }
 
 /* ============================================
