@@ -4,39 +4,8 @@ import { translateText, SUPPORTED_LANGUAGES, getLanguageByCode } from '../utils/
 import { useSales } from '../context/SalesContext';
 import { FOLLOW_UP_RULES } from '../data/salesData';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
 // Check if browser supports speech synthesis
 const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
-
-// Translation helper
-const translateText = async (text) => {
-  try {
-    console.log('[translateText] Starting translation:', text.substring(0, 50));
-    console.log('[translateText] Backend URL:', BACKEND_URL);
-    
-    const res = await fetch(`${BACKEND_URL}/api/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, source_lang: 'en', target_lang: 'es' }),
-    });
-    
-    console.log('[translateText] Response status:', res.status);
-    
-    if (!res.ok) {
-      console.error('[translateText] Response not OK');
-      throw new Error('Translation failed');
-    }
-    
-    const data = await res.json();
-    console.log('[translateText] Translation result:', data.translated_text);
-    
-    return data.translated_text;
-  } catch (err) {
-    console.error('[translateText] Translation error:', err);
-    return null;
-  }
-};
 
 export const ResponseCards = () => {
   const { 
