@@ -1,0 +1,125 @@
+/**
+ * World-Class Animation System
+ * Physics-based animations with spring curves for natural feel
+ */
+
+/* Spring-based transitions */
+@keyframes spring-in {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Skeleton loading */
+.skeleton {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    90deg,
+    hsla(220, 10%, 20%, 1) 0%,
+    hsla(220, 10%, 25%, 1) 50%,
+    hsla(220, 10%, 20%, 1) 100%
+  );
+  background-size: 1000px 100%;
+  border-radius: 8px;
+}
+
+html:not(.dark) .skeleton {
+  background: linear-gradient(
+    90deg,
+    hsla(220, 10%, 90%, 1) 0%,
+    hsla(220, 10%, 95%, 1) 50%,
+    hsla(220, 10%, 90%, 1) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Micro-interactions */
+.micro-bounce {
+  animation: micro-bounce 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes micro-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Success pulse */
+@keyframes success-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsla(145, 70%, 50%, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsla(145, 70%, 50%, 0);
+  }
+}
+
+.success-pulse {
+  animation: success-pulse 0.6s ease-out;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* GPU acceleration */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Stagger animations for lists */
+.stagger-item {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
