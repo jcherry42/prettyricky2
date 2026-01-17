@@ -1,21 +1,21 @@
 {
-  "timestamp": "2026-01-17T22:08:28.619470",
+  "timestamp": "2026-01-17T22:08:57.299746",
   "backend_url": "https://salesace.preview.emergentagent.com/api",
-  "total_tests": 11,
-  "passed": 10,
+  "total_tests": 10,
+  "passed": 9,
   "failed": 1,
   "failed_tests": [
-    "GET /vin/decode"
+    "POST /vin/save-to-inventory (first save)"
   ],
   "detailed_results": [
     {
       "test": "Health Check",
       "success": true,
       "details": "Status: healthy",
-      "timestamp": "2026-01-17T22:08:26.106032",
+      "timestamp": "2026-01-17T22:08:54.824726",
       "response_data": {
         "status": "healthy",
-        "timestamp": "2026-01-17T22:08:26.102176+00:00",
+        "timestamp": "2026-01-17T22:08:54.821482+00:00",
         "scheduler": {
           "isRunning": true,
           "nextRefresh": "2026-01-19T10:00:00-05:00",
@@ -33,7 +33,7 @@
       "test": "GET /customers",
       "success": true,
       "details": "Retrieved 2 customers",
-      "timestamp": "2026-01-17T22:08:26.118163",
+      "timestamp": "2026-01-17T22:08:54.873890",
       "response_data": {
         "count": 2,
         "sample": [
@@ -71,10 +71,10 @@
     {
       "test": "GET /vehicles",
       "success": true,
-      "details": "Retrieved 3 vehicles",
-      "timestamp": "2026-01-17T22:08:26.129704",
+      "details": "Retrieved 4 vehicles",
+      "timestamp": "2026-01-17T22:08:54.885991",
       "response_data": {
-        "count": 3,
+        "count": 4,
         "sample": [
           {
             "id": "6969025527a911ff10df150d",
@@ -130,21 +130,21 @@
     {
       "test": "POST /tower-talk",
       "success": true,
-      "details": "Generated response (344 chars)",
-      "timestamp": "2026-01-17T22:08:27.476366",
+      "details": "Generated response (352 chars)",
+      "timestamp": "2026-01-17T22:08:56.204534",
       "response_data": {
-        "response_length": 344,
-        "preview": "Hey Alex, I totally get where you\u2019re coming from on the price\u2014these X3s hold value because of their ..."
+        "response_length": 352,
+        "preview": "Hi Alex, I totally get that the price is a big factor\u2014since you mentioned loving the leather interio..."
       }
     },
     {
       "test": "POST /translate",
       "success": true,
       "details": "Translated to Spanish (confidence: 0.95)",
-      "timestamp": "2026-01-17T22:08:28.192121",
+      "timestamp": "2026-01-17T22:08:56.897785",
       "response_data": {
         "original": "Hello, I'm interested in this vehicle. Can you tel...",
-        "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuedes d...",
+        "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuede de...",
         "detected_lang": "en",
         "confidence": 0.95
       }
@@ -153,7 +153,7 @@
       "test": "GET /analytics/dashboard",
       "success": true,
       "details": "Analytics dashboard loaded with 4/4 sections",
-      "timestamp": "2026-01-17T22:08:28.204321",
+      "timestamp": "2026-01-17T22:08:56.913913",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -161,41 +161,33 @@
           "inventory_metrics",
           "conversation_insights"
         ],
-        "generated_at": "2026-01-17T22:08:28.200854+00:00"
+        "generated_at": "2026-01-17T22:08:56.910765+00:00"
       }
     },
     {
       "test": "GET /vin/decode",
-      "success": false,
-      "details": "Missing VIN decode fields. Found: ['vin']",
-      "timestamp": "2026-01-17T22:08:28.519456",
-      "response_data": null
+      "success": true,
+      "details": "VIN decoded successfully with full vehicle data (confidence: 100%)",
+      "timestamp": "2026-01-17T22:08:57.228798",
+      "response_data": {
+        "vin": "7MMVABDY7SN393788",
+        "vehicle": "2025 MAZDA CX-50",
+        "confidence": 100,
+        "checksum_valid": true
+      }
     },
     {
       "test": "POST /vin/save-to-inventory (first save)",
-      "success": true,
-      "details": "VIN saved to inventory successfully",
-      "timestamp": "2026-01-17T22:08:28.553305",
-      "response_data": {
-        "vin": "1HGBH41JXMN109888",
-        "message": "Vehicle saved to inventory"
-      }
-    },
-    {
-      "test": "POST /vin/save-to-inventory (duplicate rejection)",
-      "success": true,
-      "details": "Duplicate VIN correctly rejected",
-      "timestamp": "2026-01-17T22:08:28.563127",
-      "response_data": {
-        "vin": "1HGBH41JXMN109888",
-        "error": "This VIN already exists in inventory. Vehicle: 2023 Honda Civic"
-      }
+      "success": false,
+      "details": "HTTP 409: {\"detail\":\"This VIN already exists in inventory. Vehicle: 2023 Honda Civic\"}",
+      "timestamp": "2026-01-17T22:08:57.239707",
+      "response_data": null
     },
     {
       "test": "GET /customers/stats",
       "success": true,
       "details": "Customer stats loaded with 2/2 expected fields",
-      "timestamp": "2026-01-17T22:08:28.610955",
+      "timestamp": "2026-01-17T22:08:57.288787",
       "response_data": {
         "total": 2,
         "byStatus": {
@@ -207,7 +199,7 @@
       "test": "GET /vehicles/stats",
       "success": true,
       "details": "Vehicle stats loaded successfully",
-      "timestamp": "2026-01-17T22:08:28.619320",
+      "timestamp": "2026-01-17T22:08:57.299579",
       "response_data": {
         "stats_keys": [
           "total",
