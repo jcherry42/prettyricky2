@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import { authService } from '../utils/auth';
+import { X, Shield, Zap } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const LoginModal = ({ onClose, onSuccess }) => {
+  const { login, register } = useAuth();
   const [mode, setMode] = useState('login'); // 'login' or 'register'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,14 +18,19 @@ const LoginModal = ({ onClose, onSuccess }) => {
     setLoading(true);
 
     try {
+      let result;
       if (mode === 'login') {
-        await authService.login(email, password);
+        result = await login(email, password);
       } else {
-        await authService.register(email, password, firstName, lastName);
+        result = await register(email, password, firstName, lastName);
       }
       
-      onSuccess?.();
-      onClose();
+      if (result.success) {
+        onSuccess?.();
+        onClose?.();
+      } else {
+        setError(result.error || 'Authentication failed');
+      }
     } catch (err) {
       setError(err.message || 'Authentication failed');
     } finally {
