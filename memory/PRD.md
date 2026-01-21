@@ -198,6 +198,20 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-22**: Federal-Grade Security & Authentication System
+  - **Full JWT Authentication Integration (Option B)** - User chose full integration over temporary bypass
+  - Login modal with "Federal-Grade Security" badge appears on app load
+  - User registration with email/password, first name, last name
+  - User login with credentials returning JWT token
+  - "Skip for now (limited features)" option for guest access
+  - AuthContext provider wrapping the app
+  - Secure token storage with AES-GCM encryption (secureStorage.js)
+  - Role-based permissions system (sales_rep with customer/vehicle/AI permissions)
+  - Audit logging for all auth events
+  - Backend endpoints: POST /api/auth/register, POST /api/auth/login, GET /api/auth/me
+  - iOS build configuration updated to iOS 15.5 (required for ML Kit barcode scanning)
+  - All 23 backend tests pass, all frontend flows verified
+  - Created comprehensive IOS_BUILD_INSTRUCTIONS.md
 - **2026-01-16**: Comprehensive Review & Luxury Polish
   - Enhanced ambient lighting effects across all UI elements
   - Added stronger gold/amber glow to header accent line with underglow
