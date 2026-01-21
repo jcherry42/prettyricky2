@@ -29,7 +29,7 @@ export const ResponseCards = () => {
   const [translatingEdited, setTranslatingEdited] = useState({});
   const [speakingId, setSpeakingId] = useState(null);
 
-  // Translate responses when supercharged mode is active
+  // FIX: Translate responses when supercharged mode is active
   const translateResponse = useCallback(async (responseId, text, isFollowUp = false) => {
     const key = isFollowUp ? `${responseId}-followup` : responseId;
     
@@ -37,19 +37,22 @@ export const ResponseCards = () => {
       return; // Already translated
     }
     
+    console.log(`[Sport Mode] Translating ${key}:`, text.substring(0, 50));
     setTranslating(prev => ({ ...prev, [key]: true }));
     
     const translated = await translateText(text);
     if (translated) {
+      console.log(`[Sport Mode] ✅ Translated ${key}`);
       setTranslations(prev => ({ ...prev, [key]: translated }));
     }
     
     setTranslating(prev => ({ ...prev, [key]: false }));
-  }, [translations]);
+  }, [translations]); // FIXED: Only depend on translations
 
-  // Auto-translate when supercharged and responses change
+  // FIX: Auto-translate when supercharged and responses change
   useEffect(() => {
     if (supercharged && currentResponses.length > 0) {
+      console.log('[Sport Mode] 🔥 Auto-translating', currentResponses.length, 'responses');
       currentResponses.forEach(response => {
         translateResponse(response.id, response.text);
         if (response.followUpText) {
@@ -62,6 +65,7 @@ export const ResponseCards = () => {
   // Reset translations when supercharged mode is turned off
   useEffect(() => {
     if (!supercharged) {
+      console.log('[Sport Mode] Mode disabled - clearing translations');
       // Use callback to avoid re-render issues
       setTimeout(() => {
         setTranslations({});
