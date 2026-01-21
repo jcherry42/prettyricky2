@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SalesProvider } from './context/SalesContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header } from './components/Header';
 import CustomerSelector from './components/CustomerSelector';
 import InquiryTypeSelector from './components/InquiryTypeSelector';
@@ -12,6 +13,7 @@ import ImportModal from './components/ImportModal';
 import AdminSettingsPanel from './components/AdminSettingsPanel';
 import VoiceTranslator from './components/VoiceTranslator';
 import QuickAddButton from './components/QuickAddButton';
+import LoginModal from './components/LoginModal';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
