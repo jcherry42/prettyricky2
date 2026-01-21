@@ -1,9 +1,9 @@
 """
-Closr API Server
+Closr API Server - FEDERAL-GRADE SECURITY
 Sales automation tool with CRM-agnostic data integration
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -15,6 +15,12 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
+
+# FEDERAL SECURITY IMPORTS
+from security.auth import get_current_user, create_access_token
+from security.rate_limit import RateLimitMiddleware
+from security.audit import AuditLogger
+from security.validation import sanitize_input, validate_vin, validate_email
 
 # LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
