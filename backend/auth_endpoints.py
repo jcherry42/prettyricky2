@@ -58,7 +58,7 @@ def init_auth_router(database: AsyncIOMotorDatabase, audit: AuditLogger):
 @auth_router.post("/register", response_model=TokenResponse)
 async def register(request: RegisterRequest, req: Request):
     """Register new user - FEDERAL SECURITY"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     # Validate email
