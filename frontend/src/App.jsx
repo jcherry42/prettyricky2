@@ -141,9 +141,11 @@ function AppContent() {
 
 function App() {
   return (
-    <SalesProvider>
-      <AppContent />
-    </SalesProvider>
+    <AuthProvider>
+      <SalesProvider>
+        <AppContent />
+      </SalesProvider>
+    </AuthProvider>
   );
 }
 
