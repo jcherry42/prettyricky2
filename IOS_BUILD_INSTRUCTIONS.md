@@ -1,90 +1,104 @@
 # iOS Build Instructions for Supercharg'd
 
-## Prerequisites
+## CRITICAL CHANGES MADE
 
-- **macOS** with Xcode 15+ installed
-- **CocoaPods** installed: `sudo gem install cocoapods`
-- **Node.js 18+** and **npm** installed
-- iPhone/iPad running iOS 15.5 or later (physical device recommended for barcode scanning)
+The following changes have been applied to fix the CocoaPods/Capacitor build issues:
 
-## Build Steps
+1. **Podfile**: Updated to iOS 15.5 (required by GoogleMLKit/BarcodeScanning)
+2. **Xcode Project**: Updated deployment target from 13.0 → 15.5 in project.pbxproj
+3. **Capacitor Config**: Added `minVersion: "15.5"` for iOS
+4. **Build Script**: Created `build_ios.sh` to automate the entire process
 
-### Step 1: Clone the Repository
+## Quick Start (Recommended)
 
-Clone the repo to your Mac if you haven't already:
+On your Mac, run:
 ```bash
-git clone <your-repo-url>
 cd frontend
+chmod +x build_ios.sh
+./build_ios.sh
 ```
 
-### Step 2: Install Dependencies
+This script will:
+1. Install npm dependencies
+2. Build the web app
+3. Sync Capacitor
+4. Clean all build artifacts
+5. Install CocoaPods
+6. Open Xcode
 
+## Manual Build Steps
+
+If the script doesn't work, follow these manual steps:
+
+### Step 1: Install Dependencies
 ```bash
+cd frontend
 npm install
 ```
 
-### Step 3: Build the Web App
-
+### Step 2: Build Web App
 ```bash
 npm run build
 ```
 
-### Step 4: Sync Capacitor
-
+### Step 3: Sync Capacitor
 ```bash
 npx cap sync ios
 ```
 
-### Step 5: Navigate to iOS Directory and Install Pods
-
+### Step 4: NUCLEAR CLEAN (Important!)
 ```bash
 cd ios/App
-pod install
-```
 
-**Note:** If `pod install` fails, try these steps:
-```bash
-# Clean CocoaPods cache
+# Remove all pods and cache
+rm -rf Pods Podfile.lock
 pod cache clean --all
 
-# Remove existing pods and lock file
-rm -rf Pods Podfile.lock
+# Remove Xcode derived data
+rm -rf ~/Library/Developer/Xcode/DerivedData/*supercharg*
+```
 
-# Update CocoaPods repo
+### Step 5: Install Pods
+```bash
 pod repo update
-
-# Install pods fresh
-pod install
+pod install --repo-update
 ```
 
 ### Step 6: Open in Xcode
-
 ```bash
 open App.xcworkspace
 ```
 
-**Important:** Open `App.xcworkspace`, NOT `App.xcodeproj`
+**⚠️ IMPORTANT: Open `App.xcworkspace`, NOT `App.xcodeproj`**
 
-### Step 7: Configure Signing
+## Xcode Configuration
 
-1. In Xcode, select the "App" target
-2. Go to "Signing & Capabilities" tab
-3. Select your Development Team
-4. Ensure "Automatically manage signing" is checked
+### Before Building:
+1. **Select Physical Device**: The barcode scanner requires a real camera
+2. **Device iOS Version**: Must be iOS 15.5 or later
+3. **Signing**: 
+   - Select App target → Signing & Capabilities
+   - Choose your Development Team
+   - Check "Automatically manage signing"
 
-### Step 8: Build and Run
-
-1. Select your connected device or simulator (iOS 15.5+)
-2. Press `Cmd + R` to build and run
+### Build:
+Press `Cmd + R` to build and run
 
 ## Troubleshooting
 
 ### Error: "CocoaPods could not find compatible versions"
 
-This usually means the iOS deployment target is too low. The Podfile has been updated to require iOS 15.5. If you still see this error:
+This is caused by iOS deployment target mismatch. Verify:
 
-1. Ensure your Xcode is updated to version 15+
-2. Clean and rebuild:
+1. **Podfile** has `platform :ios, '15.5'`
+2. **Xcode project** has deployment target 15.5:
+   - Open Xcode
+   - Select "App" project (top of navigator)
+   - Build Settings → iOS Deployment Target → 15.5
+
+### Error: "GoogleMLKit requires deployment target 15.5+"
+
+Run the nuclear clean and reinstall pods:
 ```bash
 cd ios/App
 rm -rf Pods Podfile.lock
@@ -92,47 +106,49 @@ pod cache clean --all
 pod install --repo-update
 ```
 
-### Error: "GoogleMLKit requires deployment target 15.5+"
+### Error: Build fails on Apple Silicon (M1/M2/M3)
 
-The `@capacitor-mlkit/barcode-scanning` plugin requires iOS 15.5+. The Podfile has been configured for this. If Xcode still shows a lower target:
-
-1. Open `App.xcworkspace` in Xcode
-2. Select the "App" project (not target)
-3. Go to "Build Settings"
-4. Search for "iOS Deployment Target"
-5. Set it to 15.5 for all configurations
-
-### Error: "node_modules not found"
-
-You need to run `npm install` in the frontend directory first:
+The Podfile includes a fix for this, but if issues persist:
 ```bash
-cd /path/to/frontend
-npm install
-cd ios/App
-pod install
+# Run Xcode with Rosetta
+arch -x86_64 pod install
 ```
 
-### Barcode Scanner Not Working
+### Want to test without barcode scanner?
 
-Ensure camera permissions are configured:
-1. Check `ios/App/App/Info.plist` has `NSCameraUsageDescription`
-2. On first launch, accept the camera permission prompt
+If you want to confirm the rest of the project builds:
+```bash
+cd ios/App
+cp Podfile Podfile.backup
+cp Podfile.no-scanner Podfile
+rm -rf Pods Podfile.lock
+pod install
+# Build in Xcode
+# Then restore: cp Podfile.backup Podfile
+```
 
-## Required iOS Deployment Target
+## Requirements Summary
 
-| Component | Minimum iOS Version |
-|-----------|---------------------|
-| @capacitor/core v6 | 13.0 |
-| @capacitor-mlkit/barcode-scanning v6 | **15.5** |
-| GoogleMLKit/BarcodeScanning | **15.5** |
+| Component | Required Version |
+|-----------|-----------------|
+| iOS Device | 15.5+ |
+| Xcode | 15+ |
+| CocoaPods | Latest |
+| Node.js | 18+ |
+| @capacitor/ios | 6.x |
+| @capacitor-mlkit/barcode-scanning | 6.2.0 |
 
-**Project is configured for iOS 15.5 to satisfy all requirements.**
+## Files Modified
 
-## Testing Barcode Scanner
+- `/ios/App/Podfile` - iOS 15.5, post_install hooks for deployment target
+- `/ios/App/App.xcodeproj/project.pbxproj` - Deployment target 15.5
+- `/capacitor.config.json` - Added `minVersion: "15.5"` for iOS
+- `/build_ios.sh` - Automated build script
 
-The barcode scanner requires a **physical device** - it will not work in the iOS Simulator (no camera).
+## Support
 
-1. Connect your iPhone (iOS 15.5+)
-2. Build and run on device
-3. Navigate to VIN scanner in the app
-4. Grant camera permission when prompted
+If the build still fails, please share:
+1. The exact error message
+2. Output of `pod --version`
+3. Output of `xcodebuild -version`
+4. Your Mac's chip (Intel or Apple Silicon)
