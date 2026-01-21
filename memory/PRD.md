@@ -276,9 +276,10 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ### P1 - High Priority
 - [ ] **Real CRM Integration**: Remove mock-only mode, enable live data ingestion from user CRMs
-- [ ] **iOS Build "Sandbox deny" Error**: User needs to set "User Script Sandboxing" to "No" in Xcode Build Settings
+- [ ] **Device Testing**: Tower Talk, Voice Translator, VIN Scanner need testing on physical iOS device
 
 ### P2 - Medium Priority  
+- [ ] **Sport Mode Translator Performance**: User reported translator "not up to par" with sport mode engaged
 - [ ] **Voice Translator Safari Issues**: User reported microphone access issues on Safari (fixes applied, pending verification)
 - [ ] **VIN Barcode Scanner Verification**: Needs testing on physical iOS device
 
