@@ -1,8 +1,12 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-# IMPORTANT: @capacitor-mlkit/barcode-scanning v6+ requires iOS 15.5+
+# CRITICAL: @capacitor-mlkit/barcode-scanning v6.2.0 requires iOS 15.5+
+# GoogleMLKit/BarcodeScanning pod requires minimum deployment target of 15.5
 platform :ios, '15.5'
 use_frameworks!
+
+# Inhibit all warnings from Pods
+inhibit_all_warnings!
 
 install! 'cocoapods', :disable_input_output_paths => true
 
@@ -23,10 +27,17 @@ end
 post_install do |installer|
   assertDeploymentTarget(installer)
   
-  # Ensure all pods use the correct iOS deployment target
+  # Force ALL pods to use iOS 15.5 deployment target
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
+      # Fix for M1/M2 Macs - exclude arm64 for simulator builds
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     end
+  end
+  
+  # Also update the Pods project itself
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
   end
 end
