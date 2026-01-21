@@ -119,6 +119,14 @@ function AppContent() {
       <TowerTalkModal />
       {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
+      {/* Login Modal */}
+      {showLogin && !isAuthenticated && (
+        <LoginModal 
+          onClose={() => setShowLogin(false)} 
+          onSuccess={() => setShowLogin(false)} 
+        />
+      )}
+      
       {/* Voice Translator - Right Side Panel */}
       <VoiceTranslator />
       
