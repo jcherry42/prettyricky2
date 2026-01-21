@@ -3559,7 +3559,40 @@ async def cleanup_sold_customers():
 
 app.include_router(api_router)
 
-# SECURE CORS - Whitelist only trusted domains
+# FEDERAL-LEVEL SECURITY MIDDLEWARE
+
+# 1. Rate Limiting (DDoS Protection)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=100, burst_size=150)
+logger.info("✅ Rate limiting enabled: 100 req/min, 150 burst")
+
+# 2. Security Headers
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # HSTS - Force HTTPS
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    # Prevent MIME sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # XSS Protection
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Referrer Policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Content Security Policy
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https://salesace.preview.emergentagent.com"
+    )
+    # Permissions Policy
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
+# 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://salesace.preview.emergentagent.com",
@@ -3575,3 +3608,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+logger.info(f"✅ CORS configured for: {ALLOWED_ORIGINS}")
+logger.info("✅ Security headers enabled")
