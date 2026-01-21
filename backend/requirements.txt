@@ -131,3 +131,5 @@ watchfiles==1.1.1
 websockets==15.0.1
 yarl==1.22.0
 zipp==3.23.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
