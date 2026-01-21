@@ -7,7 +7,8 @@
   },
   "ios": {
     "preferredContentMode": "mobile",
-    "allowsLinkPreview": false
+    "allowsLinkPreview": false,
+    "minVersion": "15.5"
   },
   "android": {
     "allowMixedContent": true
@@ -29,6 +30,9 @@
     },
     "ScreenOrientation": {
       "lockOrientation": "portrait"
+    },
+    "BarcodeScanning": {
+      "cameraPermissionText": "Supercharg'd needs camera access to scan VIN barcodes"
     }
   }
 }
