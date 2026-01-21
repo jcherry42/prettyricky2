@@ -3563,13 +3563,8 @@ async def cleanup_sold_customers():
 # ============== ROUTER & MIDDLEWARE ==============
 
 # Include authentication routes (NO AUTH REQUIRED)
-from auth_endpoints import auth_router, init_auth_router
+from auth_endpoints import auth_router
 app.include_router(auth_router)
-
-# Initialize auth router with database
-@app.on_event("startup")
-async def init_auth():
-    init_auth_router(db, audit_logger)
 
 # Include main API routes
 app.include_router(api_router)
