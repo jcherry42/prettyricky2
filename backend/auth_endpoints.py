@@ -138,7 +138,7 @@ async def register(request: RegisterRequest, req: Request):
 @auth_router.post("/login", response_model=TokenResponse)
 async def login(request: LoginRequest, req: Request):
     """Login user - FEDERAL SECURITY"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=500, detail="Database not initialized")
     
     # Find user
