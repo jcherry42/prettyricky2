@@ -1,10 +1,7 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '15.0'
+platform :ios, '13.0'
 use_frameworks!
-
-# Explicitly specify GoogleMLKit version for barcode scanning
-ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 install! 'cocoapods', :disable_input_output_paths => true
 
@@ -16,9 +13,6 @@ def capacitor_pods
   pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
   pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
-  
-  # Explicitly add GoogleMLKit with correct version
-  pod 'GoogleMLKit/BarcodeScanning', '~> 5.0'
 end
 
 target 'App' do
@@ -26,14 +20,5 @@ target 'App' do
 end
 
 post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      # Force iOS 15.0 for ALL pods
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      # Disable bitcode (not needed for modern iOS)
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
-      # Ensure Swift 5.0+
-      config.build_settings['SWIFT_VERSION'] = '5.0'
-    end
-  end
+  assertDeploymentTarget(installer)
 end
