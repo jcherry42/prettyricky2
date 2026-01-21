@@ -71,7 +71,13 @@ from ab_testing_service import ab_testing_service, Experiment, DEFAULT_EXPERIMEN
 async def lifespan(app: FastAPI):
     """Application lifespan - startup and shutdown"""
     # Startup
-    logger.info("Starting Closr API server...")
+    logger.info("Starting Closr API server - FEDERAL-GRADE SECURITY ENABLED...")
+    
+    # Initialize FEDERAL SECURITY
+    global audit_logger
+    audit_logger = AuditLogger(db)
+    await audit_logger.create_indexes()
+    logger.info("✅ Audit logging initialized")
     
     # Initialize repositories
     await customer_repo.create_indexes()
