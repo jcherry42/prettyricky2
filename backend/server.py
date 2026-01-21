@@ -3547,10 +3547,19 @@ async def cleanup_sold_customers():
 
 app.include_router(api_router)
 
+# SECURE CORS - Whitelist only trusted domains
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://salesace.preview.emergentagent.com",
+    os.environ.get('FRONTEND_URL', '')
+]
+# Filter out empty strings
+ALLOWED_ORIGINS = [origin for origin in ALLOWED_ORIGINS if origin]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,  # FEDERAL-LEVEL: NO WILDCARDS
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
