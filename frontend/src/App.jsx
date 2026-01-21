@@ -20,6 +20,8 @@ import { initializeNative, updateStatusBarTheme, isNative } from './utils/native
 
 function AppContent() {
   const { showAdminSettings, toggleAdminSettings, theme } = useSales();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
   
   // Initialize native capabilities on mount
   useEffect(() => {
@@ -58,6 +60,25 @@ function AppContent() {
       updateStatusBarTheme(theme === 'dark');
     }
   }, [theme]);
+
+  // Show login modal for unauthenticated users (after loading complete)
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setShowLogin(true);
+    }
+  }, [isLoading, isAuthenticated]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-zinc-400">Loading Supercharg'd...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
