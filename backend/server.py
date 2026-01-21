@@ -79,6 +79,11 @@ async def lifespan(app: FastAPI):
     await audit_logger.create_indexes()
     logger.info("✅ Audit logging initialized")
     
+    # Initialize auth router with database
+    from auth_endpoints import init_auth_router
+    init_auth_router(db, audit_logger)
+    logger.info("✅ Auth router initialized")
+    
     # Initialize repositories
     await customer_repo.create_indexes()
     await vehicle_repo.create_indexes()
