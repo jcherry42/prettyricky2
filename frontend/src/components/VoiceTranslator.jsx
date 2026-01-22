@@ -129,7 +129,7 @@ export const VoiceTranslator = () => {
     if (recognitionRef.current) {
       recognitionRef.current.lang = sourceLanguage.speechCode;
     }
-  }, [sourceLang]);
+  }, [sourceLanguage.speechCode]);
 
   // PUSH TO TALK: Toggle listening on button press
   const handlePushToTalk = async () => {
