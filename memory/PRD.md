@@ -198,6 +198,16 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-22**: Fixed 7 Major Issues + iOS Build + Auth Integration
+  - **VIN Scanner Fixed** - Now handles multiple barcode formats (CODE_39, CODE_128, DATA_MATRIX, QR_CODE, PDF_417, AZTEC), extracts VIN from barcode data, validates format
+  - **Push to Talk Fixed** - Increased button size (56px->64px), added touchAction: manipulation, improved CSS touch responsiveness
+  - **Sport Mode Crash Fixed** - Fixed translateText call to properly handle object response with success/translatedText properties
+  - **Quick Add Liquid Glass** - Removed wood grain texture, added backdrop-filter: blur(24px), modern frosted glass aesthetic
+  - **Header Padding Fixed** - Increased paddingTop from 120px to 140px, body content no longer blocked
+  - **Translation Optimized** - Using GPT-4o-mini for fast translations with caching
+  - **iOS Build Fixed** - Podfile updated to iOS 15.5, project.pbxproj deployment targets fixed, comprehensive build script created
+  - **JWT Authentication Integrated** - Login modal, registration, skip option all working
+  - All 17 backend tests pass (100%), all frontend UI flows verified
 - **2026-01-22**: Federal-Grade Security & Authentication System
   - **Full JWT Authentication Integration (Option B)** - User chose full integration over temporary bypass
   - Login modal with "Federal-Grade Security" badge appears on app load
