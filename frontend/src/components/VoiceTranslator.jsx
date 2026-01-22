@@ -266,7 +266,7 @@ export const VoiceTranslator = () => {
         .ptt-button {
           position: fixed;
           right: 16px;
-          bottom: 100px;
+          bottom: 160px;
           z-index: 45;
           width: 52px;
           height: 52px;
