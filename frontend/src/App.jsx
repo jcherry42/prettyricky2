@@ -86,7 +86,7 @@ function AppContent() {
       <Header />
 
       {/* Main Content - padding-top accounts for fixed header */}
-      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '120px' }}>
+      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '140px' }}>
         {/* Step 1: Select Customer */}
         <section>
           <CustomerSelector />
