@@ -342,7 +342,6 @@ async def translate_text(request: TranslateRequest):
         }
         
         target_lang_name = lang_names.get(request.target_lang, request.target_lang)
-        source_lang_name = lang_names.get(request.source_lang, request.source_lang)
         
         # OPTIMIZED: Short system message for speed
         system_message = f"Translate to {target_lang_name}. Output ONLY the translation, nothing else."
