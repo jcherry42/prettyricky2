@@ -378,6 +378,18 @@ async def translate_text(request: TranslateRequest):
         
         logger.info(f"Translation: {translation_time:.2f}s")
         
+        # Cache the translation for future instant retrieval
+        if len(_translation_cache) >= _cache_max_size:
+            # Remove oldest entries (simple LRU approximation)
+            keys_to_remove = list(_translation_cache.keys())[:100]
+            for key in keys_to_remove:
+                del _translation_cache[key]
+        
+        _translation_cache[cache_key] = {
+            'translated': translated.strip(),
+            'detected': detected
+        }
+        
         return TranslateResponse(
             translated_text=translated.strip(),
             detected_lang=detected,
