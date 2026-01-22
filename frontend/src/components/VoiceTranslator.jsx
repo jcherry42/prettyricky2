@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Mic, MicOff, Loader2, Volume2, X } from 'lucide-react';
-import { useSales } from '../context/SalesContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
