@@ -264,21 +264,57 @@ export const VoiceTranslator = () => {
         {isListening && <div className="ptt-pulse" />}
       </button>
 
-      {/* Language Toggle - Small button above main button */}
-      <button
-        onClick={toggleDirection}
-        className="lang-toggle-btn"
-        data-testid="lang-toggle-btn"
-      >
-        <span className={direction === 'es-en' ? 'active' : ''}>🇪🇸</span>
-        <Languages className="w-3 h-3" />
-        <span className={direction === 'en-es' ? 'active' : ''}>🇺🇸</span>
-      </button>
+      {/* Language Selector - Above main button */}
+      <div className="lang-selector-group">
+        {/* Source Language */}
+        <button
+          onClick={() => setShowLangPicker(showLangPicker === 'source' ? null : 'source')}
+          className="lang-pill"
+          data-testid="source-lang-btn"
+        >
+          <span>{sourceLanguage.flag}</span>
+        </button>
+        
+        {/* Swap Button */}
+        <button onClick={swapLanguages} className="lang-swap-btn" data-testid="swap-lang-btn">
+          <Languages className="w-3 h-3" />
+        </button>
+        
+        {/* Target Language */}
+        <button
+          onClick={() => setShowLangPicker(showLangPicker === 'target' ? null : 'target')}
+          className="lang-pill"
+          data-testid="target-lang-btn"
+        >
+          <span>{targetLanguage.flag}</span>
+        </button>
+      </div>
+
+      {/* Language Picker Dropdown */}
+      {showLangPicker && (
+        <div className="lang-picker-dropdown">
+          <div className="lang-picker-header">
+            {showLangPicker === 'source' ? 'Speak in:' : 'Translate to:'}
+          </div>
+          {LANGUAGES.map(lang => (
+            <button
+              key={lang.code}
+              onClick={() => selectLanguage(lang.code, showLangPicker)}
+              className={`lang-picker-option ${
+                (showLangPicker === 'source' ? sourceLang : targetLang) === lang.code ? 'active' : ''
+              }`}
+            >
+              <span>{lang.flag}</span>
+              <span>{lang.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Live transcript while listening */}
       {isListening && sourceText && (
         <div className="live-transcript">
-          <div className="transcript-label">{sourceLabel}</div>
+          <div className="transcript-label">{sourceLanguage.flag} {sourceLanguage.name}</div>
           <div className="transcript-text">{sourceText}</div>
         </div>
       )}
