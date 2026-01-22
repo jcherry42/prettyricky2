@@ -18,11 +18,17 @@ import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import performanceManager from './utils/performanceManager';
+import PerformanceMonitor from './components/PerformanceMonitor';
+
+// Start Performance Manager on app load
+performanceManager.start();
 
 function AppContent() {
   const { showAdminSettings, toggleAdminSettings, theme } = useSales();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [showLogin, setShowLogin] = useState(true);  // Show login by default
+  const [showPerfMonitor, setShowPerfMonitor] = useState(false);
   
   // Initialize native capabilities on mount
   useEffect(() => {
