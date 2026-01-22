@@ -177,8 +177,13 @@ export const VoiceTranslator = () => {
       {/* Push to Start Button - Fixed Position */}
       <button
         onClick={openModal}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          openModal();
+        }}
         className="push-to-start-trigger"
         data-testid="voice-translator-btn"
+        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
       >
         <div className="trigger-inner">
           <div className="trigger-content">
