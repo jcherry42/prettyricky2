@@ -104,10 +104,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Safety features display
 
 ### Voice Translator Enhancement ✅
+- **NEW: MediaRecorder-based audio capture** - Bypasses buggy Web Speech API
+- **NEW: Backend Whisper transcription** - `/api/voice-translate` endpoint
 - Language indicator badge (🇺🇸 → 🇪🇸)
-- Improved positioning
+- Transparent glass button design matching Quick Add
+- Recording timer and visual feedback
+- Auto-stop after 30 seconds
 - Error recovery with retry
-- Better accessibility
 
 ### Customer Selector Enhancement ✅
 - Debounced search (200ms)
