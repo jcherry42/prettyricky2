@@ -156,16 +156,16 @@ class TestCreateCustomerFromLicense:
     
     def test_create_customer_endpoint_exists(self):
         """Test that /api/license/create-customer endpoint exists"""
-        data = {
-            'first_name': 'TEST_John',
-            'last_name': 'TEST_Doe',
-            'address': '123 Test St',
-            'city': 'Test City',
-            'state': 'CA',
-            'zip_code': '90210',
-            'image_url': '/api/uploads/test.png'
+        form_data = {
+            'first_name': (None, 'TEST_John'),
+            'last_name': (None, 'TEST_Doe'),
+            'address': (None, '123 Test St'),
+            'city': (None, 'Test City'),
+            'state': (None, 'CA'),
+            'zip_code': (None, '90210'),
+            'image_url': (None, '/api/uploads/test.png')
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         
         assert response.status_code != 404, "Endpoint /api/license/create-customer not found"
         print(f"✅ Create customer endpoint exists, status: {response.status_code}")
@@ -178,17 +178,17 @@ class TestCreateCustomerFromLicense:
         
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
-        # Create customer with extracted data
-        data = {
-            'first_name': 'TEST_Jane',
-            'last_name': 'TEST_Smith',
-            'address': '456 Oak Ave',
-            'city': 'Los Angeles',
-            'state': 'CA',
-            'zip_code': '90001',
-            'image_url': image_url
+        # Create customer with extracted data - use files dict for multipart form
+        form_data = {
+            'first_name': (None, 'TEST_Jane'),
+            'last_name': (None, 'TEST_Smith'),
+            'address': (None, '456 Oak Ave'),
+            'city': (None, 'Los Angeles'),
+            'state': (None, 'CA'),
+            'zip_code': (None, '90001'),
+            'image_url': (None, image_url)
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         
         assert response.status_code == 200
         result = response.json()
@@ -218,29 +218,29 @@ class TestCreateCustomerFromLicense:
     def test_create_customer_missing_required_fields(self):
         """Test that create customer requires first_name, last_name, image_url"""
         # Missing first_name
-        data = {
-            'last_name': 'TEST_Missing',
-            'image_url': '/api/uploads/test.png'
+        form_data = {
+            'last_name': (None, 'TEST_Missing'),
+            'image_url': (None, '/api/uploads/test.png')
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require first_name"
         print(f"✅ Missing first_name rejected")
         
         # Missing last_name
-        data = {
-            'first_name': 'TEST_Missing',
-            'image_url': '/api/uploads/test.png'
+        form_data = {
+            'first_name': (None, 'TEST_Missing'),
+            'image_url': (None, '/api/uploads/test.png')
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require last_name"
         print(f"✅ Missing last_name rejected")
         
         # Missing image_url
-        data = {
-            'first_name': 'TEST_Missing',
-            'last_name': 'TEST_Missing'
+        form_data = {
+            'first_name': (None, 'TEST_Missing'),
+            'last_name': (None, 'TEST_Missing')
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require image_url"
         print(f"✅ Missing image_url rejected")
     
@@ -251,12 +251,12 @@ class TestCreateCustomerFromLicense:
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
         # Only first_name, last_name, and image_url (no address)
-        data = {
-            'first_name': 'TEST_NoAddress',
-            'last_name': 'TEST_Customer',
-            'image_url': image_url
+        form_data = {
+            'first_name': (None, 'TEST_NoAddress'),
+            'last_name': (None, 'TEST_Customer'),
+            'image_url': (None, image_url)
         }
-        response = requests.post(f"{BASE_URL}/api/license/create-customer", data=data)
+        response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         
         assert response.status_code == 200
         result = response.json()
@@ -321,11 +321,11 @@ class TestLicenseAttach:
         upload_response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
-        attach_data = {
-            'customer_id': 'nonexistent-customer-id-12345',
-            'image_url': image_url
+        attach_form = {
+            'customer_id': (None, 'nonexistent-customer-id-12345'),
+            'image_url': (None, image_url)
         }
-        attach_response = requests.post(f"{BASE_URL}/api/license/attach", data=attach_data)
+        attach_response = requests.post(f"{BASE_URL}/api/license/attach", files=attach_form)
         
         assert attach_response.status_code == 404
         print(f"✅ Invalid customer ID rejected with 404")
@@ -361,18 +361,20 @@ class TestLicenseUploadSimple:
         upload_response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
-        create_data = {
-            'first_name': 'TEST_SimpleUpload',
-            'last_name': 'TEST_Customer',
-            'image_url': image_url
+        create_form = {
+            'first_name': (None, 'TEST_SimpleUpload'),
+            'last_name': (None, 'TEST_Customer'),
+            'image_url': (None, image_url)
         }
-        create_response = requests.post(f"{BASE_URL}/api/license/create-customer", data=create_data)
+        create_response = requests.post(f"{BASE_URL}/api/license/create-customer", files=create_form)
         customer_id = create_response.json().get('customer', {}).get('id')
         
-        # Upload with customer_id
-        files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        data = {'customer_id': customer_id}
-        response = requests.post(f"{BASE_URL}/api/license/upload", files=files, data=data)
+        # Upload with customer_id - combine file and form data
+        files = {
+            'image': ('test_license.png', test_image_bytes, 'image/png'),
+            'customer_id': (None, customer_id)
+        }
+        response = requests.post(f"{BASE_URL}/api/license/upload", files=files)
         
         assert response.status_code == 200
         result = response.json()
