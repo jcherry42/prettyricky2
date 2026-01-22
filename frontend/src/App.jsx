@@ -155,6 +155,13 @@ function AppContent() {
       {/* Quick Add Customer - Floating Bluetooth Button */}
       <QuickAddButton />
       
+      {/* Performance Monitor - Dev Mode or triple-tap to show */}
+      <PerformanceMonitor 
+        visible={showPerfMonitor || process.env.NODE_ENV === 'development'} 
+        position="bottom-left"
+        compact={true}
+      />
+      
       {/* Toast notifications */}
       <Toaster position="top-center" />
     </div>
