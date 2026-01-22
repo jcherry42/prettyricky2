@@ -366,6 +366,63 @@ Reply STOP to unsubscribe.""",
                 error=error_msg
             )
     
+    async def send_sms(
+        self,
+        to_number: str,
+        message: str,
+        media_urls: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Send a direct SMS/MMS message.
+        
+        Args:
+            to_number: Recipient phone number
+            message: SMS message body
+            media_urls: Optional list of media URLs for MMS
+        
+        Returns:
+            Dict with success status and details
+        """
+        # Check if configured
+        if not self._config or not self._config.is_configured or not self._twilio_client:
+            return {
+                "success": False,
+                "error": "Twilio not configured. Please configure SMS settings first."
+            }
+        
+        try:
+            # Build message params
+            msg_params = {
+                "body": message,
+                "from_": self._config.from_number,
+                "to": to_number
+            }
+            
+            # Add media URLs for MMS if provided
+            if media_urls:
+                msg_params["media_url"] = media_urls
+                logger.info(f"Sending MMS with {len(media_urls)} media attachment(s)")
+            
+            # Send via Twilio
+            twilio_message = self._twilio_client.messages.create(**msg_params)
+            
+            logger.info(f"SMS/MMS sent successfully: {twilio_message.sid}")
+            
+            return {
+                "success": True,
+                "message_sid": twilio_message.sid,
+                "to": to_number,
+                "has_media": bool(media_urls)
+            }
+            
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Failed to send SMS/MMS: {error_msg}")
+            return {
+                "success": False,
+                "error": error_msg
+            }
+    
     async def send_hot_lead_alert(
         self,
         salesperson_phone: str,
