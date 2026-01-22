@@ -1,36 +1,37 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Mic, MicOff, Loader2, Volume2, X, Globe, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { Mic, Square, Loader2, Volume2, X, Globe, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Language config
 const LANG_CONFIG = {
-  en: { name: 'English', flag: '🇺🇸', speech: 'en-US' },
-  es: { name: 'Spanish', flag: '🇪🇸', speech: 'es-ES' },
-  fr: { name: 'French', flag: '🇫🇷', speech: 'fr-FR' },
-  ja: { name: 'Japanese', flag: '🇯🇵', speech: 'ja-JP' },
-  ko: { name: 'Korean', flag: '🇰🇷', speech: 'ko-KR' },
+  en: { name: 'English', flag: '🇺🇸', code: 'en' },
+  es: { name: 'Spanish', flag: '🇪🇸', code: 'es' },
+  fr: { name: 'French', flag: '🇫🇷', code: 'fr' },
+  ja: { name: 'Japanese', flag: '🇯🇵', code: 'ja' },
+  ko: { name: 'Korean', flag: '🇰🇷', code: 'ko' },
 };
 
 /**
  * Push-to-Talk Voice Translator
- * Transparent glass design matching Quick Add button
- * Fixed speech recognition for iOS/Safari
+ * Uses MediaRecorder for audio capture (reliable on iOS)
+ * Backend Whisper for transcription (bypasses buggy Web Speech API)
  */
 export const VoiceTranslator = () => {
-  const [isListening, setIsListening] = useState(false);
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [translation, setTranslation] = useState('');
   const [error, setError] = useState('');
   const [showResult, setShowResult] = useState(false);
-  const [debugInfo, setDebugInfo] = useState('');
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   
-  const recognitionRef = useRef(null);
-  const finalTranscriptRef = useRef('');
-  const isActiveRef = useRef(false);
-  const timeoutRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
+  const timerRef = useRef(null);
 
   // Get target language from localStorage
   const targetLang = localStorage.getItem('defaultTargetLanguage') || 'es';
@@ -39,239 +40,238 @@ export const VoiceTranslator = () => {
   const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.en;
   const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
 
-  // Check speech recognition support
-  const getSpeechRecognition = () => {
-    if (typeof window === 'undefined') return null;
-    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
-  };
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      stopListening();
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      stopRecording();
     };
   }, []);
 
-  // Stop listening helper
-  const stopListening = useCallback(() => {
-    isActiveRef.current = false;
-    if (recognitionRef.current) {
+  // Stop recording and cleanup
+  const stopRecording = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
-        recognitionRef.current.stop();
+        mediaRecorderRef.current.stop();
       } catch (e) {
-        console.log('[PTT] Stop error (ignored):', e.message);
+        console.log('[PTT] Stop error:', e);
       }
     }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
-    setIsListening(false);
+    
+    setIsRecording(false);
+    setRecordingTime(0);
   }, []);
 
-  // Translate the captured text
-  const doTranslate = useCallback(async (text) => {
-    if (!text.trim()) {
-      setError('No speech detected. Tap and speak clearly.');
-      setShowResult(true);
-      return;
-    }
-    
-    setIsTranslating(true);
+  // Process audio and send to backend
+  const processAudio = useCallback(async (audioBlob) => {
+    setIsProcessing(true);
     setError('');
-    setDebugInfo(`Translating: "${text.substring(0, 30)}..."`);
     
     try {
-      const res = await fetch(`${BACKEND_URL}/api/translate`, {
+      console.log('[PTT] Processing audio:', audioBlob.size, 'bytes, type:', audioBlob.type);
+      
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      formData.append('source_lang', sourceLang);
+      formData.append('target_lang', targetLang);
+      
+      const response = await fetch(`${BACKEND_URL}/api/voice-translate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: text.trim(),
-          source_lang: sourceLang,
-          target_lang: targetLang
-        })
+        body: formData
       });
       
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Translation failed');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || 'Server error');
       }
       
-      const data = await res.json();
-      setTranslation(data.translated_text || '');
+      const data = await response.json();
+      console.log('[PTT] Response:', data);
+      
+      if (!data.success) {
+        setError(data.error || 'Translation failed');
+        setShowResult(true);
+        return;
+      }
+      
+      setTranscript(data.transcript);
+      setTranslation(data.translated_text);
       setShowResult(true);
-      setDebugInfo('Translation complete');
+      
     } catch (err) {
-      console.error('[PTT] Translation error:', err);
-      setError(`Translation failed: ${err.message}`);
+      console.error('[PTT] Process error:', err);
+      setError(err.message || 'Failed to process audio');
       setShowResult(true);
     } finally {
-      setIsTranslating(false);
+      setIsProcessing(false);
     }
   }, [sourceLang, targetLang]);
 
-  // Start listening
-  const startListening = useCallback(async () => {
-    const SpeechRecognition = getSpeechRecognition();
-    
-    if (!SpeechRecognition) {
-      setError('Speech recognition not supported. Use Chrome or Safari.');
-      setShowResult(true);
-      return;
-    }
-
-    // Reset state
+  // Start recording
+  const startRecording = useCallback(async () => {
     setTranscript('');
     setTranslation('');
     setError('');
     setShowResult(false);
-    finalTranscriptRef.current = '';
-    setDebugInfo('Requesting microphone...');
-
-    // Request microphone permission first (iOS requires this)
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Keep stream active briefly to ensure permission is granted
-      setTimeout(() => {
-        stream.getTracks().forEach(track => track.stop());
-      }, 100);
-      setDebugInfo('Microphone access granted');
-    } catch (e) {
-      console.error('[PTT] Microphone error:', e);
-      setError('Microphone access denied. Please allow microphone access in Settings.');
-      setShowResult(true);
-      return;
-    }
-
-    // Create new recognition instance
-    const recognition = new SpeechRecognition();
-    recognition.lang = sourceConfig.speech;
-    recognition.continuous = false; // iOS works better with continuous=false
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      console.log('[PTT] Recognition started');
-      setDebugInfo(`Listening in ${sourceConfig.name}...`);
-      isActiveRef.current = true;
-      setIsListening(true);
-    };
-
-    recognition.onresult = (event) => {
-      let interim = '';
-      let final = '';
-      
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          final += result[0].transcript;
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-      
-      if (final) {
-        finalTranscriptRef.current += ' ' + final;
-        setDebugInfo(`Final: "${final}"`);
-      }
-      
-      const displayText = (finalTranscriptRef.current + ' ' + interim).trim();
-      setTranscript(displayText);
-      console.log('[PTT] Result:', { final, interim, display: displayText });
-    };
-
-    recognition.onerror = (event) => {
-      console.error('[PTT] Recognition error:', event.error);
-      setDebugInfo(`Error: ${event.error}`);
-      
-      if (event.error === 'no-speech') {
-        // Don't show error for no-speech, just let them try again
-        setError('No speech heard. Tap to try again.');
-      } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        setError('Microphone access denied. Enable in Settings > Safari > Microphone.');
-      } else if (event.error === 'network') {
-        setError('Network error. Check your internet connection.');
-      } else if (event.error !== 'aborted') {
-        setError(`Recognition error: ${event.error}`);
-      }
-      
-      stopListening();
-      if (event.error !== 'aborted') {
-        setShowResult(true);
-      }
-    };
-
-    recognition.onend = () => {
-      console.log('[PTT] Recognition ended, transcript:', finalTranscriptRef.current);
-      setDebugInfo('Recognition ended');
-      
-      // If we have captured speech, translate it
-      const captured = finalTranscriptRef.current.trim();
-      if (captured && isActiveRef.current) {
-        doTranslate(captured);
-      }
-      
-      stopListening();
-    };
-
-    // Store reference and start
-    recognitionRef.current = recognition;
+    audioChunksRef.current = [];
     
     try {
-      recognition.start();
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 44100
+        } 
+      });
       
-      // Auto-stop after 10 seconds (iOS doesn't support long continuous listening)
-      timeoutRef.current = setTimeout(() => {
-        if (isActiveRef.current) {
-          console.log('[PTT] Auto-stopping after timeout');
-          setDebugInfo('Auto-stopping...');
-          stopListening();
+      streamRef.current = stream;
+      setPermissionDenied(false);
+      
+      // Determine best mime type for this browser
+      const mimeTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/ogg;codecs=opus',
+        'audio/wav'
+      ];
+      
+      let selectedMimeType = '';
+      for (const mimeType of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mimeType)) {
+          selectedMimeType = mimeType;
+          break;
         }
-      }, 10000);
+      }
       
-    } catch (e) {
-      console.error('[PTT] Start error:', e);
-      setError('Could not start speech recognition. Please try again.');
+      console.log('[PTT] Using mime type:', selectedMimeType || 'default');
+      
+      const mediaRecorder = new MediaRecorder(stream, 
+        selectedMimeType ? { mimeType: selectedMimeType } : undefined
+      );
+      
+      mediaRecorderRef.current = mediaRecorder;
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+          console.log('[PTT] Chunk received:', event.data.size, 'bytes');
+        }
+      };
+      
+      mediaRecorder.onstop = () => {
+        console.log('[PTT] Recording stopped, chunks:', audioChunksRef.current.length);
+        
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { 
+            type: selectedMimeType || 'audio/webm' 
+          });
+          console.log('[PTT] Audio blob created:', audioBlob.size, 'bytes');
+          
+          if (audioBlob.size > 1000) { // At least 1KB of audio
+            processAudio(audioBlob);
+          } else {
+            setError('Recording too short. Please speak for at least 1 second.');
+            setShowResult(true);
+          }
+        } else {
+          setError('No audio recorded. Please try again.');
+          setShowResult(true);
+        }
+        
+        audioChunksRef.current = [];
+      };
+      
+      mediaRecorder.onerror = (event) => {
+        console.error('[PTT] MediaRecorder error:', event.error);
+        setError('Recording failed. Please try again.');
+        stopRecording();
+        setShowResult(true);
+      };
+      
+      // Start recording with 500ms chunks
+      mediaRecorder.start(500);
+      setIsRecording(true);
+      
+      // Start timer
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => {
+          // Auto-stop after 30 seconds
+          if (prev >= 30) {
+            stopRecording();
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+      
+      console.log('[PTT] Recording started');
+      
+    } catch (err) {
+      console.error('[PTT] Start recording error:', err);
+      
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setPermissionDenied(true);
+        setError('Microphone access denied. Please enable in Settings > Safari > Microphone.');
+      } else {
+        setError(`Could not start recording: ${err.message}`);
+      }
       setShowResult(true);
-      stopListening();
     }
-  }, [sourceConfig, doTranslate, stopListening]);
+  }, [processAudio, stopRecording]);
 
   // Handle button press
-  const handlePress = () => {
-    if (isListening) {
-      // Stop and translate what we have
-      const captured = finalTranscriptRef.current.trim() || transcript.trim();
-      stopListening();
-      if (captured) {
-        doTranslate(captured);
-      } else {
-        setError('No speech detected. Tap and speak clearly.');
-        setShowResult(true);
-      }
-    } else if (!isTranslating) {
-      startListening();
+  const handlePress = useCallback(() => {
+    if (isProcessing) return;
+    
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
-  };
+  }, [isRecording, isProcessing, startRecording, stopRecording]);
 
   // Speak the translation
-  const speakResult = () => {
+  const speakResult = useCallback(() => {
     if (!translation || !('speechSynthesis' in window)) return;
+    
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(translation);
-    utterance.lang = targetConfig.speech;
+    
+    // Map to speech synthesis language
+    const speechLangMap = {
+      en: 'en-US', es: 'es-ES', fr: 'fr-FR', ja: 'ja-JP', ko: 'ko-KR'
+    };
+    utterance.lang = speechLangMap[targetLang] || 'en-US';
     utterance.rate = 0.9;
+    
     window.speechSynthesis.speak(utterance);
-  };
+  }, [translation, targetLang]);
 
   // Close result modal
-  const closeResult = () => {
+  const closeResult = useCallback(() => {
     setShowResult(false);
     setTranscript('');
     setTranslation('');
     setError('');
-    setDebugInfo('');
+  }, []);
+
+  // Format recording time
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -283,36 +283,40 @@ export const VoiceTranslator = () => {
         <span className="ptt-lang-flag">{targetConfig.flag}</span>
       </div>
 
-      {/* Push-to-Talk Button - Transparent Glass Design */}
+      {/* Push-to-Talk Button */}
       <button
         onClick={handlePress}
-        disabled={isTranslating}
-        className={`ptt-glass-btn ${isListening ? 'listening' : ''} ${isTranslating ? 'translating' : ''}`}
+        disabled={isProcessing}
+        className={`ptt-glass-btn ${isRecording ? 'recording' : ''} ${isProcessing ? 'processing' : ''}`}
         data-testid="push-to-talk-btn"
-        aria-label={isListening ? 'Stop recording' : 'Start voice translation'}
+        aria-label={isRecording ? 'Stop recording' : 'Start voice translation'}
       >
         <div className="ptt-glass-inner">
-          {isTranslating ? (
+          {isProcessing ? (
             <Loader2 className="ptt-icon animate-spin" />
-          ) : isListening ? (
-            <MicOff className="ptt-icon" />
+          ) : isRecording ? (
+            <Square className="ptt-icon ptt-stop" />
           ) : (
             <Mic className="ptt-icon" />
           )}
         </div>
-        {isListening && <span className="ptt-glass-pulse" />}
+        {isRecording && <span className="ptt-glass-pulse" />}
       </button>
 
-      {/* Live Transcript Indicator */}
-      {isListening && (
-        <div className="ptt-live-transcript">
-          <div className="ptt-live-header">
-            <span className="ptt-live-dot" />
-            <span>{sourceConfig.flag} Listening...</span>
-          </div>
-          {transcript && (
-            <p className="ptt-live-text">{transcript}</p>
-          )}
+      {/* Recording Indicator */}
+      {isRecording && (
+        <div className="ptt-recording-indicator">
+          <div className="ptt-rec-dot" />
+          <span className="ptt-rec-text">{sourceConfig.flag} Recording... {formatTime(recordingTime)}</span>
+          <span className="ptt-rec-hint">Tap to stop</span>
+        </div>
+      )}
+
+      {/* Processing Indicator */}
+      {isProcessing && (
+        <div className="ptt-processing-indicator">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Transcribing & Translating...</span>
         </div>
       )}
 
@@ -335,10 +339,16 @@ export const VoiceTranslator = () => {
                 <div className="ptt-error-box">
                   <AlertCircle className="w-5 h-5" />
                   <p>{error}</p>
-                  <button onClick={() => { closeResult(); startListening(); }} className="ptt-retry-btn">
-                    <RefreshCw className="w-4 h-4" />
-                    Try Again
-                  </button>
+                  {permissionDenied ? (
+                    <p className="ptt-permission-hint">
+                      On iPhone: Go to Settings → Safari → Microphone → Allow
+                    </p>
+                  ) : (
+                    <button onClick={() => { closeResult(); startRecording(); }} className="ptt-retry-btn">
+                      <RefreshCw className="w-4 h-4" />
+                      Try Again
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
@@ -374,7 +384,6 @@ export const VoiceTranslator = () => {
       <style>{`
         /* ==========================================
            PTT GLASS BUTTON - Transparent Effect
-           Matching Quick Add Bluetooth Style
            ========================================== */
         
         .ptt-lang-badge {
@@ -470,11 +479,17 @@ export const VoiceTranslator = () => {
           height: 24px;
           color: rgba(167, 139, 250, 0.9);
           filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.5));
-          transition: color 0.2s;
+          transition: all 0.2s;
         }
 
-        /* Listening State */
-        .ptt-glass-btn.listening {
+        .ptt-icon.ptt-stop {
+          width: 20px;
+          height: 20px;
+          fill: currentColor;
+        }
+
+        /* Recording State */
+        .ptt-glass-btn.recording {
           background: linear-gradient(145deg, 
             rgba(239, 68, 68, 0.2) 0%, 
             rgba(220, 38, 38, 0.3) 100%
@@ -487,7 +502,7 @@ export const VoiceTranslator = () => {
           animation: ptt-glow 1.5s ease-in-out infinite;
         }
 
-        .ptt-glass-btn.listening .ptt-icon {
+        .ptt-glass-btn.recording .ptt-icon {
           color: #ef4444;
           filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
         }
@@ -497,8 +512,8 @@ export const VoiceTranslator = () => {
           50% { box-shadow: 0 4px 35px rgba(239, 68, 68, 0.6), 0 0 50px rgba(239, 68, 68, 0.3); }
         }
 
-        /* Translating State */
-        .ptt-glass-btn.translating {
+        /* Processing State */
+        .ptt-glass-btn.processing {
           background: linear-gradient(145deg, 
             rgba(34, 211, 238, 0.15) 0%, 
             rgba(6, 182, 212, 0.25) 100%
@@ -506,7 +521,7 @@ export const VoiceTranslator = () => {
           border-color: rgba(34, 211, 238, 0.5);
         }
 
-        .ptt-glass-btn.translating .ptt-icon {
+        .ptt-glass-btn.processing .ptt-icon {
           color: #22d3ee;
         }
 
@@ -525,8 +540,8 @@ export const VoiceTranslator = () => {
           100% { transform: scale(1.4); opacity: 0; }
         }
 
-        /* Live Transcript Box */
-        .ptt-live-transcript {
+        /* Recording Indicator */
+        .ptt-recording-indicator {
           position: fixed;
           bottom: 220px;
           left: 16px;
@@ -543,6 +558,9 @@ export const VoiceTranslator = () => {
           z-index: 48;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
           animation: ptt-slide-in 0.2s ease;
+          display: flex;
+          align-items: center;
+          gap: 10px;
         }
 
         @keyframes ptt-slide-in {
@@ -550,22 +568,13 @@ export const VoiceTranslator = () => {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .ptt-live-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 12px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.7);
-          margin-bottom: 8px;
-        }
-
-        .ptt-live-dot {
-          width: 8px;
-          height: 8px;
+        .ptt-rec-dot {
+          width: 10px;
+          height: 10px;
           background: #ef4444;
           border-radius: 50%;
           animation: ptt-dot-pulse 1s ease-in-out infinite;
+          flex-shrink: 0;
         }
 
         @keyframes ptt-dot-pulse {
@@ -573,11 +582,41 @@ export const VoiceTranslator = () => {
           50% { opacity: 0.5; transform: scale(0.8); }
         }
 
-        .ptt-live-text {
-          margin: 0;
-          font-size: 15px;
+        .ptt-rec-text {
+          flex: 1;
+          font-size: 14px;
+          font-weight: 600;
           color: #fff;
-          line-height: 1.5;
+        }
+
+        .ptt-rec-hint {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Processing Indicator */
+        .ptt-processing-indicator {
+          position: fixed;
+          bottom: 220px;
+          left: 16px;
+          right: 84px;
+          padding: 14px 16px;
+          background: linear-gradient(180deg, 
+            rgba(15, 20, 30, 0.92) 0%, 
+            rgba(10, 15, 22, 0.95) 100%
+          );
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(34, 211, 238, 0.3);
+          border-radius: 16px;
+          z-index: 48;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #22d3ee;
+          font-size: 14px;
+          font-weight: 500;
         }
 
         /* Modal Overlay */
@@ -700,6 +739,15 @@ export const VoiceTranslator = () => {
           font-size: 14px;
           color: #fca5a5;
           line-height: 1.5;
+        }
+
+        .ptt-permission-hint {
+          font-size: 12px !important;
+          color: rgba(255, 255, 255, 0.6) !important;
+          background: rgba(0, 0, 0, 0.2);
+          padding: 10px;
+          border-radius: 8px;
+          margin-top: 8px;
         }
 
         .ptt-retry-btn {
