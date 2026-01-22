@@ -1,13 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, User, Phone, Mail, MapPin, Tag, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { X, User, Phone, Mail, Tag, MessageSquare, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import haptics from '../utils/haptics';
+import { announceToScreenReader, createFocusTrap } from '../utils/accessibility';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+/**
+ * Enterprise-Grade Quick Add Customer Button
+ * Features:
+ * - Haptic feedback
+ * - Form validation with error messages
+ * - Accessibility support
+ * - Liquid glass modal design
+ * - Loading and success states
+ */
 export const QuickAddButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -16,15 +28,97 @@ export const QuickAddButton = () => {
     lead_source: 'walk_in',
     notes: ''
   });
+  
+  const modalRef = useRef(null);
+  const firstInputRef = useRef(null);
+
+  // Focus trap and cleanup
+  useEffect(() => {
+    if (isOpen) {
+      const cleanup = createFocusTrap(modalRef);
+      document.body.style.overflow = 'hidden';
+      
+      // Focus first input
+      setTimeout(() => firstInputRef.current?.focus(), 100);
+      
+      return () => {
+        cleanup();
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen && !saving) {
+        handleClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, saving]);
+
+  const handleOpen = () => {
+    haptics.button();
+    setIsOpen(true);
+    announceToScreenReader('Quick add customer form opened');
+  };
+
+  const handleClose = () => {
+    if (saving) return;
+    haptics.tap();
+    setIsOpen(false);
+    setSaved(false);
+    setErrors({});
+    setFormData({
+      first_name: '',
+      last_name: '',
+      phone: '',
+      email: '',
+      lead_source: 'walk_in',
+      notes: ''
+    });
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: null }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
+    }
+    
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format';
+    }
+    
+    if (formData.phone && !/^[\d\s\-\(\)\+]+$/.test(formData.phone)) {
+      newErrors.phone = 'Invalid phone format';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    if (!formData.first_name.trim()) return;
+    if (!validateForm()) {
+      haptics.error();
+      announceToScreenReader('Please fix the form errors');
+      return;
+    }
     
     setSaving(true);
+    haptics.button();
+    
     try {
       const res = await fetch(`${BACKEND_URL}/api/customers/create`, {
         method: 'POST',
@@ -36,22 +130,21 @@ export const QuickAddButton = () => {
       });
       
       if (res.ok) {
+        haptics.success();
         setSaved(true);
+        announceToScreenReader('Customer added successfully');
+        
         setTimeout(() => {
-          setIsOpen(false);
-          setSaved(false);
-          setFormData({
-            first_name: '',
-            last_name: '',
-            phone: '',
-            email: '',
-            lead_source: 'walk_in',
-            notes: ''
-          });
+          handleClose();
         }, 1500);
+      } else {
+        throw new Error('Failed to save');
       }
     } catch (e) {
       console.error('Failed to save customer:', e);
+      haptics.error();
+      setErrors({ submit: 'Failed to save customer. Please try again.' });
+      announceToScreenReader('Failed to save customer');
     } finally {
       setSaving(false);
     }
@@ -62,12 +155,13 @@ export const QuickAddButton = () => {
       {/* Floating Bluetooth-style Button */}
       <button 
         className="quick-add-fab"
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         data-testid="quick-add-btn"
         title="Quick Add Customer"
+        aria-label="Quick add new customer"
       >
         {/* Bluetooth Emblem SVG */}
-        <svg viewBox="0 0 24 24" className="bluetooth-icon">
+        <svg viewBox="0 0 24 24" className="bluetooth-icon" aria-hidden="true">
           <defs>
             <linearGradient id="btGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#00D4FF" />
@@ -93,44 +187,77 @@ export const QuickAddButton = () => {
           {/* Center connection point */}
           <circle cx="12" cy="12" r="1.5" fill="#fff" opacity="0.9"/>
         </svg>
-        <span className="fab-pulse"></span>
+        <span className="fab-pulse" aria-hidden="true"></span>
       </button>
 
       {/* Quick Add Modal */}
       {isOpen && createPortal(
-        <div className="quick-add-overlay" onClick={() => setIsOpen(false)}>
-          <div className="quick-add-modal" onClick={e => e.stopPropagation()}>
+        <div 
+          className="quick-add-overlay" 
+          onClick={handleClose}
+          role="presentation"
+        >
+          <div 
+            ref={modalRef}
+            className="quick-add-modal" 
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quick-add-title"
+          >
             <div className="quick-add-header">
               <div className="qa-icon">
                 <User className="w-5 h-5" />
               </div>
-              <h3>Quick Add Customer</h3>
-              <button onClick={() => setIsOpen(false)} className="qa-close">
+              <h3 id="quick-add-title">Quick Add Customer</h3>
+              <button 
+                onClick={handleClose} 
+                className="qa-close"
+                disabled={saving}
+                aria-label="Close"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {saved ? (
-              <div className="quick-add-success">
+              <div className="quick-add-success" role="alert">
                 <CheckCircle2 className="w-12 h-12" />
                 <span>Customer Added!</span>
               </div>
             ) : (
               <div className="quick-add-form">
+                {errors.submit && (
+                  <div className="qa-error-banner" role="alert">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.submit}
+                  </div>
+                )}
+
                 <div className="qa-row">
                   <div className="qa-field">
-                    <label><User className="w-3 h-3" /> First Name *</label>
+                    <label htmlFor="qa-first-name">
+                      <User className="w-3 h-3" /> First Name *
+                    </label>
                     <input 
+                      ref={firstInputRef}
+                      id="qa-first-name"
                       type="text"
                       placeholder="John"
                       value={formData.first_name}
                       onChange={e => handleChange('first_name', e.target.value)}
-                      autoFocus
+                      className={errors.first_name ? 'error' : ''}
+                      aria-invalid={!!errors.first_name}
+                      aria-describedby={errors.first_name ? 'fn-error' : undefined}
                     />
+                    {errors.first_name && (
+                      <span id="fn-error" className="qa-error">{errors.first_name}</span>
+                    )}
                   </div>
                   <div className="qa-field">
-                    <label>Last Name</label>
+                    <label htmlFor="qa-last-name">Last Name</label>
                     <input 
+                      id="qa-last-name"
                       type="text"
                       placeholder="Smith"
                       value={formData.last_name}
@@ -140,28 +267,49 @@ export const QuickAddButton = () => {
                 </div>
 
                 <div className="qa-field">
-                  <label><Phone className="w-3 h-3" /> Phone</label>
+                  <label htmlFor="qa-phone">
+                    <Phone className="w-3 h-3" /> Phone
+                  </label>
                   <input 
+                    id="qa-phone"
                     type="tel"
                     placeholder="555-123-4567"
                     value={formData.phone}
                     onChange={e => handleChange('phone', e.target.value)}
+                    className={errors.phone ? 'error' : ''}
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? 'phone-error' : undefined}
                   />
+                  {errors.phone && (
+                    <span id="phone-error" className="qa-error">{errors.phone}</span>
+                  )}
                 </div>
 
                 <div className="qa-field">
-                  <label><Mail className="w-3 h-3" /> Email</label>
+                  <label htmlFor="qa-email">
+                    <Mail className="w-3 h-3" /> Email
+                  </label>
                   <input 
+                    id="qa-email"
                     type="email"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={e => handleChange('email', e.target.value)}
+                    className={errors.email ? 'error' : ''}
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
                   />
+                  {errors.email && (
+                    <span id="email-error" className="qa-error">{errors.email}</span>
+                  )}
                 </div>
 
                 <div className="qa-field">
-                  <label><Tag className="w-3 h-3" /> Lead Source</label>
+                  <label htmlFor="qa-source">
+                    <Tag className="w-3 h-3" /> Lead Source
+                  </label>
                   <select 
+                    id="qa-source"
                     value={formData.lead_source}
                     onChange={e => handleChange('lead_source', e.target.value)}
                   >
@@ -175,8 +323,11 @@ export const QuickAddButton = () => {
                 </div>
 
                 <div className="qa-field">
-                  <label><MessageSquare className="w-3 h-3" /> Quick Note</label>
+                  <label htmlFor="qa-notes">
+                    <MessageSquare className="w-3 h-3" /> Quick Note
+                  </label>
                   <textarea 
+                    id="qa-notes"
                     placeholder="Looking for a family SUV..."
                     value={formData.notes}
                     onChange={e => handleChange('notes', e.target.value)}
@@ -188,8 +339,16 @@ export const QuickAddButton = () => {
                   className="qa-save-btn"
                   onClick={handleSave}
                   disabled={saving || !formData.first_name.trim()}
+                  data-testid="quick-add-save"
                 >
-                  {saving ? 'Saving...' : 'Add Customer'}
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Add Customer'
+                  )}
                 </button>
               </div>
             )}
@@ -238,6 +397,11 @@ export const QuickAddButton = () => {
           transform: scale(0.95);
         }
 
+        .quick-add-fab:focus-visible {
+          outline: 2px solid #00D4FF;
+          outline-offset: 3px;
+        }
+
         .bluetooth-icon {
           width: 28px;
           height: 28px;
@@ -253,39 +417,27 @@ export const QuickAddButton = () => {
         }
 
         @keyframes fabPulse {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1.4);
-            opacity: 0;
-          }
-        }
-
-        /* Light mode adjustments */
-        html:not(.dark) .quick-add-fab {
-          background: linear-gradient(145deg, 
-            rgba(0, 120, 220, 0.2) 0%, 
-            rgba(0, 80, 180, 0.3) 100%
-          );
-          border-color: rgba(0, 100, 200, 0.5);
-          box-shadow: 
-            0 4px 20px rgba(0, 100, 200, 0.25),
-            0 0 25px rgba(0, 120, 220, 0.15);
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.4); opacity: 0; }
         }
 
         /* Quick Add Modal */
         .quick-add-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(10,8,6,0.92);
+          background: rgba(10, 8, 6, 0.92);
           backdrop-filter: blur(12px);
           z-index: 9999;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 16px;
+          animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         .quick-add-modal {
@@ -305,6 +457,12 @@ export const QuickAddButton = () => {
             inset 0 1px 0 rgba(255,255,255,0.1),
             inset 0 0 30px rgba(0, 180, 255, 0.05);
           overflow: hidden;
+          animation: slideUp 0.25s ease;
+        }
+
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .quick-add-header {
@@ -330,7 +488,7 @@ export const QuickAddButton = () => {
 
         .quick-add-header h3 {
           flex: 1;
-          font-family: 'Chakra Petch', sans-serif;
+          font-family: 'Chakra Petch', system-ui, sans-serif;
           font-size: 16px;
           font-weight: 600;
           color: #00D4FF;
@@ -339,16 +497,27 @@ export const QuickAddButton = () => {
         }
 
         .qa-close {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.05);
-          border: none;
-          color: rgba(255,255,255,0.5);
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.5);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.2s;
+        }
+
+        .qa-close:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.1);
+          color: #fff;
+        }
+
+        .qa-close:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .quick-add-form {
@@ -356,6 +525,18 @@ export const QuickAddButton = () => {
           display: flex;
           flex-direction: column;
           gap: 14px;
+        }
+
+        .qa-error-banner {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.25);
+          border-radius: 10px;
+          color: #fca5a5;
+          font-size: 13px;
         }
 
         .qa-row {
@@ -387,7 +568,7 @@ export const QuickAddButton = () => {
           width: 100%;
           padding: 10px 12px;
           border-radius: 10px;
-          background: rgba(0,0,0,0.4);
+          background: rgba(0, 0, 0, 0.4);
           border: 1px solid rgba(0, 180, 255, 0.15);
           color: #fff;
           font-size: 14px;
@@ -402,12 +583,34 @@ export const QuickAddButton = () => {
           box-shadow: 0 0 12px rgba(0, 180, 255, 0.15);
         }
 
+        .qa-field input.error,
+        .qa-field select.error,
+        .qa-field textarea.error {
+          border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .qa-field input::placeholder,
+        .qa-field textarea::placeholder {
+          color: rgba(255, 255, 255, 0.3);
+        }
+
         .qa-field select {
           cursor: pointer;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 16px;
+          padding-right: 36px;
         }
 
         .qa-field textarea {
           resize: none;
+        }
+
+        .qa-error {
+          font-size: 11px;
+          color: #fca5a5;
         }
 
         .qa-save-btn {
@@ -421,11 +624,19 @@ export const QuickAddButton = () => {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
         }
 
         .qa-save-btn:hover:not(:disabled) {
           background: linear-gradient(135deg, rgba(0, 200, 255, 0.35) 0%, rgba(0, 140, 220, 0.3) 100%);
           box-shadow: 0 0 25px rgba(0, 180, 255, 0.25);
+        }
+
+        .qa-save-btn:active:not(:disabled) {
+          transform: scale(0.98);
         }
 
         .qa-save-btn:disabled {
@@ -440,6 +651,13 @@ export const QuickAddButton = () => {
           align-items: center;
           gap: 12px;
           color: #22c55e;
+          animation: successPop 0.3s ease;
+        }
+
+        @keyframes successPop {
+          0% { transform: scale(0.8); opacity: 0; }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); opacity: 1; }
         }
 
         .quick-add-success svg {
