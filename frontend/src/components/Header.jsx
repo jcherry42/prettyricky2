@@ -5,7 +5,7 @@ import { VinScanner } from './VinScanner';
 import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
-// Startup sound with fade-out effect
+// Startup sound with smooth fade-out effect
 const playStartupSound = () => {
   try {
     const prefs = getSoundPreferences();
@@ -15,16 +15,31 @@ const playStartupSound = () => {
     const targetVolume = prefs.volume || 0.7;
     audio.volume = targetVolume;
     
-    // Fade out during the last 1.5 seconds of playback
-    audio.addEventListener('timeupdate', () => {
-      const timeRemaining = audio.duration - audio.currentTime;
-      const fadeStartTime = 1.5; // Start fading 1.5 seconds before end
+    // Start fading earlier and more aggressively (last 2 seconds)
+    const fadeStartTime = 2.0;
+    let fadeInterval = null;
+    
+    audio.addEventListener('loadedmetadata', () => {
+      const duration = audio.duration;
+      const fadeStartAt = Math.max(0, duration - fadeStartTime);
       
-      if (timeRemaining <= fadeStartTime && timeRemaining > 0) {
-        // Calculate fade progress (1 = full volume, 0 = silent)
-        const fadeProgress = timeRemaining / fadeStartTime;
-        audio.volume = targetVolume * fadeProgress;
-      }
+      fadeInterval = setInterval(() => {
+        if (audio.currentTime >= fadeStartAt) {
+          const timeRemaining = duration - audio.currentTime;
+          const fadeProgress = Math.max(0, timeRemaining / fadeStartTime);
+          // Use exponential fade for smoother perception
+          audio.volume = targetVolume * (fadeProgress * fadeProgress);
+          
+          if (fadeProgress <= 0.01) {
+            clearInterval(fadeInterval);
+            audio.pause();
+          }
+        }
+      }, 50); // Check every 50ms for smooth fade
+    });
+    
+    audio.addEventListener('ended', () => {
+      if (fadeInterval) clearInterval(fadeInterval);
     });
     
     audio.play().catch(() => {});
