@@ -122,12 +122,12 @@ export const VoiceTranslator = () => {
     return () => {
       try { recognitionRef.current?.abort(); } catch (e) { /* ignore */ }
     };
-  }, [sourceLang, translateText, isListening]);
+  }, [sourceLang, sourceLanguage.speechCode, translateText]);
 
-  // Update recognition language when direction changes
+  // Update recognition language when source changes
   useEffect(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.lang = sourceLang === 'es' ? 'es-US' : 'en-US';
+      recognitionRef.current.lang = sourceLanguage.speechCode;
     }
   }, [sourceLang]);
 
