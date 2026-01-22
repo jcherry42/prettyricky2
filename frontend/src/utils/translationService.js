@@ -50,18 +50,13 @@ class TranslationCache {
 
 const translationCache = new TranslationCache();
 
-// Supported languages with native names
+// Supported languages - English, Spanish, Korean, French, Japanese
 export const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English', native: 'English', flag: '🇺🇸' },
   { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
   { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
-  { code: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italian', native: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Portuguese', native: 'Português', flag: '🇵🇹' },
-  { code: 'zh', name: 'Chinese', native: '中文', flag: '🇨🇳' },
   { code: 'ja', name: 'Japanese', native: '日本語', flag: '🇯🇵' },
   { code: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
-  { code: 'ar', name: 'Arabic', native: 'العربية', flag: '🇸🇦' },
 ];
 
 export const getLanguageByCode = (code) => {
