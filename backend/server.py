@@ -358,19 +358,17 @@ async def translate_text(request: TranslateRequest):
         
         translation_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
-        # Detect source language if auto
+        # Detect source language if auto (5 supported: en, es, fr, ja, ko)
         detected = request.source_lang if request.source_lang != "auto" else None
         if request.source_lang == "auto":
             if any(c in text for c in ['á', 'é', 'í', 'ó', 'ú', 'ñ', '¿', '¡']):
                 detected = "es"
-            elif any('\u4e00' <= c <= '\u9fff' for c in text):
-                detected = "zh"
             elif any('\u3040' <= c <= '\u309f' or '\u30a0' <= c <= '\u30ff' for c in text):
                 detected = "ja"
             elif any('\uac00' <= c <= '\ud7af' for c in text):
                 detected = "ko"
-            elif any('\u0600' <= c <= '\u06ff' for c in text):
-                detected = "ar"
+            elif any(c in text for c in ['à', 'â', 'ç', 'è', 'é', 'ê', 'ë', 'î', 'ï', 'ô', 'ù', 'û', 'œ']):
+                detected = "fr"
             else:
                 detected = "en"
         
