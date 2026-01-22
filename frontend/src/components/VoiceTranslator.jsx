@@ -233,8 +233,9 @@ export const VoiceTranslator = () => {
   const speakTranslation = () => {
     if (!translatedText || !('speechSynthesis' in window)) return;
     
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(translatedText);
-    utterance.lang = targetLang === 'es' ? 'es-ES' : 'en-US';
+    utterance.lang = targetLanguage.speechCode;
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
   };
