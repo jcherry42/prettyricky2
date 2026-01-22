@@ -3,6 +3,10 @@ import { Copy, Check, MessageSquare, Clock, ChevronDown, ChevronUp, Languages, F
 import { translateText, SUPPORTED_LANGUAGES, getLanguageByCode } from '../utils/translationService';
 import { useSales } from '../context/SalesContext';
 import { FOLLOW_UP_RULES } from '../data/salesData';
+import { SkeletonCard } from './ui/LoadingStates';
+import { NoResponses } from './ui/EmptyStates';
+import haptics from '../utils/haptics';
+import { announceToScreenReader } from '../utils/accessibility';
 
 // Check if browser supports speech synthesis
 const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
