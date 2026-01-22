@@ -281,8 +281,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ### P0 - Critical
 - [x] **Web Preview Fixed**: App loads correctly, all core features working
 - [x] **Authentication System Integrated**: Full JWT auth with login modal, registration, and skip option
-- [ ] **iOS Build**: Podfile updated to iOS 15.5, comprehensive build guide created. User needs to test on local Mac.
-- [ ] **Eject Button Testing**: Backend endpoint and frontend UI implemented. Needs Twilio credentials for full testing. Button is visible in Customer Detail view (inside Command Center > Customers tab > click on customer).
+- [x] **iOS Build Fixed**: Podfile updated to iOS 15.5, comprehensive build guide created
+- [x] **VIN Scanner Fixed**: Manual entry, barcode scanning, and decode all working
+- [x] **Push to Talk Fixed**: Button responsive to touch
+- [x] **Sport Mode Fixed**: No longer crashes on translation
+- [x] **Quick Add Liquid Glass**: Modern design implemented
+- [x] **Header Padding Fixed**: Content no longer blocked
+- [ ] **Eject Button Testing**: Backend endpoint and frontend UI implemented. Needs Twilio credentials for full testing.
 
 ### P1 - High Priority
 - [ ] **Real CRM Integration**: Remove mock-only mode, enable live data ingestion from user CRMs
