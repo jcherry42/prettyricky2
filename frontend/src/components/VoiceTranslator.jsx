@@ -189,9 +189,32 @@ export const VoiceTranslator = () => {
     }
   };
 
-  // Toggle language direction
-  const toggleDirection = () => {
-    setDirection(d => d === 'es-en' ? 'en-es' : 'es-en');
+  // Swap source and target languages
+  const swapLanguages = () => {
+    setSourceLang(targetLang);
+    setTargetLang(sourceLang);
+    setSourceText('');
+    setTranslatedText('');
+    setError('');
+    setShowResult(false);
+  };
+
+  // Select a language
+  const selectLanguage = (code, type) => {
+    if (type === 'source') {
+      if (code === targetLang) {
+        // Swap if selecting same as target
+        setTargetLang(sourceLang);
+      }
+      setSourceLang(code);
+    } else {
+      if (code === sourceLang) {
+        // Swap if selecting same as source
+        setSourceLang(targetLang);
+      }
+      setTargetLang(code);
+    }
+    setShowLangPicker(null);
     setSourceText('');
     setTranslatedText('');
     setError('');
