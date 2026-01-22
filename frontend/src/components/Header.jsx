@@ -177,11 +177,11 @@ export const Header = () => {
 
       {/* Row 2: Action Buttons */}
       <div className="header-row-2">
-        {/* VIN Scanner - Electric Green */}
+        {/* Intake Scanner - Electric Green */}
         <button
           onClick={() => setVinScannerOpen(true)}
           className="header-btn electric-green"
-          data-testid="vin-scanner-btn"
+          data-testid="intake-scanner-btn"
         >
           <svg viewBox="0 0 24 24" className="header-btn-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="12" r="8" />
@@ -191,7 +191,7 @@ export const Header = () => {
             <line x1="4" y1="12" x2="7" y2="12" strokeLinecap="round" />
             <line x1="17" y1="12" x2="20" y2="12" strokeLinecap="round" />
           </svg>
-          <span>VIN</span>
+          <span>INTAKE</span>
         </button>
 
         {/* Command Center */}
