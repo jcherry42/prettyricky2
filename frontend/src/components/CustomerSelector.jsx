@@ -1,17 +1,52 @@
-import React, { useState } from 'react';
-import { User, ChevronRight, Search, Car, X, Phone, Clock, Mail, Star, Flame } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { User, ChevronRight, Search, Car, X, Phone, Flame, Star, Loader2 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { NoCustomers, NoSearchResults } from './ui/EmptyStates';
+import { SkeletonCustomerItem } from './ui/LoadingStates';
+import haptics from '../utils/haptics';
+import { announceToScreenReader } from '../utils/accessibility';
 
+/**
+ * Enterprise-Grade Customer Selector
+ * Features:
+ * - Debounced search
+ * - Skeleton loading states
+ * - Empty state illustrations
+ * - Priority sorting
+ * - Accessibility support
+ * - Haptic feedback
+ */
 export const CustomerSelector = () => {
-  const { customers, selectedCustomer, selectCustomer, getVehicleById } = useSales();
+  const { customers, selectedCustomer, selectCustomer, getVehicleById, loading } = useSales();
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef(null);
+  const listRef = useRef(null);
+
+  // Debounce search input
+  useEffect(() => {
+    setIsSearching(true);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setIsSearching(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (isOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const filteredCustomers = customers.filter(c => {
     const name = c.name || `${c.firstName || ''} ${c.lastName || ''}`.trim();
-    const searchLower = search.toLowerCase();
+    const searchLower = debouncedSearch.toLowerCase();
     return name.toLowerCase().includes(searchLower) ||
-           (c.phone || '').includes(search) ||
+           (c.phone || '').includes(debouncedSearch) ||
            (c.email || '').toLowerCase().includes(searchLower);
   });
 
@@ -23,11 +58,44 @@ export const CustomerSelector = () => {
     return aPriority - bPriority;
   });
 
-  const handleSelect = (customer) => {
+  const handleSelect = useCallback((customer) => {
+    haptics.select();
     selectCustomer(customer);
     setIsOpen(false);
     setSearch('');
-  };
+    setDebouncedSearch('');
+    announceToScreenReader(`Selected ${customer.name || customer.firstName}`);
+  }, [selectCustomer]);
+
+  const handleOpen = useCallback(() => {
+    haptics.tap();
+    setIsOpen(true);
+    announceToScreenReader('Customer selector opened');
+  }, []);
+
+  const handleClose = useCallback(() => {
+    haptics.tap();
+    setIsOpen(false);
+    setSearch('');
+    setDebouncedSearch('');
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearch('');
+    setDebouncedSearch('');
+    searchInputRef.current?.focus();
+  }, []);
+
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      handleClose();
+    } else if (e.key === 'ArrowDown' && listRef.current) {
+      e.preventDefault();
+      const firstItem = listRef.current.querySelector('button');
+      firstItem?.focus();
+    }
+  }, [handleClose]);
 
   const getCustomerName = (customer) => {
     return customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
@@ -62,14 +130,31 @@ export const CustomerSelector = () => {
     return phone;
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="card-luxury overflow-hidden">
+        <div className="p-4 space-y-3">
+          <SkeletonCustomerItem />
+        </div>
+      </div>
+    );
+  }
+
   if (isOpen) {
     return (
-      <div className="card-luxury overflow-hidden animate-fade-in">
+      <div 
+        className="card-luxury overflow-hidden animate-fade-in"
+        role="dialog"
+        aria-label="Select customer"
+        onKeyDown={handleKeyDown}
+      >
         {/* Search header */}
         <div className="p-4 border-b border-border/30">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search by name, phone, or email..."
               value={search}
@@ -77,28 +162,50 @@ export const CustomerSelector = () => {
               className="input-luxury pl-11 pr-11"
               autoFocus
               data-testid="customer-search-input"
+              aria-label="Search customers"
             />
+            {search ? (
+              <button
+                onClick={handleClearSearch}
+                className="absolute right-12 top-1/2 -translate-y-1/2 btn-icon w-7 h-7"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            ) : null}
             <button
-              onClick={() => { setIsOpen(false); setSearch(''); }}
+              onClick={handleClose}
               className="absolute right-2 top-1/2 -translate-y-1/2 btn-icon w-8 h-8"
               data-testid="close-customer-search"
+              aria-label="Close customer selector"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2 px-1">
-            {sortedCustomers.length} customer{sortedCustomers.length !== 1 ? 's' : ''} • Sorted by priority
-          </p>
+          <div className="flex items-center justify-between mt-2 px-1">
+            <p className="text-xs text-muted-foreground">
+              {sortedCustomers.length} customer{sortedCustomers.length !== 1 ? 's' : ''} • Sorted by priority
+            </p>
+            {isSearching && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Searching...
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Customer list */}
-        <div className="max-h-80 overflow-y-auto hide-scrollbar">
-          {sortedCustomers.length === 0 ? (
-            <div className="p-8 text-center">
-              <User className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">No customers found</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Try a different search term</p>
-            </div>
+        <div 
+          ref={listRef}
+          className="max-h-80 overflow-y-auto hide-scrollbar"
+          role="listbox"
+          aria-label="Customer list"
+        >
+          {customers.length === 0 ? (
+            <NoCustomers />
+          ) : sortedCustomers.length === 0 ? (
+            <NoSearchResults query={debouncedSearch} onClear={handleClearSearch} />
           ) : (
             sortedCustomers.map((customer, index) => {
               const name = getCustomerName(customer);
@@ -111,8 +218,11 @@ export const CustomerSelector = () => {
                 <React.Fragment key={customer.id}>
                   <button
                     onClick={() => handleSelect(customer)}
-                    className="w-full p-4 flex items-center gap-4 text-left hover:bg-muted/20 transition-colors"
+                    className="w-full p-4 flex items-center gap-4 text-left hover:bg-muted/20 transition-colors focus:bg-muted/30 focus:outline-none"
                     data-testid={`customer-${customer.id}`}
+                    data-index={index}
+                    role="option"
+                    aria-selected={selectedCustomer?.id === customer.id}
                   >
                     {/* Avatar with status indicator */}
                     <div className="relative">
@@ -183,9 +293,11 @@ export const CustomerSelector = () => {
 
   return (
     <button
-      onClick={() => setIsOpen(true)}
+      onClick={handleOpen}
       className="selector-btn w-full flex items-center gap-4"
       data-testid="customer-selector"
+      aria-haspopup="listbox"
+      aria-label={selectedCustomer ? `Selected: ${name}. Click to change.` : 'Select a customer'}
     >
       {selectedCustomer ? (
         <>
