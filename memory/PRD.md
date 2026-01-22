@@ -32,7 +32,10 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Animated priority badges
 
 ### Intake Scanner (NEW - Superior to VinSolutions)
-- **Driver's License Capture**: Take photo or upload image, save to customer profile
+- **Driver's License OCR Scan**: AI extracts first name, last name, and full address automatically
+- **Editable Extracted Data**: Review and edit OCR results before saving
+- **Auto-Create Customer**: Create new customer directly from extracted license data
+- **Attach to Existing**: Option to attach license image to existing customer
 - **VIN Scanning**: Windshield barcode scan or manual entry
 - **Integrated Flow**: Combined Customer Intake modal with both options
 - **License in Eject**: License image included in SMS/MMS when using Eject feature
