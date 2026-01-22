@@ -4,25 +4,24 @@ import {
   X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine, 
   Shield, Fuel, Gauge, MapPin, Settings2, Zap, CheckCircle2, Flashlight, 
   FlashlightOff, RotateCcw, Target, CreditCard, User, Home, Calendar,
-  FileText, ChevronRight, Plus, Scan, IdCard
+  FileText, ChevronRight, Plus, Scan, IdCard, Users, Search
 } from 'lucide-react';
+import { useSales } from '../context/SalesContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform();
 
 /**
  * Enterprise Intake Scanner
- * Superior to VinSolutions - combines VIN scanning with Driver's License scanning
+ * Superior to VinSolutions - combines VIN scanning with Driver's License capture
  * 
  * Features:
  * - VIN Scanning (windshield barcode, manual entry)
- * - Driver's License OCR (GPT-4 Vision powered)
- * - Auto-populate customer from license
- * - Multi-database VIN lookup
- * - Confidence scoring
+ * - Driver's License Image Capture (saves to customer profile)
+ * - License image included in Eject SMS/MMS
  */
 export const VinScanner = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState('menu'); // menu, vin, license
+  const { customers } = useSales();
   const [mode, setMode] = useState('menu');
   
   // VIN State
@@ -34,8 +33,9 @@ export const VinScanner = ({ isOpen, onClose }) => {
   
   // License State
   const [licenseImage, setLicenseImage] = useState(null);
-  const [licenseData, setLicenseData] = useState(null);
   const [licensePreview, setLicensePreview] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
   
   // Common State
   const [loading, setLoading] = useState(false);
@@ -59,14 +59,14 @@ export const VinScanner = ({ isOpen, onClose }) => {
   // Reset on open
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('menu');
       setMode('menu');
       setVin('');
       setManualVin('');
       setVehicleData(null);
       setLicenseImage(null);
-      setLicenseData(null);
       setLicensePreview(null);
+      setSelectedCustomer(null);
+      setCustomerSearch('');
       setError(null);
       setSaved(false);
       setVinValidation({ valid: false, message: '' });
@@ -150,38 +150,14 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   };
 
-  // License Scan
+  // License Capture - just store the file, no OCR
   const handleLicenseCapture = async (file) => {
     if (!file) return;
     
     setLicenseImage(file);
     setLicensePreview(URL.createObjectURL(file));
-    setLoading(true);
     setError(null);
-    setLicenseData(null);
-    
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const res = await fetch(`${BACKEND_URL}/api/scan-license`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to scan license');
-      }
-      
-      setLicenseData(data.license_data);
-      setMode('licenseResult');
-    } catch (err) {
-      setError(err.message || 'Failed to scan license');
-    } finally {
-      setLoading(false);
-    }
+    setMode('licenseSelectCustomer');
   };
 
   const handleFileSelect = (e) => {
@@ -189,41 +165,36 @@ export const VinScanner = ({ isOpen, onClose }) => {
     if (file) handleLicenseCapture(file);
   };
 
-  // Save customer from license
-  const saveCustomerFromLicense = async () => {
-    if (!licenseData) return;
+  // Upload license and attach to customer
+  const uploadLicenseToCustomer = async () => {
+    if (!licenseImage || !selectedCustomer) {
+      setError('Please select a customer to attach the license to');
+      return;
+    }
     
     setLoading(true);
     setError(null);
     
     try {
-      const res = await fetch(`${BACKEND_URL}/api/create-customer-from-license`, {
+      const formData = new FormData();
+      formData.append('image', licenseImage);
+      formData.append('customer_id', selectedCustomer.id);
+      
+      const res = await fetch(`${BACKEND_URL}/api/license/upload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: licenseData.first_name,
-          last_name: licenseData.last_name,
-          address: licenseData.address_line1,
-          city: licenseData.city,
-          state: licenseData.state,
-          zip_code: licenseData.zip_code,
-          date_of_birth: licenseData.date_of_birth,
-          license_number: licenseData.license_number,
-          license_expiration: licenseData.license_expiration,
-          license_state: licenseData.license_state
-        })
+        body: formData
       });
       
       const data = await res.json();
       
       if (!data.success) {
-        throw new Error(data.message || 'Failed to create customer');
+        throw new Error(data.error || 'Failed to upload license');
       }
       
       setSaved(true);
       setTimeout(() => onClose(), 1500);
     } catch (err) {
-      setError(err.message || 'Failed to save customer');
+      setError(err.message || 'Failed to upload license');
     } finally {
       setLoading(false);
     }
@@ -259,6 +230,15 @@ export const VinScanner = ({ isOpen, onClose }) => {
     }
   };
 
+  // Filter customers for search
+  const filteredCustomers = customers?.filter(c => {
+    if (!customerSearch) return true;
+    const search = customerSearch.toLowerCase();
+    const name = (c.name || `${c.firstName || ''} ${c.lastName || ''}`).toLowerCase();
+    const phone = (c.phone || '').toLowerCase();
+    return name.includes(search) || phone.includes(search);
+  }) || [];
+
   if (!isOpen) return null;
 
   // Render Menu
@@ -270,7 +250,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
       <div className="intake-options">
         {/* License Scan Option - Featured */}
         <button
-          onClick={() => { setActiveTab('license'); setMode('licenseCapture'); }}
+          onClick={() => setMode('licenseCapture')}
           className="intake-option featured"
           data-testid="license-scan-option"
         >
@@ -279,7 +259,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
           </div>
           <div className="intake-option-content">
             <span className="intake-option-title">Scan Driver's License</span>
-            <span className="intake-option-desc">AI-powered OCR • Auto-create customer</span>
+            <span className="intake-option-desc">Capture and save to customer profile</span>
           </div>
           <div className="intake-option-badge">NEW</div>
           <ChevronRight className="w-5 h-5 intake-chevron" />
@@ -287,7 +267,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
         
         {/* VIN Scan Option */}
         <button
-          onClick={() => { setActiveTab('vin'); setMode('vinMenu'); }}
+          onClick={() => setMode('vinMenu')}
           className="intake-option"
           data-testid="vin-scan-option"
         >
@@ -310,7 +290,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
             {recentScans.slice(0, 3).map((scan, i) => (
               <button
                 key={scan.vin}
-                onClick={() => { setManualVin(scan.vin); setActiveTab('vin'); setMode('vinManual'); }}
+                onClick={() => { setManualVin(scan.vin); setMode('vinManual'); }}
                 className="intake-recent-item"
               >
                 <Car className="w-4 h-4" />
@@ -327,7 +307,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
   // Render VIN Menu
   const renderVinMenu = () => (
     <div className="intake-menu">
-      <button onClick={() => { setActiveTab('menu'); setMode('menu'); }} className="intake-back-btn">
+      <button onClick={() => setMode('menu')} className="intake-back-btn">
         ← Back to Intake
       </button>
       
@@ -519,7 +499,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
   // Render License Capture
   const renderLicenseCapture = () => (
     <div className="intake-form license-capture">
-      <button onClick={() => { setActiveTab('menu'); setMode('menu'); }} className="intake-back-btn">
+      <button onClick={() => setMode('menu')} className="intake-back-btn">
         ← Back to Intake
       </button>
       
@@ -528,7 +508,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
           <IdCard className="w-6 h-6" />
         </div>
         <h3>Scan Driver's License</h3>
-        <p>AI-powered extraction • Instant customer creation</p>
+        <p>Capture license image for customer profile</p>
       </div>
       
       <div className="license-capture-area">
@@ -538,7 +518,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
             {loading && (
               <div className="license-processing">
                 <Loader2 className="w-8 h-8 animate-spin" />
-                <span>Analyzing license...</span>
+                <span>Processing...</span>
               </div>
             )}
           </div>
@@ -605,111 +585,107 @@ export const VinScanner = ({ isOpen, onClose }) => {
     </div>
   );
 
-  // Render License Result
-  const renderLicenseResult = () => {
-    if (!licenseData) return null;
-    
-    const confidence = Math.round((licenseData.confidence_score || 0.85) * 100);
-    const confidenceColor = confidence >= 80 ? '#22c55e' : confidence >= 60 ? '#f59e0b' : '#ef4444';
-    
-    return (
-      <div className="intake-result license-result">
-        <button onClick={() => { setMode('licenseCapture'); setLicenseData(null); setLicensePreview(null); }} className="intake-back-btn">
-          ← Scan Another
-        </button>
-        
-        {saved ? (
-          <div className="intake-success">
-            <CheckCircle2 className="w-16 h-16" />
-            <span>Customer Created!</span>
+  // Render Customer Selection for License
+  const renderLicenseSelectCustomer = () => (
+    <div className="intake-form license-select">
+      <button onClick={() => { setMode('licenseCapture'); setLicenseImage(null); setLicensePreview(null); }} className="intake-back-btn">
+        ← Retake Photo
+      </button>
+      
+      <div className="intake-form-header">
+        <div className="intake-form-icon license">
+          <Users className="w-6 h-6" />
+        </div>
+        <h3>Select Customer</h3>
+        <p>Choose a customer to attach this license to</p>
+      </div>
+      
+      {/* License Preview Thumbnail */}
+      {licensePreview && (
+        <div className="license-thumbnail">
+          <img src={licensePreview} alt="License" />
+          <span>License captured</span>
+        </div>
+      )}
+      
+      {/* Customer Search */}
+      <div className="intake-input-group">
+        <label>Search Customers</label>
+        <div className="customer-search-input">
+          <Search className="w-4 h-4" />
+          <input
+            type="text"
+            value={customerSearch}
+            onChange={(e) => setCustomerSearch(e.target.value)}
+            placeholder="Search by name or phone..."
+            data-testid="customer-search-input"
+          />
+        </div>
+      </div>
+      
+      {/* Customer List */}
+      <div className="customer-list">
+        {filteredCustomers.length === 0 ? (
+          <div className="customer-empty">
+            <Users className="w-8 h-8" />
+            <span>No customers found</span>
+            <span className="sub">Add customers first to attach licenses</span>
           </div>
         ) : (
-          <>
-            <div className="intake-result-header license">
-              <div className="license-avatar">
-                <User className="w-10 h-10" />
+          filteredCustomers.slice(0, 10).map(customer => (
+            <button
+              key={customer.id}
+              onClick={() => setSelectedCustomer(customer)}
+              className={`customer-item ${selectedCustomer?.id === customer.id ? 'selected' : ''}`}
+              data-testid={`customer-${customer.id}`}
+            >
+              <div className="customer-avatar">
+                <User className="w-5 h-5" />
               </div>
-              <h3 className="intake-result-title">
-                {licenseData.first_name} {licenseData.last_name}
-              </h3>
-              
-              <div className="intake-confidence" style={{ borderColor: confidenceColor }}>
-                <span style={{ color: confidenceColor }}>{confidence}%</span>
-                <span>Confidence</span>
+              <div className="customer-info">
+                <span className="customer-name">{customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`}</span>
+                <span className="customer-phone">{customer.phone || 'No phone'}</span>
               </div>
-            </div>
-            
-            <div className="license-data-grid">
-              {licenseData.license_number && (
-                <div className="license-data-item">
-                  <CreditCard className="w-4 h-4" />
-                  <span className="label">License #</span>
-                  <span className="value">{licenseData.license_number}</span>
-                </div>
+              {selectedCustomer?.id === customer.id && (
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
               )}
-              {licenseData.license_state && (
-                <div className="license-data-item">
-                  <MapPin className="w-4 h-4" />
-                  <span className="label">State</span>
-                  <span className="value">{licenseData.license_state}</span>
-                </div>
-              )}
-              {licenseData.date_of_birth && (
-                <div className="license-data-item">
-                  <Calendar className="w-4 h-4" />
-                  <span className="label">DOB</span>
-                  <span className="value">{licenseData.date_of_birth}</span>
-                </div>
-              )}
-              {licenseData.license_expiration && (
-                <div className="license-data-item">
-                  <Calendar className="w-4 h-4" />
-                  <span className="label">Expires</span>
-                  <span className="value">{licenseData.license_expiration}</span>
-                </div>
-              )}
-            </div>
-            
-            {(licenseData.address_line1 || licenseData.city) && (
-              <div className="license-address">
-                <Home className="w-4 h-4" />
-                <div className="address-text">
-                  {licenseData.address_line1 && <span>{licenseData.address_line1}</span>}
-                  {licenseData.city && (
-                    <span>
-                      {licenseData.city}, {licenseData.state} {licenseData.zip_code}
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            {/* Additional extracted data */}
-            <div className="license-extra">
-              {licenseData.sex && <span className="license-chip">Sex: {licenseData.sex}</span>}
-              {licenseData.height && <span className="license-chip">Height: {licenseData.height}</span>}
-              {licenseData.eye_color && <span className="license-chip">Eyes: {licenseData.eye_color}</span>}
-              {licenseData.donor && <span className="license-chip donor">Organ Donor</span>}
-            </div>
-            
-            {error && (
-              <div className="intake-error">
-                <AlertCircle className="w-4 h-4" />
-                <span>{error}</span>
-              </div>
-            )}
-            
-            <div className="intake-actions">
-              <button onClick={saveCustomerFromLicense} disabled={loading} className="intake-action-btn primary">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                Create Customer
-              </button>
-            </div>
-          </>
+            </button>
+          ))
         )}
       </div>
-    );
-  };
+      
+      {error && (
+        <div className="intake-error">
+          <AlertCircle className="w-4 h-4" />
+          <span>{error}</span>
+        </div>
+      )}
+      
+      <button
+        onClick={uploadLicenseToCustomer}
+        disabled={!selectedCustomer || loading}
+        className="intake-submit-btn license-btn"
+        data-testid="save-license-btn"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Saving...
+          </>
+        ) : saved ? (
+          <>
+            <CheckCircle2 className="w-5 h-5" />
+            Saved!
+          </>
+        ) : (
+          <>
+            <Save className="w-5 h-5" />
+            Save License to {selectedCustomer?.name || 'Customer'}
+          </>
+        )}
+      </button>
+    </div>
+  );
 
   // Render current mode
   const renderContent = () => {
@@ -724,8 +700,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
         return renderVinResult();
       case 'licenseCapture':
         return renderLicenseCapture();
-      case 'licenseResult':
-        return renderLicenseResult();
+      case 'licenseSelectCustomer':
+        return renderLicenseSelectCustomer();
       default:
         return renderMenu();
     }
@@ -1123,6 +1099,17 @@ export const VinScanner = ({ isOpen, onClose }) => {
           cursor: not-allowed;
         }
         
+        .intake-submit-btn.license-btn {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.15) 100%);
+          border-color: rgba(139, 92, 246, 0.4);
+          color: #a78bfa;
+        }
+        
+        .intake-submit-btn.license-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(109, 40, 217, 0.25) 100%);
+          box-shadow: 0 0 25px rgba(139, 92, 246, 0.2);
+        }
+        
         .intake-secondary-btn {
           width: 100%;
           display: flex;
@@ -1238,6 +1225,126 @@ export const VinScanner = ({ isOpen, onClose }) => {
           margin-bottom: 4px;
         }
         
+        /* License Thumbnail */
+        .license-thumbnail {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: rgba(139, 92, 246, 0.1);
+          border: 1px solid rgba(139, 92, 246, 0.25);
+          border-radius: 12px;
+          margin-bottom: 20px;
+        }
+        
+        .license-thumbnail img {
+          width: 60px;
+          height: 40px;
+          object-fit: cover;
+          border-radius: 6px;
+        }
+        
+        .license-thumbnail span {
+          color: #a78bfa;
+          font-size: 13px;
+          font-weight: 500;
+        }
+        
+        /* Customer Search */
+        .customer-search-input {
+          position: relative;
+        }
+        
+        .customer-search-input svg {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .customer-search-input input {
+          padding-left: 42px;
+          text-transform: none;
+          font-family: inherit;
+          letter-spacing: normal;
+        }
+        
+        /* Customer List */
+        .customer-list {
+          max-height: 250px;
+          overflow-y: auto;
+          margin-bottom: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .customer-empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 30px 20px;
+          color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .customer-empty .sub {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .customer-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .customer-item:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+        
+        .customer-item.selected {
+          background: rgba(139, 92, 246, 0.15);
+          border-color: rgba(139, 92, 246, 0.35);
+        }
+        
+        .customer-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: rgba(139, 92, 246, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #a78bfa;
+        }
+        
+        .customer-info {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .customer-name {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: #fff;
+          margin-bottom: 2px;
+        }
+        
+        .customer-phone {
+          display: block;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+        
         /* Results */
         .intake-result {
           padding: 24px;
@@ -1264,25 +1371,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
         .intake-result-header {
           text-align: center;
           margin-bottom: 20px;
-        }
-        
-        .intake-result-header.license {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        
-        .license-avatar {
-          width: 72px;
-          height: 72px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.15) 100%);
-          border: 2px solid rgba(139, 92, 246, 0.3);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #a78bfa;
-          margin-bottom: 12px;
         }
         
         .intake-result-title {
@@ -1356,90 +1444,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
           font-weight: 500;
         }
         
-        .license-data-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-bottom: 16px;
-        }
-        
-        .license-data-item {
-          padding: 12px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        
-        .license-data-item svg {
-          color: rgba(139, 92, 246, 0.6);
-          margin-bottom: 4px;
-        }
-        
-        .license-data-item .label {
-          font-size: 10px;
-          color: rgba(255, 255, 255, 0.4);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        
-        .license-data-item .value {
-          font-size: 13px;
-          color: #fff;
-          font-weight: 500;
-        }
-        
-        .license-address {
-          display: flex;
-          gap: 12px;
-          padding: 14px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          border-radius: 12px;
-          margin-bottom: 16px;
-        }
-        
-        .license-address svg {
-          color: rgba(139, 92, 246, 0.6);
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-        
-        .address-text {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        
-        .address-text span {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .license-extra {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 20px;
-        }
-        
-        .license-chip {
-          padding: 5px 10px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 8px;
-          font-size: 11px;
-          color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .license-chip.donor {
-          background: rgba(239, 68, 68, 0.1);
-          border-color: rgba(239, 68, 68, 0.25);
-          color: #fca5a5;
-        }
-        
         .intake-safety {
           padding: 14px;
           background: rgba(34, 197, 94, 0.08);
@@ -1503,17 +1507,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
         .intake-action-btn.primary:hover:not(:disabled) {
           background: linear-gradient(135deg, rgba(34, 211, 238, 0.3) 0%, rgba(6, 182, 212, 0.25) 100%);
           box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
-        }
-        
-        .license-result .intake-action-btn.primary {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.15) 100%);
-          border: 1px solid rgba(139, 92, 246, 0.4);
-          color: #a78bfa;
-        }
-        
-        .license-result .intake-action-btn.primary:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(109, 40, 217, 0.25) 100%);
-          box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
         }
         
         .intake-action-btn.secondary {
