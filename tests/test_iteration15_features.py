@@ -113,8 +113,10 @@ class TestVINDecoder:
         response = requests.get(f"{BASE_URL}/api/vin/decode/{test_vin}")
         assert response.status_code == 200
         data = response.json()
-        assert "confidence" in data
-        print(f"✓ VIN confidence: {data['confidence']}%")
+        # Confidence is nested under validation
+        assert "validation" in data
+        assert "confidence_score" in data["validation"]
+        print(f"✓ VIN confidence: {data['validation']['confidence_score']}%")
     
     def test_vin_decode_toyota(self):
         """Test VIN decode for Toyota"""
