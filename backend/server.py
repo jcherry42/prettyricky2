@@ -300,20 +300,39 @@ Apply these proven techniques naturally (pick 1-2 per message based on context):
 
 # ============== SUPERCHARG'D TRANSLATION ==============
 
+# In-memory translation cache for instant repeated translations
+_translation_cache = {}
+_cache_max_size = 1000
+
 @api_router.post("/translate", response_model=TranslateResponse)
 async def translate_text(request: TranslateRequest):
     """
     Fast translation endpoint using GPT-4o-mini
-    Optimized for sub-second latency
+    With in-memory caching for instant repeated translations
     """
+    global _translation_cache
+    
     try:
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
-        
         text = request.text.strip()
         if not text:
             return TranslateResponse(translated_text="", detected_lang=None, confidence=0.0)
+        
+        # Create cache key
+        cache_key = f"{request.source_lang}:{request.target_lang}:{text[:200]}"
+        
+        # Check cache first - instant response for cached translations
+        if cache_key in _translation_cache:
+            cached = _translation_cache[cache_key]
+            logger.info(f"Translation cache hit: {len(text)} chars")
+            return TranslateResponse(
+                translated_text=cached['translated'],
+                detected_lang=cached['detected'],
+                confidence=0.99  # Higher confidence for cached
+            )
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
         
         # Language mapping
         lang_names = {
