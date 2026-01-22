@@ -198,6 +198,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-22**: Critical Bug Fixes (Push-to-Talk, Sport Mode, Translations)
+  - **Push-to-Talk Rewritten** - Now works as true push-to-talk: First press starts listening, second press stops and translates
+  - **Sport Mode Fixed** - Fixed infinite re-render loop causing crashes. Added proper debouncing with ref tracking
+  - **Translation Performance** - Added cache hit detection, prevented duplicate translation requests
+  - **Header Padding** - Increased from 140px to 160px for better content visibility
+  - **Language Toggle** - Added floating language toggle above push-to-talk button
+  - **Live Transcript** - Shows real-time speech recognition while listening
 - **2026-01-22**: Fixed 7 Major Issues + iOS Build + Auth Integration
   - **VIN Scanner Fixed** - Now handles multiple barcode formats (CODE_39, CODE_128, DATA_MATRIX, QR_CODE, PDF_417, AZTEC), extracts VIN from barcode data, validates format
   - **Push to Talk Fixed** - Increased button size (56px->64px), added touchAction: manipulation, improved CSS touch responsiveness
