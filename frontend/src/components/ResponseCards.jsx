@@ -212,24 +212,6 @@ export const ResponseCards = () => {
     return null;
   }
 
-  // Show skeleton loading state when generating responses
-  const { isGenerating } = useSales();
-  if (isGenerating) {
-    return (
-      <div className="space-y-4 animate-fade-in">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Generating Responses
-          </h2>
-        </div>
-        <div className="space-y-3">
-          <SkeletonCard lines={4} />
-          <SkeletonCard lines={3} />
-        </div>
-      </div>
-    );
-  }
-
   // Show empty state when no responses yet
   if (currentResponses.length === 0) {
     return null;
