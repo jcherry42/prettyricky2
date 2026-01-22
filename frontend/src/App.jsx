@@ -17,6 +17,7 @@ import LoginModal from './components/LoginModal';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 function AppContent() {
   const { showAdminSettings, toggleAdminSettings, theme } = useSales();
