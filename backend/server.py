@@ -2754,8 +2754,10 @@ class EjectRequest(BaseModel):
 @api_router.post("/eject/customer")
 async def eject_customer_snapshot(request: EjectRequest):
     """
-    Eject - Send a customer profile snapshot via SMS
-    Includes: Name, Phone, Email, and attached vehicle VINs
+    Eject - Send a customer profile snapshot via SMS/MMS
+    Includes: Name, Phone, Email, attached vehicle VINs, and License Image (if available)
+    
+    If the customer has a license image attached, it will be sent as an MMS.
     """
     try:
         # Get customer
@@ -2812,17 +2814,37 @@ async def eject_customer_snapshot(request: EjectRequest):
             message_lines.append("🔄 TRADE-IN:")
             message_lines.append(f"  • {trade_in_info}")
         
+        # Check for license image
+        license_image_url = customer.get("license_image_url")
+        has_license = bool(license_image_url)
+        
+        if has_license:
+            message_lines.append("━━━━━━━━━━━━━━━━")
+            message_lines.append("🪪 LICENSE: See attached image")
+        
         message_lines.append("━━━━━━━━━━━━━━━━")
         message_lines.append("Sent via Supercharg'd")
         
         sms_message = "\n".join(message_lines)
         
-        # Initialize notification service and send SMS
+        # Initialize notification service and send SMS/MMS
         await notification_service.initialize()
         
+        # Build media URLs list if license image exists
+        media_urls = []
+        if has_license:
+            # Construct full URL for the license image
+            # We need to make it a publicly accessible URL for Twilio
+            base_url = os.environ.get('FRONTEND_URL', 'https://autosales-7.preview.emergentagent.com')
+            full_image_url = f"{base_url}{license_image_url}"
+            media_urls.append(full_image_url)
+            logger.info(f"Including license image in MMS: {full_image_url}")
+        
+        # Send with media if available
         result = await notification_service.send_sms(
             to_number=request.recipient_phone,
-            message=sms_message
+            message=sms_message,
+            media_urls=media_urls if media_urls else None
         )
         
         if result.get("success"):
@@ -2834,7 +2856,7 @@ async def eject_customer_snapshot(request: EjectRequest):
                         "interactions": {
                             "id": str(uuid.uuid4()),
                             "interaction_type": "eject",
-                            "content": f"Profile snapshot sent to {request.recipient_phone}",
+                            "content": f"Profile snapshot sent to {request.recipient_phone}" + (" (with license image)" if has_license else ""),
                             "created_at": datetime.now(timezone.utc)
                         }
                     }
@@ -2843,8 +2865,9 @@ async def eject_customer_snapshot(request: EjectRequest):
             
             return {
                 "success": True,
-                "message": "Snapshot sent successfully",
-                "sent_to": request.recipient_phone
+                "message": "Snapshot sent successfully" + (" (MMS with license image)" if has_license else ""),
+                "sent_to": request.recipient_phone,
+                "included_license_image": has_license
             }
         else:
             return {
