@@ -31,14 +31,35 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Priority sorting (HOT, WARM, NEW, COLD)
 - Animated priority badges
 
-### Intake Scanner (NEW - Superior to VinSolutions)
-- **Driver's License OCR Scan**: AI extracts first name, last name, and full address automatically
-- **Editable Extracted Data**: Review and edit OCR results before saving
-- **Auto-Create Customer**: Create new customer directly from extracted license data
-- **Attach to Existing**: Option to attach license image to existing customer
-- **VIN Scanning**: Windshield barcode scan or manual entry
-- **Integrated Flow**: Combined Customer Intake modal with both options
-- **License in Eject**: License image included in SMS/MMS when using Eject feature
+### Intake Scanner (ENTERPRISE-GRADE - Superior to VinSolutions)
+
+**Driver's License Scanner:**
+- **AI-Powered OCR**: GPT-4o Vision extracts name & address with high accuracy
+- **Confidence Scoring**: Shows extraction confidence % (high/medium/low)
+- **Name Normalization**: Auto-converts JOHN DOE → John Doe
+- **State Normalization**: Auto-converts California → CA
+- **Extraction Notes**: Alerts for partial extractions or areas needing verification
+- **Retry Mechanisms**: User-friendly retry flow for failed scans
+- **Image Quality Validation**: Rejects too-small or too-large images with helpful messages
+- **Progress Indicators**: Multi-step progress display during scan
+- **Error Handling**: Graceful timeout handling, rate limit handling
+
+**VIN Scanner:**
+- **ISO 3779 Checksum Validation**: Real-time checksum verification
+- **WMI Region Detection**: Shows region (North America, Europe, Asia, etc.)
+- **Year Detection**: Pre-decodes model year from 10th character
+- **NHTSA Database Integration**: Official US Government vehicle data
+- **Confidence Scoring**: 0-100% based on checksum + data completeness
+- **Safety Features Display**: Lists airbags, ABS, ESC, backup camera, etc.
+- **Engine & Location Info**: Formatted engine display, assembly location
+- **Recent Scans History**: Quick access to previously scanned VINs
+- **Duplicate Detection**: Prevents saving same VIN twice
+
+**Shared Features:**
+- **Haptic Feedback**: Tactile feedback on interactions
+- **Loading States**: Progress messages for every operation
+- **Offline-Capable**: Graceful degradation with clear error messages
+- **Enterprise UI**: Premium dark theme with animations
 
 ### AI Integration (Enhanced with Persuasion Psychology)
 - **Tower Talk**: AI-powered conversation assistance using OpenAI GPT
