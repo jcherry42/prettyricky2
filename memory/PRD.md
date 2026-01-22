@@ -198,6 +198,12 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - `GET /api/notifications/history` - Notification history
 
 ## Changelog
+- **2026-01-22**: VinSolutions-Level Feature Enhancement
+  - **Customer List Enhanced**: Priority sorting (HOT → WARM → COLD → NEW), phone number display, flame icon for hot leads, email search capability
+  - **Multi-Language Push-to-Talk**: Now supports 5 languages (EN, ES, FR, JA, KO) with dropdown picker
+  - **Language Swap**: One-tap button to swap source/target languages
+  - **Translation Caching**: Repeated translations return instantly (0.99 confidence)
+  - **All 14 backend tests pass (100%), all frontend UI flows verified**
 - **2026-01-22**: Critical Bug Fixes (Push-to-Talk, Sport Mode, Translations)
   - **Push-to-Talk Rewritten** - Now works as true push-to-talk: First press starts listening, second press stops and translates
   - **Sport Mode Fixed** - Fixed infinite re-render loop causing crashes. Added proper debouncing with ref tracking
