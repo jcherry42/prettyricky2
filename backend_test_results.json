@@ -1,6 +1,6 @@
 {
   "timestamp": "2026-01-17T22:09:20.474992",
-  "backend_url": "https://salesrep-assist.preview.emergentagent.com/api",
+  "backend_url": "https://autosales-7.preview.emergentagent.com/api",
   "total_tests": 11,
   "passed": 11,
   "failed": 0,

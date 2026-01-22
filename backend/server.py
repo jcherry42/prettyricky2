@@ -3980,7 +3980,7 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://salesrep-assist.preview.emergentagent.com"
+        "connect-src 'self' https://autosales-7.preview.emergentagent.com"
     )
     # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
@@ -3989,7 +3989,7 @@ async def add_security_headers(request: Request, call_next):
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://salesrep-assist.preview.emergentagent.com",
+    "https://autosales-7.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings
