@@ -18,17 +18,27 @@ export const VoiceTranslator = () => {
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [error, setError] = useState('');
-  const [direction, setDirection] = useState('es-en'); // 'es-en' or 'en-es'
+  const [sourceLang, setSourceLang] = useState('es');
+  const [targetLang, setTargetLang] = useState('en');
   const [showResult, setShowResult] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(null); // 'source' | 'target' | null
   
   const recognitionRef = useRef(null);
   const latestTextRef = useRef('');
-  const isListeningRef = useRef(false);  // Track listening state for callbacks
+  const isListeningRef = useRef(false);
 
-  const sourceLang = direction === 'es-en' ? 'es' : 'en';
-  const targetLang = direction === 'es-en' ? 'en' : 'es';
-  const sourceLabel = direction === 'es-en' ? '🇪🇸 Spanish' : '🇺🇸 English';
-  const targetLabel = direction === 'es-en' ? '🇺🇸 English' : '🇪🇸 Spanish';
+  // Language configuration
+  const LANGUAGES = [
+    { code: 'en', name: 'English', flag: '🇺🇸', speechCode: 'en-US' },
+    { code: 'es', name: 'Spanish', flag: '🇪🇸', speechCode: 'es-US' },
+    { code: 'fr', name: 'French', flag: '🇫🇷', speechCode: 'fr-FR' },
+    { code: 'ja', name: 'Japanese', flag: '🇯🇵', speechCode: 'ja-JP' },
+    { code: 'ko', name: 'Korean', flag: '🇰🇷', speechCode: 'ko-KR' },
+  ];
+
+  const getLanguage = (code) => LANGUAGES.find(l => l.code === code) || LANGUAGES[0];
+  const sourceLanguage = getLanguage(sourceLang);
+  const targetLanguage = getLanguage(targetLang);
 
   // Translate text
   const translateText = useCallback(async (text) => {
