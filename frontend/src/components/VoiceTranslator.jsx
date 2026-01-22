@@ -535,31 +535,6 @@ export const VoiceTranslator = () => {
           color: #22d3ee;
         }
 
-        .lang-toggle-btn {
-          position: fixed;
-          right: 24px;
-          top: calc(50% - 60px);
-          z-index: 44;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          padding: 6px 10px;
-          background: rgba(30,32,40,0.95);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 16px;
-          color: #888;
-          font-size: 12px;
-          cursor: pointer;
-        }
-
-        .lang-toggle-btn span.active {
-          opacity: 1;
-        }
-
-        .lang-toggle-btn span:not(.active) {
-          opacity: 0.4;
-        }
-
         .live-transcript {
           position: fixed;
           bottom: 100px;
