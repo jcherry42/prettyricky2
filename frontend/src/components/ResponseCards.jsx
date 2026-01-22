@@ -629,49 +629,73 @@ export const ResponseCards = () => {
                         border: '1px solid hsla(40, 40%, 30%, 0.25)'
                       }}
                     >
-                      {/* Language toggle for follow-up */}
-                      {supercharged && followUpTranslation && (
-                        <div className="flex justify-end mb-2">
-                          <button
-                            onClick={(e) => toggleLanguage(followUpKey, e)}
-                            className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all"
-                            style={{
-                              background: showFollowUpSpanish ? 'hsla(25, 100%, 50%, 0.2)' : 'hsla(210, 80%, 50%, 0.15)',
-                              color: showFollowUpSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
-                              border: `1px solid ${showFollowUpSpanish ? 'hsla(25, 100%, 50%, 0.3)' : 'hsla(210, 80%, 50%, 0.25)'}`,
-                            }}
-                          >
-                            <Languages className="w-3 h-3" />
-                            {showFollowUpSpanish ? 'ES' : 'EN'}
-                          </button>
-                        </div>
-                      )}
-                      
                       <p className="text-sm text-foreground leading-relaxed mb-3">
                         {displayedFollowUp}
                       </p>
                       
-                      <button
-                        onClick={(e) => handleCopyFollowUp(response, e)}
-                        className="btn-steel w-full py-2 text-xs flex items-center justify-center gap-1.5"
-                        style={isFollowUpCopied ? {
-                          background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
-                          borderColor: 'hsla(145, 60%, 45%, 0.4)',
-                          color: 'hsla(145, 70%, 60%, 1)',
-                        } : {}}
-                      >
-                        {isFollowUpCopied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            Copied!
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            Copy Follow-up
-                          </>
+                      {/* Follow-up action buttons */}
+                      <div className="flex gap-2">
+                        {/* Sport Mode Translate Button for Follow-up */}
+                        {supercharged && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              haptics.tap();
+                              if (followUpTranslation) {
+                                toggleLanguage(followUpKey, e);
+                              } else {
+                                translateResponse(response.id, response.followUpText, true);
+                              }
+                            }}
+                            disabled={isFollowUpTranslating}
+                            className="flex items-center justify-center gap-1.5"
+                            style={{
+                              background: showFollowUpSpanish 
+                                ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
+                                : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
+                              border: `1px solid ${showFollowUpSpanish ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
+                              color: showFollowUpSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: '600',
+                              minWidth: '70px',
+                            }}
+                            data-testid={`sport-translate-followup-${index}`}
+                          >
+                            {isFollowUpTranslating ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <>
+                                <Languages className="w-3.5 h-3.5" />
+                                {followUpTranslation ? (showFollowUpSpanish ? '🇪🇸' : '🇺🇸') : '🇪🇸'}
+                              </>
+                            )}
+                          </button>
                         )}
-                      </button>
+                        
+                        <button
+                          onClick={(e) => handleCopyFollowUp(response, e)}
+                          className="btn-steel flex-1 py-2 text-xs flex items-center justify-center gap-1.5"
+                          style={isFollowUpCopied ? {
+                            background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
+                            borderColor: 'hsla(145, 60%, 45%, 0.4)',
+                            color: 'hsla(145, 70%, 60%, 1)',
+                          } : {}}
+                        >
+                          {isFollowUpCopied ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              Copy Follow-up
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
