@@ -3657,24 +3657,31 @@ html:not(.dark) .btn-check-engine-v2:hover {
 
 /* Lead Status Badges */
 .badge-hot {
-  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider;
+  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center;
   background: hsla(0, 70%, 45%, 0.2);
   color: hsla(0, 80%, 65%, 1);
   border: 1px solid hsla(0, 70%, 50%, 0.3);
 }
 
 .badge-warm {
-  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider;
+  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center;
   background: hsla(35, 80%, 45%, 0.2);
   color: hsla(40, 90%, 65%, 1);
   border: 1px solid hsla(35, 80%, 50%, 0.3);
 }
 
 .badge-cold {
-  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider;
+  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center;
   background: hsla(210, 60%, 45%, 0.2);
   color: hsla(210, 80%, 70%, 1);
   border: 1px solid hsla(210, 60%, 50%, 0.3);
+}
+
+.badge-new {
+  @apply px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex items-center;
+  background: hsla(150, 60%, 35%, 0.2);
+  color: hsla(150, 70%, 60%, 1);
+  border: 1px solid hsla(150, 60%, 40%, 0.3);
 }
 
 /* ============================================
