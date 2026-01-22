@@ -2,77 +2,21 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Loader2, Sparkles, Copy, Check, MessageSquare, Heart, Flame, Languages, Mic, MicOff, Volume2, VolumeX, Zap } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
+import { translateText } from '../utils/translationService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Quick Response Shortcuts - Common objections and situations
 const QUICK_SHORTCUTS = [
-  { 
-    id: 'price_high', 
-    label: 'Price Too High', 
-    icon: '💰',
-    situation: 'Customer says the price is too high and wants a better deal',
-  },
-  { 
-    id: 'need_think', 
-    label: 'Need to Think', 
-    icon: '🤔',
-    situation: 'Customer says they need to think about it and will come back later',
-  },
-  { 
-    id: 'trade_in', 
-    label: 'Trade-In Value', 
-    icon: '🔄',
-    situation: 'Customer is unhappy with the trade-in value offered for their current vehicle',
-  },
-  { 
-    id: 'competitor', 
-    label: 'Better Deal Elsewhere', 
-    icon: '🏷️',
-    situation: 'Customer says they found a better deal at another dealership',
-  },
-  { 
-    id: 'payment', 
-    label: 'Payment Too High', 
-    icon: '📊',
-    situation: 'Customer says the monthly payment is more than they can afford',
-  },
-  { 
-    id: 'spouse', 
-    label: 'Check with Spouse', 
-    icon: '💑',
-    situation: 'Customer says they need to check with their spouse before making a decision',
-  },
-  { 
-    id: 'features', 
-    label: 'Missing Features', 
-    icon: '⚙️',
-    situation: 'Customer is interested but the vehicle is missing some features they wanted',
-  },
-  { 
-    id: 'timing', 
-    label: 'Not Ready Yet', 
-    icon: '⏰',
-    situation: 'Customer says they are just looking and not ready to buy right now',
-  },
+  { id: 'price_high', label: 'Price Too High', icon: '💰', situation: 'Customer says the price is too high and wants a better deal' },
+  { id: 'need_think', label: 'Need to Think', icon: '🤔', situation: 'Customer says they need to think about it and will come back later' },
+  { id: 'trade_in', label: 'Trade-In Value', icon: '🔄', situation: 'Customer is unhappy with the trade-in value offered for their current vehicle' },
+  { id: 'competitor', label: 'Better Deal Elsewhere', icon: '🏷️', situation: 'Customer says they found a better deal at another dealership' },
+  { id: 'payment', label: 'Payment Too High', icon: '📊', situation: 'Customer says the monthly payment is more than they can afford' },
+  { id: 'spouse', label: 'Check with Spouse', icon: '💑', situation: 'Customer says they need to check with their spouse before making a decision' },
+  { id: 'features', label: 'Missing Features', icon: '⚙️', situation: 'Customer is interested but the vehicle is missing some features they wanted' },
+  { id: 'timing', label: 'Not Ready Yet', icon: '⏰', situation: 'Customer says they are just looking and not ready to buy right now' },
 ];
-
-// Translation helper
-const translateText = async (text, sourceLang = 'auto', targetLang = 'es') => {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/translate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, source_lang: sourceLang, target_lang: targetLang }),
-    });
-    if (!res.ok) throw new Error('Translation failed');
-    const data = await res.json();
-    return data.translated_text;
-  } catch (err) {
-    console.error('Translation error:', err);
-    return null;
-  }
-};
 
 // Check if browser supports speech recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
