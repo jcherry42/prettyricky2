@@ -186,19 +186,22 @@ class TestVinSaveToInventory:
         vehicle_data = decode_response.json()
         
         # Save to inventory using the correct endpoint format
-        # The /vin/save-to-inventory endpoint expects the full vehicle data
+        # The /vin/save-to-inventory endpoint expects vehicle_data as nested object
         save_payload = {
             "vin": vin,
-            "category": "inventory",
-            "year": vehicle_data.get("year"),
-            "make": vehicle_data.get("make"),
-            "model": vehicle_data.get("model"),
-            "trim": vehicle_data.get("trim"),
-            "fuel_type": vehicle_data.get("fuel_type"),
-            "body_class": vehicle_data.get("body_class"),
-            "drive_type": vehicle_data.get("drive_type"),
-            "engine_display": vehicle_data.get("engine_display"),
-            "assembly_location": vehicle_data.get("assembly_location"),
+            "category": "active_inventory",
+            "vehicle_data": {
+                "year": vehicle_data.get("year"),
+                "make": vehicle_data.get("make"),
+                "model": vehicle_data.get("model"),
+                "trim": vehicle_data.get("trim"),
+                "fuel_type": vehicle_data.get("fuel_type"),
+                "body_class": vehicle_data.get("body_class"),
+                "drive_type": vehicle_data.get("drive_type"),
+                "engine_display": vehicle_data.get("engine_display"),
+                "assembly_location": vehicle_data.get("assembly_location"),
+                "safety_features": vehicle_data.get("safety_features", []),
+            }
         }
         
         save_response = requests.post(
