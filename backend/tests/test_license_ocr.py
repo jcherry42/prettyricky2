@@ -287,12 +287,12 @@ class TestLicenseAttach:
         upload_response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
-        create_data = {
-            'first_name': 'TEST_Attach',
-            'last_name': 'TEST_Customer',
-            'image_url': image_url
+        create_form = {
+            'first_name': (None, 'TEST_Attach'),
+            'last_name': (None, 'TEST_Customer'),
+            'image_url': (None, image_url)
         }
-        create_response = requests.post(f"{BASE_URL}/api/license/create-customer", data=create_data)
+        create_response = requests.post(f"{BASE_URL}/api/license/create-customer", files=create_form)
         customer_id = create_response.json().get('customer', {}).get('id')
         
         assert customer_id, "Customer should be created"
@@ -302,12 +302,12 @@ class TestLicenseAttach:
         new_upload = requests.post(f"{BASE_URL}/api/license/scan", files=new_files)
         new_image_url = new_upload.json().get('image_url')
         
-        # Attach new license to customer
-        attach_data = {
-            'customer_id': customer_id,
-            'image_url': new_image_url
+        # Attach new license to customer - use multipart form
+        attach_form = {
+            'customer_id': (None, customer_id),
+            'image_url': (None, new_image_url)
         }
-        attach_response = requests.post(f"{BASE_URL}/api/license/attach", data=attach_data)
+        attach_response = requests.post(f"{BASE_URL}/api/license/attach", files=attach_form)
         
         assert attach_response.status_code == 200
         result = attach_response.json()
