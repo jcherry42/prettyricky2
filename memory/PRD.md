@@ -84,21 +84,35 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ## What's Been Implemented (as of January 22, 2026)
 
 ### Intake Scanner Feature ✅ (January 22, 2026)
-**Completed comprehensive Intake Scanner implementation with OCR:**
+**Completed enterprise-grade Intake Scanner - KEY SELLING POINT:**
 
-- **License OCR Extraction**: AI (GPT-4o Vision) extracts first name, last name, address, city, state, zip
-- **Editable Form**: Review and edit extracted data before saving
-- **Combined Intake Modal**: Single entry point for VIN and License scanning
-- **Customer Creation**: Auto-create customer from extracted license data with image attached
-- **Existing Customer Attach**: Option to attach license to existing customer profile
-- **Backend Endpoints**:
-  - `POST /api/license/scan` - Upload + OCR extraction with GPT-4o Vision
-  - `POST /api/license/create-customer` - Create customer from extracted data
-  - `POST /api/license/upload` - Simple upload without OCR
-  - `POST /api/license/attach` - Attach previously uploaded license to customer
-  - `GET /api/uploads/{filename}` - Serve uploaded license images
-- **Eject Enhancement**: License image included in MMS when present on customer
-- **Enterprise UI**: Premium styling matching luxury automotive aesthetic
+**License Scanner Enhancements:**
+- GPT-4o Vision OCR with confidence scoring (0-100%)
+- Name normalization (ALL CAPS → Title Case)
+- State normalization (full name → 2-letter code)
+- Extraction notes for partial extractions
+- Image quality validation (size limits, format checks)
+- Retry mechanisms with user-friendly messaging
+- Multi-step progress indicators during scan
+
+**VIN Scanner Enhancements:**
+- ISO 3779 checksum validation (real-time)
+- WMI region detection (North America, Europe, Asia, etc.)
+- Year pre-detection from 10th character
+- NHTSA database integration with confidence scoring
+- Safety features display (airbags, ABS, ESC, etc.)
+- Recent scans history (localStorage)
+- Duplicate VIN detection
+
+**Backend Endpoints:**
+- `POST /api/license/scan` - OCR extraction with confidence + normalization
+- `POST /api/license/create-customer` - Create customer from extracted data
+- `POST /api/license/upload` - Simple upload without OCR
+- `POST /api/license/attach` - Attach license to existing customer
+- `GET /api/vin/decode/{vin}` - NHTSA decode with validation
+- `POST /api/vin/save-to-inventory` - Save with duplicate detection
+
+**Testing:** 100% pass rate (30/30 backend tests) - `/app/test_reports/iteration_19.json`
 
 ### Enterprise-Grade Quality Pass ✅
 **Completed comprehensive 10/10 quality improvements:**
