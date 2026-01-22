@@ -23,6 +23,7 @@ export const VoiceTranslator = () => {
   
   const recognitionRef = useRef(null);
   const latestTextRef = useRef('');
+  const isListeningRef = useRef(false);  // Track listening state for callbacks
 
   const sourceLang = direction === 'es-en' ? 'es' : 'en';
   const targetLang = direction === 'es-en' ? 'en' : 'es';
