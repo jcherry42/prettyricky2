@@ -19,13 +19,11 @@ const LANG_CONFIG = {
 
 /**
  * Simplified Push-to-Talk Voice Translator
- * - Syncs with app's translation language setting
+ * - Syncs with app's translation language setting (from localStorage)
  * - Press to start, press again to stop and translate
  * - Clean, stable implementation
  */
 export const VoiceTranslator = () => {
-  const { preferences } = useSales();
-  
   const [isListening, setIsListening] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -37,8 +35,8 @@ export const VoiceTranslator = () => {
   const transcriptRef = useRef('');
   const isActiveRef = useRef(false);
 
-  // Get target language from app preferences (default to Spanish)
-  const targetLang = preferences?.translationLanguage || 'es';
+  // Get target language from localStorage (default to Spanish)
+  const targetLang = localStorage.getItem('defaultTargetLanguage') || 'es';
   const sourceLang = targetLang === 'en' ? 'es' : 'en'; // If target is English, source is Spanish, otherwise source is English
   
   const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.en;
