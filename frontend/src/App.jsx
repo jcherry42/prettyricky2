@@ -116,7 +116,7 @@ function AppContent() {
       {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
       
       {/* Login Modal */}
-      {showLogin && !isAuthenticated && (
+      {shouldShowLogin && (
         <LoginModal 
           onClose={() => setShowLogin(false)} 
           onSuccess={() => setShowLogin(false)} 
