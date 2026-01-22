@@ -334,11 +334,10 @@ async def translate_text(request: TranslateRequest):
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
-        # Language mapping
+        # Language mapping - 5 supported languages
         lang_names = {
-            'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
-            'it': 'Italian', 'pt': 'Portuguese', 'zh': 'Chinese', 'ja': 'Japanese',
-            'ko': 'Korean', 'ar': 'Arabic'
+            'en': 'English', 'es': 'Spanish', 'fr': 'French',
+            'ja': 'Japanese', 'ko': 'Korean'
         }
         
         target_lang_name = lang_names.get(request.target_lang, request.target_lang)
