@@ -503,6 +503,47 @@ export const ResponseCards = () => {
               
               {/* Action buttons */}
               <div className="flex gap-2">
+                {/* Sport Mode Translate Button - Always visible when supercharged */}
+                {supercharged && !isEditing && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      haptics.tap();
+                      if (mainTranslation) {
+                        // Toggle between languages
+                        toggleLanguage(mainKey, e);
+                      } else {
+                        // Trigger translation
+                        translateResponse(response.id, response.text, false);
+                      }
+                    }}
+                    disabled={isMainTranslating}
+                    className="sport-translate-btn flex items-center justify-center gap-1.5"
+                    style={{
+                      background: showMainSpanish 
+                        ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
+                        : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
+                      border: `1px solid ${showMainSpanish ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
+                      color: showMainSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
+                      minWidth: '90px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                    }}
+                    data-testid={`sport-translate-${index}`}
+                    title={mainTranslation ? (showMainSpanish ? 'Show English' : 'Show Spanish') : 'Translate to Spanish'}
+                  >
+                    {isMainTranslating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Languages className="w-4 h-4" />
+                        {mainTranslation ? (showMainSpanish ? '🇪🇸' : '🇺🇸') : '🇪🇸'}
+                      </>
+                    )}
+                  </button>
+                )}
                 {isSpeechSupported && (
                   <button
                     onClick={(e) => handleSpeak(response, e)}
