@@ -24,16 +24,30 @@ export const CustomerSelector = () => {
   const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef(null);
   const listRef = useRef(null);
+  const debounceTimerRef = useRef(null);
 
-  // Debounce search input
+  // Debounce search input - using ref to avoid lint warning
   useEffect(() => {
-    setIsSearching(true);
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-      setIsSearching(false);
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [search]);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    if (search !== debouncedSearch) {
+      debounceTimerRef.current = setTimeout(() => {
+        setDebouncedSearch(search);
+        setIsSearching(false);
+      }, 200);
+      
+      // Only set searching if there's a change pending
+      if (search) setIsSearching(true);
+    }
+    
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [search, debouncedSearch]);
 
   // Focus search input when opened
   useEffect(() => {
