@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, X, Languages, Loader2, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, Volume2, X } from 'lucide-react';
+import { useSales } from '../context/SalesContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -7,43 +8,56 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const isSpeechSupported = !!SpeechRecognition;
 
+// Language config
+const LANG_CONFIG = {
+  en: { name: 'English', flag: '🇺🇸', speech: 'en-US' },
+  es: { name: 'Spanish', flag: '🇪🇸', speech: 'es-US' },
+  fr: { name: 'French', flag: '🇫🇷', speech: 'fr-FR' },
+  ja: { name: 'Japanese', flag: '🇯🇵', speech: 'ja-JP' },
+  ko: { name: 'Korean', flag: '🇰🇷', speech: 'ko-KR' },
+};
+
 /**
- * Voice Translator - TRUE Push-to-Talk
- * First press: Start listening
- * Second press: Stop listening and translate
+ * Simplified Push-to-Talk Voice Translator
+ * - Syncs with app's translation language setting
+ * - Press to start, press again to stop and translate
+ * - Clean, stable implementation
  */
 export const VoiceTranslator = () => {
+  const { preferences } = useSales();
+  
   const [isListening, setIsListening] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
-  const [sourceText, setSourceText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
+  const [transcript, setTranscript] = useState('');
+  const [translation, setTranslation] = useState('');
   const [error, setError] = useState('');
-  const [sourceLang, setSourceLang] = useState('es');
-  const [targetLang, setTargetLang] = useState('en');
   const [showResult, setShowResult] = useState(false);
-  const [showLangPicker, setShowLangPicker] = useState(null); // 'source' | 'target' | null
   
   const recognitionRef = useRef(null);
-  const latestTextRef = useRef('');
-  const isListeningRef = useRef(false);
+  const transcriptRef = useRef('');
+  const isActiveRef = useRef(false);
 
-  // Language configuration
-  const LANGUAGES = [
-    { code: 'en', name: 'English', flag: '🇺🇸', speechCode: 'en-US' },
-    { code: 'es', name: 'Spanish', flag: '🇪🇸', speechCode: 'es-US' },
-    { code: 'fr', name: 'French', flag: '🇫🇷', speechCode: 'fr-FR' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵', speechCode: 'ja-JP' },
-    { code: 'ko', name: 'Korean', flag: '🇰🇷', speechCode: 'ko-KR' },
-  ];
+  // Get target language from app preferences (default to Spanish)
+  const targetLang = preferences?.translationLanguage || 'es';
+  const sourceLang = targetLang === 'en' ? 'es' : 'en'; // If target is English, source is Spanish, otherwise source is English
+  
+  const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.en;
+  const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
 
-  const getLanguage = (code) => LANGUAGES.find(l => l.code === code) || LANGUAGES[0];
-  const sourceLanguage = getLanguage(sourceLang);
-  const targetLanguage = getLanguage(targetLang);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch (e) { /* ignore */ }
+      }
+    };
+  }, []);
 
-  // Translate text
-  const translateText = useCallback(async (text) => {
+  // Translate the transcript
+  const doTranslate = useCallback(async (text) => {
     if (!text.trim()) {
-      setError('No speech detected');
+      setError('No speech detected. Try again.');
+      setShowResult(true);
       return;
     }
     
@@ -51,300 +65,195 @@ export const VoiceTranslator = () => {
     setError('');
     
     try {
-      console.log('[Voice Translator] Translating:', text);
-      const response = await fetch(`${BACKEND_URL}/api/translate`, {
+      const res = await fetch(`${BACKEND_URL}/api/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: text,
+          text: text.trim(),
           source_lang: sourceLang,
           target_lang: targetLang
         })
       });
       
-      if (!response.ok) throw new Error('Translation failed');
+      if (!res.ok) throw new Error('Translation failed');
       
-      const data = await response.json();
-      console.log('[Voice Translator] Translation result:', data);
-      setTranslatedText(data.translated_text || '');
+      const data = await res.json();
+      setTranslation(data.translated_text || '');
       setShowResult(true);
     } catch (err) {
-      console.error('[Voice Translator] Error:', err);
+      console.error('[VoiceTranslator] Error:', err);
       setError('Translation failed. Check connection.');
+      setShowResult(true);
     } finally {
       setIsTranslating(false);
     }
   }, [sourceLang, targetLang]);
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if (!isSpeechSupported) return;
-    
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = sourceLanguage.speechCode;
-    recognition.maxAlternatives = 1;
-    
-    recognition.onresult = (event) => {
-      let transcript = '';
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setSourceText(transcript);
-      latestTextRef.current = transcript;
-    };
-    
-    recognition.onend = () => {
-      console.log('[Voice Translator] Recognition ended, wasListening:', isListeningRef.current);
-      // Only auto-translate if we have text and were listening
-      if (isListeningRef.current && latestTextRef.current) {
-        isListeningRef.current = false;
-        setIsListening(false);
-        translateText(latestTextRef.current);
-      }
-    };
-    
-    recognition.onerror = (event) => {
-      console.error('[Voice Translator] Error:', event.error);
-      setIsListening(false);
-      if (event.error === 'not-allowed') {
-        setError('Microphone access denied');
-      } else if (event.error === 'no-speech') {
-        setError('No speech detected. Try again.');
-      } else if (event.error !== 'aborted') {
-        setError(`Error: ${event.error}`);
-      }
-    };
-    
-    recognitionRef.current = recognition;
-    
-    return () => {
-      try { recognitionRef.current?.abort(); } catch (e) { /* ignore */ }
-    };
-  }, [sourceLang, sourceLanguage.speechCode, translateText]);
-
-  // Update recognition language when source changes
-  useEffect(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.lang = sourceLanguage.speechCode;
-    }
-  }, [sourceLanguage.speechCode]);
-
-  // PUSH TO TALK: Toggle listening on button press
-  const handlePushToTalk = async () => {
+  // Handle push-to-talk
+  const handlePush = async () => {
     if (!isSpeechSupported) {
-      setError('Speech recognition not supported');
+      setError('Speech recognition not supported in this browser');
+      setShowResult(true);
       return;
     }
-    
+
     if (isListening) {
-      // SECOND PRESS: Stop listening and translate
-      console.log('[Voice Translator] Stopping...');
-      isListeningRef.current = false;
-      recognitionRef.current?.stop();
+      // STOP listening
+      isActiveRef.current = false;
       setIsListening(false);
       
-      if (latestTextRef.current) {
-        translateText(latestTextRef.current);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
+      }
+      
+      // Translate what we captured
+      if (transcriptRef.current.trim()) {
+        doTranslate(transcriptRef.current);
       } else {
-        setError('No speech detected');
+        setError('No speech detected. Try again.');
+        setShowResult(true);
       }
     } else {
-      // FIRST PRESS: Start listening
-      console.log('[Voice Translator] Starting...');
-      setSourceText('');
-      setTranslatedText('');
+      // START listening
+      setTranscript('');
+      setTranslation('');
       setError('');
       setShowResult(false);
-      latestTextRef.current = '';
+      transcriptRef.current = '';
       
-      // Request mic permission
+      // Request microphone permission
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-      } catch (micError) {
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
         setError('Microphone access denied');
+        setShowResult(true);
         return;
       }
       
-      try {
-        isListeningRef.current = true;
-        recognitionRef.current?.start();
-        setIsListening(true);
-      } catch (err) {
-        if (err.name === 'InvalidStateError') {
-          // Already started, try stopping and restarting
-          recognitionRef.current?.stop();
-          setTimeout(() => {
-            isListeningRef.current = true;
-            recognitionRef.current?.start();
-            setIsListening(true);
-          }, 100);
-        } else {
-          setError('Could not start microphone');
-          isListeningRef.current = false;
+      // Create fresh recognition instance each time
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = sourceConfig.speech;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = 0; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
         }
+        transcriptRef.current = text;
+        setTranscript(text);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('[VoiceTranslator] Recognition error:', event.error);
+        if (event.error === 'no-speech') {
+          setError('No speech detected. Try again.');
+        } else if (event.error === 'not-allowed') {
+          setError('Microphone access denied');
+        } else if (event.error !== 'aborted') {
+          setError('Recognition error. Try again.');
+        }
+        isActiveRef.current = false;
+        setIsListening(false);
+        setShowResult(true);
+      };
+      
+      recognition.onend = () => {
+        // Only auto-translate if we were actively listening (not manually stopped)
+        if (isActiveRef.current && transcriptRef.current.trim()) {
+          doTranslate(transcriptRef.current);
+        }
+        isActiveRef.current = false;
+        setIsListening(false);
+      };
+      
+      recognitionRef.current = recognition;
+      isActiveRef.current = true;
+      
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (e) {
+        console.error('[VoiceTranslator] Start error:', e);
+        setError('Could not start microphone');
+        setShowResult(true);
+        isActiveRef.current = false;
       }
     }
   };
 
-  // Swap source and target languages
-  const swapLanguages = () => {
-    setSourceLang(targetLang);
-    setTargetLang(sourceLang);
-    setSourceText('');
-    setTranslatedText('');
-    setError('');
-    setShowResult(false);
-  };
-
-  // Select a language
-  const selectLanguage = (code, type) => {
-    if (type === 'source') {
-      if (code === targetLang) {
-        // Swap if selecting same as target
-        setTargetLang(sourceLang);
-      }
-      setSourceLang(code);
-    } else {
-      if (code === sourceLang) {
-        // Swap if selecting same as source
-        setSourceLang(targetLang);
-      }
-      setTargetLang(code);
-    }
-    setShowLangPicker(null);
-    setSourceText('');
-    setTranslatedText('');
-    setError('');
-    setShowResult(false);
+  // Speak the translation
+  const speakResult = () => {
+    if (!translation || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(translation);
+    utterance.lang = targetConfig.speech;
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   };
 
   // Close result panel
   const closeResult = () => {
     setShowResult(false);
-    setSourceText('');
-    setTranslatedText('');
+    setTranscript('');
+    setTranslation('');
     setError('');
-  };
-
-  // Speak the translation
-  const speakTranslation = () => {
-    if (!translatedText || !('speechSynthesis' in window)) return;
-    
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(translatedText);
-    utterance.lang = targetLanguage.speechCode;
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
   };
 
   return (
     <>
-      {/* PUSH TO TALK BUTTON - Fixed on right side */}
+      {/* Push-to-Talk Button - Positioned near Quick Add button */}
       <button
-        onClick={handlePushToTalk}
+        onClick={handlePush}
         disabled={isTranslating}
-        className={`push-to-talk-btn ${isListening ? 'listening' : ''} ${isTranslating ? 'translating' : ''}`}
+        className={`ptt-button ${isListening ? 'listening' : ''} ${isTranslating ? 'busy' : ''}`}
         data-testid="push-to-talk-btn"
+        aria-label={isListening ? 'Stop recording' : 'Start recording'}
       >
-        <div className="ptt-inner">
-          {isTranslating ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
-          ) : isListening ? (
-            <MicOff className="w-6 h-6" />
-          ) : (
-            <Mic className="w-6 h-6" />
-          )}
-        </div>
-        <span className="ptt-label">
-          {isTranslating ? 'WAIT' : isListening ? 'STOP' : 'PUSH'}
-        </span>
-        {isListening && <div className="ptt-pulse" />}
+        {isTranslating ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : isListening ? (
+          <MicOff className="w-5 h-5" />
+        ) : (
+          <Mic className="w-5 h-5" />
+        )}
+        {isListening && <span className="ptt-pulse" />}
       </button>
 
-      {/* Language Selector - Above main button */}
-      <div className="lang-selector-group">
-        {/* Source Language */}
-        <button
-          onClick={() => setShowLangPicker(showLangPicker === 'source' ? null : 'source')}
-          className="lang-pill"
-          data-testid="source-lang-btn"
-        >
-          <span>{sourceLanguage.flag}</span>
-        </button>
-        
-        {/* Swap Button */}
-        <button onClick={swapLanguages} className="lang-swap-btn" data-testid="swap-lang-btn">
-          <Languages className="w-3 h-3" />
-        </button>
-        
-        {/* Target Language */}
-        <button
-          onClick={() => setShowLangPicker(showLangPicker === 'target' ? null : 'target')}
-          className="lang-pill"
-          data-testid="target-lang-btn"
-        >
-          <span>{targetLanguage.flag}</span>
-        </button>
-      </div>
-
-      {/* Language Picker Dropdown */}
-      {showLangPicker && (
-        <div className="lang-picker-dropdown">
-          <div className="lang-picker-header">
-            {showLangPicker === 'source' ? 'Speak in:' : 'Translate to:'}
-          </div>
-          {LANGUAGES.map(lang => (
-            <button
-              key={lang.code}
-              onClick={() => selectLanguage(lang.code, showLangPicker)}
-              className={`lang-picker-option ${
-                (showLangPicker === 'source' ? sourceLang : targetLang) === lang.code ? 'active' : ''
-              }`}
-            >
-              <span>{lang.flag}</span>
-              <span>{lang.name}</span>
-            </button>
-          ))}
+      {/* Live transcript indicator */}
+      {isListening && transcript && (
+        <div className="ptt-transcript">
+          <span className="ptt-transcript-flag">{sourceConfig.flag}</span>
+          <span className="ptt-transcript-text">{transcript}</span>
         </div>
       )}
 
-      {/* Live transcript while listening */}
-      {isListening && sourceText && (
-        <div className="live-transcript">
-          <div className="transcript-label">{sourceLanguage.flag} {sourceLanguage.name}</div>
-          <div className="transcript-text">{sourceText}</div>
-        </div>
-      )}
-
-      {/* Result Panel - Shows after translation */}
-      {showResult && (translatedText || error) && (
-        <div className="result-panel" onClick={closeResult}>
-          <div className="result-content" onClick={e => e.stopPropagation()}>
-            <button onClick={closeResult} className="result-close">
-              <X className="w-5 h-5" />
+      {/* Result Modal */}
+      {showResult && (
+        <div className="ptt-modal-overlay" onClick={closeResult}>
+          <div className="ptt-modal" onClick={e => e.stopPropagation()}>
+            <button onClick={closeResult} className="ptt-modal-close">
+              <X className="w-4 h-4" />
             </button>
-            
+
             {error ? (
-              <div className="result-error">
-                <p>{error}</p>
-              </div>
+              <div className="ptt-error">{error}</div>
             ) : (
               <>
-                {sourceText && (
-                  <div className="result-source">
-                    <span className="result-label">{sourceLanguage.flag} {sourceLanguage.name}</span>
-                    <p>{sourceText}</p>
+                {transcript && (
+                  <div className="ptt-result-section ptt-source">
+                    <div className="ptt-result-label">{sourceConfig.flag} {sourceConfig.name}</div>
+                    <p>{transcript}</p>
                   </div>
                 )}
-                
-                {translatedText && (
-                  <div className="result-translated">
-                    <span className="result-label">{targetLanguage.flag} {targetLanguage.name}</span>
-                    <p>{translatedText}</p>
-                    <button onClick={speakTranslation} className="speak-btn">
+                {translation && (
+                  <div className="ptt-result-section ptt-target">
+                    <div className="ptt-result-label">{targetConfig.flag} {targetConfig.name}</div>
+                    <p>{translation}</p>
+                    <button onClick={speakResult} className="ptt-speak-btn">
                       <Volume2 className="w-4 h-4" />
                       Speak
                     </button>
@@ -357,215 +266,89 @@ export const VoiceTranslator = () => {
       )}
 
       <style>{`
-        .push-to-talk-btn {
+        .ptt-button {
           position: fixed;
           right: 16px;
-          top: 50%;
-          transform: translateY(-50%);
+          bottom: 100px;
           z-index: 45;
-          width: 72px;
-          height: 72px;
+          width: 52px;
+          height: 52px;
           border-radius: 50%;
-          background: linear-gradient(145deg, #2a2a35 0%, #1a1a22 50%, #0f0f14 100%);
-          border: 3px solid #333;
-          cursor: pointer;
-          padding: 0;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-          touch-action: manipulation;
-          -webkit-tap-highlight-color: transparent;
-          user-select: none;
+          background: linear-gradient(145deg, #252530 0%, #1a1a22 100%);
+          border: 2px solid #333;
+          color: #888;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 2px;
-          transition: all 0.15s ease;
+          cursor: pointer;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+          transition: all 0.2s ease;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .push-to-talk-btn:active {
-          transform: translateY(-50%) scale(0.95);
+        .ptt-button:active {
+          transform: scale(0.95);
         }
 
-        .push-to-talk-btn.listening {
+        .ptt-button.listening {
           border-color: #ef4444;
-          box-shadow: 0 0 30px rgba(239,68,68,0.4);
+          color: #ef4444;
+          box-shadow: 0 0 20px rgba(239,68,68,0.3);
         }
 
-        .push-to-talk-btn.translating {
+        .ptt-button.busy {
           border-color: #22d3ee;
-          opacity: 0.8;
-        }
-
-        .ptt-inner {
-          color: #666;
-          transition: color 0.2s;
-        }
-
-        .push-to-talk-btn.listening .ptt-inner {
-          color: #ef4444;
-        }
-
-        .push-to-talk-btn.translating .ptt-inner {
           color: #22d3ee;
-        }
-
-        .ptt-label {
-          font-family: 'Russo One', sans-serif;
-          font-size: 9px;
-          font-weight: bold;
-          letter-spacing: 0.1em;
-          color: #666;
-        }
-
-        .push-to-talk-btn.listening .ptt-label {
-          color: #ef4444;
+          opacity: 0.8;
+          cursor: wait;
         }
 
         .ptt-pulse {
           position: absolute;
-          inset: -6px;
+          inset: -4px;
           border-radius: 50%;
           border: 2px solid #ef4444;
-          animation: ptt-ring 1.2s ease-out infinite;
+          animation: ptt-ring 1s ease-out infinite;
           pointer-events: none;
         }
 
         @keyframes ptt-ring {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.4); opacity: 0; }
+          0% { transform: scale(1); opacity: 0.8; }
+          100% { transform: scale(1.3); opacity: 0; }
         }
 
-        .lang-selector-group {
+        .ptt-transcript {
           position: fixed;
-          right: 16px;
-          top: calc(50% - 65px);
-          z-index: 44;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 8px;
-          background: rgba(20,22,28,0.95);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 20px;
-          backdrop-filter: blur(8px);
-        }
-
-        .lang-pill {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .lang-pill:hover {
-          background: rgba(255,255,255,0.15);
-          transform: scale(1.1);
-        }
-
-        .lang-swap-btn {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: rgba(34,211,238,0.2);
-          border: none;
-          color: #22d3ee;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .lang-swap-btn:hover {
-          background: rgba(34,211,238,0.4);
-          transform: rotate(180deg);
-        }
-
-        .lang-picker-dropdown {
-          position: fixed;
-          right: 16px;
-          top: calc(50% - 120px);
-          z-index: 50;
-          background: rgba(20,22,28,0.98);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 16px;
-          padding: 8px;
-          min-width: 140px;
-          backdrop-filter: blur(12px);
-          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-
-        .lang-picker-header {
-          font-size: 10px;
-          font-weight: 600;
-          text-transform: uppercase;
-          color: #888;
-          padding: 6px 10px;
-          margin-bottom: 4px;
-        }
-
-        .lang-picker-option {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
-          border: none;
-          background: transparent;
-          color: #ccc;
-          font-size: 13px;
-          border-radius: 10px;
-          cursor: pointer;
-          transition: all 0.15s;
-        }
-
-        .lang-picker-option:hover {
-          background: rgba(255,255,255,0.1);
-        }
-
-        .lang-picker-option.active {
-          background: rgba(34,211,238,0.2);
-          color: #22d3ee;
-        }
-
-        .live-transcript {
-          position: fixed;
-          bottom: 100px;
-          left: 20px;
-          right: 100px;
-          padding: 16px;
+          bottom: 160px;
+          left: 16px;
+          right: 80px;
+          padding: 12px 16px;
           background: rgba(0,0,0,0.9);
           border: 1px solid rgba(239,68,68,0.3);
-          border-radius: 16px;
+          border-radius: 12px;
           z-index: 44;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
         }
 
-        .transcript-label {
-          font-size: 10px;
-          font-weight: 600;
-          color: #ef4444;
-          margin-bottom: 6px;
-          text-transform: uppercase;
-        }
-
-        .transcript-text {
+        .ptt-transcript-flag {
           font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        .ptt-transcript-text {
           color: #fff;
+          font-size: 14px;
           line-height: 1.4;
         }
 
-        .result-panel {
+        .ptt-modal-overlay {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.85);
-          backdrop-filter: blur(8px);
+          backdrop-filter: blur(4px);
           z-index: 100;
           display: flex;
           align-items: center;
@@ -573,94 +356,93 @@ export const VoiceTranslator = () => {
           padding: 20px;
         }
 
-        .result-content {
+        .ptt-modal {
           width: 100%;
-          max-width: 360px;
-          background: linear-gradient(180deg, rgba(25,28,35,0.98) 0%, rgba(15,18,22,0.98) 100%);
-          border-radius: 20px;
+          max-width: 340px;
+          background: linear-gradient(180deg, rgba(28,30,38,0.98) 0%, rgba(18,20,26,0.98) 100%);
+          border-radius: 16px;
           border: 1px solid rgba(255,255,255,0.1);
           padding: 20px;
           position: relative;
         }
 
-        .result-close {
+        .ptt-modal-close {
           position: absolute;
           top: 12px;
           right: 12px;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           background: rgba(255,255,255,0.1);
           border: none;
           color: #888;
-          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
+          cursor: pointer;
         }
 
-        .result-error {
+        .ptt-error {
           padding: 16px;
           background: rgba(239,68,68,0.1);
           border: 1px solid rgba(239,68,68,0.2);
-          border-radius: 12px;
-          text-align: center;
-        }
-
-        .result-error p {
+          border-radius: 10px;
           color: #fca5a5;
-          margin: 0;
+          text-align: center;
+          font-size: 14px;
         }
 
-        .result-source, .result-translated {
+        .ptt-result-section {
           padding: 14px;
-          border-radius: 12px;
-          margin-bottom: 12px;
+          border-radius: 10px;
+          margin-bottom: 10px;
         }
 
-        .result-source {
+        .ptt-source {
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.08);
         }
 
-        .result-translated {
-          background: rgba(34,211,238,0.1);
+        .ptt-target {
+          background: rgba(34,211,238,0.08);
           border: 1px solid rgba(34,211,238,0.2);
         }
 
-        .result-label {
-          display: block;
-          font-size: 10px;
+        .ptt-result-label {
+          font-size: 11px;
           font-weight: 600;
           text-transform: uppercase;
+          color: #888;
           margin-bottom: 8px;
-          color: #666;
         }
 
-        .result-translated .result-label {
+        .ptt-target .ptt-result-label {
           color: #22d3ee;
         }
 
-        .result-source p, .result-translated p {
+        .ptt-result-section p {
           margin: 0;
-          font-size: 16px;
-          line-height: 1.5;
           color: #fff;
+          font-size: 15px;
+          line-height: 1.5;
         }
 
-        .speak-btn {
+        .ptt-speak-btn {
           margin-top: 12px;
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 16px;
-          background: rgba(34,211,238,0.2);
-          border: 1px solid rgba(34,211,238,0.3);
+          padding: 8px 14px;
+          background: rgba(34,211,238,0.15);
+          border: 1px solid rgba(34,211,238,0.25);
           border-radius: 8px;
           color: #22d3ee;
           font-size: 13px;
-          font-weight: 500;
           cursor: pointer;
+        }
+
+        .ptt-speak-btn:active {
+          background: rgba(34,211,238,0.25);
         }
       `}</style>
     </>
