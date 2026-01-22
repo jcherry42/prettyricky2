@@ -571,49 +571,42 @@ async def voice_translate(
         )
 
 
-# ============== DRIVER'S LICENSE SCANNING ==============
+# ============== DRIVER'S LICENSE IMAGE UPLOAD ==============
 
-class LicenseScanResponse(BaseModel):
+# Configure uploads directory
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+
+class LicenseUploadResponse(BaseModel):
     success: bool
-    license_data: Optional[dict] = None
-    confidence: float = 0.0
+    image_url: Optional[str] = None
+    customer_id: Optional[str] = None
+    customer_name: Optional[str] = None
     error: Optional[str] = None
-    raw_extraction: Optional[str] = None
 
-class CustomerFromLicense(BaseModel):
-    first_name: str
-    last_name: str
-    address: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    zip_code: Optional[str] = None
-    date_of_birth: Optional[str] = None
-    license_number: Optional[str] = None
-    license_expiration: Optional[str] = None
-    license_state: Optional[str] = None
-
-@api_router.post("/scan-license", response_model=LicenseScanResponse)
-async def scan_drivers_license(
+@api_router.post("/license/upload", response_model=LicenseUploadResponse)
+async def upload_license_image(
     image: UploadFile = File(...),
+    customer_id: Optional[str] = Form(None),
 ):
     """
-    Enterprise-Grade Driver's License Scanner
-    Uses OpenAI GPT-4 Vision to extract license data with high accuracy.
-    Supports all US state licenses and common international formats.
+    Upload a driver's license image and attach it to a customer profile.
     
-    Features:
-    - Multi-field extraction (name, address, DOB, license #, expiration)
-    - Confidence scoring
-    - Auto-formatting of extracted data
-    - Support for both front and back of license
+    The image is stored and its URL is saved to the customer's profile.
+    This image will be included when using the Eject feature to send
+    customer info via SMS/MMS.
+    
+    Args:
+        image: The license image file (JPG, PNG, WEBP)
+        customer_id: Optional existing customer ID to attach the image to
+    
+    Returns:
+        Success status, image URL, and customer info
     """
     import base64
-    import io
-    import json
-    import re
     
     try:
-        logger.info(f"License scan request: {image.filename}, type: {image.content_type}")
+        logger.info(f"License upload request: {image.filename}, customer_id: {customer_id}")
         
         # Validate file type
         allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
@@ -622,7 +615,7 @@ async def scan_drivers_license(
         if content_type not in allowed_types:
             ext = (image.filename or '').split('.')[-1].lower()
             if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
-                return LicenseScanResponse(
+                return LicenseUploadResponse(
                     success=False,
                     error="Invalid image format. Please upload JPG, PNG, or WEBP."
                 )
@@ -631,188 +624,135 @@ async def scan_drivers_license(
         image_data = await image.read()
         
         if len(image_data) == 0:
-            return LicenseScanResponse(success=False, error="Empty image file received")
+            return LicenseUploadResponse(success=False, error="Empty image file received")
         
-        if len(image_data) > 20 * 1024 * 1024:  # 20MB limit
-            return LicenseScanResponse(success=False, error="Image too large. Max 20MB.")
+        if len(image_data) > 10 * 1024 * 1024:  # 10MB limit for license images
+            return LicenseUploadResponse(success=False, error="Image too large. Max 10MB.")
         
-        # Convert to base64
-        base64_image = base64.b64encode(image_data).decode('utf-8')
+        # Generate unique filename
+        ext = (image.filename or 'image.jpg').split('.')[-1].lower()
+        if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+            ext = 'jpg'
+        filename = f"license_{uuid.uuid4().hex[:12]}.{ext}"
+        filepath = UPLOADS_DIR / filename
         
-        # Determine mime type
-        if content_type in allowed_types:
-            mime_type = content_type
-        else:
-            mime_type = 'image/jpeg'  # Default
+        # Save file to disk
+        with open(filepath, 'wb') as f:
+            f.write(image_data)
         
-        logger.info(f"Processing license image: {len(image_data)} bytes")
+        # Construct the URL path for the uploaded image
+        image_url = f"/api/uploads/{filename}"
         
-        # Use OpenAI Vision API for extraction
-        from emergentintegrations.llm.openai import LlmChat, UserMessage
+        logger.info(f"License image saved: {filepath}, URL: {image_url}")
         
-        extraction_prompt = """Analyze this driver's license image and extract ALL visible information.
-
-Return a JSON object with these exact fields (use null for any field not clearly visible):
-
-{
-  "first_name": "string",
-  "middle_name": "string or null",
-  "last_name": "string", 
-  "full_name": "string (as shown on license)",
-  "address_line1": "string",
-  "address_line2": "string or null",
-  "city": "string",
-  "state": "string (2-letter code)",
-  "zip_code": "string",
-  "date_of_birth": "MM/DD/YYYY format",
-  "license_number": "string",
-  "license_class": "string",
-  "license_expiration": "MM/DD/YYYY format",
-  "license_issued": "MM/DD/YYYY format or null",
-  "license_state": "string (2-letter code)",
-  "sex": "M or F",
-  "height": "string (e.g., 5'10\")",
-  "weight": "string (e.g., 180 lbs) or null",
-  "eye_color": "string (e.g., BRN, BLU, GRN)",
-  "hair_color": "string or null",
-  "donor": "boolean",
-  "veteran": "boolean or null",
-  "restrictions": "string or null",
-  "endorsements": "string or null",
-  "document_discriminator": "string or null",
-  "confidence_score": 0.0 to 1.0 (your confidence in the extraction accuracy)
-}
-
-IMPORTANT:
-- Extract exactly what is shown, do not guess or infer missing data
-- For dates, convert to MM/DD/YYYY format if shown differently
-- For names, preserve exact capitalization as shown
-- State codes should be 2-letter abbreviations
-- Set confidence_score based on image quality and text clarity
-- Return ONLY the JSON object, no other text"""
-
-        chat = LlmChat(
-            api_key=os.getenv('EMERGENT_LLM_KEY'),
-            model="gpt-4o",  # Use GPT-4o for best vision capabilities
-            system_message="You are an expert document OCR system specialized in extracting information from US driver's licenses. Be precise and accurate.",
-            session_id=f"license-scan-{uuid.uuid4()}"
-        )
-        
-        # Create message with image
-        user_message = UserMessage(
-            message=extraction_prompt,
-            image_url=f"data:{mime_type};base64,{base64_image}"
-        )
-        
-        response = await chat.send_message(user_message)
-        logger.info(f"Vision API response received: {len(response)} chars")
-        
-        # Parse JSON response
-        try:
-            # Clean the response - remove markdown code blocks if present
-            cleaned = response.strip()
-            if cleaned.startswith('```'):
-                cleaned = re.sub(r'^```json?\s*', '', cleaned)
-                cleaned = re.sub(r'\s*```$', '', cleaned)
+        # If customer_id provided, attach to existing customer
+        if customer_id:
+            result = await db.customers.find_one_and_update(
+                {"id": customer_id},
+                {
+                    "$set": {
+                        "license_image_url": image_url,
+                        "license_image_uploaded_at": datetime.now(timezone.utc).isoformat()
+                    }
+                },
+                return_document=True
+            )
             
-            license_data = json.loads(cleaned)
-            confidence = license_data.get('confidence_score', 0.85)
-            
-            # Validate required fields
-            if not license_data.get('first_name') and not license_data.get('full_name'):
-                return LicenseScanResponse(
-                    success=False,
-                    error="Could not extract name from license. Please ensure the image is clear and well-lit.",
-                    raw_extraction=response,
-                    confidence=0.0
+            if result:
+                customer_name = f"{result.get('first_name', '')} {result.get('last_name', '')}".strip()
+                return LicenseUploadResponse(
+                    success=True,
+                    image_url=image_url,
+                    customer_id=customer_id,
+                    customer_name=customer_name or "Customer"
                 )
-            
-            # If we have full_name but not first/last, try to parse
-            if license_data.get('full_name') and not license_data.get('first_name'):
-                parts = license_data['full_name'].split()
-                if len(parts) >= 2:
-                    license_data['first_name'] = parts[0]
-                    license_data['last_name'] = parts[-1]
-                    if len(parts) > 2:
-                        license_data['middle_name'] = ' '.join(parts[1:-1])
-            
-            logger.info(f"License extraction successful: {license_data.get('first_name')} {license_data.get('last_name')}")
-            
-            return LicenseScanResponse(
-                success=True,
-                license_data=license_data,
-                confidence=confidence,
-                raw_extraction=response
-            )
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error: {e}, response: {response[:500]}")
-            return LicenseScanResponse(
-                success=False,
-                error="Failed to parse license data. Please try again with a clearer image.",
-                raw_extraction=response,
-                confidence=0.0
-            )
+            else:
+                # Customer not found but image was saved
+                return LicenseUploadResponse(
+                    success=True,
+                    image_url=image_url,
+                    error="Customer not found, but image was saved"
+                )
+        
+        # No customer_id - just return the image URL
+        return LicenseUploadResponse(
+            success=True,
+            image_url=image_url
+        )
         
     except Exception as e:
-        logger.error(f"License scan error: {str(e)}", exc_info=True)
-        return LicenseScanResponse(
+        logger.error(f"License upload error: {str(e)}", exc_info=True)
+        return LicenseUploadResponse(
             success=False,
-            error=f"License scan failed: {str(e)}"
+            error=f"Upload failed: {str(e)}"
         )
 
 
-@api_router.post("/create-customer-from-license")
-async def create_customer_from_license(license_data: CustomerFromLicense):
+@api_router.post("/license/attach")
+async def attach_license_to_customer(
+    customer_id: str = Form(...),
+    image_url: str = Form(...),
+):
     """
-    Create a new customer from extracted license data.
+    Attach a previously uploaded license image to a customer profile.
     """
     try:
-        # Build full address
-        address_parts = [license_data.address]
-        if license_data.city:
-            address_parts.append(license_data.city)
-        if license_data.state:
-            address_parts.append(license_data.state)
-        if license_data.zip_code:
-            address_parts.append(license_data.zip_code)
+        result = await db.customers.find_one_and_update(
+            {"id": customer_id},
+            {
+                "$set": {
+                    "license_image_url": image_url,
+                    "license_image_uploaded_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            return_document=True
+        )
         
-        full_address = ', '.join(filter(None, address_parts))
+        if not result:
+            raise HTTPException(status_code=404, detail="Customer not found")
         
-        customer_doc = {
-            "first_name": license_data.first_name,
-            "last_name": license_data.last_name,
-            "name": f"{license_data.first_name} {license_data.last_name}",
-            "address": full_address,
-            "city": license_data.city,
-            "state": license_data.state,
-            "zip_code": license_data.zip_code,
-            "date_of_birth": license_data.date_of_birth,
-            "license_number": license_data.license_number,
-            "license_expiration": license_data.license_expiration,
-            "license_state": license_data.license_state,
-            "lead_status": "new",
-            "lead_source": "license_scan",
-            "created_at": datetime.utcnow().isoformat(),
-            "notes": f"Customer created from license scan. License #{license_data.license_number}"
-        }
-        
-        # Insert into database
-        result = await db.customers.insert_one(customer_doc)
-        customer_doc['id'] = str(result.inserted_id)
-        del customer_doc['_id'] if '_id' in customer_doc else None
-        
-        logger.info(f"Customer created from license: {customer_doc['name']}")
+        customer_name = f"{result.get('first_name', '')} {result.get('last_name', '')}".strip()
         
         return {
             "success": True,
-            "customer": customer_doc,
-            "message": f"Customer {customer_doc['name']} created successfully"
+            "customer_id": customer_id,
+            "customer_name": customer_name,
+            "license_image_url": image_url
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Create customer from license error: {str(e)}")
+        logger.error(f"Attach license error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Serve uploaded files
+from fastapi.responses import FileResponse
+
+@api_router.get("/uploads/{filename}")
+async def get_uploaded_file(filename: str):
+    """Serve uploaded license images"""
+    filepath = UPLOADS_DIR / filename
+    
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Security: ensure the filename is safe (no path traversal)
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    
+    # Determine content type
+    ext = filename.split('.')[-1].lower()
+    content_types = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'webp': 'image/webp'
+    }
+    content_type = content_types.get(ext, 'application/octet-stream')
+    
+    return FileResponse(filepath, media_type=content_type)
 
 
 # ============== DATA IMPORT ==============
