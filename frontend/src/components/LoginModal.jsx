@@ -327,12 +327,15 @@ const LoginModal = ({ onClose, onSuccess, allowSkip = true }) => {
         }
 
         .system-name {
-          font-family: 'Chakra Petch', 'SF Pro Display', sans-serif;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 2px;
-          color: rgba(255, 140, 0, 0.7);
-          text-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+          font-family: 'Bebas Neue', 'Impact', sans-serif;
+          font-size: 16px;
+          font-weight: 400;
+          letter-spacing: 0.2em;
+          background: linear-gradient(180deg, #00d4ff 0%, #0099ff 50%, #00d4ff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          filter: drop-shadow(0 0 8px rgba(0, 180, 255, 0.8));
         }
 
         .topbar-right {
