@@ -79,33 +79,52 @@ function AppContent() {
   
   return (
     <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
+      {/* Skip Link for Accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      
       {/* Fixed Header */}
       <Header />
 
       {/* Main Content - padding-top accounts for fixed header */}
-      <main className="px-4 py-4 pb-safe space-y-4" style={{ paddingTop: '160px' }}>
+      <main 
+        id="main-content" 
+        className="px-4 py-4 pb-safe space-y-4" 
+        style={{ paddingTop: '160px' }}
+        role="main"
+        aria-label="Sales Command Center"
+      >
         {/* Step 1: Select Customer */}
-        <section>
-          <CustomerSelector />
+        <section aria-label="Customer Selection">
+          <ErrorBoundary minimal message="Failed to load customers">
+            <CustomerSelector />
+          </ErrorBoundary>
         </section>
 
         {/* Step 2: Select Inquiry Type */}
-        <section>
-          <InquiryTypeSelector />
+        <section aria-label="Inquiry Type Selection">
+          <ErrorBoundary minimal>
+            <InquiryTypeSelector />
+          </ErrorBoundary>
         </section>
 
         {/* Step 3: Select Tone */}
-        <section>
-          <ToneSelector />
+        <section aria-label="Response Tone Selection">
+          <ErrorBoundary minimal>
+            <ToneSelector />
+          </ErrorBoundary>
         </section>
 
         {/* Step 4: Review Generated Responses */}
-        <section>
-          <ResponseCards />
+        <section aria-label="Generated Responses">
+          <ErrorBoundary minimal message="Failed to load responses">
+            <ResponseCards />
+          </ErrorBoundary>
         </section>
 
         {/* Tower Talk Button (appears when customer selected) */}
-        <section>
+        <section aria-label="Tower Talk">
           <TowerTalkButton />
         </section>
       </main>
