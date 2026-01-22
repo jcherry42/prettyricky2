@@ -681,16 +681,13 @@ IMPORTANT:
             system_message="You are a document OCR system. Extract text accurately from driver's license images."
         ).with_model("openai", "gpt-4o")
         
-        # Use FileContent for image data
-        from emergentintegrations.llm.chat import FileContent
-        file_content = FileContent(
-            content_type=mime_type,
-            file_content_base64=base64_image
-        )
+        # Use ImageContent for image data
+        from emergentintegrations.llm.openai import ImageContent
+        image_content = ImageContent(image_base64=base64_image)
         
         user_message = UserMessage(
             text=extraction_prompt,
-            file_contents=[file_content]
+            file_contents=[image_content]
         )
         
         response = await chat.send_message(user_message)
