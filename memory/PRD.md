@@ -24,20 +24,32 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ### Customer Profiles
 - Store: Name, Address, Phone, Email, Lead Source, Lead Status
+- **License Image**: Driver's license image saved to profile (NEW)
 - Notes with interaction history tracking
 - Attach up to 2 vehicles of interest per customer
 - Link trade-in vehicles to customers
 - Priority sorting (HOT, WARM, NEW, COLD)
 - Animated priority badges
 
+### Intake Scanner (NEW - Superior to VinSolutions)
+- **Driver's License Capture**: Take photo or upload image, save to customer profile
+- **VIN Scanning**: Windshield barcode scan or manual entry
+- **Integrated Flow**: Combined Customer Intake modal with both options
+- **License in Eject**: License image included in SMS/MMS when using Eject feature
+
 ### AI Integration (Enhanced with Persuasion Psychology)
 - **Tower Talk**: AI-powered conversation assistance using OpenAI GPT
 - **Persuasion Tactics**: Built-in sales psychology
 - **Quick Response Shortcuts**: 8 pre-defined responses for common scenarios
 - **Supercharg'd Mode (Sport Mode)**: Language translation feature (5 languages)
-- **Voice Translator**: Enterprise-grade PTT with language indicator badge
+- **Voice Translator**: Enterprise-grade PTT with MediaRecorder + OpenAI Whisper
 
-### Authentication System (IMPLEMENTED)
+### Eject Feature (Enhanced)
+- Send customer profile snapshot via SMS
+- **NEW**: Includes license image as MMS attachment when present
+- Includes: Name, Phone, Email, Status, Vehicles of Interest, Trade-In info
+
+### Authentication System
 - JWT-based authentication
 - Secure registration and login
 - Password hashing with bcrypt
@@ -45,9 +57,22 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ---
 
-## What's Been Implemented (as of January 2025)
+## What's Been Implemented (as of January 22, 2026)
 
-### Enterprise-Grade Quality Pass ✅ (NEW)
+### Intake Scanner Feature ✅ (January 22, 2026)
+**Completed comprehensive Intake Scanner implementation:**
+
+- **Combined Intake Modal**: Single entry point for VIN and License scanning
+- **License Image Capture**: Take Photo or Choose File functionality
+- **Customer Selection**: Search and select customer to attach license
+- **Backend Endpoints**:
+  - `POST /api/license/upload` - Upload license image, optionally attach to customer
+  - `POST /api/license/attach` - Attach previously uploaded license to customer
+  - `GET /api/uploads/{filename}` - Serve uploaded license images
+- **Eject Enhancement**: License image included in MMS when present on customer
+- **Enterprise UI**: Premium styling matching luxury automotive aesthetic
+
+### Enterprise-Grade Quality Pass ✅
 **Completed comprehensive 10/10 quality improvements:**
 
 #### Accessibility (WCAG 2.1 AA)
@@ -55,108 +80,62 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Screen reader announcements
 - Focus trap for modals
 - Proper ARIA labels throughout
-- High contrast mode support
-- Reduced motion preference support
-- Touch target sizing (44x44px minimum)
 
 #### Error Handling
 - ErrorBoundary component wrapping app and sections
 - Graceful error recovery with retry options
-- Minimal error variant for inline errors
 - Development-mode error details
 
 #### Loading States
 - Skeleton loaders (cards, customers, VIN results)
 - Full-screen loader with animated dots
-- Inline spinners with multiple sizes
 - Progress bar component
 
 #### Empty States
 - No Customers illustration
 - No Vehicles illustration
-- No Search Results with clear action
 - Offline State with retry
-- Error State with recovery
 
 #### Haptic Feedback System
 - Light, Medium, Heavy feedback types
 - Success, Warning, Error patterns
-- Selection feedback
 - iOS audio click fallback
-- User preference toggle
 
-#### UI/UX Polish
-- Priority badges with animations (HOT pulsing)
-- Customer search with debounce
-- PTT language indicator badge
-- Form validation with error messages
-- Enhanced focus states
-- Custom scrollbar styles
-- Print styles
+### Voice Translator Enhancement ✅
+- **MediaRecorder-based audio capture** - Bypasses buggy Web Speech API
+- **Backend Whisper transcription** - `/api/voice-translate` endpoint
+- Language indicator badge
+- Recording timer and visual feedback
+- Auto-stop after 30 seconds
 
 ### VIN Scanner Enhancement ✅
 - Windshield scanning mode with visual overlay
 - Torch/flashlight toggle for low-light
-- Multiple barcode format support (CODE_39, CODE_128, DATA_MATRIX, QR_CODE, PDF_417)
+- Multiple barcode format support
 - Real-time VIN validation
 - Recent scans history
 - Confidence score display
 - Safety features display
 
-### Voice Translator Enhancement ✅
-- **NEW: MediaRecorder-based audio capture** - Bypasses buggy Web Speech API
-- **NEW: Backend Whisper transcription** - `/api/voice-translate` endpoint
-- Language indicator badge (🇺🇸 → 🇪🇸)
-- Transparent glass button design matching Quick Add
-- Recording timer and visual feedback
-- Auto-stop after 30 seconds
-- Error recovery with retry
-
-### Customer Selector Enhancement ✅
-- Debounced search (200ms)
-- Priority sorting (HOT first)
-- Phone number display
-- Animated priority badges
-- Empty state illustrations
-- Keyboard navigation support
-
-### Quick Add Button Enhancement ✅
-- Form validation with error messages
-- Haptic feedback on interactions
-- Accessible form labels
-- Focus management
-- Loading states
-
-### Authentication System ✅
-- JWT token authentication
-- Secure registration/login
-- Password hashing (bcrypt)
-- Protected routes
-- Skip option available
-
-### iOS Build ✅
-- CocoaPods dependencies fixed
-- iOS 15.5 minimum version
-- Build script provided
-
 ---
 
 ## Prioritized Backlog
 
-### P0 (Critical)
+### P0 (Critical) - COMPLETED
 - [x] Enterprise-grade quality pass
 - [x] VIN Scanner windshield mode
 - [x] Authentication system
+- [x] Intake Scanner with License capture
 
 ### P1 (High)
 - [ ] Real CRM integration (backend stubs exist)
-- [ ] Batch VIN scan mode
+- [ ] Batch VIN scan mode for lot inventory
 - [ ] Push notifications
 
 ### P2 (Medium)
 - [ ] Response analytics dashboard
-- [ ] Driver's license scanning
 - [ ] Offline data sync
+- [ ] User verification of PTT on iOS device
 
 ### P3 (Low)
 - [ ] Custom themes
@@ -179,6 +158,8 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - MongoDB (Motor async driver)
 - JWT authentication
 - OpenAI GPT integration
+- OpenAI Whisper for speech-to-text
+- File uploads stored in `/app/backend/uploads/`
 
 ### Security
 - Password hashing (bcrypt)
@@ -189,6 +170,25 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ---
 
 ## Test Status
-- **Last Test**: iteration_16.json
-- **Result**: 100% pass rate (13/13 features)
-- **Coverage**: Frontend comprehensive, Backend APIs verified
+- **Last Test**: iteration_17.json
+- **Result**: 100% pass rate (12/12 backend tests, all frontend UI verified)
+- **Coverage**: 
+  - License upload, attach, and serving endpoints
+  - VIN decode endpoint
+  - Eject preview endpoint
+  - Frontend Intake Scanner modal and flows
+
+---
+
+## 3rd Party Integrations
+- **OpenAI GPT-4o-mini**: Tower Talk and Translation
+- **OpenAI Whisper**: Speech-to-text for voice translation
+- **Capacitor / Capacitor MLKit**: Native mobile wrapping and barcode scanning
+- **Twilio**: SMS/MMS for Eject feature (requires configuration)
+- **NHTSA vPIC API**: VIN decoding
+
+---
+
+## Pending User Verification
+1. **Push-to-Talk (PTT)**: Re-architected with MediaRecorder + Whisper - needs iOS device testing
+2. **Sport Mode "Translate" Button**: Fixed to always be visible - needs user verification
