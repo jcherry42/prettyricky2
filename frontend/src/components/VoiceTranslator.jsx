@@ -83,7 +83,7 @@ export const VoiceTranslator = () => {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = sourceLang === 'es' ? 'es-US' : 'en-US';
+    recognition.lang = sourceLanguage.speechCode;
     recognition.maxAlternatives = 1;
     
     recognition.onresult = (event) => {
