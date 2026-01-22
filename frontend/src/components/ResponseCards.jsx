@@ -53,20 +53,36 @@ export const ResponseCards = () => {
     }
     
     setTranslating(prev => ({ ...prev, [key]: false }));
-  }, [translations]); // FIXED: Only depend on translations
+  }, []); // No dependencies - function only uses setters which are stable
 
-  // FIX: Auto-translate when supercharged and responses change
+  // Track which responses have been queued for translation
+  const translationQueuedRef = useRef(new Set());
+
+  // FIX: Auto-translate when supercharged and responses change - with proper debouncing
   useEffect(() => {
-    if (supercharged && currentResponses.length > 0) {
-      console.log('[Sport Mode] 🔥 Auto-translating', currentResponses.length, 'responses');
-      currentResponses.forEach(response => {
+    if (!supercharged || currentResponses.length === 0) {
+      translationQueuedRef.current.clear();
+      return;
+    }
+    
+    // Only translate responses that haven't been queued yet
+    const responsesToTranslate = currentResponses.filter(response => {
+      const key = response.id;
+      if (translationQueuedRef.current.has(key)) return false;
+      translationQueuedRef.current.add(key);
+      return true;
+    });
+
+    if (responsesToTranslate.length > 0) {
+      console.log('[Sport Mode] 🔥 Translating', responsesToTranslate.length, 'new responses');
+      responsesToTranslate.forEach(response => {
         translateResponse(response.id, response.text);
         if (response.followUpText) {
           translateResponse(response.id, response.followUpText, true);
         }
       });
     }
-  }, [supercharged, currentResponses, translateResponse]);
+  }, [supercharged, currentResponses]);
 
   // Reset translations when supercharged mode is turned off
   useEffect(() => {
