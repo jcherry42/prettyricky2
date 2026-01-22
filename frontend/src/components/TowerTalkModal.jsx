@@ -336,9 +336,9 @@ export const TowerTalkModal = () => {
       if (supercharged) {
         console.log('[Tower Talk] Translating response to Spanish');
         setIsTranslating(true);
-        const translatedResp = await translateText(data.response, 'en', 'es');
-        if (translatedResp) {
-          setTranslatedResponse(translatedResp);
+        const result = await translateText(data.response, 'en', 'es');
+        if (result?.success && result.translatedText) {
+          setTranslatedResponse(result.translatedText);
           setShowTranslated(true);
           console.log('[Tower Talk] Response translated successfully');
         }
