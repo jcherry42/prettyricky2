@@ -40,10 +40,16 @@ export const ResponseCards = () => {
     console.log(`[Sport Mode] Translating ${key}:`, text.substring(0, 50));
     setTranslating(prev => ({ ...prev, [key]: true }));
     
-    const translated = await translateText(text);
-    if (translated) {
-      console.log(`[Sport Mode] ✅ Translated ${key}`);
-      setTranslations(prev => ({ ...prev, [key]: translated }));
+    try {
+      const result = await translateText(text, 'en', 'es');
+      if (result && result.success && result.translatedText) {
+        console.log(`[Sport Mode] ✅ Translated ${key}`);
+        setTranslations(prev => ({ ...prev, [key]: result.translatedText }));
+      } else {
+        console.error(`[Sport Mode] Translation failed for ${key}:`, result?.error);
+      }
+    } catch (err) {
+      console.error(`[Sport Mode] Translation error for ${key}:`, err);
     }
     
     setTranslating(prev => ({ ...prev, [key]: false }));
