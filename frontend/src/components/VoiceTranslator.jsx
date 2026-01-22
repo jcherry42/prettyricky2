@@ -335,14 +335,14 @@ export const VoiceTranslator = () => {
               <>
                 {sourceText && (
                   <div className="result-source">
-                    <span className="result-label">{sourceLabel}</span>
+                    <span className="result-label">{sourceLanguage.flag} {sourceLanguage.name}</span>
                     <p>{sourceText}</p>
                   </div>
                 )}
                 
                 {translatedText && (
                   <div className="result-translated">
-                    <span className="result-label">{targetLabel}</span>
+                    <span className="result-label">{targetLanguage.flag} {targetLanguage.name}</span>
                     <p>{translatedText}</p>
                     <button onClick={speakTranslation} className="speak-btn">
                       <Volume2 className="w-4 h-4" />
