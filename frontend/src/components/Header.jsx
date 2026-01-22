@@ -5,7 +5,7 @@ import { VinScanner } from './VinScanner';
 import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
-// Startup sound with smooth fade-out effect
+// Startup sound with smooth gradual fade-out effect
 const playStartupSound = () => {
   try {
     const prefs = getSoundPreferences();
@@ -15,30 +15,46 @@ const playStartupSound = () => {
     const targetVolume = prefs.volume || 0.7;
     audio.volume = targetVolume;
     
-    // Start fading earlier and more aggressively (last 2 seconds)
-    const fadeStartTime = 2.0;
+    // Start fading at 60% of the track, fade over the remaining 40%
+    // This creates a gradual, natural fade that starts earlier
     let fadeInterval = null;
+    let fadeStarted = false;
     
     audio.addEventListener('loadedmetadata', () => {
       const duration = audio.duration;
-      const fadeStartAt = Math.max(0, duration - fadeStartTime);
+      const fadeStartAt = duration * 0.6; // Start fading at 60% of the track
+      const fadeDuration = duration - fadeStartAt; // Remaining 40% is fade
       
       fadeInterval = setInterval(() => {
-        if (audio.currentTime >= fadeStartAt) {
-          const timeRemaining = duration - audio.currentTime;
-          const fadeProgress = Math.max(0, timeRemaining / fadeStartTime);
-          // Use exponential fade for smoother perception
-          audio.volume = targetVolume * (fadeProgress * fadeProgress);
+        const currentTime = audio.currentTime;
+        
+        if (currentTime >= fadeStartAt && !fadeStarted) {
+          fadeStarted = true;
+        }
+        
+        if (fadeStarted) {
+          const fadeElapsed = currentTime - fadeStartAt;
+          const fadeProgress = 1 - (fadeElapsed / fadeDuration); // 1 to 0
           
-          if (fadeProgress <= 0.01) {
+          // Use cubic easing for smoother, more natural fade
+          // This makes the fade start slow and accelerate at the end
+          const easedProgress = fadeProgress * fadeProgress * fadeProgress;
+          audio.volume = Math.max(0, targetVolume * easedProgress);
+          
+          if (fadeProgress <= 0.02 || audio.volume < 0.01) {
             clearInterval(fadeInterval);
             audio.pause();
+            audio.volume = 0;
           }
         }
-      }, 50); // Check every 50ms for smooth fade
+      }, 30); // Check every 30ms for very smooth fade
     });
     
     audio.addEventListener('ended', () => {
+      if (fadeInterval) clearInterval(fadeInterval);
+    });
+    
+    audio.addEventListener('error', () => {
       if (fadeInterval) clearInterval(fadeInterval);
     });
     
