@@ -157,11 +157,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <SalesProvider>
-        <AppContent />
-      </SalesProvider>
-    </AuthProvider>
+    <ErrorBoundary message="Something went wrong. Please refresh the page.">
+      <AuthProvider>
+        <SalesProvider>
+          <AppContent />
+        </SalesProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
