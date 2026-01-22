@@ -270,14 +270,23 @@ export const VoiceTranslator = () => {
           top: 50%;
           transform: translateY(-50%);
           z-index: 40;
-          width: 56px;
-          height: 56px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
           background: linear-gradient(145deg, #2a2a35 0%, #1a1a22 50%, #0f0f14 100%);
           border: none;
           cursor: pointer;
           padding: 3px;
           box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          -webkit-user-select: none;
+        }
+
+        .push-to-start-trigger:active {
+          transform: translateY(-50%) scale(0.95);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.6);
         }
 
         .trigger-inner {
