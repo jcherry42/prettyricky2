@@ -1,25 +1,25 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Mic, MicOff, X, Languages } from 'lucide-react';
+import { Mic, MicOff, X, Languages, Loader2, Volume2 } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 // Check for speech recognition support
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const isSpeechSupported = !!SpeechRecognition;
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
 /**
- * Voice Translator - Mobile-First Floating Modal
- * Records voice input and translates between Spanish/English
+ * Voice Translator - TRUE Push-to-Talk
+ * First press: Start listening
+ * Second press: Stop listening and translate
  */
 export const VoiceTranslator = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [error, setError] = useState('');
   const [direction, setDirection] = useState('es-en'); // 'es-en' or 'en-es'
+  const [showResult, setShowResult] = useState(false);
   
   const recognitionRef = useRef(null);
   const latestTextRef = useRef('');
@@ -31,12 +31,16 @@ export const VoiceTranslator = () => {
 
   // Translate text
   const translateText = useCallback(async (text) => {
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      setError('No speech detected');
+      return;
+    }
     
     setIsTranslating(true);
     setError('');
     
     try {
+      console.log('[Voice Translator] Translating:', text);
       const response = await fetch(`${BACKEND_URL}/api/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,10 +54,12 @@ export const VoiceTranslator = () => {
       if (!response.ok) throw new Error('Translation failed');
       
       const data = await response.json();
-      setTranslatedText(data.translated_text || data.translation || text);
+      console.log('[Voice Translator] Translation result:', data);
+      setTranslatedText(data.translated_text || '');
+      setShowResult(true);
     } catch (err) {
-      setError('Translation unavailable');
-      setTranslatedText('');
+      console.error('[Voice Translator] Error:', err);
+      setError('Translation failed. Check connection.');
     } finally {
       setIsTranslating(false);
     }
@@ -64,8 +70,8 @@ export const VoiceTranslator = () => {
     if (!isSpeechSupported) return;
     
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = !isSafari;
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.lang = sourceLang === 'es' ? 'es-US' : 'en-US';
     recognition.maxAlternatives = 1;
     
@@ -76,25 +82,24 @@ export const VoiceTranslator = () => {
       }
       setSourceText(transcript);
       latestTextRef.current = transcript;
-      
-      if (isSafari && event.results[event.results.length - 1].isFinal) {
-        translateText(transcript);
-      }
     };
     
     recognition.onend = () => {
-      setIsListening(false);
-      if (!isSafari && latestTextRef.current) {
+      console.log('[Voice Translator] Recognition ended');
+      // Only auto-translate if we have text and were listening
+      if (isListening && latestTextRef.current) {
+        setIsListening(false);
         translateText(latestTextRef.current);
       }
     };
     
     recognition.onerror = (event) => {
+      console.error('[Voice Translator] Error:', event.error);
       setIsListening(false);
       if (event.error === 'not-allowed') {
         setError('Microphone access denied');
       } else if (event.error === 'no-speech') {
-        setError('No speech detected');
+        setError('No speech detected. Try again.');
       } else if (event.error !== 'aborted') {
         setError(`Error: ${event.error}`);
       }
@@ -105,7 +110,7 @@ export const VoiceTranslator = () => {
     return () => {
       try { recognitionRef.current?.abort(); } catch (e) { /* ignore */ }
     };
-  }, [translateText, sourceLang]);
+  }, [sourceLang, translateText, isListening]);
 
   // Update recognition language when direction changes
   useEffect(() => {
@@ -114,22 +119,34 @@ export const VoiceTranslator = () => {
     }
   }, [sourceLang]);
 
-  // Toggle listening
-  const toggleListening = async () => {
+  // PUSH TO TALK: Toggle listening on button press
+  const handlePushToTalk = async () => {
     if (!isSpeechSupported) {
       setError('Speech recognition not supported');
       return;
     }
     
     if (isListening) {
+      // SECOND PRESS: Stop listening and translate
+      console.log('[Voice Translator] Stopping...');
       recognitionRef.current?.stop();
       setIsListening(false);
+      
+      if (latestTextRef.current) {
+        translateText(latestTextRef.current);
+      } else {
+        setError('No speech detected');
+      }
     } else {
+      // FIRST PRESS: Start listening
+      console.log('[Voice Translator] Starting...');
       setSourceText('');
       setTranslatedText('');
       setError('');
+      setShowResult(false);
       latestTextRef.current = '';
       
+      // Request mic permission
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
@@ -142,7 +159,16 @@ export const VoiceTranslator = () => {
         recognitionRef.current?.start();
         setIsListening(true);
       } catch (err) {
-        setError('Could not start microphone');
+        if (err.name === 'InvalidStateError') {
+          // Already started, try stopping and restarting
+          recognitionRef.current?.stop();
+          setTimeout(() => {
+            recognitionRef.current?.start();
+            setIsListening(true);
+          }, 100);
+        } else {
+          setError('Could not start microphone');
+        }
       }
     }
   };
@@ -153,172 +179,241 @@ export const VoiceTranslator = () => {
     setSourceText('');
     setTranslatedText('');
     setError('');
+    setShowResult(false);
   };
 
-  // Open modal
-  const openModal = () => {
-    setIsOpen(true);
+  // Close result panel
+  const closeResult = () => {
+    setShowResult(false);
     setSourceText('');
     setTranslatedText('');
     setError('');
   };
 
-  // Close modal
-  const closeModal = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    }
-    setIsOpen(false);
+  // Speak the translation
+  const speakTranslation = () => {
+    if (!translatedText || !('speechSynthesis' in window)) return;
+    
+    const utterance = new SpeechSynthesisUtterance(translatedText);
+    utterance.lang = targetLang === 'es' ? 'es-ES' : 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
     <>
-      {/* Push to Start Button - Fixed Position */}
+      {/* PUSH TO TALK BUTTON - Fixed on right side */}
       <button
-        onClick={openModal}
-        onTouchStart={(e) => {
-          e.stopPropagation();
-          openModal();
-        }}
-        className="push-to-start-trigger"
-        data-testid="voice-translator-btn"
-        style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        onClick={handlePushToTalk}
+        disabled={isTranslating}
+        className={`push-to-talk-btn ${isListening ? 'listening' : ''} ${isTranslating ? 'translating' : ''}`}
+        data-testid="push-to-talk-btn"
       >
-        <div className="trigger-inner">
-          <div className="trigger-content">
-            <Mic className="w-5 h-5" />
-            <span>PUSH</span>
-          </div>
+        <div className="ptt-inner">
+          {isTranslating ? (
+            <Loader2 className="w-6 h-6 animate-spin" />
+          ) : isListening ? (
+            <MicOff className="w-6 h-6" />
+          ) : (
+            <Mic className="w-6 h-6" />
+          )}
         </div>
+        <span className="ptt-label">
+          {isTranslating ? 'WAIT' : isListening ? 'STOP' : 'PUSH'}
+        </span>
+        {isListening && <div className="ptt-pulse" />}
       </button>
 
-      {/* Floating Modal */}
-      {isOpen && (
-        <div className="voice-modal-overlay" onClick={closeModal}>
-          <div className="voice-modal" onClick={e => e.stopPropagation()}>
-            {/* Header */}
-            <div className="voice-modal-header">
-              <h3>Voice Translator</h3>
-              <button onClick={closeModal} className="voice-modal-close">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Language Toggle - Small button above main button */}
+      <button
+        onClick={toggleDirection}
+        className="lang-toggle-btn"
+        data-testid="lang-toggle-btn"
+      >
+        <span className={direction === 'es-en' ? 'active' : ''}>🇪🇸</span>
+        <Languages className="w-3 h-3" />
+        <span className={direction === 'en-es' ? 'active' : ''}>🇺🇸</span>
+      </button>
 
-            {/* Language Toggle */}
-            <button onClick={toggleDirection} className="language-toggle">
-              <span className={direction === 'es-en' ? 'active' : ''}>🇪🇸 ES</span>
-              <Languages className="w-4 h-4" />
-              <span className={direction === 'en-es' ? 'active' : ''}>🇺🇸 EN</span>
+      {/* Live transcript while listening */}
+      {isListening && sourceText && (
+        <div className="live-transcript">
+          <div className="transcript-label">{sourceLabel}</div>
+          <div className="transcript-text">{sourceText}</div>
+        </div>
+      )}
+
+      {/* Result Panel - Shows after translation */}
+      {showResult && (translatedText || error) && (
+        <div className="result-panel" onClick={closeResult}>
+          <div className="result-content" onClick={e => e.stopPropagation()}>
+            <button onClick={closeResult} className="result-close">
+              <X className="w-5 h-5" />
             </button>
-
-            {/* Mic Button */}
-            <button
-              onClick={toggleListening}
-              disabled={isTranslating}
-              className={`voice-mic-btn ${isListening ? 'listening' : ''} ${isTranslating ? 'translating' : ''}`}
-            >
-              <div className="mic-btn-inner">
-                {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+            
+            {error ? (
+              <div className="result-error">
+                <p>{error}</p>
               </div>
-              <span className="mic-btn-label">
-                {isTranslating ? 'Translating...' : isListening ? 'Tap to Stop' : 'Tap to Speak'}
-              </span>
-              {isListening && <div className="mic-pulse" />}
-            </button>
-
-            {/* Results */}
-            <div className="voice-results-container">
-              {error && (
-                <div className="voice-result error">
-                  <span className="result-label">Error</span>
-                  <p>{error}</p>
-                </div>
-              )}
-
-              {isListening && !sourceText && (
-                <div className="voice-result listening">
-                  <span className="result-label">Listening...</span>
-                  <div className="listening-indicator">
-                    <span></span><span></span><span></span>
+            ) : (
+              <>
+                {sourceText && (
+                  <div className="result-source">
+                    <span className="result-label">{sourceLabel}</span>
+                    <p>{sourceText}</p>
                   </div>
-                </div>
-              )}
-
-              {sourceText && (
-                <div className="voice-result source">
-                  <span className="result-label">{sourceLabel}</span>
-                  <p>{sourceText}</p>
-                </div>
-              )}
-
-              {translatedText && (
-                <div className="voice-result translated">
-                  <span className="result-label">{targetLabel}</span>
-                  <p>{translatedText}</p>
-                </div>
-              )}
-            </div>
+                )}
+                
+                {translatedText && (
+                  <div className="result-translated">
+                    <span className="result-label">{targetLabel}</span>
+                    <p>{translatedText}</p>
+                    <button onClick={speakTranslation} className="speak-btn">
+                      <Volume2 className="w-4 h-4" />
+                      Speak
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}
 
       <style>{`
-        .push-to-start-trigger {
+        .push-to-talk-btn {
           position: fixed;
           right: 16px;
           top: 50%;
           transform: translateY(-50%);
-          z-index: 40;
-          width: 64px;
-          height: 64px;
+          z-index: 45;
+          width: 72px;
+          height: 72px;
           border-radius: 50%;
           background: linear-gradient(145deg, #2a2a35 0%, #1a1a22 50%, #0f0f14 100%);
-          border: none;
+          border: 3px solid #333;
           cursor: pointer;
-          padding: 3px;
+          padding: 0;
           box-shadow: 0 4px 20px rgba(0,0,0,0.5);
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
           user-select: none;
-          -webkit-user-select: none;
-        }
-
-        .push-to-start-trigger:active {
-          transform: translateY(-50%) scale(0.95);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.6);
-        }
-
-        .trigger-inner {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: linear-gradient(180deg, #1c1c24 0%, #12121a 100%);
-          border: 2px solid #333340;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .trigger-content {
           display: flex;
           flex-direction: column;
           align-items: center;
+          justify-content: center;
           gap: 2px;
+          transition: all 0.15s ease;
+        }
+
+        .push-to-talk-btn:active {
+          transform: translateY(-50%) scale(0.95);
+        }
+
+        .push-to-talk-btn.listening {
+          border-color: #ef4444;
+          box-shadow: 0 0 30px rgba(239,68,68,0.4);
+        }
+
+        .push-to-talk-btn.translating {
+          border-color: #22d3ee;
+          opacity: 0.8;
+        }
+
+        .ptt-inner {
+          color: #666;
+          transition: color 0.2s;
+        }
+
+        .push-to-talk-btn.listening .ptt-inner {
+          color: #ef4444;
+        }
+
+        .push-to-talk-btn.translating .ptt-inner {
+          color: #22d3ee;
+        }
+
+        .ptt-label {
+          font-family: 'Russo One', sans-serif;
+          font-size: 9px;
+          font-weight: bold;
+          letter-spacing: 0.1em;
           color: #666;
         }
 
-        .trigger-content span {
-          font-family: 'Russo One', sans-serif;
-          font-size: 7px;
-          font-weight: bold;
-          letter-spacing: 0.1em;
+        .push-to-talk-btn.listening .ptt-label {
+          color: #ef4444;
         }
 
-        .voice-modal-overlay {
+        .ptt-pulse {
+          position: absolute;
+          inset: -6px;
+          border-radius: 50%;
+          border: 2px solid #ef4444;
+          animation: ptt-ring 1.2s ease-out infinite;
+          pointer-events: none;
+        }
+
+        @keyframes ptt-ring {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .lang-toggle-btn {
+          position: fixed;
+          right: 24px;
+          top: calc(50% - 60px);
+          z-index: 44;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
+          background: rgba(30,32,40,0.95);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 16px;
+          color: #888;
+          font-size: 12px;
+          cursor: pointer;
+        }
+
+        .lang-toggle-btn span.active {
+          opacity: 1;
+        }
+
+        .lang-toggle-btn span:not(.active) {
+          opacity: 0.4;
+        }
+
+        .live-transcript {
+          position: fixed;
+          bottom: 100px;
+          left: 20px;
+          right: 100px;
+          padding: 16px;
+          background: rgba(0,0,0,0.9);
+          border: 1px solid rgba(239,68,68,0.3);
+          border-radius: 16px;
+          z-index: 44;
+        }
+
+        .transcript-label {
+          font-size: 10px;
+          font-weight: 600;
+          color: #ef4444;
+          margin-bottom: 6px;
+          text-transform: uppercase;
+        }
+
+        .transcript-text {
+          font-size: 16px;
+          color: #fff;
+          line-height: 1.4;
+        }
+
+        .result-panel {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.8);
+          background: rgba(0,0,0,0.85);
           backdrop-filter: blur(8px);
           z-index: 100;
           display: flex;
@@ -327,35 +422,20 @@ export const VoiceTranslator = () => {
           padding: 20px;
         }
 
-        .voice-modal {
+        .result-content {
           width: 100%;
-          max-width: 340px;
-          background: linear-gradient(180deg, rgba(30,32,40,0.98) 0%, rgba(20,22,28,0.98) 100%);
-          border-radius: 24px;
+          max-width: 360px;
+          background: linear-gradient(180deg, rgba(25,28,35,0.98) 0%, rgba(15,18,22,0.98) 100%);
+          border-radius: 20px;
           border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 25px 50px rgba(0,0,0,0.5);
           padding: 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 16px;
+          position: relative;
         }
 
-        .voice-modal-header {
-          width: 100%;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .voice-modal-header h3 {
-          font-size: 16px;
-          font-weight: 600;
-          color: #fff;
-          margin: 0;
-        }
-
-        .voice-modal-close {
+        .result-close {
+          position: absolute;
+          top: 12px;
+          right: 12px;
           width: 32px;
           height: 32px;
           border-radius: 50%;
@@ -368,158 +448,68 @@ export const VoiceTranslator = () => {
           justify-content: center;
         }
 
-        .language-toggle {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 10px 20px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 20px;
-          color: #888;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-        }
-
-        .language-toggle span.active {
-          color: #22d3ee;
-        }
-
-        .voice-mic-btn {
-          position: relative;
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          background: linear-gradient(180deg, #1e2028 0%, #14161c 100%);
-          border: 3px solid #333;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 4px;
-          margin: 8px 0;
-        }
-
-        .voice-mic-btn .mic-btn-inner {
-          color: #666;
-          transition: color 0.2s;
-        }
-
-        .voice-mic-btn.listening {
-          border-color: #ef4444;
-        }
-
-        .voice-mic-btn.listening .mic-btn-inner {
-          color: #ef4444;
-        }
-
-        .voice-mic-btn.translating {
-          opacity: 0.7;
-        }
-
-        .mic-btn-label {
-          font-size: 10px;
-          color: #666;
-          font-weight: 500;
-        }
-
-        .voice-mic-btn.listening .mic-btn-label {
-          color: #ef4444;
-        }
-
-        .mic-pulse {
-          position: absolute;
-          inset: -8px;
-          border-radius: 50%;
-          border: 2px solid #ef4444;
-          animation: pulse-ring 1.5s ease-out infinite;
-        }
-
-        @keyframes pulse-ring {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.3); opacity: 0; }
-        }
-
-        .voice-results-container {
-          width: 100%;
-          min-height: 80px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .voice-result {
-          padding: 12px 16px;
+        .result-error {
+          padding: 16px;
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.2);
           border-radius: 12px;
+          text-align: center;
+        }
+
+        .result-error p {
+          color: #fca5a5;
+          margin: 0;
+        }
+
+        .result-source, .result-translated {
+          padding: 14px;
+          border-radius: 12px;
+          margin-bottom: 12px;
+        }
+
+        .result-source {
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.08);
         }
 
-        .voice-result .result-label {
+        .result-translated {
+          background: rgba(34,211,238,0.1);
+          border: 1px solid rgba(34,211,238,0.2);
+        }
+
+        .result-label {
           display: block;
           font-size: 10px;
           font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
           color: #666;
         }
 
-        .voice-result p {
-          margin: 0;
-          font-size: 15px;
-          line-height: 1.4;
-          color: #fff;
-        }
-
-        .voice-result.error {
-          background: rgba(239,68,68,0.1);
-          border-color: rgba(239,68,68,0.2);
-        }
-
-        .voice-result.error .result-label {
-          color: #ef4444;
-        }
-
-        .voice-result.error p {
-          color: #fca5a5;
-        }
-
-        .voice-result.source .result-label {
-          color: #f59e0b;
-        }
-
-        .voice-result.translated {
-          background: rgba(34,211,238,0.1);
-          border-color: rgba(34,211,238,0.2);
-        }
-
-        .voice-result.translated .result-label {
+        .result-translated .result-label {
           color: #22d3ee;
         }
 
-        .listening-indicator {
+        .result-source p, .result-translated p {
+          margin: 0;
+          font-size: 16px;
+          line-height: 1.5;
+          color: #fff;
+        }
+
+        .speak-btn {
+          margin-top: 12px;
           display: flex;
-          gap: 4px;
-          justify-content: center;
-        }
-
-        .listening-indicator span {
-          width: 8px;
-          height: 8px;
-          background: #22d3ee;
-          border-radius: 50%;
-          animation: bounce 1.4s infinite ease-in-out both;
-        }
-
-        .listening-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .listening-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-          0%, 80%, 100% { transform: scale(0); }
-          40% { transform: scale(1); }
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          background: rgba(34,211,238,0.2);
+          border: 1px solid rgba(34,211,238,0.3);
+          border-radius: 8px;
+          color: #22d3ee;
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
         }
       `}</style>
     </>
