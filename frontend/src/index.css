@@ -6335,3 +6335,452 @@ html:not(.dark) .mclaren-btn-icon-sm:hover {
   color: hsla(220, 15%, 25%, 1);
 }
 
+
+
+/* ============================================
+   ENTERPRISE ACCESSIBILITY & FOCUS STATES
+   WCAG 2.1 AA Compliant
+   ============================================ */
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  padding: 12px 24px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+  z-index: 10000;
+  text-decoration: none;
+  border-radius: 0 0 12px 0;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
+/* Enhanced Focus Indicators */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsla(var(--primary) / 0.2);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 30%;
+    --ring: 0 0% 0%;
+  }
+  
+  .dark {
+    --border: 0 0% 70%;
+    --ring: 0 0% 100%;
+  }
+  
+  button,
+  input,
+  select,
+  textarea {
+    border-width: 2px !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .fab-pulse,
+  .ptt-pulse,
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+/* Touch Target Size - Minimum 44x44px */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a,
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ============================================
+   ENTERPRISE LOADING & SKELETON STATES
+   ============================================ */
+
+/* Skeleton Shimmer Animation */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsla(var(--muted) / 0.5) 0%,
+    hsla(var(--muted) / 0.8) 50%,
+    hsla(var(--muted) / 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: hsla(var(--background) / 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+/* Dot Pulse Loader */
+.loader-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.loader-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  animation: dot-pulse 1s ease-in-out infinite;
+}
+
+.loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+.loader-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================
+   ENTERPRISE MICRO-INTERACTIONS
+   ============================================ */
+
+/* Button Press Effect */
+.btn-press {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Ripple Effect for Touch */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: hsla(var(--primary) / 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.ripple:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Card Hover Lift */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px hsla(0, 0%, 0%, 0.15);
+}
+
+/* Smooth State Transitions */
+.state-transition {
+  transition: 
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* ============================================
+   ENTERPRISE TOAST & NOTIFICATION STYLES
+   ============================================ */
+
+/* Toast Container Override */
+[data-sonner-toaster] {
+  font-family: inherit !important;
+}
+
+[data-sonner-toast] {
+  background: linear-gradient(180deg, 
+    hsla(var(--card)) 0%, 
+    hsla(var(--background)) 100%
+  ) !important;
+  border: 1px solid hsla(var(--border) / 0.5) !important;
+  box-shadow: 
+    0 10px 30px hsla(0, 0%, 0%, 0.2),
+    0 0 0 1px hsla(var(--border) / 0.3) !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  border-color: hsla(145, 70%, 45%, 0.4) !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-color: hsla(0, 80%, 55%, 0.4) !important;
+}
+
+/* ============================================
+   ENTERPRISE FORM VALIDATION STYLES
+   ============================================ */
+
+/* Input States */
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: hsl(var(--destructive)) !important;
+  box-shadow: 0 0 0 3px hsla(var(--destructive) / 0.15) !important;
+}
+
+input[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus {
+  outline-color: hsl(var(--destructive)) !important;
+  box-shadow: 0 0 0 3px hsla(var(--destructive) / 0.25) !important;
+}
+
+/* Error Message */
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: hsl(var(--destructive));
+}
+
+/* Success State */
+input[aria-invalid="false"]:not(:placeholder-shown) {
+  border-color: hsl(var(--success));
+}
+
+/* ============================================
+   ENTERPRISE MODAL & DIALOG IMPROVEMENTS
+   ============================================ */
+
+/* Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: hsla(var(--overlay-bg) / 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 50;
+  animation: backdrop-fade 0.2s ease;
+}
+
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content */
+.modal-content {
+  animation: modal-slide-up 0.25s ease;
+}
+
+@keyframes modal-slide-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+/* Modal Close on Backdrop Click Visual Feedback */
+.modal-backdrop:active {
+  background: hsla(var(--overlay-bg) / 0.85);
+}
+
+/* ============================================
+   ENTERPRISE BADGE IMPROVEMENTS
+   ============================================ */
+
+.badge-hot {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, hsla(0, 80%, 55%, 0.25) 0%, hsla(15, 80%, 45%, 0.2) 100%);
+  border: 1px solid hsla(0, 70%, 55%, 0.4);
+  border-radius: 6px;
+  color: #ef4444;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsla(0, 70%, 55%, 0.4); }
+  50% { box-shadow: 0 0 0 4px hsla(0, 70%, 55%, 0); }
+}
+
+.badge-warm {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, hsla(45, 100%, 50%, 0.2) 0%, hsla(40, 90%, 45%, 0.15) 100%);
+  border: 1px solid hsla(45, 80%, 50%, 0.35);
+  border-radius: 6px;
+  color: #f59e0b;
+}
+
+.badge-cold {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: hsla(210, 30%, 50%, 0.15);
+  border: 1px solid hsla(210, 30%, 50%, 0.25);
+  border-radius: 6px;
+  color: #6b7280;
+}
+
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, hsla(200, 80%, 55%, 0.2) 0%, hsla(190, 70%, 45%, 0.15) 100%);
+  border: 1px solid hsla(200, 70%, 55%, 0.35);
+  border-radius: 6px;
+  color: #22d3ee;
+}
+
+/* ============================================
+   ENTERPRISE SCROLLBAR STYLES
+   ============================================ */
+
+/* Custom Scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsla(var(--muted-foreground) / 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsla(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsla(var(--muted-foreground) / 0.5);
+}
+
+/* Hide Scrollbar but Keep Functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   ENTERPRISE PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .card-luxury,
+  .modal-luxury {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}
+
