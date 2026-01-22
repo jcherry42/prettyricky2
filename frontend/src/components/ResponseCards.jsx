@@ -88,7 +88,7 @@ export const ResponseCards = () => {
   useEffect(() => {
     if (!supercharged) {
       console.log('[Sport Mode] Mode disabled - clearing translations');
-      // Use callback to avoid re-render issues
+      translationQueuedRef.current.clear();
       setTimeout(() => {
         setTranslations({});
         setShowSpanish({});
