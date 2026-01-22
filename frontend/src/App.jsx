@@ -61,12 +61,8 @@ function AppContent() {
     }
   }, [theme]);
 
-  // Show login modal for unauthenticated users (after loading complete)
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      setShowLogin(true);
-    }
-  }, [isLoading, isAuthenticated]);
+  // Derive showLogin from auth state instead of using effect
+  const shouldShowLogin = !isLoading && !isAuthenticated && showLogin;
 
   // Loading state
   if (isLoading) {
@@ -74,7 +70,7 @@ function AppContent() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-400">Loading Supercharg'd...</p>
+          <p className="text-zinc-400">Loading Supercharg&apos;d...</p>
         </div>
       </div>
     );
