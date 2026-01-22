@@ -289,9 +289,9 @@ export const TowerTalkModal = () => {
       if (supercharged) {
         console.log('[Tower Talk] Supercharged mode - translating input to English');
         setIsTranslating(true);
-        const translated = await translateText(situationText, 'auto', 'en');
-        if (translated) {
-          situationToSend = translated;
+        const result = await translateText(situationText, 'auto', 'en');
+        if (result?.success && result.translatedText) {
+          situationToSend = result.translatedText;
           console.log('[Tower Talk] Input translated successfully');
         }
         setIsTranslating(false);
