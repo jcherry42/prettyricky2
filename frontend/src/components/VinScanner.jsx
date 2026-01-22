@@ -184,18 +184,39 @@ export const VinScanner = ({ isOpen, onClose }) => {
       document.body.classList.add('barcode-scanning');
 
       const result = await BarcodeScanner.scan({
-        formats: ['CODE_39', 'CODE_128', 'DATA_MATRIX', 'QR_CODE'],
+        formats: ['CODE_39', 'CODE_128', 'DATA_MATRIX', 'QR_CODE', 'PDF_417', 'AZTEC'],
       });
 
       document.body.classList.remove('barcode-scanning');
 
       if (result.barcodes?.length > 0) {
-        const scannedVin = result.barcodes[0].rawValue;
-        if (scannedVin?.length === 17) {
-          setVin(scannedVin.toUpperCase());
-          await lookupVin(scannedVin.toUpperCase());
+        // Try to extract VIN from barcode data (may have prefix/suffix)
+        let scannedData = result.barcodes[0].rawValue || '';
+        console.log('[VIN Scanner] Raw barcode data:', scannedData);
+        
+        // Extract 17-character VIN from the barcode data
+        // VINs contain only A-H, J-N, P, R-Z, and 0-9
+        const vinPattern = /[A-HJ-NPR-Z0-9]{17}/g;
+        const matches = scannedData.toUpperCase().match(vinPattern);
+        
+        if (matches && matches.length > 0) {
+          const scannedVin = matches[0];
+          console.log('[VIN Scanner] Extracted VIN:', scannedVin);
+          setVin(scannedVin);
+          await lookupVin(scannedVin);
+        } else if (scannedData.length === 17) {
+          // Try the whole string if it's exactly 17 characters
+          const cleanVin = scannedData.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, '');
+          if (cleanVin.length === 17) {
+            console.log('[VIN Scanner] Using cleaned VIN:', cleanVin);
+            setVin(cleanVin);
+            await lookupVin(cleanVin);
+          } else {
+            setError('Barcode does not contain a valid 17-character VIN.');
+            setMode('menu');
+          }
         } else {
-          setError('Invalid VIN. Must be 17 characters.');
+          setError(`Invalid barcode data: "${scannedData.substring(0, 30)}..." - expected 17-character VIN.`);
           setMode('menu');
         }
       } else {
