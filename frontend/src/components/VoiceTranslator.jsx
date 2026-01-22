@@ -317,7 +317,7 @@ export const VoiceTranslator = () => {
 
         .ptt-transcript {
           position: fixed;
-          bottom: 160px;
+          bottom: 220px;
           left: 16px;
           right: 80px;
           padding: 12px 16px;
