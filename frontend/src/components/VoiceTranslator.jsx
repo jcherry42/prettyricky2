@@ -435,6 +435,106 @@ export const VoiceTranslator = () => {
           100% { transform: scale(1.4); opacity: 0; }
         }
 
+        .lang-selector-group {
+          position: fixed;
+          right: 16px;
+          top: calc(50% - 65px);
+          z-index: 44;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 8px;
+          background: rgba(20,22,28,0.95);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 20px;
+          backdrop-filter: blur(8px);
+        }
+
+        .lang-pill {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .lang-pill:hover {
+          background: rgba(255,255,255,0.15);
+          transform: scale(1.1);
+        }
+
+        .lang-swap-btn {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: rgba(34,211,238,0.2);
+          border: none;
+          color: #22d3ee;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .lang-swap-btn:hover {
+          background: rgba(34,211,238,0.4);
+          transform: rotate(180deg);
+        }
+
+        .lang-picker-dropdown {
+          position: fixed;
+          right: 16px;
+          top: calc(50% - 120px);
+          z-index: 50;
+          background: rgba(20,22,28,0.98);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 16px;
+          padding: 8px;
+          min-width: 140px;
+          backdrop-filter: blur(12px);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .lang-picker-header {
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          color: #888;
+          padding: 6px 10px;
+          margin-bottom: 4px;
+        }
+
+        .lang-picker-option {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border: none;
+          background: transparent;
+          color: #ccc;
+          font-size: 13px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+
+        .lang-picker-option:hover {
+          background: rgba(255,255,255,0.1);
+        }
+
+        .lang-picker-option.active {
+          background: rgba(34,211,238,0.2);
+          color: #22d3ee;
+        }
+
         .lang-toggle-btn {
           position: fixed;
           right: 24px;
