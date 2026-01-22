@@ -207,32 +207,62 @@ export const ResponseCards = () => {
     return response.text;
   }, [editedTexts, editedTranslations, showSpanish, supercharged, translations]);
 
-  if (!selectedCustomer || currentResponses.length === 0) {
+  // Show empty state if no customer selected
+  if (!selectedCustomer) {
+    return null;
+  }
+
+  // Show skeleton loading state when generating responses
+  const { isGenerating } = useSales();
+  if (isGenerating) {
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Generating Responses
+          </h2>
+        </div>
+        <div className="space-y-3">
+          <SkeletonCard lines={4} />
+          <SkeletonCard lines={3} />
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state when no responses yet
+  if (currentResponses.length === 0) {
     return null;
   }
 
   const handleCopy = async (response, e) => {
     e.stopPropagation();
+    haptics.tap();
     const textToCopy = getDisplayText(response);
     
     const success = await copyToClipboard(textToCopy);
     if (success) {
+      haptics.success();
       setCopiedId(response.id);
-      setEditingId(null); // Close edit mode after copy
+      setEditingId(null);
+      announceToScreenReader('Response copied to clipboard');
       setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
   const handleSendMessage = (response, e) => {
     e.stopPropagation();
+    haptics.button();
     const textToSend = getDisplayText(response);
     
-    setEditingId(null); // Close edit mode after send
+    setEditingId(null);
     shareToMessages(textToSend);
+    announceToScreenReader('Opening iMessage');
   };
 
   const handleCopyFollowUp = async (response, e) => {
     e.stopPropagation();
+    haptics.tap();
     const key = `${response.id}-followup`;
     const textToCopy = supercharged && showSpanish[key] && translations[key] 
       ? translations[key] 
@@ -240,13 +270,16 @@ export const ResponseCards = () => {
     
     const success = await copyToClipboard(textToCopy);
     if (success) {
+      haptics.success();
       setCopiedId(key);
+      announceToScreenReader('Follow-up copied to clipboard');
       setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
   const toggleLanguage = (key, e) => {
     e.stopPropagation();
+    haptics.select();
     setShowSpanish(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
