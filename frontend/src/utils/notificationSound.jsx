@@ -45,6 +45,7 @@ export const preloadSounds = () => {
 
 /**
  * Play notification sound based on selected profile
+ * Includes smooth fade-out effect
  * @param {string} profile - 'merica', 'euro', or 'jdm'
  */
 export const playNotificationSound = async (profile = null) => {
@@ -66,7 +67,24 @@ export const playNotificationSound = async (profile = null) => {
     
     // Reset to beginning if already playing
     audio.currentTime = 0;
-    audio.volume = prefs.volume || 0.7;
+    const targetVolume = prefs.volume || 0.7;
+    audio.volume = targetVolume;
+    
+    // Add fade-out effect during the last 0.8 seconds
+    const fadeHandler = () => {
+      const timeRemaining = audio.duration - audio.currentTime;
+      const fadeStartTime = 0.8;
+      
+      if (timeRemaining <= fadeStartTime && timeRemaining > 0) {
+        const fadeProgress = timeRemaining / fadeStartTime;
+        audio.volume = targetVolume * fadeProgress;
+      }
+    };
+    
+    // Remove any existing handler and add new one
+    audio.removeEventListener('timeupdate', audio._fadeHandler);
+    audio._fadeHandler = fadeHandler;
+    audio.addEventListener('timeupdate', fadeHandler);
     
     await audio.play();
     return true;
