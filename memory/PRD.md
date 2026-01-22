@@ -63,13 +63,17 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ## What's Been Implemented (as of January 22, 2026)
 
 ### Intake Scanner Feature ✅ (January 22, 2026)
-**Completed comprehensive Intake Scanner implementation:**
+**Completed comprehensive Intake Scanner implementation with OCR:**
 
+- **License OCR Extraction**: AI (GPT-4o Vision) extracts first name, last name, address, city, state, zip
+- **Editable Form**: Review and edit extracted data before saving
 - **Combined Intake Modal**: Single entry point for VIN and License scanning
-- **License Image Capture**: Take Photo or Choose File functionality
-- **Customer Selection**: Search and select customer to attach license
+- **Customer Creation**: Auto-create customer from extracted license data with image attached
+- **Existing Customer Attach**: Option to attach license to existing customer profile
 - **Backend Endpoints**:
-  - `POST /api/license/upload` - Upload license image, optionally attach to customer
+  - `POST /api/license/scan` - Upload + OCR extraction with GPT-4o Vision
+  - `POST /api/license/create-customer` - Create customer from extracted data
+  - `POST /api/license/upload` - Simple upload without OCR
   - `POST /api/license/attach` - Attach previously uploaded license to customer
   - `GET /api/uploads/{filename}` - Serve uploaded license images
 - **Eject Enhancement**: License image included in MMS when present on customer
