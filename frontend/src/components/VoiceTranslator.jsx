@@ -131,6 +131,7 @@ export const VoiceTranslator = () => {
     if (isListening) {
       // SECOND PRESS: Stop listening and translate
       console.log('[Voice Translator] Stopping...');
+      isListeningRef.current = false;
       recognitionRef.current?.stop();
       setIsListening(false);
       
@@ -158,6 +159,7 @@ export const VoiceTranslator = () => {
       }
       
       try {
+        isListeningRef.current = true;
         recognitionRef.current?.start();
         setIsListening(true);
       } catch (err) {
@@ -165,11 +167,13 @@ export const VoiceTranslator = () => {
           // Already started, try stopping and restarting
           recognitionRef.current?.stop();
           setTimeout(() => {
+            isListeningRef.current = true;
             recognitionRef.current?.start();
             setIsListening(true);
           }, 100);
         } else {
           setError('Could not start microphone');
+          isListeningRef.current = false;
         }
       }
     }
