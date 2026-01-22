@@ -291,16 +291,19 @@ export const QuickAddButton = () => {
         .quick-add-modal {
           width: 100%;
           max-width: 360px;
-          background: 
-            url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
-            linear-gradient(180deg, rgba(30,25,20,0.98) 0%, rgba(18,15,12,0.99) 100%);
-          background-size: 180px 180px, 100% 100%;
-          background-blend-mode: overlay, normal;
-          border-radius: 20px;
-          border: 1px solid rgba(0, 180, 255, 0.2);
+          background: linear-gradient(180deg, 
+            rgba(20, 25, 35, 0.85) 0%, 
+            rgba(12, 15, 22, 0.92) 100%
+          );
+          backdrop-filter: blur(24px) saturate(180%);
+          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          border-radius: 24px;
+          border: 1px solid rgba(0, 180, 255, 0.25);
           box-shadow: 
-            0 25px 50px rgba(0,0,0,0.6),
-            0 0 40px rgba(0, 150, 255, 0.1);
+            0 25px 50px rgba(0,0,0,0.5),
+            0 0 60px rgba(0, 150, 255, 0.15),
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            inset 0 0 30px rgba(0, 180, 255, 0.05);
           overflow: hidden;
         }
 
