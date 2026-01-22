@@ -86,9 +86,10 @@ export const VoiceTranslator = () => {
     };
     
     recognition.onend = () => {
-      console.log('[Voice Translator] Recognition ended');
+      console.log('[Voice Translator] Recognition ended, wasListening:', isListeningRef.current);
       // Only auto-translate if we have text and were listening
-      if (isListening && latestTextRef.current) {
+      if (isListeningRef.current && latestTextRef.current) {
+        isListeningRef.current = false;
         setIsListening(false);
         translateText(latestTextRef.current);
       }
