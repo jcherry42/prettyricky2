@@ -5,14 +5,28 @@ import { VinScanner } from './VinScanner';
 import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
-// Startup sound
+// Startup sound with fade-out effect
 const playStartupSound = () => {
   try {
     const prefs = getSoundPreferences();
     if (!prefs.enabled) return;
     
     const audio = new Audio('/sounds/startup.wav');
-    audio.volume = prefs.volume || 0.7;
+    const targetVolume = prefs.volume || 0.7;
+    audio.volume = targetVolume;
+    
+    // Fade out during the last 1.5 seconds of playback
+    audio.addEventListener('timeupdate', () => {
+      const timeRemaining = audio.duration - audio.currentTime;
+      const fadeStartTime = 1.5; // Start fading 1.5 seconds before end
+      
+      if (timeRemaining <= fadeStartTime && timeRemaining > 0) {
+        // Calculate fade progress (1 = full volume, 0 = silent)
+        const fadeProgress = timeRemaining / fadeStartTime;
+        audio.volume = targetVolume * fadeProgress;
+      }
+    });
+    
     audio.play().catch(() => {});
   } catch (e) {
     console.warn('Startup sound failed:', e);
