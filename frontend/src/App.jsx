@@ -21,7 +21,7 @@ import { initializeNative, updateStatusBarTheme, isNative } from './utils/native
 function AppContent() {
   const { showAdminSettings, toggleAdminSettings, theme } = useSales();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);  // Show login by default
   
   // Initialize native capabilities on mount
   useEffect(() => {
