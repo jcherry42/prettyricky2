@@ -14,7 +14,7 @@ import os
 import io
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://autosales-7.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://supercharge-auto.preview.emergentagent.com').rstrip('/')
 
 
 class TestHealthCheck:
