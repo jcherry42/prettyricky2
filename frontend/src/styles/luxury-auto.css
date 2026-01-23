@@ -538,3 +538,430 @@ html:not(.dark) .digital-readout-cyan {
   color: #0891b2;
   text-shadow: none;
 }
+
+
+
+/* ==================== LIGHT MODE - MODAL OVERRIDES ==================== */
+
+/* Intake Scanner Modal */
+html:not(.dark) .intake-overlay {
+  background: rgba(245, 240, 230, 0.92);
+}
+
+html:not(.dark) .intake-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
+  border-color: rgba(180, 140, 80, 0.2);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 100px rgba(180, 140, 80, 0.05);
+}
+
+html:not(.dark) .intake-modal .close-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(180, 140, 80, 0.15);
+  color: #7B6347;
+}
+
+html:not(.dark) .intake-modal .close-btn:hover {
+  background: rgba(184, 134, 11, 0.1);
+  color: #B8860B;
+}
+
+html:not(.dark) .intake-modal .back-btn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(180, 140, 80, 0.15);
+  color: #7B6347;
+}
+
+html:not(.dark) .intake-modal .back-btn:hover {
+  background: rgba(184, 134, 11, 0.08);
+  color: #B8860B;
+}
+
+html:not(.dark) .intake-header h2 {
+  color: #B8860B;
+  text-shadow: none;
+}
+
+html:not(.dark) .intake-header p {
+  color: #7B6347;
+}
+
+html:not(.dark) .intake-option {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%);
+  border-color: rgba(180, 140, 80, 0.15);
+}
+
+html:not(.dark) .intake-option:hover {
+  background: linear-gradient(90deg, rgba(184, 134, 11, 0.08) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-color: rgba(184, 134, 11, 0.25);
+}
+
+html:not(.dark) .intake-option.featured {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(160, 120, 60, 0.05));
+  border-color: rgba(184, 134, 11, 0.2);
+}
+
+html:not(.dark) .option-title {
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .option-desc {
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .option-chevron {
+  color: #B8860B !important;
+}
+
+html:not(.dark) .option-icon.license {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(160, 120, 60, 0.1));
+  border-color: rgba(184, 134, 11, 0.25);
+  color: #B8860B;
+}
+
+html:not(.dark) .option-icon.vin {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 125, 150, 0.08));
+  border-color: rgba(8, 145, 178, 0.2);
+  color: #0891b2;
+}
+
+html:not(.dark) .header-icon.license {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(160, 120, 60, 0.1));
+  border-color: rgba(184, 134, 11, 0.25);
+  color: #B8860B;
+}
+
+html:not(.dark) .header-icon.vin {
+  background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 125, 150, 0.08));
+  border-color: rgba(8, 145, 178, 0.2);
+  color: #0891b2;
+}
+
+/* Quick Add Modal */
+html:not(.dark) .quick-add-overlay {
+  background: rgba(245, 240, 230, 0.94);
+}
+
+html:not(.dark) .quick-add-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
+  border-color: rgba(180, 140, 80, 0.2);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.1), 0 0 60px rgba(180, 140, 80, 0.05);
+}
+
+html:not(.dark) .quick-add-header {
+  border-bottom-color: rgba(180, 140, 80, 0.12);
+  background: linear-gradient(180deg, rgba(245, 240, 230, 0.5) 0%, transparent 100%);
+}
+
+html:not(.dark) .quick-add-header h3 {
+  color: #B8860B !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .qa-icon {
+  background: rgba(184, 134, 11, 0.1) !important;
+  border-color: rgba(184, 134, 11, 0.25) !important;
+  color: #B8860B !important;
+}
+
+html:not(.dark) .qa-close {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(180, 140, 80, 0.15);
+  color: #7B6347;
+}
+
+html:not(.dark) .qa-close:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.1);
+  color: #B8860B;
+}
+
+html:not(.dark) .qa-field label {
+  color: #B8860B !important;
+}
+
+html:not(.dark) .qa-field input,
+html:not(.dark) .qa-field select,
+html:not(.dark) .qa-field textarea {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .qa-field input:focus,
+html:not(.dark) .qa-field select:focus,
+html:not(.dark) .qa-field textarea:focus {
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  box-shadow: 0 0 12px rgba(184, 134, 11, 0.1) !important;
+}
+
+html:not(.dark) .qa-field input::placeholder,
+html:not(.dark) .qa-field textarea::placeholder {
+  color: #9B8B7B !important;
+}
+
+html:not(.dark) .qa-save-btn {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.2) 0%, rgba(160, 120, 60, 0.15) 100%) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  color: #B8860B !important;
+}
+
+html:not(.dark) .qa-save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.3) 0%, rgba(160, 120, 60, 0.25) 100%) !important;
+  box-shadow: 0 0 20px rgba(184, 134, 11, 0.15) !important;
+}
+
+/* Quick Add FAB */
+html:not(.dark) .quick-add-fab {
+  background: linear-gradient(145deg, rgba(184, 134, 11, 0.15) 0%, rgba(160, 120, 60, 0.2) 100%);
+  border-color: rgba(184, 134, 11, 0.4);
+  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.2), 0 0 30px rgba(184, 134, 11, 0.1);
+}
+
+html:not(.dark) .quick-add-fab:hover {
+  border-color: rgba(184, 134, 11, 0.6);
+  box-shadow: 0 6px 30px rgba(184, 134, 11, 0.25), 0 0 40px rgba(184, 134, 11, 0.15);
+}
+
+html:not(.dark) .fab-pulse {
+  border-color: rgba(184, 134, 11, 0.3);
+}
+
+/* Voice Translator Modal */
+html:not(.dark) .ptt-modal-overlay {
+  background: rgba(245, 240, 230, 0.94);
+}
+
+html:not(.dark) .ptt-modal-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
+  border-color: rgba(147, 51, 234, 0.15);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.1), 0 0 60px rgba(147, 51, 234, 0.05);
+}
+
+html:not(.dark) .ptt-modal-header {
+  border-bottom-color: rgba(147, 51, 234, 0.1);
+  background: linear-gradient(180deg, rgba(147, 51, 234, 0.04) 0%, transparent 100%);
+}
+
+html:not(.dark) .ptt-modal-header h3 {
+  color: #7c3aed !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .ptt-modal-icon {
+  background: rgba(147, 51, 234, 0.1);
+  border-color: rgba(147, 51, 234, 0.2);
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-modal-close {
+  background: rgba(0, 0, 0, 0.05);
+  color: #7B6347;
+}
+
+html:not(.dark) .ptt-modal-close:hover {
+  background: rgba(147, 51, 234, 0.1);
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-lang-badge {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%);
+  border-color: rgba(147, 51, 234, 0.2);
+}
+
+html:not(.dark) .ptt-lang-arrow {
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-recording-indicator,
+html:not(.dark) .ptt-processing-indicator {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 248, 245, 0.98) 100%);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Command Center Modal */
+html:not(.dark) .cc-overlay {
+  background: rgba(245, 240, 230, 0.94) !important;
+}
+
+html:not(.dark) .cc-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.1), 0 0 100px rgba(180, 140, 80, 0.03) !important;
+}
+
+html:not(.dark) .cc-header {
+  background: linear-gradient(180deg, rgba(245, 240, 230, 0.5) 0%, transparent 100%) !important;
+  border-bottom-color: rgba(180, 140, 80, 0.12) !important;
+}
+
+html:not(.dark) .cc-title {
+  color: #B8860B !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .cc-subtitle {
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-close {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-color: rgba(180, 140, 80, 0.15) !important;
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-close:hover {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: #B8860B !important;
+}
+
+html:not(.dark) .cc-tabs {
+  background: rgba(245, 240, 230, 0.5) !important;
+  border-bottom-color: rgba(180, 140, 80, 0.1) !important;
+}
+
+html:not(.dark) .cc-tab {
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-tab:hover:not(.active) {
+  color: #B8860B !important;
+  background: rgba(184, 134, 11, 0.05) !important;
+}
+
+html:not(.dark) .cc-tab.active {
+  color: #B8860B !important;
+  border-bottom-color: #B8860B !important;
+  background: rgba(184, 134, 11, 0.08) !important;
+}
+
+html:not(.dark) .cc-content {
+  background: transparent !important;
+}
+
+html:not(.dark) .stat-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%) !important;
+  border-color: rgba(180, 140, 80, 0.15) !important;
+}
+
+html:not(.dark) .stat-value {
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .stat-label {
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-section-title {
+  color: #B8860B !important;
+}
+
+html:not(.dark) .cc-list-item {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(180, 140, 80, 0.1) !important;
+}
+
+html:not(.dark) .cc-list-item:hover {
+  background: rgba(184, 134, 11, 0.05) !important;
+  border-color: rgba(184, 134, 11, 0.2) !important;
+}
+
+html:not(.dark) .cc-list-item-title {
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .cc-list-item-subtitle {
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .cc-input:focus {
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1) !important;
+}
+
+html:not(.dark) .cc-input::placeholder {
+  color: #9B8B7B !important;
+}
+
+html:not(.dark) .cc-btn-primary {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.2) 0%, rgba(160, 120, 60, 0.15) 100%) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  color: #B8860B !important;
+}
+
+html:not(.dark) .cc-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.3) 0%, rgba(160, 120, 60, 0.25) 100%) !important;
+}
+
+html:not(.dark) .cc-btn-secondary {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-btn-secondary:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.08) !important;
+  color: #B8860B !important;
+}
+
+/* Settings Panel in Command Center */
+html:not(.dark) .settings-section {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(180, 140, 80, 0.12) !important;
+}
+
+html:not(.dark) .settings-section-title {
+  color: #B8860B !important;
+}
+
+html:not(.dark) .settings-item {
+  border-bottom-color: rgba(180, 140, 80, 0.08) !important;
+}
+
+html:not(.dark) .settings-item-label {
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .settings-item-desc {
+  color: #7B6347 !important;
+}
+
+/* Tower Talk Modal */
+html:not(.dark) .tower-talk-overlay {
+  background: rgba(245, 240, 230, 0.94) !important;
+}
+
+html:not(.dark) .tower-talk-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
+  border-color: rgba(220, 38, 38, 0.15) !important;
+}
+
+html:not(.dark) .tower-talk-header {
+  background: linear-gradient(180deg, rgba(220, 38, 38, 0.05) 0%, transparent 100%) !important;
+  border-bottom-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+html:not(.dark) .tower-talk-title {
+  color: #dc2626 !important;
+  text-shadow: none !important;
+}
+
+/* Import Modal */
+html:not(.dark) .import-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+}
+
+html:not(.dark) .import-dropzone {
+  background: rgba(245, 240, 230, 0.5) !important;
+  border-color: rgba(180, 140, 80, 0.3) !important;
+}
+
+html:not(.dark) .import-dropzone:hover {
+  background: rgba(184, 134, 11, 0.05) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+}
