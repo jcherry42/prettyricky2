@@ -1322,8 +1322,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
           align-items: center;
           gap: 14px;
           padding: 16px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%);
+          border: 1px solid rgba(255, 140, 0, 0.08);
           border-radius: 16px;
           cursor: pointer;
           transition: all 0.15s;
@@ -1331,8 +1331,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
         
         .intake-option:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(255,255,255,0.12);
+          background: linear-gradient(90deg, rgba(255, 140, 0, 0.08) 0%, transparent 100%);
+          border-color: rgba(255, 140, 0, 0.2);
           transform: translateY(-1px);
         }
         
@@ -1341,13 +1341,13 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
         
         .intake-option.featured {
-          background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(109,40,217,0.08));
-          border-color: rgba(139,92,246,0.25);
+          background: linear-gradient(135deg, rgba(255, 140, 0, 0.12), rgba(200, 100, 0, 0.08));
+          border-color: rgba(255, 140, 0, 0.25);
         }
         
         .intake-option.featured:hover {
-          background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(109,40,217,0.12));
-          border-color: rgba(139,92,246,0.35);
+          background: linear-gradient(135deg, rgba(255, 140, 0, 0.18), rgba(200, 100, 0, 0.12));
+          border-color: rgba(255, 140, 0, 0.35);
         }
         
         .option-icon {
