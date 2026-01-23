@@ -228,7 +228,7 @@ export const ResponseCards = () => {
       return translations[key];
     }
     return response.text;
-  }, [editedTexts, editedTranslations, showSpanish, supercharged, translations]);
+  }, [editedTexts, editedTranslations, showTranslated, supercharged, translations]);
 
   // Show empty state if no customer selected
   if (!selectedCustomer) {
