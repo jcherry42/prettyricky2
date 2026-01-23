@@ -558,9 +558,10 @@ export const QuickAddButton = () => {
           gap: 6px;
           font-size: 11px;
           font-weight: 600;
-          color: rgba(0, 200, 255, 0.8);
+          color: rgba(255, 159, 67, 0.8);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
+          font-family: 'Bebas Neue', sans-serif;
         }
 
         .qa-field input,
@@ -570,8 +571,8 @@ export const QuickAddButton = () => {
           padding: 10px 12px;
           border-radius: 10px;
           background: rgba(0, 0, 0, 0.4);
-          border: 1px solid rgba(0, 180, 255, 0.15);
-          color: #fff;
+          border: 1px solid rgba(255, 140, 0, 0.15);
+          color: rgba(255, 240, 220, 0.95);
           font-size: 14px;
           outline: none;
           transition: all 0.2s;
@@ -580,8 +581,8 @@ export const QuickAddButton = () => {
         .qa-field input:focus,
         .qa-field select:focus,
         .qa-field textarea:focus {
-          border-color: rgba(0, 200, 255, 0.4);
-          box-shadow: 0 0 12px rgba(0, 180, 255, 0.15);
+          border-color: rgba(255, 159, 67, 0.4);
+          box-shadow: 0 0 12px rgba(255, 140, 0, 0.12);
         }
 
         .qa-field input.error,
@@ -592,13 +593,13 @@ export const QuickAddButton = () => {
 
         .qa-field input::placeholder,
         .qa-field textarea::placeholder {
-          color: rgba(255, 255, 255, 0.3);
+          color: rgba(255, 200, 150, 0.3);
         }
 
         .qa-field select {
           cursor: pointer;
           appearance: none;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,200,150,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
           background-repeat: no-repeat;
           background-position: right 10px center;
           background-size: 16px;
