@@ -331,9 +331,9 @@ export const ResponseCards = () => {
       
       if (result.success && result.translatedText) {
         setEditedTranslations(prev => ({ ...prev, [responseId]: result.translatedText }));
-        // Automatically show Spanish after translating
-        setShowSpanish(prev => ({ ...prev, [responseId]: true }));
-        console.log('[Translation] Translation saved and Spanish view enabled');
+        // Automatically show translated text after translating
+        setShowTranslated(prev => ({ ...prev, [responseId]: true }));
+        console.log('[Translation] Translation saved and translated view enabled');
         console.log('[Translation] Confidence:', result.confidence, 'Cached:', result.cached);
       } else {
         console.error('[Translation] Translation failed:', result.error);
