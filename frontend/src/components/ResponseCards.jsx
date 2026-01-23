@@ -71,39 +71,30 @@ export const ResponseCards = () => {
     const key = isFollowUp ? `${responseId}-followup` : responseId;
     const currentTargetLang = getTargetLanguage();
     
-    if (translations[key]) {
-      return; // Already translated
-    }
+    if (translations[key]) return;
     
-    console.log(`[Sport Mode] Translating ${key} to ${currentTargetLang}:`, text.substring(0, 50));
     setTranslating(prev => ({ ...prev, [key]: true }));
     
     try {
       const result = await translateText(text, 'en', currentTargetLang);
-      if (result && result.success && result.translatedText) {
-        console.log(`[Sport Mode] ✅ Translated ${key} to ${currentTargetLang}`);
+      if (result?.success && result.translatedText) {
         setTranslations(prev => ({ ...prev, [key]: result.translatedText }));
-      } else {
-        console.error(`[Sport Mode] Translation failed for ${key}:`, result?.error);
       }
     } catch (err) {
-      console.error(`[Sport Mode] Translation error for ${key}:`, err);
+      console.error('[Translation] Error:', err);
     }
     
     setTranslating(prev => ({ ...prev, [key]: false }));
-  }, []); // No dependencies - function only uses setters which are stable
+  }, []);
 
-  // Track which responses have been queued for translation
   const translationQueuedRef = useRef(new Set());
 
-  // FIX: Auto-translate when supercharged and responses change - with proper debouncing
   useEffect(() => {
     if (!supercharged || currentResponses.length === 0) {
       translationQueuedRef.current.clear();
       return;
     }
     
-    // Only translate responses that haven't been queued yet
     const responsesToTranslate = currentResponses.filter(response => {
       const key = response.id;
       if (translationQueuedRef.current.has(key)) return false;
@@ -112,7 +103,6 @@ export const ResponseCards = () => {
     });
 
     if (responsesToTranslate.length > 0) {
-      console.log(`[Sport Mode] 🔥 Translating ${responsesToTranslate.length} responses to ${targetLang}`);
       responsesToTranslate.forEach(response => {
         translateResponse(response.id, response.text);
         if (response.followUpText) {
@@ -122,10 +112,8 @@ export const ResponseCards = () => {
     }
   }, [supercharged, currentResponses, targetLang]);
 
-  // Reset translations when supercharged mode is turned off or language changes
   useEffect(() => {
     if (!supercharged) {
-      console.log('[Sport Mode] Mode disabled - clearing translations');
       translationQueuedRef.current.clear();
       setTimeout(() => {
         setTranslations({});
