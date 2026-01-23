@@ -209,9 +209,9 @@ export const CustomerSelector = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-11 pr-11 py-3 rounded-xl text-sm"
               style={{
-                background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%)',
-                border: '1px solid rgba(255, 140, 0, 0.15)',
-                color: '#fff',
+                background: colors.inputBg,
+                border: `1px solid ${colors.inputBorder}`,
+                color: colors.textPrimary,
                 outline: 'none'
               }}
               autoFocus
@@ -222,7 +222,7 @@ export const CustomerSelector = () => {
               <button
                 onClick={handleClearSearch}
                 className="absolute right-12 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 200, 150, 0.6)' }}
+                style={{ background: colors.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)', color: colors.textMuted }}
                 aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -231,7 +231,7 @@ export const CustomerSelector = () => {
             <button
               onClick={handleClose}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-              style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 200, 150, 0.6)' }}
+              style={{ background: colors.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)', color: colors.textMuted }}
               data-testid="close-customer-search"
               aria-label="Close customer selector"
             >
@@ -239,11 +239,11 @@ export const CustomerSelector = () => {
             </button>
           </div>
           <div className="flex items-center justify-between mt-2 px-1">
-            <p className="text-xs" style={{ color: 'rgba(255, 200, 150, 0.5)', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.08em' }}>
+            <p className="text-xs" style={{ color: colors.textMuted, fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.08em' }}>
               {sortedCustomers.length} CUSTOMER{sortedCustomers.length !== 1 ? 'S' : ''} • SORTED BY PRIORITY
             </p>
             {isSearching && (
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255, 140, 0, 0.7)' }}>
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: colors.accentRgba(0.7) }}>
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Searching...
               </div>
