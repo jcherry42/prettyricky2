@@ -66,7 +66,7 @@ const LoginModal = ({ onClose, onSuccess, allowSkip = true }) => {
               <span className="topbar-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             <div className="topbar-center">
-              <span className="system-name">SUPERCHARG'D</span>
+              <span className="system-name">SUPERCHARG&apos;D</span>
             </div>
             <div className="topbar-right">
               {/* Security badge - luxury auto style */}
