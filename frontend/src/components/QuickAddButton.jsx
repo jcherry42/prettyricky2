@@ -450,12 +450,12 @@ export const QuickAddButton = () => {
           backdrop-filter: blur(24px) saturate(180%);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
           border-radius: 24px;
-          border: 1px solid rgba(0, 180, 255, 0.25);
+          border: 1px solid rgba(255, 140, 0, 0.2);
           box-shadow: 
             0 25px 50px rgba(0,0,0,0.5),
-            0 0 60px rgba(0, 150, 255, 0.15),
-            inset 0 1px 0 rgba(255,255,255,0.1),
-            inset 0 0 30px rgba(0, 180, 255, 0.05);
+            0 0 60px rgba(255, 140, 0, 0.1),
+            inset 0 1px 0 rgba(255,255,255,0.08),
+            inset 0 0 30px rgba(255, 140, 0, 0.03);
           overflow: hidden;
           animation: slideUp 0.25s ease;
         }
@@ -470,30 +470,31 @@ export const QuickAddButton = () => {
           align-items: center;
           gap: 12px;
           padding: 16px 20px;
-          border-bottom: 1px solid rgba(0, 180, 255, 0.15);
-          background: linear-gradient(180deg, rgba(0, 150, 255, 0.08) 0%, transparent 100%);
+          border-bottom: 1px solid rgba(255, 140, 0, 0.12);
+          background: linear-gradient(180deg, rgba(255, 140, 0, 0.06) 0%, transparent 100%);
         }
 
         .qa-icon {
           width: 36px;
           height: 36px;
           border-radius: 10px;
-          background: rgba(0, 180, 255, 0.15);
-          border: 1px solid rgba(0, 180, 255, 0.3);
+          background: rgba(255, 159, 67, 0.15);
+          border: 1px solid rgba(255, 159, 67, 0.3);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #00B4FF;
+          color: #FF9F43;
         }
 
         .quick-add-header h3 {
           flex: 1;
-          font-family: 'Chakra Petch', system-ui, sans-serif;
+          font-family: 'Bebas Neue', system-ui, sans-serif;
           font-size: 16px;
-          font-weight: 600;
-          color: #00D4FF;
+          font-weight: 400;
+          letter-spacing: 0.08em;
+          color: #FF9F43;
           margin: 0;
-          text-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+          text-shadow: 0 0 12px rgba(255, 159, 67, 0.4);
         }
 
         .qa-close {
@@ -502,7 +503,7 @@ export const QuickAddButton = () => {
           border-radius: 8px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(255, 200, 150, 0.5);
           cursor: pointer;
           display: flex;
           align-items: center;
