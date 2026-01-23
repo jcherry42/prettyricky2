@@ -619,13 +619,13 @@ export const VoiceTranslator = () => {
           font-weight: 500;
         }
 
-        /* Modal Overlay */
+        /* Modal Overlay - Luxury Dark */
         .ptt-modal-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          background: rgba(10, 8, 6, 0.92);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           z-index: 10000;
           display: flex;
           align-items: center;
@@ -639,22 +639,22 @@ export const VoiceTranslator = () => {
           to { opacity: 1; }
         }
 
-        /* Modal Glass Card */
+        /* Modal Glass Card - Luxury Infotainment */
         .ptt-modal-glass {
           width: 100%;
           max-width: 360px;
           background: linear-gradient(180deg, 
-            rgba(25, 20, 35, 0.9) 0%, 
-            rgba(15, 12, 22, 0.95) 100%
+            rgba(25, 20, 15, 0.95) 0%, 
+            rgba(15, 12, 8, 0.98) 100%
           );
           backdrop-filter: blur(24px) saturate(180%);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
           border-radius: 24px;
-          border: 1px solid rgba(139, 92, 246, 0.25);
+          border: 1px solid rgba(147, 51, 234, 0.2);
           box-shadow: 
             0 25px 50px rgba(0, 0, 0, 0.5),
-            0 0 60px rgba(139, 92, 246, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            0 0 60px rgba(147, 51, 234, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
           overflow: hidden;
           animation: ptt-modal-slide 0.25s ease;
         }
@@ -669,16 +669,16 @@ export const VoiceTranslator = () => {
           align-items: center;
           gap: 12px;
           padding: 16px 20px;
-          border-bottom: 1px solid rgba(139, 92, 246, 0.15);
-          background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, transparent 100%);
+          border-bottom: 1px solid rgba(147, 51, 234, 0.12);
+          background: linear-gradient(180deg, rgba(147, 51, 234, 0.06) 0%, transparent 100%);
         }
 
         .ptt-modal-icon {
           width: 40px;
           height: 40px;
           border-radius: 12px;
-          background: rgba(139, 92, 246, 0.15);
-          border: 1px solid rgba(139, 92, 246, 0.3);
+          background: rgba(147, 51, 234, 0.15);
+          border: 1px solid rgba(147, 51, 234, 0.3);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -687,11 +687,13 @@ export const VoiceTranslator = () => {
 
         .ptt-modal-header h3 {
           flex: 1;
+          font-family: 'Bebas Neue', sans-serif;
           font-size: 16px;
-          font-weight: 600;
+          font-weight: 400;
+          letter-spacing: 0.08em;
           color: #a78bfa;
           margin: 0;
-          text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+          text-shadow: 0 0 12px rgba(147, 51, 234, 0.4);
         }
 
         .ptt-modal-close {
@@ -700,7 +702,7 @@ export const VoiceTranslator = () => {
           border-radius: 8px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(255, 200, 150, 0.5);
           cursor: pointer;
           display: flex;
           align-items: center;
