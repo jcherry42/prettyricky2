@@ -11,6 +11,21 @@ import { announceToScreenReader } from '../utils/accessibility';
 // Check if browser supports speech synthesis
 const isSpeechSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
+// Language config - matches VoiceTranslator
+const LANG_CONFIG = {
+  en: { name: 'English', flag: '🇺🇸', code: 'en', speechCode: 'en-US' },
+  es: { name: 'Spanish', flag: '🇪🇸', code: 'es', speechCode: 'es-US' },
+  fr: { name: 'French', flag: '🇫🇷', code: 'fr', speechCode: 'fr-FR' },
+  ja: { name: 'Japanese', flag: '🇯🇵', code: 'ja', speechCode: 'ja-JP' },
+  ko: { name: 'Korean', flag: '🇰🇷', code: 'ko', speechCode: 'ko-KR' },
+};
+
+// Get target language from user settings
+const getTargetLanguage = () => {
+  const stored = localStorage.getItem('defaultTargetLanguage');
+  return stored && LANG_CONFIG[stored] ? stored : 'es';
+};
+
 export const ResponseCards = () => {
   const { 
     currentResponses, 
@@ -26,28 +41,46 @@ export const ResponseCards = () => {
   const [expandedFollowUp, setExpandedFollowUp] = useState(null);
   const [translations, setTranslations] = useState({});
   const [translating, setTranslating] = useState({});
-  const [showSpanish, setShowSpanish] = useState({});
+  const [showTranslated, setShowTranslated] = useState({});
   const [editingId, setEditingId] = useState(null);
   const [editedTexts, setEditedTexts] = useState({});
   const [editedTranslations, setEditedTranslations] = useState({});
   const [translatingEdited, setTranslatingEdited] = useState({});
   const [speakingId, setSpeakingId] = useState(null);
+  const [targetLang, setTargetLang] = useState(getTargetLanguage);
 
-  // FIX: Translate responses when supercharged mode is active
+  // Update target language when it changes in localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setTargetLang(getTargetLanguage());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    // Also check on focus in case user changed it in another component
+    window.addEventListener('focus', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleStorageChange);
+    };
+  }, []);
+
+  const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
+
+  // FIX: Translate responses when supercharged mode is active - use selected language
   const translateResponse = useCallback(async (responseId, text, isFollowUp = false) => {
     const key = isFollowUp ? `${responseId}-followup` : responseId;
+    const currentTargetLang = getTargetLanguage();
     
     if (translations[key]) {
       return; // Already translated
     }
     
-    console.log(`[Sport Mode] Translating ${key}:`, text.substring(0, 50));
+    console.log(`[Sport Mode] Translating ${key} to ${currentTargetLang}:`, text.substring(0, 50));
     setTranslating(prev => ({ ...prev, [key]: true }));
     
     try {
-      const result = await translateText(text, 'en', 'es');
+      const result = await translateText(text, 'en', currentTargetLang);
       if (result && result.success && result.translatedText) {
-        console.log(`[Sport Mode] ✅ Translated ${key}`);
+        console.log(`[Sport Mode] ✅ Translated ${key} to ${currentTargetLang}`);
         setTranslations(prev => ({ ...prev, [key]: result.translatedText }));
       } else {
         console.error(`[Sport Mode] Translation failed for ${key}:`, result?.error);
