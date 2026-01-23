@@ -281,18 +281,13 @@ export const TowerTalkModal = () => {
     setShowShortcuts(false);
 
     try {
-      console.log('[Tower Talk] Starting generation for situation:', situationText.substring(0, 50));
-      console.log('[Tower Talk] Backend URL:', BACKEND_URL);
-      
       let situationToSend = situationText;
       
       if (supercharged) {
-        console.log('[Tower Talk] Supercharged mode - translating input to English');
         setIsTranslating(true);
         const result = await translateText(situationText, 'auto', 'en');
         if (result?.success && result.translatedText) {
           situationToSend = result.translatedText;
-          console.log('[Tower Talk] Input translated successfully');
         }
         setIsTranslating(false);
       }
@@ -308,24 +303,18 @@ export const TowerTalkModal = () => {
         salespersonStyle: salesperson.style,
       };
 
-      console.log('[Tower Talk] Request context:', context);
-
       const res = await fetch(`${BACKEND_URL}/api/tower-talk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ situation: situationToSend, context }),
       });
 
-      console.log('[Tower Talk] Response status:', res.status);
-
       if (!res.ok) {
         const errorData = await res.json();
-        console.error('[Tower Talk] Error response:', errorData);
         throw new Error(errorData.detail || 'Failed to generate response');
       }
 
       const data = await res.json();
-      console.log('[Tower Talk] Response received, length:', data.response?.length);
       
       if (!data.response || data.response.trim().length === 0) {
         throw new Error('Received empty response from server');
@@ -334,13 +323,11 @@ export const TowerTalkModal = () => {
       setResponse(data.response);
 
       if (supercharged) {
-        console.log('[Tower Talk] Translating response to Spanish');
         setIsTranslating(true);
         const result = await translateText(data.response, 'en', 'es');
         if (result?.success && result.translatedText) {
           setTranslatedResponse(result.translatedText);
           setShowTranslated(true);
-          console.log('[Tower Talk] Response translated successfully');
         }
         setIsTranslating(false);
       }

@@ -205,7 +205,7 @@ export const OfflineState = ({ onRetry }) => (
     <div className="empty-icon-container red">
       <WifiOff className="w-8 h-8" />
     </div>
-    <h3 className="empty-title">You're Offline</h3>
+    <h3 className="empty-title">You&apos;re Offline</h3>
     <p className="empty-description">
       Check your internet connection and try again.
     </p>
