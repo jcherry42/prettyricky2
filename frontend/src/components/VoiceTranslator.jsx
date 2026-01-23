@@ -241,22 +241,19 @@ export const VoiceTranslator = () => {
     }
     
     setIsSpeaking(true);
-    console.log(`[Voice Translator] Speaking in ${targetLang}:`, translation.substring(0, 50) + '...');
     
     try {
       await speakText(translation, targetLang, {
         useHD: true,
-        speed: 0.95,  // Slightly slower for clarity
+        speed: 0.95,
         onEnd: () => setIsSpeaking(false),
         onError: () => setIsSpeaking(false),
       });
     } catch (err) {
-      console.error('[Voice Translator] TTS error:', err);
       setIsSpeaking(false);
     }
   }, [translation, targetLang, isSpeaking]);
 
-  // Close result modal
   const closeResult = useCallback(() => {
     stopSpeech();
     setIsSpeaking(false);
@@ -266,7 +263,6 @@ export const VoiceTranslator = () => {
     setError('');
   }, []);
 
-  // Format recording time
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
