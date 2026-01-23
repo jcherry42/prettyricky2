@@ -6,6 +6,34 @@ import { SkeletonCustomerItem } from './ui/LoadingStates';
 import haptics from '../utils/haptics';
 import { announceToScreenReader } from '../utils/accessibility';
 
+// Theme-aware color helpers
+const getThemeColors = (theme) => ({
+  isDark: theme === 'dark',
+  // Primary accent
+  accent: theme === 'dark' ? '#FF9F43' : '#B8860B',
+  accentRgba: (alpha) => theme === 'dark' 
+    ? `rgba(255, 159, 67, ${alpha})` 
+    : `rgba(184, 134, 11, ${alpha})`,
+  // Text colors
+  textPrimary: theme === 'dark' ? 'rgba(255, 240, 220, 0.95)' : '#3D2914',
+  textSecondary: theme === 'dark' ? 'rgba(255, 200, 150, 0.7)' : '#6B5344',
+  textMuted: theme === 'dark' ? 'rgba(255, 200, 150, 0.5)' : '#8B7355',
+  textLabel: theme === 'dark' ? 'rgba(255, 200, 150, 0.6)' : '#7B6347',
+  // Background
+  inputBg: theme === 'dark' 
+    ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%)'
+    : 'linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%)',
+  inputBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.15)' : 'rgba(180, 140, 80, 0.3)',
+  hoverBg: theme === 'dark' 
+    ? 'linear-gradient(90deg, rgba(255, 140, 0, 0.08) 0%, transparent 100%)'
+    : 'linear-gradient(90deg, rgba(184, 134, 11, 0.08) 0%, transparent 100%)',
+  // Status colors
+  hotBg: theme === 'dark' ? 'rgba(255, 68, 68, 0.25)' : 'rgba(220, 38, 38, 0.15)',
+  hotBorder: theme === 'dark' ? 'rgba(255, 68, 68, 0.4)' : 'rgba(220, 38, 38, 0.3)',
+  hotGlow: theme === 'dark' ? '0 0 15px rgba(255, 68, 68, 0.2)' : '0 0 10px rgba(220, 38, 38, 0.1)',
+  hotText: theme === 'dark' ? '#ff6b6b' : '#dc2626',
+});
+
 /**
  * Enterprise-Grade Customer Selector
  * Features:
@@ -17,7 +45,8 @@ import { announceToScreenReader } from '../utils/accessibility';
  * - Haptic feedback
  */
 export const CustomerSelector = () => {
-  const { customers, selectedCustomer, selectCustomer, getVehicleById, loading } = useSales();
+  const { customers, selectedCustomer, selectCustomer, getVehicleById, loading, theme } = useSales();
+  const colors = getThemeColors(theme);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
