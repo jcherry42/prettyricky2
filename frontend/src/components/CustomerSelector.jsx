@@ -152,7 +152,7 @@ export const CustomerSelector = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="card-luxury overflow-hidden">
+      <div className="infotainment-panel overflow-hidden">
         <div className="p-4 space-y-3">
           <SkeletonCustomerItem />
         </div>
@@ -163,22 +163,28 @@ export const CustomerSelector = () => {
   if (isOpen) {
     return (
       <div 
-        className="card-luxury overflow-hidden animate-fade-in"
+        className="infotainment-panel overflow-hidden animate-fade-in"
         role="dialog"
         aria-label="Select customer"
         onKeyDown={handleKeyDown}
       >
-        {/* Search header */}
-        <div className="p-4 border-b border-border/30">
+        {/* Search header - luxury auto style */}
+        <div className="infotainment-header p-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255, 140, 0, 0.6)' }} />
             <input
               ref={searchInputRef}
               type="text"
               placeholder="Search by name, phone, or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input-luxury pl-11 pr-11"
+              className="w-full pl-11 pr-11 py-3 rounded-xl text-sm"
+              style={{
+                background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%)',
+                border: '1px solid rgba(255, 140, 0, 0.15)',
+                color: '#fff',
+                outline: 'none'
+              }}
               autoFocus
               data-testid="customer-search-input"
               aria-label="Search customers"
@@ -186,7 +192,8 @@ export const CustomerSelector = () => {
             {search ? (
               <button
                 onClick={handleClearSearch}
-                className="absolute right-12 top-1/2 -translate-y-1/2 btn-icon w-7 h-7"
+                className="absolute right-12 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 200, 150, 0.6)' }}
                 aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -194,7 +201,8 @@ export const CustomerSelector = () => {
             ) : null}
             <button
               onClick={handleClose}
-              className="absolute right-2 top-1/2 -translate-y-1/2 btn-icon w-8 h-8"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 200, 150, 0.6)' }}
               data-testid="close-customer-search"
               aria-label="Close customer selector"
             >
@@ -202,11 +210,11 @@ export const CustomerSelector = () => {
             </button>
           </div>
           <div className="flex items-center justify-between mt-2 px-1">
-            <p className="text-xs text-muted-foreground">
-              {sortedCustomers.length} customer{sortedCustomers.length !== 1 ? 's' : ''} • Sorted by priority
+            <p className="text-xs" style={{ color: 'rgba(255, 200, 150, 0.5)', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.08em' }}>
+              {sortedCustomers.length} CUSTOMER{sortedCustomers.length !== 1 ? 'S' : ''} • SORTED BY PRIORITY
             </p>
             {isSearching && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255, 140, 0, 0.7)' }}>
                 <Loader2 className="w-3 h-3 animate-spin" />
                 Searching...
               </div>
