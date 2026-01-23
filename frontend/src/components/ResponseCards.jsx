@@ -404,7 +404,7 @@ export const ResponseCards = () => {
           const displayedText = getDisplayText(response);
           const isEditing = editingId === response.id;
           
-          const displayedFollowUp = supercharged && showFollowUpSpanish && followUpTranslation 
+          const displayedFollowUp = supercharged && showFollowUpTranslated && followUpTranslation 
             ? followUpTranslation 
             : response.followUpText;
           
