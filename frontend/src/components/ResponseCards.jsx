@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Copy, Check, MessageSquare, Clock, ChevronDown, ChevronUp, Languages, Flame, Loader2, Pencil, X, Volume2, VolumeX } from 'lucide-react';
-import { translateText, SUPPORTED_LANGUAGES, getLanguageByCode } from '../utils/translationService';
+import { translateText } from '../utils/translationService';
 import { speakText, stopSpeech } from '../utils/ttsService';
 import { useSales } from '../context/SalesContext';
 import { FOLLOW_UP_RULES } from '../data/salesData';
