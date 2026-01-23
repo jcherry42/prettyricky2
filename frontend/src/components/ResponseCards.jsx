@@ -521,7 +521,7 @@ export const ResponseCards = () => {
                       ) : (
                         <>
                           <Languages className="w-3.5 h-3.5" />
-                          Translate to Spanish
+                          Translate to {targetConfig.name}
                         </>
                       )}
                     </button>
@@ -530,12 +530,12 @@ export const ResponseCards = () => {
                         onClick={(e) => toggleLanguage(mainKey, e)}
                         className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
                         style={{
-                          background: showSpanish[mainKey] ? 'hsla(25, 100%, 50%, 0.25)' : 'hsla(210, 80%, 50%, 0.2)',
-                          color: showSpanish[mainKey] ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
-                          border: `1px solid ${showSpanish[mainKey] ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(210, 80%, 50%, 0.3)'}`,
+                          background: showTranslated[mainKey] ? 'hsla(25, 100%, 50%, 0.25)' : 'hsla(210, 80%, 50%, 0.2)',
+                          color: showTranslated[mainKey] ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
+                          border: `1px solid ${showTranslated[mainKey] ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(210, 80%, 50%, 0.3)'}`,
                         }}
                       >
-                        {showSpanish[mainKey] ? '🇪🇸 Spanish' : '🇺🇸 English'}
+                        {showTranslated[mainKey] ? `${targetConfig.flag} ${targetConfig.name}` : '🇺🇸 English'}
                       </button>
                     )}
                   </div>
