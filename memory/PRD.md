@@ -278,13 +278,17 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ---
 
 ## Test Status
-- **Last Test**: iteration_17.json
-- **Result**: 100% pass rate (12/12 backend tests, all frontend UI verified)
+- **Last Test**: iteration_20.json
+- **Result**: 100% pass rate (19/19 backend tests, all frontend UI verified)
 - **Coverage**: 
-  - License upload, attach, and serving endpoints
-  - VIN decode endpoint
-  - Eject preview endpoint
-  - Frontend Intake Scanner modal and flows
+  - Full CRUD for customers and vehicles
+  - VIN decode with NHTSA integration
+  - License OCR with GPT-4o Vision
+  - Tower Talk AI generation
+  - Voice translation
+  - Data import preview
+  - Integrations and conversations
+  - All UI components (Header, Command Center, Customer Selector, Intake Scanner)
 
 ---
 
