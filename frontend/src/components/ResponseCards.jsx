@@ -695,11 +695,11 @@ export const ResponseCards = () => {
                             disabled={isFollowUpTranslating}
                             className="flex items-center justify-center gap-1.5"
                             style={{
-                              background: showFollowUpSpanish 
+                              background: showFollowUpTranslated 
                                 ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
                                 : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
-                              border: `1px solid ${showFollowUpSpanish ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
-                              color: showFollowUpSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
+                              border: `1px solid ${showFollowUpTranslated ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
+                              color: showFollowUpTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
                               padding: '8px 12px',
                               borderRadius: '8px',
                               fontSize: '12px',
@@ -713,7 +713,7 @@ export const ResponseCards = () => {
                             ) : (
                               <>
                                 <Languages className="w-3.5 h-3.5" />
-                                {followUpTranslation ? (showFollowUpSpanish ? '🇪🇸' : '🇺🇸') : '🇪🇸'}
+                                {followUpTranslation ? (showFollowUpTranslated ? targetConfig.flag : '🇺🇸') : targetConfig.flag}
                               </>
                             )}
                           </button>
