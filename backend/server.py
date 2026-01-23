@@ -413,6 +413,101 @@ async def translate_text(request: TranslateRequest):
         raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
 
 
+# ============== TEXT-TO-SPEECH (Enterprise-Grade) ==============
+
+# TTS Cache for instant playback of repeated phrases
+_tts_cache: Dict[str, str] = {}
+_tts_cache_max_size = 200
+
+# Optimal voice selection by language for natural, smooth speech
+VOICE_BY_LANGUAGE = {
+    'en': 'nova',      # Energetic, clear American English
+    'es': 'coral',     # Warm, friendly - great for Spanish
+    'fr': 'shimmer',   # Bright, expressive - suits French
+    'ja': 'alloy',     # Neutral, balanced - clean for Japanese
+    'ko': 'echo',      # Smooth, calm - works well for Korean
+}
+
+@api_router.post("/tts", response_model=TTSResponse)
+async def text_to_speech(request: TTSRequest):
+    """
+    Enterprise-grade Text-to-Speech using OpenAI TTS
+    - HD quality voices for smooth, lifelike speech
+    - Intelligent caching for instant repeated playback
+    - Language-optimized voice selection
+    """
+    global _tts_cache
+    
+    try:
+        text = request.text.strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="Text is required")
+        
+        if len(text) > 4096:
+            raise HTTPException(status_code=400, detail="Text exceeds 4096 character limit")
+        
+        # Determine optimal voice based on language if not specified
+        voice = request.voice
+        if voice == "auto" or not voice:
+            voice = VOICE_BY_LANGUAGE.get(request.language, 'nova')
+        
+        # Create cache key
+        cache_key = f"{voice}:{request.speed}:{text[:500]}"
+        
+        # Check cache first - instant response
+        if cache_key in _tts_cache:
+            logger.info(f"TTS cache hit: {len(text)} chars, voice={voice}")
+            return TTSResponse(
+                audio_base64=_tts_cache[cache_key],
+                format="mp3",
+                voice_used=voice,
+                cached=True
+            )
+        
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+        
+        from emergentintegrations.llm.openai import OpenAITextToSpeech
+        
+        start_time = datetime.now(timezone.utc)
+        
+        tts = OpenAITextToSpeech(api_key=api_key)
+        
+        # Generate HD quality speech
+        audio_base64 = await tts.generate_speech_base64(
+            text=text,
+            model=request.model,  # tts-1-hd for HD quality
+            voice=voice,
+            speed=request.speed
+        )
+        
+        generation_time = (datetime.now(timezone.utc) - start_time).total_seconds()
+        logger.info(f"TTS generated: {len(text)} chars, voice={voice}, time={generation_time:.2f}s")
+        
+        # Cache for future instant playback
+        if len(_tts_cache) >= _tts_cache_max_size:
+            # Remove oldest entries
+            keys_to_remove = list(_tts_cache.keys())[:50]
+            for key in keys_to_remove:
+                del _tts_cache[key]
+        
+        _tts_cache[cache_key] = audio_base64
+        
+        return TTSResponse(
+            audio_base64=audio_base64,
+            format="mp3",
+            voice_used=voice,
+            cached=False
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"TTS error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
+
+
 # ============== VOICE TRANSLATION (Speech-to-Text + Translate) ==============
 
 class VoiceTranslateResponse(BaseModel):
