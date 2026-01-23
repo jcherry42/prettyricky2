@@ -1200,10 +1200,10 @@ export const VinScanner = ({ isOpen, onClose }) => {
           max-width: 420px;
           max-height: 90vh;
           overflow-y: auto;
-          background: linear-gradient(180deg, #1a1a22 0%, #0f0f14 100%);
+          background: linear-gradient(180deg, rgba(25, 20, 15, 0.98) 0%, rgba(15, 12, 8, 0.99) 100%);
           border-radius: 24px;
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 100px rgba(139,92,246,0.08);
+          border: 1px solid rgba(255, 140, 0, 0.12);
+          box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 100px rgba(255, 140, 0, 0.05);
           animation: slideUp 0.25s ease-out;
         }
         
