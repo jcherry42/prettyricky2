@@ -549,54 +549,97 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         .cc-modal {
           position: relative;
           width: calc(100% - 32px);
-          max-width: 420px;
-          max-height: 80vh;
+          max-width: 440px;
+          max-height: 85vh;
           margin: auto;
           background: linear-gradient(180deg, 
-            rgba(25, 28, 35, 0.92) 0%, 
-            rgba(18, 20, 26, 0.96) 100%
+            rgba(22, 20, 18, 0.98) 0%, 
+            rgba(14, 12, 10, 0.99) 100%
           );
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 20px;
+          border: 1px solid rgba(255, 140, 0, 0.15);
           box-shadow: 
-            0 30px 60px rgba(0,0,0,0.5), 
-            0 0 0 1px rgba(255,255,255,0.05) inset,
-            0 0 80px rgba(255,191,0,0.05),
-            inset 0 1px 0 rgba(255,255,255,0.1);
+            0 0 0 1px rgba(0, 0, 0, 0.8),
+            0 30px 60px rgba(0,0,0,0.6), 
+            inset 0 1px 0 rgba(255,255,255,0.04),
+            0 0 60px rgba(255, 120, 0, 0.06);
           display: flex;
           flex-direction: column;
           overflow: hidden;
         }
 
+        /* Quilted leather texture overlay */
+        .cc-modal::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: 
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 20px,
+              rgba(255, 180, 120, 0.015) 20px,
+              rgba(255, 180, 120, 0.015) 21px
+            ),
+            repeating-linear-gradient(
+              -45deg,
+              transparent,
+              transparent 20px,
+              rgba(255, 180, 120, 0.015) 20px,
+              rgba(255, 180, 120, 0.015) 21px
+            );
+          background-size: 40px 40px;
+          pointer-events: none;
+          opacity: 0.6;
+          border-radius: 20px;
+        }
+
+        /* Stitch points on quilted leather */
+        .cc-modal::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: 
+            radial-gradient(circle at 0 0, rgba(255, 160, 80, 0.06) 1.5px, transparent 1.5px),
+            radial-gradient(circle at 20px 20px, rgba(255, 160, 80, 0.06) 1.5px, transparent 1.5px);
+          background-size: 40px 40px;
+          pointer-events: none;
+          opacity: 0.5;
+          border-radius: 20px;
+        }
+
         .cc-header {
+          position: relative;
+          z-index: 1;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 16px 20px;
-          border-bottom: 1px solid rgba(255,191,0,0.12);
-          background: linear-gradient(180deg, rgba(255,191,0,0.05) 0%, transparent 100%);
+          padding: 14px 20px;
+          border-bottom: 1px solid rgba(255, 140, 0, 0.12);
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 100%);
         }
 
         .cc-header-title {
           display: flex;
           align-items: center;
           gap: 10px;
-          font-family: 'Chakra Petch', sans-serif;
-          font-size: 16px;
-          font-weight: 600;
-          color: #FFBF00;
-          text-shadow: 0 0 10px rgba(255,191,0,0.3);
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 18px;
+          font-weight: 400;
+          letter-spacing: 0.1em;
+          color: #FF9F43;
+          text-shadow: 0 0 15px rgba(255, 159, 67, 0.4);
         }
 
         .cc-close {
           width: 32px;
           height: 32px;
-          border-radius: 50%;
-          background: rgba(255,191,0,0.1);
-          border: none;
-          color: #FFBF00;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.5);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -605,17 +648,20 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-close:hover {
-          background: rgba(239,68,68,0.2);
+          background: rgba(239, 68, 68, 0.15);
+          border-color: rgba(239, 68, 68, 0.3);
           color: #f87171;
         }
 
         .cc-tabs {
+          position: relative;
+          z-index: 1;
           display: grid;
           grid-template-columns: repeat(6, 1fr);
           gap: 4px;
-          padding: 8px 10px;
-          background: rgba(0,0,0,0.25);
-          border-bottom: 1px solid rgba(255,191,0,0.08);
+          padding: 10px 12px;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.15) 100%);
+          border-bottom: 1px solid rgba(255, 140, 0, 0.08);
         }
 
         .cc-tab {
@@ -623,15 +669,16 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 2px;
+          gap: 3px;
           padding: 8px 4px;
           border-radius: 8px;
           background: transparent;
-          border: none;
-          color: rgba(255,220,180,0.5);
-          font-family: 'Manrope', sans-serif;
-          font-size: 9px;
-          font-weight: 600;
+          border: 1px solid transparent;
+          color: rgba(255, 200, 150, 0.45);
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 10px;
+          font-weight: 400;
+          letter-spacing: 0.08em;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.2s;
@@ -641,11 +688,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           width: 18px;
           height: 18px;
         }
-        }
 
         .cc-tab:hover {
-          color: rgba(255,220,180,0.8);
-          background: rgba(255,191,0,0.08);
+          color: rgba(255, 200, 150, 0.75);
+          background: rgba(255, 140, 0, 0.08);
+          border-color: rgba(255, 140, 0, 0.1);
         }
 
         .cc-tab.active {
