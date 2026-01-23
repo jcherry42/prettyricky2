@@ -33,13 +33,18 @@ export const CustomerSelector = () => {
     }
     
     if (search !== debouncedSearch) {
+      // Set searching state outside the timeout
+      const shouldSetSearching = !!search;
+      
       debounceTimerRef.current = setTimeout(() => {
         setDebouncedSearch(search);
         setIsSearching(false);
       }, 200);
       
-      // Only set searching if there's a change pending
-      if (search) setIsSearching(true);
+      // Only set searching if there's a change pending - use requestAnimationFrame to avoid sync setState in effect
+      if (shouldSetSearching) {
+        requestAnimationFrame(() => setIsSearching(true));
+      }
     }
     
     return () => {
