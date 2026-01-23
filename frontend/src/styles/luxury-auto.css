@@ -809,92 +809,98 @@ html:not(.dark) .cc-header-title {
 }
 
 html:not(.dark) .cc-subtitle {
-  color: #7B6347 !important;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .cc-close {
-  background: rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(180, 140, 80, 0.15) !important;
-  color: #7B6347 !important;
+  background: #F5F0E8 !important;
+  border-color: rgba(139, 90, 43, 0.2) !important;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .cc-close:hover {
-  background: rgba(184, 134, 11, 0.1) !important;
-  color: #B8860B !important;
+  background: #EDE5D8 !important;
+  color: #8B5A2B !important;
 }
 
 html:not(.dark) .cc-tabs {
-  background: rgba(245, 240, 230, 0.5) !important;
-  border-bottom-color: rgba(180, 140, 80, 0.1) !important;
+  background: #FAF7F2 !important;
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
 }
 
 html:not(.dark) .cc-tab {
-  color: #7B6347 !important;
+  color: #5D4E37 !important;
+  font-weight: 500 !important;
 }
 
 html:not(.dark) .cc-tab:hover:not(.active) {
-  color: #B8860B !important;
-  background: rgba(184, 134, 11, 0.05) !important;
+  color: #8B5A2B !important;
+  background: rgba(139, 90, 43, 0.08) !important;
 }
 
 html:not(.dark) .cc-tab.active {
-  color: #B8860B !important;
-  border-bottom-color: #B8860B !important;
-  background: rgba(184, 134, 11, 0.08) !important;
+  color: #8B5A2B !important;
+  border-bottom-color: #8B5A2B !important;
+  background: rgba(139, 90, 43, 0.1) !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .cc-content {
-  background: transparent !important;
+  background: #FFFFFF !important;
 }
 
 html:not(.dark) .stat-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%) !important;
-  border-color: rgba(180, 140, 80, 0.15) !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.2) !important;
 }
 
 html:not(.dark) .stat-value {
-  color: #3D2914 !important;
+  color: #2D1F0F !important;
+  font-weight: 700 !important;
 }
 
 html:not(.dark) .stat-label {
-  color: #7B6347 !important;
+  color: #5D4E37 !important;
+  font-weight: 500 !important;
 }
 
 html:not(.dark) .cc-section-title {
-  color: #B8860B !important;
+  color: #8B5A2B !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .cc-list-item {
-  background: rgba(255, 255, 255, 0.8) !important;
-  border-color: rgba(180, 140, 80, 0.1) !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.15) !important;
 }
 
 html:not(.dark) .cc-list-item:hover {
-  background: rgba(184, 134, 11, 0.05) !important;
-  border-color: rgba(184, 134, 11, 0.2) !important;
+  background: #FDF8F0 !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
 }
 
 html:not(.dark) .cc-list-item-title {
-  color: #3D2914 !important;
+  color: #2D1F0F !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .cc-list-item-subtitle {
-  color: #7B6347 !important;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .cc-input {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(180, 140, 80, 0.2) !important;
-  color: #3D2914 !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.25) !important;
+  color: #2D1F0F !important;
 }
 
 html:not(.dark) .cc-input:focus {
-  border-color: rgba(184, 134, 11, 0.4) !important;
-  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1) !important;
+  border-color: #8B5A2B !important;
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15) !important;
 }
 
 html:not(.dark) .cc-input::placeholder {
-  color: #9B8B7B !important;
+  color: #8B7355 !important;
 }
 
 html:not(.dark) .cc-btn-primary {
