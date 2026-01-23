@@ -122,54 +122,34 @@ export const ResponseCards = () => {
     }
   }, [supercharged]);
 
-  // Enterprise Text-to-Speech - uses OpenAI TTS for smooth, lifelike voices
   const handleSpeakText = useCallback(async (responseId, text, isTranslated = false) => {
-    // If already speaking this response, stop it
     if (speakingId === responseId) {
       stopSpeech();
       setSpeakingId(null);
       return;
     }
     
-    // Stop any current speech
     stopSpeech();
-    
-    const currentTargetLang = getTargetLanguage();
-    const language = isTranslated ? currentTargetLang : 'en';
-    
-    console.log(`[TTS] Speaking in ${language}:`, text.substring(0, 50) + '...');
+    const language = isTranslated ? getTargetLanguage() : 'en';
     
     haptics.light();
     setSpeakingId(responseId);
     
     try {
       const result = await speakText(text, language, {
-        useHD: true,  // Always use HD for smooth, lifelike speech
+        useHD: true,
         speed: 1.0,
-        onStart: () => {
-          console.log('[TTS] Playback started');
-        },
-        onEnd: () => {
-          console.log('[TTS] Playback ended');
-          setSpeakingId(null);
-        },
-        onError: (err) => {
-          console.error('[TTS] Playback error:', err);
-          setSpeakingId(null);
-        },
+        onEnd: () => setSpeakingId(null),
+        onError: () => setSpeakingId(null),
       });
       
-      if (!result.success) {
-        console.warn('[TTS] Failed:', result.error);
-        setSpeakingId(null);
-      }
+      if (!result.success) setSpeakingId(null);
     } catch (err) {
-      console.error('[TTS] Exception:', err);
+      console.error('[TTS] Error:', err);
       setSpeakingId(null);
     }
   }, [speakingId]);
 
-  // Get display text helper
   const getDisplayText = useCallback((response) => {
     const key = response.id;
     if (editedTexts[key] && editedTranslations[key] && showTranslated[key]) {
