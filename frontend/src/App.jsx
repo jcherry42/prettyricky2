@@ -84,7 +84,14 @@ function AppContent() {
   }
   
   return (
-    <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden">
+    <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden quilted-leather-amber">
+      {/* Ambient lighting overlay */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-orange-500/[0.03] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-cyan-500/[0.02] to-transparent" />
+      </div>
+      
       {/* Skip Link for Accessibility */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -96,7 +103,7 @@ function AppContent() {
       {/* Main Content - padding-top accounts for fixed header */}
       <main 
         id="main-content" 
-        className="px-4 py-4 pb-safe space-y-4" 
+        className="relative z-10 px-4 py-4 pb-safe space-y-4" 
         style={{ paddingTop: '160px' }}
         role="main"
         aria-label="Sales Command Center"
