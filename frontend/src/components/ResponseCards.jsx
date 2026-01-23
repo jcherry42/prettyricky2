@@ -349,9 +349,9 @@ export const ResponseCards = () => {
     e.stopPropagation();
     const key = response.id;
     const text = getDisplayText(response);
-    const isSpanish = (editedTranslations[key] && showSpanish[key]) || 
-                      (supercharged && showSpanish[key] && translations[key]);
-    speakText(key, text, isSpanish);
+    const isTranslated = (editedTranslations[key] && showTranslated[key]) || 
+                      (supercharged && showTranslated[key] && translations[key]);
+    speakText(key, text, isTranslated);
   };
 
   return (
