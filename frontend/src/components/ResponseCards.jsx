@@ -317,7 +317,7 @@ export const ResponseCards = () => {
     const text = getDisplayText(response);
     const isTranslated = (editedTranslations[key] && showTranslated[key]) || 
                       (supercharged && showTranslated[key] && translations[key]);
-    speakText(key, text, isTranslated);
+    handleSpeakText(key, text, isTranslated);
   };
 
   return (
