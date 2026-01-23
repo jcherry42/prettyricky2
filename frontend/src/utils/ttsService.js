@@ -114,18 +114,11 @@ export const speakText = async (text, language = 'en', options = {}) => {
     });
     
   } catch (error) {
-    console.error('[TTS] Error:', error);
     onError(error);
-    
-    // Fallback to browser speech synthesis
-    console.log('[TTS] Falling back to browser speech synthesis');
     return fallbackSpeak(text, language, { onStart, onEnd, onError });
   }
 };
 
-/**
- * Fallback browser speech synthesis (if OpenAI TTS fails)
- */
 const fallbackSpeak = (text, language, { onStart, onEnd, onError }) => {
   return new Promise((resolve) => {
     if (!('speechSynthesis' in window)) {
@@ -134,12 +127,9 @@ const fallbackSpeak = (text, language, { onStart, onEnd, onError }) => {
       return;
     }
 
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Language mapping
     const langMap = {
       en: 'en-US',
       es: 'es-US',
