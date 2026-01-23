@@ -9,42 +9,42 @@ const iconMap = {
   'heart': Heart,
 };
 
-// Theme-aware tone colors
+// Theme-aware tone colors - optimized for readability
 const getToneColors = (theme, toneId) => {
   const isDark = theme === 'dark';
   const baseColors = {
     fast_direct: {
-      active: isDark ? '#22d3ee' : '#0891b2',
-      glow: isDark ? 'rgba(34, 211, 238, 0.3)' : 'rgba(8, 145, 178, 0.2)',
-      bg: isDark ? 'rgba(34, 211, 238, 0.12)' : 'rgba(8, 145, 178, 0.1)',
-      border: isDark ? 'rgba(34, 211, 238, 0.35)' : 'rgba(8, 145, 178, 0.3)',
+      active: isDark ? '#22d3ee' : '#0E7490',
+      glow: isDark ? 'rgba(34, 211, 238, 0.3)' : 'none',
+      bg: isDark ? 'rgba(34, 211, 238, 0.12)' : '#F0F9FA',
+      border: isDark ? 'rgba(34, 211, 238, 0.35)' : '#0E7490',
     },
     balanced: {
-      active: isDark ? '#FF9F43' : '#B8860B',
-      glow: isDark ? 'rgba(255, 159, 67, 0.3)' : 'rgba(184, 134, 11, 0.2)',
-      bg: isDark ? 'rgba(255, 159, 67, 0.12)' : 'rgba(184, 134, 11, 0.1)',
-      border: isDark ? 'rgba(255, 159, 67, 0.35)' : 'rgba(184, 134, 11, 0.3)',
+      active: isDark ? '#FF9F43' : '#8B5A2B',
+      glow: isDark ? 'rgba(255, 159, 67, 0.3)' : 'none',
+      bg: isDark ? 'rgba(255, 159, 67, 0.12)' : '#FDF8F0',
+      border: isDark ? 'rgba(255, 159, 67, 0.35)' : '#8B5A2B',
     },
     soft_touch: {
-      active: isDark ? '#22c55e' : '#16a34a',
-      glow: isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(22, 163, 74, 0.2)',
-      bg: isDark ? 'rgba(34, 197, 94, 0.12)' : 'rgba(22, 163, 74, 0.1)',
-      border: isDark ? 'rgba(34, 197, 94, 0.35)' : 'rgba(22, 163, 74, 0.3)',
+      active: isDark ? '#22c55e' : '#15803D',
+      glow: isDark ? 'rgba(34, 197, 94, 0.3)' : 'none',
+      bg: isDark ? 'rgba(34, 197, 94, 0.12)' : '#F0FDF4',
+      border: isDark ? 'rgba(34, 197, 94, 0.35)' : '#15803D',
     },
   };
   return baseColors[toneId] || baseColors.balanced;
 };
 
-// Theme colors
+// Theme colors - optimized for readability
 const getColors = (theme) => ({
   isDark: theme === 'dark',
-  textLabel: theme === 'dark' ? 'rgba(255, 200, 150, 0.6)' : '#7B6347',
-  textMuted: theme === 'dark' ? 'rgba(255, 200, 150, 0.4)' : '#9B8B7B',
-  textDescription: theme === 'dark' ? 'rgba(255, 200, 150, 0.5)' : '#8B7B6B',
+  textLabel: theme === 'dark' ? 'rgba(255, 200, 150, 0.6)' : '#5D4E37',
+  textMuted: theme === 'dark' ? 'rgba(255, 200, 150, 0.4)' : '#6B5B4B',
+  textDescription: theme === 'dark' ? 'rgba(255, 200, 150, 0.5)' : '#5D4E37',
   buttonBg: theme === 'dark' 
     ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)'
-    : 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 248, 245, 0.9) 100%)',
-  buttonBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.08)' : 'rgba(180, 140, 80, 0.15)',
+    : '#FFFFFF',
+  buttonBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.08)' : 'rgba(139, 90, 43, 0.2)',
 });
 
 export const ToneSelector = () => {
