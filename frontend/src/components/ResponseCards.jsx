@@ -398,8 +398,8 @@ export const ResponseCards = () => {
           const isFollowUpTranslating = translating[followUpKey];
           const mainTranslation = translations[mainKey];
           const followUpTranslation = translations[followUpKey];
-          const showMainSpanish = showSpanish[mainKey];
-          const showFollowUpSpanish = showSpanish[followUpKey];
+          const showMainTranslated = showTranslated[mainKey];
+          const showFollowUpTranslated = showTranslated[followUpKey];
           
           const displayedText = getDisplayText(response);
           const isEditing = editingId === response.id;
