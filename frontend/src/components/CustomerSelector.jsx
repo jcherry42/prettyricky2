@@ -332,7 +332,7 @@ export const CustomerSelector = () => {
     );
   }
 
-  // Closed state - selector button
+  // Closed state - selector button - luxury infotainment style
   const name = selectedCustomer ? getCustomerName(selectedCustomer) : null;
   const vehicle = selectedCustomer ? getVehicleInfo(selectedCustomer) : null;
   const status = selectedCustomer ? getStatusBadge(selectedCustomer.status || selectedCustomer.lead_status) : null;
@@ -341,28 +341,35 @@ export const CustomerSelector = () => {
   return (
     <button
       onClick={handleOpen}
-      className="selector-btn w-full flex items-center gap-4"
+      className="infotainment-panel w-full flex items-center gap-4 p-4 luxury-transition"
       data-testid="customer-selector"
       aria-haspopup="listbox"
       aria-label={selectedCustomer ? `Selected: ${name}. Click to change.` : 'Select a customer'}
+      style={{
+        cursor: 'pointer'
+      }}
     >
       {selectedCustomer ? (
         <>
-          {/* Avatar with ambient glow */}
+          {/* Avatar with ambient glow - gauge cluster style */}
           <div className="relative">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 ambient-gold"
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                  style={{
                    background: status?.label === 'HOT'
-                     ? 'linear-gradient(135deg, hsla(15, 80%, 50%, 0.5) 0%, hsla(25, 70%, 35%, 0.4) 100%)'
-                     : 'linear-gradient(135deg, hsla(35, 60%, 45%, 0.4) 0%, hsla(25, 50%, 30%, 0.3) 100%)',
+                     ? 'linear-gradient(135deg, rgba(255, 68, 68, 0.3) 0%, rgba(200, 40, 40, 0.25) 100%)'
+                     : 'linear-gradient(135deg, rgba(255, 140, 0, 0.25) 0%, rgba(200, 100, 0, 0.2) 100%)',
                    border: status?.label === 'HOT'
-                     ? '1px solid hsla(15, 70%, 55%, 0.5)'
-                     : '1px solid hsla(40, 60%, 50%, 0.3)'
+                     ? '1px solid rgba(255, 68, 68, 0.5)'
+                     : '1px solid rgba(255, 140, 0, 0.35)',
+                   boxShadow: status?.label === 'HOT'
+                     ? '0 0 20px rgba(255, 68, 68, 0.25), inset 0 0 15px rgba(255, 68, 68, 0.1)'
+                     : '0 0 20px rgba(255, 140, 0, 0.2), inset 0 0 15px rgba(255, 140, 0, 0.1)'
                  }}>
-              <User className="w-6 h-6 text-primary" />
+              <User className="w-6 h-6" style={{ color: status?.label === 'HOT' ? '#ff6b6b' : '#FF9F43' }} />
             </div>
             {status?.label === 'HOT' && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center animate-pulse">
+              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center animate-pulse"
+                   style={{ background: 'linear-gradient(135deg, #ff4444 0%, #cc2222 100%)', boxShadow: '0 0 12px rgba(255, 68, 68, 0.6)' }}>
                 <Flame className="w-3 h-3 text-white" />
               </div>
             )}
@@ -370,41 +377,48 @@ export const CustomerSelector = () => {
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-foreground truncate">
+              <span className="font-bold text-lg truncate" style={{ color: '#FF9F43', textShadow: '0 0 12px rgba(255, 159, 67, 0.4)', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.05em' }}>
                 {name}
               </span>
-              <span className={status?.class}>
+              <span 
+                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex items-center"
+                style={{
+                  background: status?.label === 'HOT' ? 'rgba(255, 68, 68, 0.2)' : 'rgba(255, 140, 0, 0.15)',
+                  color: status?.label === 'HOT' ? '#ff6b6b' : '#FF9F43',
+                  border: `1px solid ${status?.label === 'HOT' ? 'rgba(255, 68, 68, 0.3)' : 'rgba(255, 140, 0, 0.25)'}`
+                }}
+              >
                 {StatusIcon && <StatusIcon className="w-2.5 h-2.5 mr-0.5" />}
                 {status?.label}
               </span>
             </div>
             
             {vehicle && (
-              <p className="text-sm text-muted-foreground truncate mt-1 flex items-center gap-1.5">
-                <Car className="w-4 h-4 text-primary/70" />
+              <p className="text-sm truncate mt-1 flex items-center gap-1.5" style={{ color: 'rgba(255, 200, 150, 0.7)' }}>
+                <Car className="w-4 h-4" style={{ color: 'rgba(255, 140, 0, 0.7)' }} />
                 {vehicle}
               </p>
             )}
           </div>
           
-          <ChevronRight className="w-6 h-6 text-primary flex-shrink-0" />
+          <ChevronRight className="w-6 h-6 flex-shrink-0" style={{ color: '#FF9F43' }} />
         </>
       ) : (
         <>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+          <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                style={{
-                 background: 'hsla(220, 10%, 15%, 0.8)',
-                 border: '1px solid hsla(220, 8%, 25%, 0.5)'
+                 background: 'linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(200, 100, 0, 0.08) 100%)',
+                 border: '1px solid rgba(255, 140, 0, 0.15)'
                }}>
-            <User className="w-6 h-6 text-muted-foreground" />
+            <User className="w-6 h-6" style={{ color: 'rgba(255, 140, 0, 0.5)' }} />
           </div>
           
           <div className="flex-1">
-            <p className="font-semibold text-lg text-foreground">Select Customer</p>
-            <p className="text-sm text-muted-foreground">Tap to choose a prospect</p>
+            <p className="font-semibold text-lg" style={{ color: 'rgba(255, 200, 150, 0.85)', fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '0.08em' }}>SELECT CUSTOMER</p>
+            <p className="text-sm" style={{ color: 'rgba(255, 200, 150, 0.5)' }}>Tap to choose a prospect</p>
           </div>
           
-          <ChevronRight className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+          <ChevronRight className="w-6 h-6 flex-shrink-0" style={{ color: 'rgba(255, 140, 0, 0.4)' }} />
         </>
       )}
     </button>
