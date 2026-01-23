@@ -218,7 +218,7 @@ export const ResponseCards = () => {
   // Get display text helper
   const getDisplayText = useCallback((response) => {
     const key = response.id;
-    if (editedTexts[key] && editedTranslations[key] && showSpanish[key]) {
+    if (editedTexts[key] && editedTranslations[key] && showTranslated[key]) {
       return editedTranslations[key];
     }
     if (editedTexts[key]) {
