@@ -194,11 +194,9 @@ export const VoiceTranslator = () => {
       mediaRecorder.start(500);
       setIsRecording(true);
       
-      // Start timer
       setRecordingTime(0);
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          // Auto-stop after 30 seconds
           if (prev >= 30) {
             stopRecording();
             return prev;
@@ -207,11 +205,7 @@ export const VoiceTranslator = () => {
         });
       }, 1000);
       
-      console.log('[PTT] Recording started');
-      
     } catch (err) {
-      console.error('[PTT] Start recording error:', err);
-      
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         setPermissionDenied(true);
         setError('Microphone access denied. Please enable in Settings > Safari > Microphone.');
