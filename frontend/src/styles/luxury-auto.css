@@ -268,32 +268,25 @@ html:not(.dark) .quilted-leather-amber::before {
   );
 }
 
-/* LIGHT MODE - Infotainment Panel */
+/* LIGHT MODE - Infotainment Panel - High Contrast */
 html:not(.dark) .infotainment-panel {
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(250, 248, 245, 0.98) 100%
-  );
-  border: 1px solid rgba(180, 140, 80, 0.25);
+  background: #FFFFFF;
+  border: 1px solid rgba(139, 90, 43, 0.2);
   box-shadow: 
-    0 0 0 1px rgba(180, 140, 80, 0.1),
-    0 10px 30px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 html:not(.dark) .infotainment-header {
-  background: linear-gradient(180deg,
-    rgba(245, 240, 230, 0.8) 0%,
-    rgba(250, 248, 245, 0.5) 100%
-  );
-  border-bottom: 1px solid rgba(180, 140, 80, 0.15);
+  background: #FAF7F2;
+  border-bottom: 1px solid rgba(139, 90, 43, 0.12);
 }
 
 html:not(.dark) .infotainment-divider {
   background: linear-gradient(90deg,
     transparent 0%,
-    rgba(180, 140, 80, 0.2) 20%,
-    rgba(180, 140, 80, 0.2) 80%,
+    rgba(139, 90, 43, 0.2) 20%,
+    rgba(139, 90, 43, 0.2) 80%,
     transparent 100%
   );
 }
