@@ -780,24 +780,31 @@ html:not(.dark) .ptt-processing-indicator {
   border-color: rgba(239, 68, 68, 0.25);
 }
 
-/* Command Center Modal */
+/* Command Center Modal - High Contrast Light Mode */
 html:not(.dark) .cc-overlay {
-  background: rgba(245, 240, 230, 0.94) !important;
+  background: rgba(240, 235, 225, 0.95) !important;
 }
 
 html:not(.dark) .cc-modal {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
-  border-color: rgba(180, 140, 80, 0.2) !important;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.1), 0 0 100px rgba(180, 140, 80, 0.03) !important;
+  background: #FFFFFF !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1) !important;
+}
+
+/* Hide the quilted leather texture in light mode */
+html:not(.dark) .cc-modal::before,
+html:not(.dark) .cc-modal::after {
+  opacity: 0.15 !important;
 }
 
 html:not(.dark) .cc-header {
-  background: linear-gradient(180deg, rgba(245, 240, 230, 0.5) 0%, transparent 100%) !important;
-  border-bottom-color: rgba(180, 140, 80, 0.12) !important;
+  background: #FAF7F2 !important;
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
 }
 
-html:not(.dark) .cc-title {
-  color: #B8860B !important;
+html:not(.dark) .cc-title,
+html:not(.dark) .cc-header-title {
+  color: #8B5A2B !important;
   text-shadow: none !important;
 }
 
