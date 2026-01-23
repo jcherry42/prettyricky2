@@ -160,13 +160,13 @@ export const QuickAddButton = () => {
         title="Quick Add Customer"
         aria-label="Quick add new customer"
       >
-        {/* Bluetooth Emblem SVG */}
+        {/* User Plus Icon - Luxury Amber Style */}
         <svg viewBox="0 0 24 24" className="bluetooth-icon" aria-hidden="true">
           <defs>
             <linearGradient id="btGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00D4FF" />
-              <stop offset="50%" stopColor="#0099FF" />
-              <stop offset="100%" stopColor="#0066CC" />
+              <stop offset="0%" stopColor="#FFB347" />
+              <stop offset="50%" stopColor="#FF9F43" />
+              <stop offset="100%" stopColor="#E67E22" />
             </linearGradient>
             <filter id="btGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="1" result="glow"/>
@@ -176,16 +176,18 @@ export const QuickAddButton = () => {
               </feMerge>
             </filter>
           </defs>
-          {/* Bluetooth "B" rune shape */}
+          {/* User Plus icon shape */}
+          <circle cx="10" cy="8" r="4" fill="url(#btGradient)" filter="url(#btGlow)" />
           <path 
-            d="M12 2L12 9.5L7 5L8.5 3.5L12 7V2ZM12 22L12 14.5L7 19L8.5 20.5L12 17V22ZM12 2L17 7L12 12L17 17L12 22V12L17 7L12 2Z"
+            d="M10 14C5.58 14 2 16.24 2 19V20H15V19C15 16.24 13.42 14 10 14Z"
             fill="url(#btGradient)"
             filter="url(#btGlow)"
-            stroke="rgba(255,255,255,0.3)"
-            strokeWidth="0.5"
           />
-          {/* Center connection point */}
-          <circle cx="12" cy="12" r="1.5" fill="#fff" opacity="0.9"/>
+          <path 
+            d="M19 10H21V13H24V15H21V18H19V15H16V13H19V10Z"
+            fill="url(#btGradient)"
+            filter="url(#btGlow)"
+          />
         </svg>
         <span className="fab-pulse" aria-hidden="true"></span>
       </button>
