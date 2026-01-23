@@ -52,29 +52,19 @@ export const speakText = async (text, language = 'en', options = {}) => {
     return { success: false, error: 'No text provided' };
   }
 
-  // Limit text length
   const trimmedText = text.slice(0, 4096);
-  
-  // Create cache key
   const cacheKey = `${voice}:${speed}:${trimmedText.slice(0, 200)}`;
   
   try {
     onStart();
-    
     let audioData;
     
-    // Check local cache first
     if (audioCache.has(cacheKey)) {
-      console.log('[TTS] Cache hit - instant playback');
       audioData = audioCache.get(cacheKey);
     } else {
-      console.log(`[TTS] Generating speech: ${language}, voice=${voice}, ${trimmedText.length} chars`);
-      
       const response = await fetch(`${BACKEND_URL}/api/tts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: trimmedText,
           voice,
@@ -90,12 +80,8 @@ export const speakText = async (text, language = 'en', options = {}) => {
       }
 
       const data = await response.json();
+      if (!data.audio_base64) throw new Error('No audio data received');
       
-      if (!data.audio_base64) {
-        throw new Error('No audio data received');
-      }
-      
-      // Convert base64 to audio buffer
       const binaryString = atob(data.audio_base64);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -103,23 +89,15 @@ export const speakText = async (text, language = 'en', options = {}) => {
       }
       audioData = bytes.buffer;
       
-      // Cache for future use
       if (audioCache.size >= MAX_CACHE_SIZE) {
         const firstKey = audioCache.keys().next().value;
         audioCache.delete(firstKey);
       }
       audioCache.set(cacheKey, audioData);
-      
-      console.log(`[TTS] Generated successfully, cached=${data.cached}`);
     }
     
-    // Play the audio using Web Audio API for smooth playback
     const ctx = getAudioContext();
-    
-    // Resume audio context if suspended (required on some browsers)
-    if (ctx.state === 'suspended') {
-      await ctx.resume();
-    }
+    if (ctx.state === 'suspended') await ctx.resume();
     
     const audioBuffer = await ctx.decodeAudioData(audioData.slice(0));
     const source = ctx.createBufferSource();
