@@ -161,12 +161,15 @@ class TestVINScanner:
     
     def test_vin_save_to_inventory(self):
         """Test /api/vin/save-to-inventory endpoint"""
+        unique_vin = f"1HGBH41JXMN{uuid.uuid4().hex[:6].upper()}"
         test_data = {
-            "vin": "1HGBH41JXMN109999",
-            "year": 2023,
-            "make": "Honda",
-            "model": "Civic",
-            "trim": "LX",
+            "vin": unique_vin,
+            "vehicle_data": {
+                "year": 2023,
+                "make": "Honda",
+                "model": "Civic",
+                "trim": "LX"
+            },
             "category": "active_inventory"
         }
         
