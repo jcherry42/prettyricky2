@@ -221,11 +221,10 @@ export const preloadSpeech = async (text, language = 'en') => {
           audioCache.delete(firstKey);
         }
         audioCache.set(cacheKey, bytes.buffer);
-        console.log('[TTS] Preloaded:', text.slice(0, 30) + '...');
       }
     }
-  } catch (error) {
-    console.warn('[TTS] Preload failed:', error);
+  } catch {
+    // Preload failed silently - not critical
   }
 };
 

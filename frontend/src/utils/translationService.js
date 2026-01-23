@@ -21,7 +21,6 @@ class TranslationCache {
     const cached = this.cache.get(key);
     
     if (cached && Date.now() - cached.timestamp < 3600000) { // 1 hour TTL
-      console.log('[Translation Cache] Hit:', key.substring(0, 50));
       return cached.translation;
     }
     
@@ -83,8 +82,6 @@ export const translateText = async (text, sourceLang = 'auto', targetLang = 'es'
   }
 
   try {
-    console.log(`[Translation Service] Translating: ${sourceLang} → ${targetLang}`, text.substring(0, 50));
-    
     const startTime = Date.now();
     
     const response = await fetch(`${BACKEND_URL}/api/translate`, {
@@ -119,8 +116,6 @@ export const translateText = async (text, sourceLang = 'auto', targetLang = 'es'
       translationCache.set(text, detectedLang, targetLang, data.translated_text);
     }
 
-    console.log(`[Translation Service] Success in ${latency}ms`);
-
     return {
       success: true,
       translatedText: data.translated_text,
@@ -152,7 +147,6 @@ export const translateBatch = async (texts, sourceLang = 'auto', targetLang = 'e
 // Clear translation cache
 export const clearTranslationCache = () => {
   translationCache.clear();
-  console.log('[Translation Service] Cache cleared');
 };
 
 // Get cache statistics

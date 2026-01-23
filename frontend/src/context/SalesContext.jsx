@@ -294,13 +294,11 @@ export function SalesProvider({ children }) {
   // Performance cleanup listener - trim stale data on deep cleanup
   useEffect(() => {
     const handleDeepCleanup = () => {
-      console.log('[SalesContext] Deep cleanup triggered - clearing stale responses');
       // Clear generated responses to free memory (they can be regenerated)
       dispatch({ type: ACTIONS.SET_RESPONSES, payload: [] });
     };
     
     const handleEmergencyCleanup = () => {
-      console.log('[SalesContext] Emergency cleanup - resetting selection state');
       // Reset selection state to free memory
       dispatch({ type: ACTIONS.SELECT_CUSTOMER, payload: null });
       dispatch({ type: ACTIONS.SELECT_VEHICLE, payload: null });

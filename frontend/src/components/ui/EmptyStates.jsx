@@ -166,7 +166,7 @@ export const NoSearchResults = ({ query, onClear }) => (
     </div>
     <h3 className="empty-title">No Results Found</h3>
     <p className="empty-description">
-      No matches for "{query}". Try a different search term.
+      No matches for &ldquo;{query}&rdquo;. Try a different search term.
     </p>
     {onClear && (
       <button className="empty-action secondary" onClick={onClear}>
