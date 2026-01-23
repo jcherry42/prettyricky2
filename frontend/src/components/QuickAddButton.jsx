@@ -358,7 +358,7 @@ export const QuickAddButton = () => {
       )}
 
       <style>{`
-        /* Floating Action Button - Bluetooth Style */
+        /* Floating Action Button - Luxury Amber Style */
         .quick-add-fab {
           position: fixed;
           bottom: 90px;
@@ -367,13 +367,13 @@ export const QuickAddButton = () => {
           height: 56px;
           border-radius: 50%;
           background: linear-gradient(145deg, 
-            rgba(0, 150, 255, 0.15) 0%, 
-            rgba(0, 100, 200, 0.25) 100%
+            rgba(255, 140, 0, 0.2) 0%, 
+            rgba(200, 100, 0, 0.3) 100%
           );
-          border: 2px solid rgba(0, 180, 255, 0.4);
+          border: 2px solid rgba(255, 159, 67, 0.5);
           box-shadow: 
-            0 4px 20px rgba(0, 150, 255, 0.3),
-            0 0 30px rgba(0, 180, 255, 0.15),
+            0 4px 20px rgba(255, 140, 0, 0.25),
+            0 0 30px rgba(255, 159, 67, 0.15),
             inset 0 1px 0 rgba(255,255,255,0.1);
           cursor: pointer;
           z-index: 50;
@@ -386,10 +386,10 @@ export const QuickAddButton = () => {
 
         .quick-add-fab:hover {
           transform: scale(1.1);
-          border-color: rgba(0, 200, 255, 0.6);
+          border-color: rgba(255, 180, 80, 0.7);
           box-shadow: 
-            0 6px 30px rgba(0, 180, 255, 0.4),
-            0 0 40px rgba(0, 200, 255, 0.25),
+            0 6px 30px rgba(255, 140, 0, 0.35),
+            0 0 40px rgba(255, 159, 67, 0.25),
             inset 0 1px 0 rgba(255,255,255,0.2);
         }
 
@@ -398,21 +398,21 @@ export const QuickAddButton = () => {
         }
 
         .quick-add-fab:focus-visible {
-          outline: 2px solid #00D4FF;
+          outline: 2px solid #FF9F43;
           outline-offset: 3px;
         }
 
         .bluetooth-icon {
           width: 28px;
           height: 28px;
-          filter: drop-shadow(0 0 4px rgba(0, 180, 255, 0.6));
+          filter: drop-shadow(0 0 4px rgba(255, 159, 67, 0.7));
         }
 
         .fab-pulse {
           position: absolute;
           inset: -4px;
           border-radius: 50%;
-          border: 2px solid rgba(0, 180, 255, 0.3);
+          border: 2px solid rgba(255, 159, 67, 0.35);
           animation: fabPulse 2s ease-out infinite;
         }
 
@@ -421,12 +421,12 @@ export const QuickAddButton = () => {
           100% { transform: scale(1.4); opacity: 0; }
         }
 
-        /* Quick Add Modal */
+        /* Quick Add Modal - Luxury Infotainment */
         .quick-add-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(10, 8, 6, 0.92);
-          backdrop-filter: blur(12px);
+          background: rgba(10, 8, 6, 0.94);
+          backdrop-filter: blur(16px);
           z-index: 9999;
           display: flex;
           align-items: center;
@@ -444,8 +444,8 @@ export const QuickAddButton = () => {
           width: 100%;
           max-width: 360px;
           background: linear-gradient(180deg, 
-            rgba(20, 25, 35, 0.85) 0%, 
-            rgba(12, 15, 22, 0.92) 100%
+            rgba(25, 20, 15, 0.95) 0%, 
+            rgba(15, 12, 8, 0.98) 100%
           );
           backdrop-filter: blur(24px) saturate(180%);
           -webkit-backdrop-filter: blur(24px) saturate(180%);
