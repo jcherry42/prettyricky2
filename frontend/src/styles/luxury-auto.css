@@ -638,77 +638,78 @@ html:not(.dark) .header-icon.vin {
   color: #0E7490;
 }
 
-/* Quick Add Modal */
+/* Quick Add Modal - High Contrast Light Mode */
 html:not(.dark) .quick-add-overlay {
-  background: rgba(245, 240, 230, 0.94);
+  background: rgba(240, 235, 225, 0.95);
 }
 
 html:not(.dark) .quick-add-modal {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
-  border-color: rgba(180, 140, 80, 0.2);
-  box-shadow: 0 25px 50px rgba(0,0,0,0.1), 0 0 60px rgba(180, 140, 80, 0.05);
+  background: #FFFFFF !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1) !important;
 }
 
 html:not(.dark) .quick-add-header {
-  border-bottom-color: rgba(180, 140, 80, 0.12);
-  background: linear-gradient(180deg, rgba(245, 240, 230, 0.5) 0%, transparent 100%);
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
+  background: #FAF7F2 !important;
 }
 
 html:not(.dark) .quick-add-header h3 {
-  color: #B8860B !important;
+  color: #8B5A2B !important;
   text-shadow: none !important;
 }
 
 html:not(.dark) .qa-icon {
-  background: rgba(184, 134, 11, 0.1) !important;
-  border-color: rgba(184, 134, 11, 0.25) !important;
-  color: #B8860B !important;
+  background: #FDF8F0 !important;
+  border-color: rgba(139, 90, 43, 0.3) !important;
+  color: #8B5A2B !important;
 }
 
 html:not(.dark) .qa-close {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(180, 140, 80, 0.15);
-  color: #7B6347;
+  background: #F5F0E8 !important;
+  border-color: rgba(139, 90, 43, 0.2) !important;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .qa-close:hover:not(:disabled) {
-  background: rgba(184, 134, 11, 0.1);
-  color: #B8860B;
+  background: #EDE5D8 !important;
+  color: #8B5A2B !important;
 }
 
 html:not(.dark) .qa-field label {
-  color: #B8860B !important;
+  color: #5D4E37 !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .qa-field input,
 html:not(.dark) .qa-field select,
 html:not(.dark) .qa-field textarea {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(180, 140, 80, 0.2) !important;
-  color: #3D2914 !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.25) !important;
+  color: #2D1F0F !important;
 }
 
 html:not(.dark) .qa-field input:focus,
 html:not(.dark) .qa-field select:focus,
 html:not(.dark) .qa-field textarea:focus {
-  border-color: rgba(184, 134, 11, 0.4) !important;
-  box-shadow: 0 0 12px rgba(184, 134, 11, 0.1) !important;
+  border-color: #8B5A2B !important;
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15) !important;
 }
 
 html:not(.dark) .qa-field input::placeholder,
 html:not(.dark) .qa-field textarea::placeholder {
-  color: #9B8B7B !important;
+  color: #8B7355 !important;
 }
 
 html:not(.dark) .qa-save-btn {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.2) 0%, rgba(160, 120, 60, 0.15) 100%) !important;
-  border-color: rgba(184, 134, 11, 0.4) !important;
-  color: #B8860B !important;
+  background: #8B5A2B !important;
+  border-color: #8B5A2B !important;
+  color: #FFFFFF !important;
 }
 
 html:not(.dark) .qa-save-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.3) 0%, rgba(160, 120, 60, 0.25) 100%) !important;
-  box-shadow: 0 0 20px rgba(184, 134, 11, 0.15) !important;
+  background: #6B4423 !important;
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3) !important;
 }
 
 /* Quick Add FAB */
