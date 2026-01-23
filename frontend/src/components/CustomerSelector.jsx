@@ -200,7 +200,7 @@ export const CustomerSelector = () => {
         {/* Search header - luxury auto style */}
         <div className="infotainment-header p-4">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(255, 140, 0, 0.6)' }} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: colors.accentRgba(0.6) }} />
             <input
               ref={searchInputRef}
               type="text"
