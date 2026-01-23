@@ -74,14 +74,12 @@ export const InquiryTypeSelector = () => {
                 onClick={() => selectInquiryType(type.id)}
                 className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-300 luxury-transition"
                 style={{
-                  background: isActive 
-                    ? 'linear-gradient(180deg, rgba(255, 140, 0, 0.25) 0%, rgba(255, 100, 0, 0.18) 100%)'
-                    : 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)',
+                  background: isActive ? colors.buttonActiveBg : colors.buttonBg,
                   border: isActive 
-                    ? '1px solid rgba(255, 140, 0, 0.5)'
-                    : '1px solid rgba(255, 140, 0, 0.1)',
+                    ? `1px solid ${colors.buttonActiveBorder}`
+                    : `1px solid ${colors.buttonBorder}`,
                   boxShadow: isActive 
-                    ? '0 0 20px rgba(255, 140, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+                    ? `0 0 20px ${colors.accentRgba(0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
                     : 'inset 0 1px 0 rgba(255, 255, 255, 0.02)',
                 }}
                 data-testid={`inquiry-${type.id}`}
@@ -89,15 +87,15 @@ export const InquiryTypeSelector = () => {
                 <Icon 
                   className="w-5 h-5 transition-colors"
                   style={{ 
-                    color: isActive ? '#FF9F43' : 'rgba(255, 200, 150, 0.5)',
-                    filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 159, 67, 0.6))' : 'none'
+                    color: isActive ? colors.accent : colors.textMuted,
+                    filter: isActive ? `drop-shadow(0 0 6px ${colors.accentRgba(0.6)})` : 'none'
                   }}
                 />
                 <span 
                   className="text-[10px] font-semibold text-center leading-tight transition-colors uppercase tracking-wide"
                   style={{ 
-                    color: isActive ? '#FF9F43' : 'rgba(255, 200, 150, 0.6)',
-                    textShadow: isActive ? '0 0 10px rgba(255, 159, 67, 0.5)' : 'none',
+                    color: isActive ? colors.accent : colors.textLabel,
+                    textShadow: isActive && colors.isDark ? `0 0 10px ${colors.accentRgba(0.5)}` : 'none',
                     fontFamily: "'Bebas Neue', sans-serif",
                     letterSpacing: '0.05em'
                   }}
