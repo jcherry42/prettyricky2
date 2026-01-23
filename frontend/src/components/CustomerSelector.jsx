@@ -222,10 +222,10 @@ export const CustomerSelector = () => {
           </div>
         </div>
 
-        {/* Customer list */}
+        {/* Customer list - luxury scrollbar */}
         <div 
           ref={listRef}
-          className="max-h-80 overflow-y-auto hide-scrollbar"
+          className="max-h-80 overflow-y-auto luxury-scrollbar"
           role="listbox"
           aria-label="Customer list"
         >
@@ -245,27 +245,40 @@ export const CustomerSelector = () => {
                 <React.Fragment key={customer.id}>
                   <button
                     onClick={() => handleSelect(customer)}
-                    className="w-full p-4 flex items-center gap-4 text-left hover:bg-muted/20 transition-colors focus:bg-muted/30 focus:outline-none"
+                    className="w-full p-4 flex items-center gap-4 text-left transition-all focus:outline-none"
+                    style={{
+                      background: 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(90deg, rgba(255, 140, 0, 0.08) 0%, transparent 100%)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
                     data-testid={`customer-${customer.id}`}
                     data-index={index}
                     role="option"
                     aria-selected={selectedCustomer?.id === customer.id}
                   >
-                    {/* Avatar with status indicator */}
+                    {/* Avatar with status indicator - gauge cluster style */}
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                            style={{
                              background: status.label === 'HOT' 
-                               ? 'linear-gradient(135deg, hsla(15, 80%, 45%, 0.4) 0%, hsla(25, 70%, 35%, 0.3) 100%)'
-                               : 'linear-gradient(135deg, hsla(35, 50%, 35%, 0.3) 0%, hsla(25, 40%, 25%, 0.2) 100%)',
+                               ? 'linear-gradient(135deg, rgba(255, 68, 68, 0.25) 0%, rgba(200, 40, 40, 0.2) 100%)'
+                               : 'linear-gradient(135deg, rgba(255, 140, 0, 0.2) 0%, rgba(200, 100, 0, 0.15) 100%)',
                              border: status.label === 'HOT'
-                               ? '1px solid hsla(15, 70%, 50%, 0.4)'
-                               : '1px solid hsla(40, 40%, 30%, 0.3)'
+                               ? '1px solid rgba(255, 68, 68, 0.4)'
+                               : '1px solid rgba(255, 140, 0, 0.25)',
+                             boxShadow: status.label === 'HOT'
+                               ? '0 0 15px rgba(255, 68, 68, 0.2)'
+                               : '0 0 12px rgba(255, 140, 0, 0.12)'
                            }}>
-                        <User className="w-5 h-5 text-primary" />
+                        <User className="w-5 h-5" style={{ color: status.label === 'HOT' ? '#ff6b6b' : '#FF9F43' }} />
                       </div>
                       {status.label === 'HOT' && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" 
+                             style={{ background: 'linear-gradient(135deg, #ff4444 0%, #cc2222 100%)', boxShadow: '0 0 8px rgba(255, 68, 68, 0.5)' }}>
                           <Flame className="w-2.5 h-2.5 text-white" />
                         </div>
                       )}
@@ -273,35 +286,42 @@ export const CustomerSelector = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground truncate">
+                        <span className="font-semibold truncate" style={{ color: 'rgba(255, 240, 220, 0.95)' }}>
                           {name}
                         </span>
-                        <span className={status.class}>
+                        <span 
+                          className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded flex items-center"
+                          style={{
+                            background: status.label === 'HOT' ? 'rgba(255, 68, 68, 0.2)' : 'rgba(255, 140, 0, 0.15)',
+                            color: status.label === 'HOT' ? '#ff6b6b' : '#FF9F43',
+                            border: `1px solid ${status.label === 'HOT' ? 'rgba(255, 68, 68, 0.3)' : 'rgba(255, 140, 0, 0.25)'}`
+                          }}
+                        >
                           {StatusIcon && <StatusIcon className="w-2.5 h-2.5 mr-0.5" />}
                           {status.label}
                         </span>
                       </div>
                       
                       {vehicle && (
-                        <p className="text-sm text-muted-foreground truncate mt-0.5 flex items-center gap-1.5">
-                          <Car className="w-3.5 h-3.5 flex-shrink-0" />
+                        <p className="text-sm truncate mt-0.5 flex items-center gap-1.5" style={{ color: 'rgba(255, 200, 150, 0.7)' }}>
+                          <Car className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'rgba(255, 140, 0, 0.6)' }} />
                           {vehicle}
                         </p>
                       )}
                       
                       {phone && (
-                        <p className="text-xs text-muted-foreground/70 mt-0.5 flex items-center gap-1.5">
+                        <p className="text-xs mt-0.5 flex items-center gap-1.5" style={{ color: 'rgba(255, 200, 150, 0.5)' }}>
                           <Phone className="w-3 h-3 flex-shrink-0" />
                           {phone}
                         </p>
                       )}
                     </div>
                     
-                    <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <ChevronRight className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(255, 140, 0, 0.4)' }} />
                   </button>
                   
                   {index < sortedCustomers.length - 1 && (
-                    <div className="h-px bg-border/30 ml-20" />
+                    <div className="infotainment-divider mx-4" />
                   )}
                 </React.Fragment>
               );
