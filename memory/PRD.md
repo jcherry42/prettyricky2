@@ -242,17 +242,21 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - [x] Authentication system
 - [x] Intake Scanner with License capture
 - [x] Light/Dark mode support for entire app (main UI + all modals)
+- [x] Enterprise-grade TTS with OpenAI voices (tts-1, tts-1-hd)
+- [x] Translation bug fix (dynamic language selection)
+- [x] Code cleanup (removed debug console.logs, fixed lint errors)
 
 ### P1 (High)
 - [ ] Real CRM integration (backend stubs exist)
 - [ ] Batch VIN scan mode for lot inventory
 - [ ] Push notifications
-- [ ] User verification of PTT (Push-to-Talk) on iOS device
+- [ ] **User device verification pending**: PTT (Push-to-Talk), TTS quality, translation accuracy
 
 ### P2 (Medium)
 - [ ] Response analytics dashboard
 - [ ] Offline data sync
-- [ ] User verification of Sport Mode "Translate" button fix
+- [ ] Refactor server.py into multiple routers
+- [ ] Break down CommandCenter.jsx into smaller components
 
 ### P3 (Low)
 - [ ] Custom themes
