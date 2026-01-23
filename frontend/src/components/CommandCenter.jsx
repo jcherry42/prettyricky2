@@ -802,14 +802,20 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .stat-value {
-          font-size: 22px;
-          font-weight: 700;
-          color: #fff;
+          font-family: 'SF Mono', 'Roboto Mono', monospace;
+          font-size: 24px;
+          font-weight: 600;
+          color: #FF9F43;
+          text-shadow: 0 0 12px rgba(255, 159, 67, 0.4);
+          font-variant-numeric: tabular-nums;
         }
 
         .stat-label {
-          font-size: 11px;
-          color: #666;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          color: rgba(255, 200, 150, 0.5);
+          text-transform: uppercase;
         }
 
         /* Toolbar */
@@ -826,11 +832,17 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 8px 12px;
+          padding: 10px 14px;
           border-radius: 10px;
-          background: rgba(0,0,0,0.3);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: #666;
+          background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%);
+          border: 1px solid rgba(255, 140, 0, 0.1);
+          color: rgba(255, 200, 150, 0.5);
+          transition: all 0.2s;
+        }
+
+        .cc-search:focus-within {
+          border-color: rgba(255, 140, 0, 0.25);
+          box-shadow: 0 0 15px rgba(255, 140, 0, 0.08);
         }
 
         .cc-search input {
@@ -843,21 +855,28 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-search input::placeholder {
-          color: #555;
+          color: rgba(255, 200, 150, 0.3);
         }
 
         .cc-add-btn {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 8px 14px;
+          padding: 10px 14px;
           border-radius: 10px;
-          background: rgba(34,211,238,0.15);
-          border: 1px solid rgba(34,211,238,0.3);
-          color: #22d3ee;
+          background: linear-gradient(180deg, rgba(255, 140, 0, 0.18) 0%, rgba(255, 100, 0, 0.12) 100%);
+          border: 1px solid rgba(255, 140, 0, 0.3);
+          color: #FF9F43;
+          font-family: 'Bebas Neue', sans-serif;
           font-size: 12px;
-          font-weight: 500;
+          letter-spacing: 0.08em;
           cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .cc-add-btn:hover {
+          background: linear-gradient(180deg, rgba(255, 140, 0, 0.25) 0%, rgba(255, 100, 0, 0.18) 100%);
+          box-shadow: 0 0 20px rgba(255, 140, 0, 0.15);
         }
 
         .cc-filter-btns {
