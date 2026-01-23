@@ -149,7 +149,14 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - INTAKE: Customer Intake modal with VIN/License scanner
 - CHECK: Command Center with all management tabs
 - SPORT: Supercharged mode with ESP label and fire effects
-- LIGHT: Dark/light theme toggle
+- LIGHT/DARK: Theme toggle with full app-wide support
+
+**Theme System (Light/Dark Mode)**
+- Dark Mode: Black quilted leather background + amber/gold accents
+- Light Mode: Cream quilted leather background + goldenrod accents
+- All components theme-aware (CustomerSelector, InquiryType, Tone, ResponseCards)
+- All modals theme-aware (Command Center, Intake Scanner, Quick Add, Voice Translator)
+- CSS custom properties + theme-aware helper functions
 - Animated car startup sequence
 
 **9. Quick Add Customer**
