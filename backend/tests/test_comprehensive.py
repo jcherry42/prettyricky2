@@ -56,7 +56,7 @@ class TestCustomersCRUD:
         print(f"✓ Listed {len(data['customers'])} customers")
     
     def test_create_customer(self):
-        """Test POST /api/customers creates a new customer"""
+        """Test POST /api/customers/create creates a new customer"""
         unique_id = uuid.uuid4().hex[:8]
         customer_data = {
             "first_name": f"TEST_{unique_id}",
@@ -67,13 +67,14 @@ class TestCustomersCRUD:
             "lead_status": "new"
         }
         
-        response = requests.post(f"{BASE_URL}/api/customers", json=customer_data)
+        response = requests.post(f"{BASE_URL}/api/customers/create", json=customer_data)
         assert response.status_code in [200, 201]
         data = response.json()
         
         # Verify customer was created
-        assert 'id' in data or 'customer' in data
-        customer = data.get('customer', data)
+        assert data.get('success') == True
+        assert 'customer' in data
+        customer = data.get('customer')
         assert customer.get('first_name') == customer_data['first_name']
         
         print(f"✓ Created customer: {customer.get('first_name')} {customer.get('last_name')}")
@@ -158,70 +159,64 @@ class TestVINScanner:
         assert response.status_code in [200, 400]
         print(f"✓ Invalid VIN handled correctly")
     
-    def test_vin_validate(self):
-        """Test /api/vin/validate endpoint"""
-        test_vin = "1FA6P8TH1J5117440"
-        response = requests.post(f"{BASE_URL}/api/vin/validate", json={"vin": test_vin})
-        assert response.status_code == 200
-        data = response.json()
-        assert 'valid' in data or 'is_valid' in data
-        print(f"✓ VIN validation working")
+    def test_vin_save_to_inventory(self):
+        """Test /api/vin/save-to-inventory endpoint"""
+        test_data = {
+            "vin": "1HGBH41JXMN109999",
+            "year": 2023,
+            "make": "Honda",
+            "model": "Civic",
+            "trim": "LX",
+            "category": "active_inventory"
+        }
+        
+        response = requests.post(f"{BASE_URL}/api/vin/save-to-inventory", json=test_data)
+        # May return 200 (success), 409 (duplicate), or other
+        assert response.status_code in [200, 201, 409]
+        print(f"✓ VIN save to inventory endpoint working (status: {response.status_code})")
 
 
 class TestTowerTalkAI:
     """Tower Talk AI endpoint tests"""
     
     def test_generate_response(self):
-        """Test /api/tower-talk/generate endpoint"""
+        """Test /api/tower-talk endpoint"""
         request_data = {
-            "customer_name": "Alex Martinez",
-            "vehicle_interest": "2024 BMW X3",
             "situation": "Price Too High",
-            "tone": "professional"
+            "context": {
+                "customer_name": "Alex Martinez",
+                "vehicle_interest": "2024 BMW X3",
+                "inquiry_type": "objection"
+            }
         }
         
-        response = requests.post(f"{BASE_URL}/api/tower-talk/generate", json=request_data)
+        response = requests.post(f"{BASE_URL}/api/tower-talk", json=request_data)
         assert response.status_code == 200
         data = response.json()
         
         # Should return generated response
-        assert 'response' in data or 'message' in data or 'text' in data
-        print(f"✓ Tower Talk AI response generated")
-    
-    def test_quick_response(self):
-        """Test /api/tower-talk/quick endpoint for quick shortcuts"""
-        request_data = {
-            "shortcut": "price_too_high",
-            "customer_name": "Test Customer",
-            "vehicle": "2024 Honda Accord"
-        }
-        
-        response = requests.post(f"{BASE_URL}/api/tower-talk/quick", json=request_data)
-        # May return 200 or 404 if endpoint doesn't exist
-        if response.status_code == 200:
-            print(f"✓ Quick response endpoint working")
-        else:
-            print(f"⚠ Quick response endpoint returned {response.status_code}")
+        assert 'response' in data
+        print(f"✓ Tower Talk AI response generated: {data['response'][:50]}...")
 
 
 class TestVoiceTranslator:
     """Voice Translator endpoint tests"""
     
     def test_translate_text(self):
-        """Test /api/voice/translate endpoint"""
+        """Test /api/translate endpoint"""
         request_data = {
             "text": "Hello, how can I help you today?",
             "source_lang": "en",
             "target_lang": "es"
         }
         
-        response = requests.post(f"{BASE_URL}/api/voice/translate", json=request_data)
+        response = requests.post(f"{BASE_URL}/api/translate", json=request_data)
         assert response.status_code == 200
         data = response.json()
         
         # Should return translated text
-        assert 'translated_text' in data or 'translation' in data or 'text' in data
-        print(f"✓ Voice translation working")
+        assert 'translated_text' in data
+        print(f"✓ Voice translation working: '{data['translated_text']}'")
 
 
 class TestLicenseScanner:
@@ -283,6 +278,17 @@ class TestIntegrations:
         data = response.json()
         assert 'schema' in data
         print(f"✓ Customer schema retrieved")
+
+
+class TestConversations:
+    """Conversation/Response Cards endpoint tests"""
+    
+    def test_get_categories(self):
+        """Test /api/conversations/categories endpoint"""
+        response = requests.get(f"{BASE_URL}/api/conversations/categories")
+        assert response.status_code == 200
+        data = response.json()
+        print(f"✓ Conversation categories retrieved")
 
 
 if __name__ == "__main__":
