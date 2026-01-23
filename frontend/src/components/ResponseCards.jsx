@@ -111,7 +111,7 @@ export const ResponseCards = () => {
     });
 
     if (responsesToTranslate.length > 0) {
-      console.log('[Sport Mode] 🔥 Translating', responsesToTranslate.length, 'new responses');
+      console.log(`[Sport Mode] 🔥 Translating ${responsesToTranslate.length} responses to ${targetLang}`);
       responsesToTranslate.forEach(response => {
         translateResponse(response.id, response.text);
         if (response.followUpText) {
@@ -119,22 +119,22 @@ export const ResponseCards = () => {
         }
       });
     }
-  }, [supercharged, currentResponses]);
+  }, [supercharged, currentResponses, targetLang]);
 
-  // Reset translations when supercharged mode is turned off
+  // Reset translations when supercharged mode is turned off or language changes
   useEffect(() => {
     if (!supercharged) {
       console.log('[Sport Mode] Mode disabled - clearing translations');
       translationQueuedRef.current.clear();
       setTimeout(() => {
         setTranslations({});
-        setShowSpanish({});
+        setShowTranslated({});
       }, 0);
     }
   }, [supercharged]);
 
-  // Text-to-speech function
-  const speakText = useCallback((responseId, text, isSpanish = false) => {
+  // Text-to-speech function - uses correct language
+  const speakText = useCallback((responseId, text, isTranslated = false) => {
     if (!isSpeechSupported) return;
     
     // Stop any current speech
