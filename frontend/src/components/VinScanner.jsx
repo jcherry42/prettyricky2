@@ -1293,9 +1293,9 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
         
         .header-icon.license {
-          background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15));
-          border: 1px solid rgba(139,92,246,0.3);
-          color: #a78bfa;
+          background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(200, 100, 0, 0.15));
+          border: 1px solid rgba(255, 140, 0, 0.3);
+          color: #FF9F43;
         }
         
         .header-icon.license.success {
