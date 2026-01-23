@@ -151,8 +151,6 @@ export const VoiceTranslator = () => {
         }
       }
       
-      console.log('[PTT] Using mime type:', selectedMimeType || 'default');
-      
       const mediaRecorder = new MediaRecorder(stream, 
         selectedMimeType ? { mimeType: selectedMimeType } : undefined
       );
@@ -162,20 +160,16 @@ export const VoiceTranslator = () => {
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
-          console.log('[PTT] Chunk received:', event.data.size, 'bytes');
         }
       };
       
       mediaRecorder.onstop = () => {
-        console.log('[PTT] Recording stopped, chunks:', audioChunksRef.current.length);
-        
         if (audioChunksRef.current.length > 0) {
           const audioBlob = new Blob(audioChunksRef.current, { 
             type: selectedMimeType || 'audio/webm' 
           });
-          console.log('[PTT] Audio blob created:', audioBlob.size, 'bytes');
           
-          if (audioBlob.size > 1000) { // At least 1KB of audio
+          if (audioBlob.size > 1000) {
             processAudio(audioBlob);
           } else {
             setError('Recording too short. Please speak for at least 1 second.');
