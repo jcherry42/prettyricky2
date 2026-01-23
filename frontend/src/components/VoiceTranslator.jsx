@@ -382,9 +382,22 @@ export const VoiceTranslator = () => {
                         {targetConfig.flag} {targetConfig.name}
                       </div>
                       <p>{translation}</p>
-                      <button onClick={speakResult} className="ptt-speak-btn">
-                        <Volume2 className="w-4 h-4" />
-                        Read Aloud
+                      <button 
+                        onClick={speakResult} 
+                        className={`ptt-speak-btn ${isSpeaking ? 'speaking' : ''}`}
+                        disabled={isSpeaking}
+                      >
+                        {isSpeaking ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Playing...
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-4 h-4" />
+                            Read Aloud
+                          </>
+                        )}
                       </button>
                     </div>
                   )}
