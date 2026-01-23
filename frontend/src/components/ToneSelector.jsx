@@ -9,27 +9,43 @@ const iconMap = {
   'heart': Heart,
 };
 
-// Ambient colors for each tone - luxury auto palette
-const toneColors = {
-  fast_direct: {
-    active: '#22d3ee',
-    glow: 'rgba(34, 211, 238, 0.3)',
-    bg: 'rgba(34, 211, 238, 0.12)',
-    border: 'rgba(34, 211, 238, 0.35)',
-  },
-  balanced: {
-    active: '#FF9F43',
-    glow: 'rgba(255, 159, 67, 0.3)',
-    bg: 'rgba(255, 159, 67, 0.12)',
-    border: 'rgba(255, 159, 67, 0.35)',
-  },
-  soft_touch: {
-    active: '#22c55e',
-    glow: 'rgba(34, 197, 94, 0.3)',
-    bg: 'rgba(34, 197, 94, 0.12)',
-    border: 'rgba(34, 197, 94, 0.35)',
-  },
+// Theme-aware tone colors
+const getToneColors = (theme, toneId) => {
+  const isDark = theme === 'dark';
+  const baseColors = {
+    fast_direct: {
+      active: isDark ? '#22d3ee' : '#0891b2',
+      glow: isDark ? 'rgba(34, 211, 238, 0.3)' : 'rgba(8, 145, 178, 0.2)',
+      bg: isDark ? 'rgba(34, 211, 238, 0.12)' : 'rgba(8, 145, 178, 0.1)',
+      border: isDark ? 'rgba(34, 211, 238, 0.35)' : 'rgba(8, 145, 178, 0.3)',
+    },
+    balanced: {
+      active: isDark ? '#FF9F43' : '#B8860B',
+      glow: isDark ? 'rgba(255, 159, 67, 0.3)' : 'rgba(184, 134, 11, 0.2)',
+      bg: isDark ? 'rgba(255, 159, 67, 0.12)' : 'rgba(184, 134, 11, 0.1)',
+      border: isDark ? 'rgba(255, 159, 67, 0.35)' : 'rgba(184, 134, 11, 0.3)',
+    },
+    soft_touch: {
+      active: isDark ? '#22c55e' : '#16a34a',
+      glow: isDark ? 'rgba(34, 197, 94, 0.3)' : 'rgba(22, 163, 74, 0.2)',
+      bg: isDark ? 'rgba(34, 197, 94, 0.12)' : 'rgba(22, 163, 74, 0.1)',
+      border: isDark ? 'rgba(34, 197, 94, 0.35)' : 'rgba(22, 163, 74, 0.3)',
+    },
+  };
+  return baseColors[toneId] || baseColors.balanced;
 };
+
+// Theme colors
+const getColors = (theme) => ({
+  isDark: theme === 'dark',
+  textLabel: theme === 'dark' ? 'rgba(255, 200, 150, 0.6)' : '#7B6347',
+  textMuted: theme === 'dark' ? 'rgba(255, 200, 150, 0.4)' : '#9B8B7B',
+  textDescription: theme === 'dark' ? 'rgba(255, 200, 150, 0.5)' : '#8B7B6B',
+  buttonBg: theme === 'dark' 
+    ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)'
+    : 'linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 248, 245, 0.9) 100%)',
+  buttonBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.08)' : 'rgba(180, 140, 80, 0.15)',
+});
 
 export const ToneSelector = () => {
   const { selectedTone, selectTone, selectedCustomer, selectedInquiryType } = useSales();
