@@ -334,13 +334,29 @@ export const ResponseCards = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Generated Responses
+        <h2 
+          className="text-xs font-semibold uppercase tracking-wider"
+          style={{ 
+            color: 'rgba(255, 200, 150, 0.6)', 
+            fontFamily: "'Bebas Neue', sans-serif", 
+            letterSpacing: '0.12em' 
+          }}
+        >
+          GENERATED RESPONSES
         </h2>
         {supercharged && (
-          <span className="supercharged-badge">
+          <span 
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 68, 68, 0.2) 0%, rgba(255, 100, 0, 0.15) 100%)',
+              border: '1px solid rgba(255, 100, 0, 0.3)',
+              color: '#ff6b6b',
+              fontFamily: "'Bebas Neue', sans-serif",
+              boxShadow: '0 0 12px rgba(255, 68, 68, 0.2)'
+            }}
+          >
             <Flame className="w-3 h-3" />
-            Bilingual
+            SPORT MODE
           </span>
         )}
       </div>
@@ -373,26 +389,32 @@ export const ResponseCards = () => {
             <div
               key={response.id}
               onClick={() => !isEditing && selectResponse(response)}
-              className="response-card p-5 cursor-pointer"
+              className="infotainment-panel p-5 cursor-pointer luxury-transition"
               data-testid={`response-card-${index}`}
             >
-              {/* Response header */}
+              {/* Response header - gauge cluster style */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span 
                     className="text-xs font-bold uppercase tracking-wider"
-                    style={{ color: 'hsla(40, 60%, 55%, 1)' }}
+                    style={{ 
+                      color: '#FF9F43',
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      letterSpacing: '0.1em',
+                      textShadow: '0 0 8px rgba(255, 159, 67, 0.4)'
+                    }}
                   >
-                    Response {index + 1}
+                    RESPONSE {index + 1}
                   </span>
                   {supercharged && mainTranslation && !isEditing && (
                     <button
                       onClick={(e) => toggleLanguage(mainKey, e)}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all"
+                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all uppercase"
                       style={{
-                        background: showMainSpanish ? 'hsla(25, 100%, 50%, 0.2)' : 'hsla(210, 80%, 50%, 0.15)',
-                        color: showMainSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
-                        border: `1px solid ${showMainSpanish ? 'hsla(25, 100%, 50%, 0.3)' : 'hsla(210, 80%, 50%, 0.25)'}`,
+                        background: showMainSpanish ? 'rgba(255, 100, 0, 0.2)' : 'rgba(34, 211, 238, 0.15)',
+                        color: showMainSpanish ? '#ff8c00' : '#22d3ee',
+                        border: `1px solid ${showMainSpanish ? 'rgba(255, 100, 0, 0.35)' : 'rgba(34, 211, 238, 0.3)'}`,
+                        fontFamily: "'Bebas Neue', sans-serif",
                       }}
                       data-testid={`toggle-lang-${index}`}
                     >
