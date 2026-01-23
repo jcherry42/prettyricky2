@@ -434,15 +434,15 @@ export const ResponseCards = () => {
                       onClick={(e) => toggleLanguage(mainKey, e)}
                       className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all uppercase"
                       style={{
-                        background: showMainSpanish ? 'rgba(255, 100, 0, 0.2)' : 'rgba(34, 211, 238, 0.15)',
-                        color: showMainSpanish ? '#ff8c00' : '#22d3ee',
-                        border: `1px solid ${showMainSpanish ? 'rgba(255, 100, 0, 0.35)' : 'rgba(34, 211, 238, 0.3)'}`,
+                        background: showMainTranslated ? 'rgba(255, 100, 0, 0.2)' : 'rgba(34, 211, 238, 0.15)',
+                        color: showMainTranslated ? '#ff8c00' : '#22d3ee',
+                        border: `1px solid ${showMainTranslated ? 'rgba(255, 100, 0, 0.35)' : 'rgba(34, 211, 238, 0.3)'}`,
                         fontFamily: "'Bebas Neue', sans-serif",
                       }}
                       data-testid={`toggle-lang-${index}`}
                     >
                       <Languages className="w-3 h-3" />
-                      {showMainSpanish ? 'ES' : 'EN'}
+                      {showMainTranslated ? targetConfig.code.toUpperCase() : 'EN'}
                     </button>
                   )}
                   {supercharged && isMainTranslating && (
