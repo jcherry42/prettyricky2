@@ -243,25 +243,39 @@ export const VoiceTranslator = () => {
     }
   }, [isRecording, isProcessing, startRecording, stopRecording]);
 
-  // Speak the translation
-  const speakResult = useCallback(() => {
-    if (!translation || !('speechSynthesis' in window)) return;
+  // Enterprise TTS - Speak the translation with OpenAI's lifelike voices
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  
+  const speakResult = useCallback(async () => {
+    if (!translation) return;
     
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(translation);
+    // If already speaking, stop
+    if (isSpeaking) {
+      stopSpeech();
+      setIsSpeaking(false);
+      return;
+    }
     
-    // Map to speech synthesis language
-    const speechLangMap = {
-      en: 'en-US', es: 'es-ES', fr: 'fr-FR', ja: 'ja-JP', ko: 'ko-KR'
-    };
-    utterance.lang = speechLangMap[targetLang] || 'en-US';
-    utterance.rate = 0.9;
+    setIsSpeaking(true);
+    console.log(`[Voice Translator] Speaking in ${targetLang}:`, translation.substring(0, 50) + '...');
     
-    window.speechSynthesis.speak(utterance);
-  }, [translation, targetLang]);
+    try {
+      await speakText(translation, targetLang, {
+        useHD: true,
+        speed: 0.95,  // Slightly slower for clarity
+        onEnd: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    } catch (err) {
+      console.error('[Voice Translator] TTS error:', err);
+      setIsSpeaking(false);
+    }
+  }, [translation, targetLang, isSpeaking]);
 
   // Close result modal
   const closeResult = useCallback(() => {
+    stopSpeech();
+    setIsSpeaking(false);
     setShowResult(false);
     setTranscript('');
     setTranslation('');
