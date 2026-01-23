@@ -558,7 +558,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
             <IdCard className="w-7 h-7" />
           </div>
           <div className="option-content">
-            <span className="option-title">Scan Driver's License</span>
+            <span className="option-title">Scan Driver&apos;s License</span>
             <span className="option-desc">AI extracts name & address</span>
           </div>
           <span className="option-badge">OCR</span>
