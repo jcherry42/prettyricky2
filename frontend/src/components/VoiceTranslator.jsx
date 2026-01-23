@@ -383,7 +383,7 @@ export const VoiceTranslator = () => {
 
       <style>{`
         /* ==========================================
-           PTT GLASS BUTTON - Transparent Effect
+           PTT GLASS BUTTON - Luxury Amber Theme
            ========================================== */
         
         .ptt-lang-badge {
@@ -396,15 +396,15 @@ export const VoiceTranslator = () => {
           gap: 4px;
           padding: 6px 10px;
           background: linear-gradient(180deg, 
-            rgba(20, 25, 35, 0.7) 0%, 
-            rgba(10, 15, 22, 0.85) 100%
+            rgba(25, 20, 15, 0.85) 0%, 
+            rgba(15, 12, 8, 0.92) 100%
           );
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(139, 92, 246, 0.3);
+          border: 1px solid rgba(255, 140, 0, 0.25);
           border-radius: 20px;
           box-shadow: 
-            0 4px 12px rgba(0, 0, 0, 0.3),
+            0 4px 12px rgba(0, 0, 0, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
@@ -416,10 +416,10 @@ export const VoiceTranslator = () => {
         .ptt-lang-arrow {
           width: 12px;
           height: 12px;
-          color: rgba(139, 92, 246, 0.7);
+          color: rgba(255, 159, 67, 0.7);
         }
 
-        /* Main PTT Button - Glass Effect */
+        /* Main PTT Button - Luxury Amber Glass */
         .ptt-glass-btn {
           position: fixed;
           right: 16px;
@@ -429,15 +429,15 @@ export const VoiceTranslator = () => {
           height: 56px;
           border-radius: 50%;
           background: linear-gradient(145deg, 
-            rgba(139, 92, 246, 0.15) 0%, 
-            rgba(109, 40, 217, 0.25) 100%
+            rgba(147, 51, 234, 0.15) 0%, 
+            rgba(126, 34, 206, 0.25) 100%
           );
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 2px solid rgba(139, 92, 246, 0.4);
+          border: 2px solid rgba(147, 51, 234, 0.4);
           box-shadow: 
-            0 4px 20px rgba(139, 92, 246, 0.3),
-            0 0 30px rgba(139, 92, 246, 0.15),
+            0 4px 20px rgba(147, 51, 234, 0.3),
+            0 0 30px rgba(147, 51, 234, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
           cursor: pointer;
           display: flex;
@@ -450,10 +450,10 @@ export const VoiceTranslator = () => {
 
         .ptt-glass-btn:hover:not(:disabled) {
           transform: scale(1.08);
-          border-color: rgba(139, 92, 246, 0.6);
+          border-color: rgba(167, 139, 250, 0.6);
           box-shadow: 
-            0 6px 30px rgba(139, 92, 246, 0.4),
-            0 0 40px rgba(139, 92, 246, 0.25),
+            0 6px 30px rgba(147, 51, 234, 0.4),
+            0 0 40px rgba(167, 139, 250, 0.25),
             inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
@@ -477,8 +477,8 @@ export const VoiceTranslator = () => {
         .ptt-icon {
           width: 24px;
           height: 24px;
-          color: rgba(167, 139, 250, 0.9);
-          filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.5));
+          color: rgba(192, 132, 252, 0.9);
+          filter: drop-shadow(0 0 4px rgba(147, 51, 234, 0.5));
           transition: all 0.2s;
         }
 
