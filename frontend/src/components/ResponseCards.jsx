@@ -224,7 +224,7 @@ export const ResponseCards = () => {
     if (editedTexts[key]) {
       return editedTexts[key];
     }
-    if (supercharged && showSpanish[key] && translations[key]) {
+    if (supercharged && showTranslated[key] && translations[key]) {
       return translations[key];
     }
     return response.text;
