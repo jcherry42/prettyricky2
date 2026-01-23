@@ -620,8 +620,7 @@ export const ImportModal = () => {
         
         // Show mapping info
         if (result.mappings?.length > 0) {
-          const mappedFields = result.mappings.map(m => m.targetField).join(', ');
-          console.log('Detected mappings:', mappedFields);
+          // Mappings detected successfully
         }
         
         await refreshLocalData();
