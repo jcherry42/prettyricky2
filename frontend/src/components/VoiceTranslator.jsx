@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Mic, Square, Loader2, Volume2, X, Globe, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { speakText, stopSpeech } from '../utils/ttsService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
