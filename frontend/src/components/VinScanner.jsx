@@ -558,7 +558,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
           </div>
           <div className="option-content">
             <span className="option-title">Scan Driver&apos;s License</span>
-            <span className="option-desc">Capture customer info</span>
           </div>
           <span className="option-badge">OCR</span>
           <ChevronRight className="w-5 h-5 option-chevron" />
