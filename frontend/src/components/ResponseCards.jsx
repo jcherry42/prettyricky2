@@ -565,11 +565,11 @@ export const ResponseCards = () => {
                     disabled={isMainTranslating}
                     className="sport-translate-btn flex items-center justify-center gap-1.5"
                     style={{
-                      background: showMainSpanish 
+                      background: showMainTranslated 
                         ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
                         : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
-                      border: `1px solid ${showMainSpanish ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
-                      color: showMainSpanish ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
+                      border: `1px solid ${showMainTranslated ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
+                      color: showMainTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
                       minWidth: '90px',
                       padding: '10px 12px',
                       borderRadius: '10px',
@@ -577,14 +577,14 @@ export const ResponseCards = () => {
                       fontWeight: '600',
                     }}
                     data-testid={`sport-translate-${index}`}
-                    title={mainTranslation ? (showMainSpanish ? 'Show English' : 'Show Spanish') : 'Translate to Spanish'}
+                    title={mainTranslation ? (showMainTranslated ? 'Show English' : `Show ${targetConfig.name}`) : `Translate to ${targetConfig.name}`}
                   >
                     {isMainTranslating ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
                         <Languages className="w-4 h-4" />
-                        {mainTranslation ? (showMainSpanish ? '🇪🇸' : '🇺🇸') : '🇪🇸'}
+                        {mainTranslation ? (showMainTranslated ? targetConfig.flag : '🇺🇸') : targetConfig.flag}
                       </>
                     )}
                   </button>
