@@ -199,7 +199,7 @@ export const TowerTalkModal = () => {
     };
     
     window.speechSynthesis.speak(utterance);
-  }, []);
+  }, [isSpeechSynthesisSupported]);
 
   const toggleSpeech = useCallback(() => {
     if (isSpeaking) {
