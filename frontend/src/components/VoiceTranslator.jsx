@@ -78,8 +78,6 @@ export const VoiceTranslator = () => {
     setError('');
     
     try {
-      console.log('[PTT] Processing audio:', audioBlob.size, 'bytes, type:', audioBlob.type);
-      
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
       formData.append('source_lang', sourceLang);
@@ -96,7 +94,6 @@ export const VoiceTranslator = () => {
       }
       
       const data = await response.json();
-      console.log('[PTT] Response:', data);
       
       if (!data.success) {
         setError(data.error || 'Translation failed');
@@ -109,7 +106,6 @@ export const VoiceTranslator = () => {
       setShowResult(true);
       
     } catch (err) {
-      console.error('[PTT] Process error:', err);
       setError(err.message || 'Failed to process audio');
       setShowResult(true);
     } finally {
