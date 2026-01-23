@@ -444,7 +444,7 @@ async def voice_translate(
                 source_lang=source_lang,
                 target_lang=target_lang,
                 success=False,
-                error=f"Invalid audio format. Supported: webm, mp3, mp4, wav, m4a"
+                error="Invalid audio format. Supported: webm, mp3, mp4, wav, m4a"
             )
         
         # Read audio data
@@ -744,12 +744,6 @@ async def scan_license_with_ocr(
         
         # Convert to base64 for Vision API
         base64_image = base64.b64encode(image_data).decode('utf-8')
-        
-        # Determine mime type
-        if content_type in allowed_types:
-            mime_type = content_type
-        else:
-            mime_type = 'image/jpeg'
         
         # ENTERPRISE OCR PROMPT - optimized for accuracy
         extraction_prompt = """You are an expert OCR system specialized in reading US Driver's Licenses.
