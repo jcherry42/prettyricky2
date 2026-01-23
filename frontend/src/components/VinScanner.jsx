@@ -1220,8 +1220,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
           height: 36px;
           border-radius: 10px;
           background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.5);
+          border: 1px solid rgba(255, 140, 0, 0.1);
+          color: rgba(255, 200, 150, 0.5);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1231,8 +1231,8 @@ export const VinScanner = ({ isOpen, onClose }) => {
         }
         
         .close-btn:hover {
-          background: rgba(255,255,255,0.1);
-          color: #fff;
+          background: rgba(255, 140, 0, 0.1);
+          color: #FF9F43;
         }
         
         .intake-section {
