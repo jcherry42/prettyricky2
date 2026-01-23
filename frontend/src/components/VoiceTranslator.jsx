@@ -864,12 +864,23 @@ export const VoiceTranslator = () => {
           transition: all 0.2s;
         }
 
-        .ptt-speak-btn:hover {
+        .ptt-speak-btn:hover:not(:disabled) {
           background: rgba(139, 92, 246, 0.2);
         }
 
-        .ptt-speak-btn:active {
+        .ptt-speak-btn:active:not(:disabled) {
           transform: scale(0.98);
+        }
+
+        .ptt-speak-btn.speaking {
+          background: rgba(34, 197, 94, 0.15);
+          border-color: rgba(34, 197, 94, 0.3);
+          color: #22c55e;
+        }
+
+        .ptt-speak-btn:disabled {
+          cursor: not-allowed;
+          opacity: 0.9;
         }
       `}</style>
     </>
