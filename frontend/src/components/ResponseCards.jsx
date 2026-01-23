@@ -237,7 +237,6 @@ export const ResponseCards = () => {
 
   const handleTextChange = (responseId, newText) => {
     setEditedTexts(prev => ({ ...prev, [responseId]: newText }));
-    // Clear any existing translation when text changes
     setEditedTranslations(prev => {
       const updated = { ...prev };
       delete updated[responseId];
@@ -248,29 +247,17 @@ export const ResponseCards = () => {
   const translateEditedText = async (responseId, e) => {
     e.stopPropagation();
     const textToTranslate = editedTexts[responseId];
-    
-    console.log('[Translation] Translating edited text for response:', responseId);
-    console.log('[Translation] Text to translate:', textToTranslate);
-    
-    if (!textToTranslate) {
-      console.log('[Translation] No text to translate');
-      return;
-    }
+    if (!textToTranslate) return;
     
     setTranslatingEdited(prev => ({ ...prev, [responseId]: true }));
     
     try {
-      const result = await translateText(textToTranslate, 'en', 'es');
-      console.log('[Translation] Translation result:', result);
+      const currentTargetLang = getTargetLanguage();
+      const result = await translateText(textToTranslate, 'en', currentTargetLang);
       
       if (result.success && result.translatedText) {
         setEditedTranslations(prev => ({ ...prev, [responseId]: result.translatedText }));
-        // Automatically show translated text after translating
         setShowTranslated(prev => ({ ...prev, [responseId]: true }));
-        console.log('[Translation] Translation saved and translated view enabled');
-        console.log('[Translation] Confidence:', result.confidence, 'Cached:', result.cached);
-      } else {
-        console.error('[Translation] Translation failed:', result.error);
       }
     } catch (err) {
       console.error('[Translation] Translation error:', err);
