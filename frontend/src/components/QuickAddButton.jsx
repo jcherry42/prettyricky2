@@ -619,11 +619,13 @@ export const QuickAddButton = () => {
           margin-top: 6px;
           padding: 14px;
           border-radius: 12px;
-          background: linear-gradient(135deg, rgba(0, 180, 255, 0.25) 0%, rgba(0, 120, 200, 0.2) 100%);
-          border: 1px solid rgba(0, 200, 255, 0.5);
-          color: #00D4FF;
+          background: linear-gradient(135deg, rgba(255, 159, 67, 0.3) 0%, rgba(200, 100, 0, 0.25) 100%);
+          border: 1px solid rgba(255, 159, 67, 0.5);
+          color: #FF9F43;
           font-size: 14px;
           font-weight: 600;
+          font-family: 'Bebas Neue', sans-serif;
+          letter-spacing: 0.08em;
           cursor: pointer;
           transition: all 0.2s;
           display: flex;
@@ -633,8 +635,8 @@ export const QuickAddButton = () => {
         }
 
         .qa-save-btn:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(0, 200, 255, 0.35) 0%, rgba(0, 140, 220, 0.3) 100%);
-          box-shadow: 0 0 25px rgba(0, 180, 255, 0.25);
+          background: linear-gradient(135deg, rgba(255, 180, 100, 0.4) 0%, rgba(220, 120, 20, 0.35) 100%);
+          box-shadow: 0 0 25px rgba(255, 140, 0, 0.2);
         }
 
         .qa-save-btn:active:not(:disabled) {
@@ -669,6 +671,8 @@ export const QuickAddButton = () => {
         .quick-add-success span {
           font-size: 16px;
           font-weight: 600;
+          font-family: 'Bebas Neue', sans-serif;
+          letter-spacing: 0.05em;
         }
       `}</style>
     </>
