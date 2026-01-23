@@ -542,98 +542,100 @@ html:not(.dark) .digital-readout-cyan {
 
 
 /* ==================== LIGHT MODE - MODAL OVERRIDES ==================== */
+/* Optimized for readability with high contrast text and clean white inputs */
 
 /* Intake Scanner Modal */
 html:not(.dark) .intake-overlay {
-  background: rgba(245, 240, 230, 0.92);
+  background: rgba(240, 235, 225, 0.95);
 }
 
 html:not(.dark) .intake-modal {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
-  border-color: rgba(180, 140, 80, 0.2);
-  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 100px rgba(180, 140, 80, 0.05);
+  background: #FFFFFF;
+  border-color: rgba(139, 90, 43, 0.25);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.2), 0 0 1px rgba(0,0,0,0.1);
 }
 
 html:not(.dark) .intake-modal .close-btn {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(180, 140, 80, 0.15);
-  color: #7B6347;
+  background: #F5F0E8;
+  border-color: rgba(139, 90, 43, 0.2);
+  color: #5D4E37;
 }
 
 html:not(.dark) .intake-modal .close-btn:hover {
-  background: rgba(184, 134, 11, 0.1);
-  color: #B8860B;
+  background: #EDE5D8;
+  color: #8B5A2B;
 }
 
 html:not(.dark) .intake-modal .back-btn {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(180, 140, 80, 0.15);
-  color: #7B6347;
+  background: #F5F0E8;
+  border-color: rgba(139, 90, 43, 0.2);
+  color: #5D4E37;
 }
 
 html:not(.dark) .intake-modal .back-btn:hover {
-  background: rgba(184, 134, 11, 0.08);
-  color: #B8860B;
+  background: #EDE5D8;
+  color: #8B5A2B;
 }
 
 html:not(.dark) .intake-header h2 {
-  color: #B8860B;
-  text-shadow: none;
+  color: #8B5A2B !important;
+  text-shadow: none !important;
 }
 
 html:not(.dark) .intake-header p {
-  color: #7B6347;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .intake-option {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%);
-  border-color: rgba(180, 140, 80, 0.15);
+  background: #FFFFFF;
+  border: 1px solid rgba(139, 90, 43, 0.2);
 }
 
 html:not(.dark) .intake-option:hover {
-  background: linear-gradient(90deg, rgba(184, 134, 11, 0.08) 0%, rgba(255, 255, 255, 0.9) 100%);
-  border-color: rgba(184, 134, 11, 0.25);
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.35);
 }
 
 html:not(.dark) .intake-option.featured {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.08), rgba(160, 120, 60, 0.05));
-  border-color: rgba(184, 134, 11, 0.2);
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
 }
 
 html:not(.dark) .option-title {
-  color: #3D2914 !important;
+  color: #2D1F0F !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .option-desc {
-  color: #7B6347 !important;
+  color: #5D4E37 !important;
 }
 
 html:not(.dark) .option-chevron {
-  color: #B8860B !important;
+  color: #8B5A2B !important;
 }
 
 html:not(.dark) .option-icon.license {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(160, 120, 60, 0.1));
-  border-color: rgba(184, 134, 11, 0.25);
-  color: #B8860B;
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
+  color: #8B5A2B;
 }
 
 html:not(.dark) .option-icon.vin {
-  background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 125, 150, 0.08));
-  border-color: rgba(8, 145, 178, 0.2);
-  color: #0891b2;
+  background: #F0F9FA;
+  border-color: rgba(8, 145, 178, 0.25);
+  color: #0E7490;
 }
 
 html:not(.dark) .header-icon.license {
-  background: linear-gradient(135deg, rgba(184, 134, 11, 0.15), rgba(160, 120, 60, 0.1));
-  border-color: rgba(184, 134, 11, 0.25);
-  color: #B8860B;
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
+  color: #8B5A2B;
 }
 
 html:not(.dark) .header-icon.vin {
-  background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 125, 150, 0.08));
-  border-color: rgba(8, 145, 178, 0.2);
-  color: #0891b2;
+  background: #F0F9FA;
+  border-color: rgba(8, 145, 178, 0.25);
+  color: #0E7490;
 }
 
 /* Quick Add Modal */
