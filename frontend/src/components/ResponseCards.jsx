@@ -352,7 +352,6 @@ export const ResponseCards = () => {
       
       <div className="space-y-3">
         {currentResponses.map((response, index) => {
-          const isSelected = selectedResponse?.id === response.id;
           const isCopied = copiedId === response.id;
           const isFollowUpCopied = copiedId === `${response.id}-followup`;
           const isFollowUpExpanded = expandedFollowUp === response.id;
