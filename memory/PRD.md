@@ -234,16 +234,18 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - [x] VIN Scanner windshield mode
 - [x] Authentication system
 - [x] Intake Scanner with License capture
+- [x] Light/Dark mode support for entire app (main UI + all modals)
 
 ### P1 (High)
 - [ ] Real CRM integration (backend stubs exist)
 - [ ] Batch VIN scan mode for lot inventory
 - [ ] Push notifications
+- [ ] User verification of PTT (Push-to-Talk) on iOS device
 
 ### P2 (Medium)
 - [ ] Response analytics dashboard
 - [ ] Offline data sync
-- [ ] User verification of PTT on iOS device
+- [ ] User verification of Sport Mode "Translate" button fix
 
 ### P3 (Low)
 - [ ] Custom themes
