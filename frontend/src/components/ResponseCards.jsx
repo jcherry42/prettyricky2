@@ -269,7 +269,7 @@ export const ResponseCards = () => {
     e.stopPropagation();
     haptics.tap();
     const key = `${response.id}-followup`;
-    const textToCopy = supercharged && showSpanish[key] && translations[key] 
+    const textToCopy = supercharged && showTranslated[key] && translations[key] 
       ? translations[key] 
       : response.followUpText;
     
