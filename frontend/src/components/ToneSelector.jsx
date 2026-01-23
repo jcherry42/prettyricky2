@@ -48,7 +48,8 @@ const getColors = (theme) => ({
 });
 
 export const ToneSelector = () => {
-  const { selectedTone, selectTone, selectedCustomer, selectedInquiryType } = useSales();
+  const { selectedTone, selectTone, selectedCustomer, selectedInquiryType, theme } = useSales();
+  const colors = getColors(theme);
 
   if (!selectedCustomer || !selectedInquiryType) return null;
 
@@ -57,7 +58,7 @@ export const ToneSelector = () => {
       <h2 
         className="text-xs font-semibold uppercase tracking-wider px-1"
         style={{ 
-          color: 'rgba(255, 200, 150, 0.6)', 
+          color: colors.textLabel, 
           fontFamily: "'Bebas Neue', sans-serif", 
           letterSpacing: '0.12em' 
         }}
@@ -73,7 +74,7 @@ export const ToneSelector = () => {
           {RESPONSE_TONES.map((tone) => {
             const Icon = iconMap[tone.icon] || Users;
             const isActive = selectedTone === tone.id;
-            const colors = toneColors[tone.id] || toneColors.balanced;
+            const toneColor = getToneColors(theme, tone.id);
             
             return (
               <button
@@ -81,26 +82,26 @@ export const ToneSelector = () => {
                 onClick={() => selectTone(tone.id)}
                 className="flex-1 py-3.5 px-3 rounded-xl flex flex-col items-center gap-1.5 transition-all duration-300 luxury-transition"
                 style={{
-                  background: isActive ? colors.bg : 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)',
-                  boxShadow: isActive ? `0 0 25px ${colors.glow}` : 'none',
-                  border: isActive ? `1px solid ${colors.border}` : '1px solid rgba(255, 140, 0, 0.08)',
+                  background: isActive ? toneColor.bg : colors.buttonBg,
+                  boxShadow: isActive ? `0 0 25px ${toneColor.glow}` : 'none',
+                  border: isActive ? `1px solid ${toneColor.border}` : `1px solid ${colors.buttonBorder}`,
                 }}
                 data-testid={`tone-${tone.id}`}
               >
                 <Icon 
                   className="w-5 h-5 transition-colors"
                   style={{ 
-                    color: isActive ? colors.active : 'rgba(255, 200, 150, 0.4)',
-                    filter: isActive ? `drop-shadow(0 0 6px ${colors.glow})` : 'none'
+                    color: isActive ? toneColor.active : colors.textMuted,
+                    filter: isActive ? `drop-shadow(0 0 6px ${toneColor.glow})` : 'none'
                   }}
                 />
                 <span 
                   className="text-xs font-semibold transition-colors uppercase tracking-wide"
                   style={{ 
-                    color: isActive ? colors.active : 'rgba(255, 200, 150, 0.5)',
+                    color: isActive ? toneColor.active : colors.textMuted,
                     fontFamily: "'Bebas Neue', sans-serif",
                     letterSpacing: '0.05em',
-                    textShadow: isActive ? `0 0 8px ${colors.glow}` : 'none'
+                    textShadow: isActive && colors.isDark ? `0 0 8px ${toneColor.glow}` : 'none'
                   }}
                 >
                   {tone.shortLabel}
@@ -115,7 +116,7 @@ export const ToneSelector = () => {
       <p 
         className="text-xs text-center px-2"
         style={{ 
-          color: 'rgba(255, 200, 150, 0.5)',
+          color: colors.textDescription,
           fontFamily: "'SF Mono', 'Roboto Mono', monospace",
           fontSize: '11px'
         }}
