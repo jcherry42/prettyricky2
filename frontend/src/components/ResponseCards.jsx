@@ -190,7 +190,7 @@ export const ResponseCards = () => {
     utterance.onerror = () => setSpeakingId(null);
     
     window.speechSynthesis.speak(utterance);
-  }, [speakingId, isSpeechSupported]);
+  }, [speakingId]);
 
   // Get display text helper
   const getDisplayText = useCallback((response) => {
