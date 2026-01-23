@@ -545,7 +545,6 @@ export const VinScanner = ({ isOpen, onClose }) => {
     <div className="intake-section">
       <div className="intake-header">
         <h2>Customer Intake</h2>
-        <p>Enterprise-grade scanning</p>
       </div>
       
       <div className="intake-options">
@@ -559,7 +558,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
           </div>
           <div className="option-content">
             <span className="option-title">Scan Driver&apos;s License</span>
-            <span className="option-desc">AI extracts name & address</span>
+            <span className="option-desc">Capture customer info</span>
           </div>
           <span className="option-badge">OCR</span>
           <ChevronRight className="w-5 h-5 option-chevron" />
