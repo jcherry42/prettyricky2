@@ -8,7 +8,7 @@ import requests
 import os
 from datetime import datetime, timezone, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://supercharge-auto.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://carwhisperer-2.preview.emergentagent.com').rstrip('/')
 
 
 class TestNotificationConfig:

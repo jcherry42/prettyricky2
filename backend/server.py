@@ -3294,7 +3294,7 @@ async def eject_customer_snapshot(request: EjectRequest):
         if has_license:
             # Construct full URL for the license image
             # We need to make it a publicly accessible URL for Twilio
-            base_url = os.environ.get('FRONTEND_URL', 'https://supercharge-auto.preview.emergentagent.com')
+            base_url = os.environ.get('FRONTEND_URL', 'https://carwhisperer-2.preview.emergentagent.com')
             full_image_url = f"{base_url}{license_image_url}"
             media_urls.append(full_image_url)
             logger.info(f"Including license image in MMS: {full_image_url}")
@@ -4402,7 +4402,7 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://supercharge-auto.preview.emergentagent.com"
+        "connect-src 'self' https://carwhisperer-2.preview.emergentagent.com"
     )
     # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
@@ -4411,7 +4411,7 @@ async def add_security_headers(request: Request, call_next):
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://supercharge-auto.preview.emergentagent.com",
+    "https://carwhisperer-2.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings
