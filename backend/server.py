@@ -177,6 +177,20 @@ class TranslateResponse(BaseModel):
     detected_lang: Optional[str] = None
     confidence: Optional[float] = None
 
+# Text-to-Speech Models
+class TTSRequest(BaseModel):
+    text: str
+    voice: str = "nova"  # alloy, ash, coral, echo, fable, nova, onyx, sage, shimmer
+    model: str = "tts-1-hd"  # tts-1 (fast) or tts-1-hd (HD quality)
+    speed: float = 1.0  # 0.25 to 4.0
+    language: str = "en"  # Hint for voice optimization
+
+class TTSResponse(BaseModel):
+    audio_base64: str
+    format: str = "mp3"
+    voice_used: str
+    cached: bool = False
+
 
 # ============== HEALTH & STATUS ==============
 
