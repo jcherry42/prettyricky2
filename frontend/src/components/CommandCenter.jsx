@@ -696,25 +696,47 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-tab.active {
-          color: #FFBF00;
-          background: rgba(255,191,0,0.15);
-          box-shadow: 0 0 10px rgba(255,191,0,0.15);
+          color: #FF9F43;
+          background: linear-gradient(180deg, rgba(255, 140, 0, 0.18) 0%, rgba(255, 100, 0, 0.12) 100%);
+          border-color: rgba(255, 140, 0, 0.25);
+          box-shadow: 
+            0 0 15px rgba(255, 140, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .cc-content {
+          position: relative;
+          z-index: 1;
           flex: 1;
           overflow-y: auto;
           padding: 16px;
         }
 
+        /* Custom scrollbar for content */
+        .cc-content::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .cc-content::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 3px;
+        }
+
+        .cc-content::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, rgba(255, 140, 0, 0.3) 0%, rgba(255, 100, 0, 0.2) 100%);
+          border-radius: 3px;
+        }
+
         .cc-content h3 {
-          font-size: 14px;
-          font-weight: 600;
-          color: #fff;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 15px;
+          font-weight: 400;
+          letter-spacing: 0.08em;
+          color: rgba(255, 200, 150, 0.8);
           margin: 0 0 16px 0;
         }
 
-        /* Dashboard Stats */
+        /* Dashboard Stats - Gauge cluster style */
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -726,9 +748,16 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           align-items: center;
           gap: 12px;
           padding: 14px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 12px;
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.2) 100%);
+          border: 1px solid rgba(255, 140, 0, 0.08);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+          transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+          border-color: rgba(255, 140, 0, 0.15);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 100%);
         }
 
         .stat-icon {
@@ -738,13 +767,34 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 0 15px currentColor;
         }
 
-        .stat-card.cyan .stat-icon { background: rgba(34,211,238,0.15); color: #22d3ee; }
-        .stat-card.green .stat-icon { background: rgba(34,197,94,0.15); color: #22c55e; }
-        .stat-card.amber .stat-icon { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .stat-card.purple .stat-icon { background: rgba(168,85,247,0.15); color: #a855f7; }
-        .stat-card.rose .stat-icon { background: rgba(244,63,94,0.15); color: #f43f5e; }
+        .stat-card.cyan .stat-icon { 
+          background: rgba(34, 211, 238, 0.15); 
+          color: #22d3ee; 
+          box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        }
+        .stat-card.green .stat-icon { 
+          background: rgba(34, 197, 94, 0.15); 
+          color: #22c55e; 
+          box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+        }
+        .stat-card.amber .stat-icon { 
+          background: rgba(255, 159, 67, 0.15); 
+          color: #FF9F43; 
+          box-shadow: 0 0 15px rgba(255, 159, 67, 0.2);
+        }
+        .stat-card.purple .stat-icon { 
+          background: rgba(168, 85, 247, 0.15); 
+          color: #a855f7; 
+          box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+        .stat-card.rose .stat-icon { 
+          background: rgba(244, 63, 94, 0.15); 
+          color: #f43f5e; 
+          box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+        }
 
         .stat-info {
           display: flex;
