@@ -285,7 +285,7 @@ export const ResponseCards = () => {
   const toggleLanguage = (key, e) => {
     e.stopPropagation();
     haptics.select();
-    setShowSpanish(prev => ({ ...prev, [key]: !prev[key] }));
+    setShowTranslated(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const startEditing = (responseId, text, e) => {
