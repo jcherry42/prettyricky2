@@ -134,86 +134,51 @@ export const ResponseCards = () => {
     }
   }, [supercharged]);
 
-  // Text-to-speech function - uses correct language
-  const speakText = useCallback((responseId, text, isTranslated = false) => {
-    if (!isSpeechSupported) return;
-    
-    // Stop any current speech
-    window.speechSynthesis.cancel();
-    
-    // If already speaking this response, just stop
+  // Enterprise Text-to-Speech - uses OpenAI TTS for smooth, lifelike voices
+  const handleSpeakText = useCallback(async (responseId, text, isTranslated = false) => {
+    // If already speaking this response, stop it
     if (speakingId === responseId) {
+      stopSpeech();
       setSpeakingId(null);
       return;
     }
     
-    // For translated text: Add natural pauses
-    let processedText = text;
-    if (isTranslated) {
-      // Add micro-pauses at punctuation for more natural rhythm
-      processedText = text
-        .replace(/\./g, '... ')      // Longer pause at periods
-        .replace(/,/g, ', ')         // Slight pause at commas
-        .replace(/!/g, '! ')         // Pause after exclamation
-        .replace(/\?/g, '? ');       // Pause after question
-    }
+    // Stop any current speech
+    stopSpeech();
     
-    const utterance = new SpeechSynthesisUtterance(processedText);
     const currentTargetLang = getTargetLanguage();
-    const langConfig = LANG_CONFIG[currentTargetLang] || LANG_CONFIG.es;
+    const language = isTranslated ? currentTargetLang : 'en';
     
-    // Voice optimization based on target language
-    if (isTranslated) {
-      utterance.lang = langConfig.speechCode;
-      utterance.rate = 0.85;         // Slower for natural conversation
-      utterance.pitch = 1.1;         // Slightly higher for warmth
-      utterance.volume = 0.95;
-    } else {
-      utterance.lang = 'en-US';
-      utterance.rate = 0.92;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-    }
+    console.log(`[TTS] Speaking in ${language}:`, text.substring(0, 50) + '...');
     
-    // Find the best voice available for the target language
-    const voices = window.speechSynthesis.getVoices();
+    haptics.light();
+    setSpeakingId(responseId);
     
-    if (isTranslated) {
-      // Find voice for target language
-      const targetVoice = 
-        // Premium/natural voices first
-        voices.find(v => v.lang.startsWith(currentTargetLang) && /natural|enhanced|premium|neural|wavenet/i.test(v.name)) ||
-        // Local service voices (usually better quality)
-        voices.find(v => v.lang.startsWith(currentTargetLang) && v.localService) ||
-        // Any voice for the language
-        voices.find(v => v.lang.startsWith(currentTargetLang));
+    try {
+      const result = await speakText(text, language, {
+        useHD: true,  // Always use HD for smooth, lifelike speech
+        speed: 1.0,
+        onStart: () => {
+          console.log('[TTS] Playback started');
+        },
+        onEnd: () => {
+          console.log('[TTS] Playback ended');
+          setSpeakingId(null);
+        },
+        onError: (err) => {
+          console.error('[TTS] Playback error:', err);
+          setSpeakingId(null);
+        },
+      });
       
-      if (targetVoice) {
-        utterance.voice = targetVoice;
-        // Adjust rate based on voice type
-        if (targetVoice.name.includes('Google') || targetVoice.name.includes('wavenet')) {
-          utterance.rate = 0.9;
-        }
+      if (!result.success) {
+        console.warn('[TTS] Failed:', result.error);
+        setSpeakingId(null);
       }
-    } else {
-      // English voice
-      const englishVoice = 
-        voices.find(v => v.name === 'Samantha') ||
-        voices.find(v => v.name === 'Alex') ||
-        voices.find(v => v.lang.startsWith('en') && /natural|enhanced|premium/i.test(v.name)) ||
-        voices.find(v => v.lang === 'en-US' && v.localService) ||
-        voices.find(v => v.lang.startsWith('en'));
-      
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
+    } catch (err) {
+      console.error('[TTS] Exception:', err);
+      setSpeakingId(null);
     }
-    
-    utterance.onstart = () => setSpeakingId(responseId);
-    utterance.onend = () => setSpeakingId(null);
-    utterance.onerror = () => setSpeakingId(null);
-    
-    window.speechSynthesis.speak(utterance);
   }, [speakingId]);
 
   // Get display text helper
