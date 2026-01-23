@@ -1268,14 +1268,17 @@ export const VinScanner = ({ isOpen, onClose }) => {
         
         .intake-header h2 {
           font-size: 22px;
-          font-weight: 700;
-          color: #fff;
+          font-weight: 400;
+          font-family: 'Bebas Neue', sans-serif;
+          letter-spacing: 0.08em;
+          color: #FF9F43;
+          text-shadow: 0 0 12px rgba(255, 159, 67, 0.4);
           margin: 0 0 4px 0;
         }
         
         .intake-header p {
           font-size: 13px;
-          color: rgba(255,255,255,0.5);
+          color: rgba(255, 200, 150, 0.5);
           margin: 0;
         }
         
