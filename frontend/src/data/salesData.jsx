@@ -25,6 +25,18 @@ export const SALESPERSON_STYLES = [
   { id: 'authority', label: 'Authority', description: 'Trusted expert, direct and calm' },
 ];
 
+// Response tones - kept for backward compatibility
+export const RESPONSE_TONES = [
+  { 
+    id: 'authority', 
+    label: 'Authority', 
+    shortLabel: 'Authority',
+    description: 'Direct, calm, controlled - drives to in-person',
+    color: 'primary',
+    icon: 'shield'
+  },
+];
+
 // Follow-up timing rules
 export const FOLLOW_UP_RULES = [
   { id: 'immediate', label: 'Immediate', delay: '0', description: 'Send right away' },
