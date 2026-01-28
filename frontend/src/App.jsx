@@ -151,11 +151,9 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary message="Something went wrong. Please refresh the page.">
-      <AuthProvider>
-        <SalesProvider>
-          <AppContent />
-        </SalesProvider>
-      </AuthProvider>
+      <SalesProvider>
+        <AppContent />
+      </SalesProvider>
     </ErrorBoundary>
   );
 }
