@@ -295,7 +295,7 @@ Apply these proven techniques naturally (pick 1-2 per message based on context):
             api_key=api_key,
             session_id=f"tower-talk-{uuid.uuid4()}",
             system_message=system_message
-        ).with_model("openai", "gpt-4.1-mini")
+        ).with_model("openai", "gpt-4o-mini")
         
         user_message = UserMessage(
             text=f"Situation: {request.situation}\n\nWrite a personalized message for this situation."
