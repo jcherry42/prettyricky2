@@ -129,10 +129,8 @@ const fallbackSpeak = (text, language, { onStart, onEnd, onError }) => {
 
     const utterance = new SpeechSynthesisUtterance(text);
     const langMap = {
-      en: 'en-US',
       es: 'es-US',
       fr: 'fr-FR',
-      ja: 'ja-JP',
       ko: 'ko-KR',
     };
     
