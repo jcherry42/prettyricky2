@@ -1080,6 +1080,25 @@ export const VinScanner = ({ isOpen, onClose }) => {
           
           <div className="result-actions">
             <button
+              onClick={handlePrintLicense}
+              disabled={!licensePreview || printingLicense}
+              className="eject-btn"
+              data-testid="eject-license-btn"
+            >
+              {printingLicense ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Printing...
+                </>
+              ) : (
+                <>
+                  <Printer className="w-5 h-5" />
+                  Eject
+                </>
+              )}
+            </button>
+            
+            <button
               onClick={createCustomerFromLicense}
               disabled={!editFirstName.trim() || !editLastName.trim() || loading}
               className="primary-btn"
@@ -1093,7 +1112,7 @@ export const VinScanner = ({ isOpen, onClose }) => {
               ) : (
                 <>
                   <Plus className="w-5 h-5" />
-                  Create New Customer
+                  Create Customer
                 </>
               )}
             </button>
