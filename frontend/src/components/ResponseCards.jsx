@@ -12,12 +12,10 @@ import { announceToScreenReader } from '../utils/accessibility';
 // TTS is always supported via our enterprise service
 const isSpeechSupported = true;
 
-// Language config - matches VoiceTranslator
+// Language config - Spanish, French, Korean only
 const LANG_CONFIG = {
-  en: { name: 'English', flag: '🇺🇸', code: 'en', speechCode: 'en-US' },
   es: { name: 'Spanish', flag: '🇪🇸', code: 'es', speechCode: 'es-US' },
   fr: { name: 'French', flag: '🇫🇷', code: 'fr', speechCode: 'fr-FR' },
-  ja: { name: 'Japanese', flag: '🇯🇵', code: 'ja', speechCode: 'ja-JP' },
   ko: { name: 'Korean', flag: '🇰🇷', code: 'ko', speechCode: 'ko-KR' },
 };
 
