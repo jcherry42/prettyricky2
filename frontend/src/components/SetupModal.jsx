@@ -275,24 +275,6 @@ export const SetupModal = () => {
           {step === 3 && (
             <div className="space-y-5 animate-fade-in">
               <div className="mclaren-form-group">
-                <label className="mclaren-label">Default Tone</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {RESPONSE_TONES.map((tone) => (
-                    <button
-                      key={tone.id}
-                      onClick={() => handleChange('defaultTone', tone.id)}
-                      className={`mclaren-tone-btn ${
-                        formData.defaultTone === tone.id ? 'selected' : ''
-                      }`}
-                    >
-                      <span className="text-lg mb-1">{tone.emoji}</span>
-                      <span className="text-xs font-medium">{tone.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="mclaren-form-group">
                 <label className="mclaren-label">Sign-off Name</label>
                 <input
                   type="text"
