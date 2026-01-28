@@ -4,9 +4,10 @@ import {
   X, Camera, Keyboard, Car, Save, Check, Loader2, AlertCircle, ScanLine, 
   Shield, Fuel, MapPin, Settings2, CheckCircle2, RotateCcw, IdCard, Users, 
   Search, ChevronRight, Plus, Scan, User, RefreshCw, Zap, AlertTriangle,
-  Eye, Image as ImageIcon, FileText
+  Eye, Image as ImageIcon, FileText, Printer, Wifi, WifiOff
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { toast } from 'sonner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
