@@ -103,14 +103,7 @@ function AppContent() {
           </ErrorBoundary>
         </section>
 
-        {/* Step 3: Select Tone */}
-        <section aria-label="Response Tone Selection">
-          <ErrorBoundary minimal>
-            <ToneSelector />
-          </ErrorBoundary>
-        </section>
-
-        {/* Step 4: Review Generated Responses */}
+        {/* Step 3: Review Generated Responses (2 pre-generated + 1 custom) */}
         <section aria-label="Generated Responses">
           <ErrorBoundary minimal message="Failed to load responses">
             <ResponseCards />
