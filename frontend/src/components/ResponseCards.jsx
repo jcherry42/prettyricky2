@@ -502,7 +502,7 @@ export const ResponseCards = () => {
                     ) : (
                       <>
                         <Languages className="w-4 h-4" />
-                        {mainTranslation ? (showMainTranslated ? targetConfig.flag : '🇺🇸') : targetConfig.flag}
+                        {mainTranslation ? (showMainTranslated ? targetConfig.flag : '🇪🇸') : targetConfig.flag}
                       </>
                     )}
                   </button>
