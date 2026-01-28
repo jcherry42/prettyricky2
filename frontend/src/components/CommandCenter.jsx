@@ -6,7 +6,8 @@ import {
   FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
   Clock, Tag, MessageSquare, CheckCircle2, AlertCircle,
   Send, Smartphone, Zap, Bell, Volume2, VolumeX, Building2,
-  User, Save, Eye, EyeOff, TestTube, Loader2, ToggleLeft, ToggleRight
+  User, Save, Eye, EyeOff, TestTube, Loader2, ToggleLeft, ToggleRight,
+  Printer, Wifi, WifiOff
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
