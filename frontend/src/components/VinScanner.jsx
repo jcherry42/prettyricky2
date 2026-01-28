@@ -1694,6 +1694,34 @@ export const VinScanner = ({ isOpen, onClose }) => {
           opacity: 0.5;
           cursor: not-allowed;
         }
+
+        /* Eject Button */
+        .eject-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 14px 20px;
+          background: linear-gradient(135deg, rgba(244,63,94,0.25), rgba(251,146,60,0.2));
+          border: 1px solid rgba(244,63,94,0.4);
+          border-radius: 12px;
+          color: #fb7185;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        
+        .eject-btn:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(244,63,94,0.35), rgba(251,146,60,0.3));
+          box-shadow: 0 0 30px rgba(244,63,94,0.25);
+          transform: translateY(-1px);
+        }
+        
+        .eject-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
         
         /* Error box */
         .error-box {
