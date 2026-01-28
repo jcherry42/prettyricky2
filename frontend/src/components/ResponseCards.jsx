@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Copy, Check, MessageSquare, Clock, ChevronDown, ChevronUp, Languages, Flame, Loader2, Pencil, X, Volume2, VolumeX } from 'lucide-react';
+import { Copy, Check, MessageSquare, ChevronDown, ChevronUp, Languages, Flame, Loader2, Pencil, X, Volume2, VolumeX, Plus, Save } from 'lucide-react';
 import { translateText } from '../utils/translationService';
 import { speakText, stopSpeech } from '../utils/ttsService';
 import { useSales } from '../context/SalesContext';
 import { FOLLOW_UP_RULES } from '../data/salesData';
-import { SkeletonCard } from './ui/LoadingStates';
-import { NoResponses } from './ui/EmptyStates';
 import haptics from '../utils/haptics';
 import { announceToScreenReader } from '../utils/accessibility';
-
-// TTS is always supported via our enterprise service
-const isSpeechSupported = true;
 
 // Language config - Spanish, French, Korean only
 const LANG_CONFIG = {
@@ -25,648 +20,385 @@ const getTargetLanguage = () => {
   return stored && LANG_CONFIG[stored] ? stored : 'es';
 };
 
-export const ResponseCards = () => {
-  const { 
-    currentResponses, 
-    selectedResponse, 
-    selectResponse,
-    selectedCustomer,
-    copyToClipboard,
-    shareToMessages,
-    supercharged,
-  } = useSales();
-  
-  const [copiedId, setCopiedId] = useState(null);
-  const [expandedFollowUp, setExpandedFollowUp] = useState(null);
-  const [translations, setTranslations] = useState({});
-  const [translating, setTranslating] = useState({});
-  const [showTranslated, setShowTranslated] = useState({});
-  const [editingId, setEditingId] = useState(null);
-  const [editedTexts, setEditedTexts] = useState({});
-  const [editedTranslations, setEditedTranslations] = useState({});
-  const [translatingEdited, setTranslatingEdited] = useState({});
+// Single Response Card Component
+const ResponseCard = ({ 
+  response, 
+  index,
+  isSelected, 
+  onSelect, 
+  onCopy, 
+  onSend, 
+  supercharged,
+  isCustom = false,
+  onCustomTextChange,
+  customText = ''
+}) => {
+  const [copiedMain, setCopiedMain] = useState(false);
+  const [copiedFollowUp, setCopiedFollowUp] = useState(false);
+  const [showFollowUp, setShowFollowUp] = useState(false);
+  const [translation, setTranslation] = useState('');
+  const [followUpTranslation, setFollowUpTranslation] = useState('');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [showTranslated, setShowTranslated] = useState(false);
   const [speakingId, setSpeakingId] = useState(null);
-  const [targetLang, setTargetLang] = useState(getTargetLanguage);
-
-  // Update target language when it changes in localStorage
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setTargetLang(getTargetLanguage());
-    };
-    window.addEventListener('storage', handleStorageChange);
-    // Also check on focus in case user changed it in another component
-    window.addEventListener('focus', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleStorageChange);
-    };
-  }, []);
-
+  const [isEditing, setIsEditing] = useState(isCustom && !response.text);
+  const [editText, setEditText] = useState(customText || response.text || '');
+  
+  const targetLang = getTargetLanguage();
   const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
 
-  // FIX: Translate responses when supercharged mode is active - use selected language
-  const translateResponse = useCallback(async (responseId, text, isFollowUp = false) => {
-    const key = isFollowUp ? `${responseId}-followup` : responseId;
-    const currentTargetLang = getTargetLanguage();
-    
-    if (translations[key]) return;
-    
-    setTranslating(prev => ({ ...prev, [key]: true }));
-    
-    try {
-      const result = await translateText(text, 'es', currentTargetLang);
-      if (result?.success && result.translatedText) {
-        setTranslations(prev => ({ ...prev, [key]: result.translatedText }));
-      }
-    } catch (err) {
-      console.error('[Translation] Error:', err);
-    }
-    
-    setTranslating(prev => ({ ...prev, [key]: false }));
-  }, []);
-
-  const translationQueuedRef = useRef(new Set());
-
+  // Translate when supercharged mode is active
   useEffect(() => {
-    if (!supercharged || currentResponses.length === 0) {
-      translationQueuedRef.current.clear();
-      return;
+    if (supercharged && response.text && !translation) {
+      translateContent();
     }
-    
-    const responsesToTranslate = currentResponses.filter(response => {
-      const key = response.id;
-      if (translationQueuedRef.current.has(key)) return false;
-      translationQueuedRef.current.add(key);
-      return true;
-    });
+  }, [supercharged, response.text, targetLang]);
 
-    if (responsesToTranslate.length > 0) {
-      responsesToTranslate.forEach(response => {
-        translateResponse(response.id, response.text);
-        if (response.followUpText) {
-          translateResponse(response.id, response.followUpText, true);
-        }
-      });
-    }
-  }, [supercharged, currentResponses, targetLang]);
-
+  // Clear translation when supercharged is turned off
   useEffect(() => {
     if (!supercharged) {
-      translationQueuedRef.current.clear();
-      setTimeout(() => {
-        setTranslations({});
-        setShowTranslated({});
-      }, 0);
+      setShowTranslated(false);
     }
   }, [supercharged]);
 
-  const handleSpeakText = useCallback(async (responseId, text, isTranslated = false) => {
-    if (speakingId === responseId) {
+  const translateContent = async () => {
+    if (!response.text && !editText) return;
+    
+    setIsTranslating(true);
+    try {
+      const textToTranslate = editText || response.text;
+      const result = await translateText(textToTranslate, 'en', targetLang);
+      if (result?.success) {
+        setTranslation(result.translatedText);
+      }
+      
+      // Translate follow-up if exists
+      if (response.followUpText) {
+        const followResult = await translateText(response.followUpText, 'en', targetLang);
+        if (followResult?.success) {
+          setFollowUpTranslation(followResult.translatedText);
+        }
+      }
+    } catch (err) {
+      console.error('[Translation error]:', err);
+    }
+    setIsTranslating(false);
+  };
+
+  const handleSpeak = async (text, isTranslated = false) => {
+    const id = isTranslated ? 'translated' : 'original';
+    if (speakingId === id) {
       stopSpeech();
       setSpeakingId(null);
       return;
     }
     
     stopSpeech();
-    const language = isTranslated ? getTargetLanguage() : 'en';
-    
-    haptics.light();
-    setSpeakingId(responseId);
+    setSpeakingId(id);
     
     try {
-      const result = await speakText(text, language, {
+      await speakText(text, isTranslated ? targetLang : 'en', {
         useHD: true,
-        speed: 1.0,
         onEnd: () => setSpeakingId(null),
-        onError: () => setSpeakingId(null),
+        onError: () => setSpeakingId(null)
       });
-      
-      if (!result.success) setSpeakingId(null);
-    } catch (err) {
-      console.error('[TTS] Error:', err);
+    } catch {
       setSpeakingId(null);
-    }
-  }, [speakingId]);
-
-  const getDisplayText = useCallback((response) => {
-    const key = response.id;
-    if (editedTexts[key] && editedTranslations[key] && showTranslated[key]) {
-      return editedTranslations[key];
-    }
-    if (editedTexts[key]) {
-      return editedTexts[key];
-    }
-    if (supercharged && showTranslated[key] && translations[key]) {
-      return translations[key];
-    }
-    return response.text;
-  }, [editedTexts, editedTranslations, showTranslated, supercharged, translations]);
-
-  // Show empty state if no customer selected
-  if (!selectedCustomer) {
-    return null;
-  }
-
-  // Show empty state when no responses yet
-  if (currentResponses.length === 0) {
-    return null;
-  }
-
-  const handleCopy = async (response, e) => {
-    e.stopPropagation();
-    haptics.tap();
-    const textToCopy = getDisplayText(response);
-    
-    const success = await copyToClipboard(textToCopy);
-    if (success) {
-      haptics.success();
-      setCopiedId(response.id);
-      setEditingId(null);
-      announceToScreenReader('Response copied to clipboard');
-      setTimeout(() => setCopiedId(null), 2000);
     }
   };
 
-  const handleSendMessage = (response, e) => {
+  const getDisplayText = () => {
+    if (isCustom) {
+      if (supercharged && showTranslated && translation) return translation;
+      return editText;
+    }
+    if (supercharged && showTranslated && translation) return translation;
+    return response.text;
+  };
+
+  const handleCopy = async (e) => {
+    e.stopPropagation();
+    haptics.tap();
+    const text = getDisplayText();
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      haptics.success();
+      setCopiedMain(true);
+      announceToScreenReader('Copied to clipboard');
+      setTimeout(() => setCopiedMain(false), 2000);
+    } catch {
+      // Fallback handled by parent
+    }
+  };
+
+  const handleCopyFollowUp = async (e) => {
+    e.stopPropagation();
+    haptics.tap();
+    const text = supercharged && showTranslated && followUpTranslation 
+      ? followUpTranslation 
+      : response.followUpText;
+    
+    try {
+      await navigator.clipboard.writeText(text);
+      haptics.success();
+      setCopiedFollowUp(true);
+      setTimeout(() => setCopiedFollowUp(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleSend = (e) => {
     e.stopPropagation();
     haptics.button();
-    const textToSend = getDisplayText(response);
-    
-    setEditingId(null);
-    shareToMessages(textToSend);
+    const text = getDisplayText();
+    onSend(text);
+  };
+
+  const toggleTranslation = (e) => {
+    e.stopPropagation();
+    haptics.select();
+    setShowTranslated(!showTranslated);
+  };
+
+  const saveCustomText = () => {
+    if (onCustomTextChange) {
+      onCustomTextChange(editText);
+    }
+    setIsEditing(false);
+    // Trigger translation of custom text
+    if (supercharged && editText) {
+      translateContent();
+    }
+  };
+
+  // For custom cards that are empty
+  if (isCustom && !editText && !isEditing) {
+    return (
+      <div 
+        onClick={() => setIsEditing(true)}
+        className={`response-card cursor-pointer opacity-70 hover:opacity-100 transition-opacity`}
+      >
+        <div className="p-4 flex items-center justify-center gap-2 text-muted-foreground min-h-[120px]">
+          <Plus className="w-5 h-5" />
+          <span className="text-sm font-medium">Write your own response</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      onClick={() => !isEditing && onSelect()}
+      className={`response-card cursor-pointer transition-all ${isSelected ? 'selected ring-2 ring-primary' : ''}`}
+    >
+      {/* Card Header */}
+      <div className="flex items-center justify-between p-3 border-b border-border/30">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-primary">
+            {isCustom ? 'CUSTOM' : `OPTION ${index + 1}`}
+          </span>
+          {supercharged && (
+            <span className="flex items-center gap-1 text-[10px] font-medium text-orange-500">
+              <Flame className="w-3 h-3" />
+              SPORT
+            </span>
+          )}
+        </div>
+        
+        {/* Language Toggle - Only show in Sport mode */}
+        {supercharged && (translation || isCustom) && !isEditing && (
+          <button
+            onClick={toggleTranslation}
+            disabled={isTranslating}
+            className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+              showTranslated 
+                ? 'bg-orange-500/20 text-orange-400' 
+                : 'bg-muted/50 text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {isTranslating ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <>
+                <Languages className="w-3 h-3" />
+                <span>{showTranslated ? targetConfig.flag : '🇺🇸'}</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Card Body */}
+      <div className="p-4">
+        {isEditing ? (
+          <div className="space-y-3">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              placeholder="Write your response here..."
+              className="w-full min-h-[100px] p-3 bg-muted/30 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); saveCustomText(); }}
+                className="flex-1 ios-btn-primary py-2 text-xs gap-1"
+              >
+                <Save className="w-3 h-3" />
+                Save
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsEditing(false); setEditText(customText || response.text || ''); }}
+                className="ios-btn-secondary py-2 px-3 text-xs"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+              {getDisplayText()}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 mt-4">
+              <button
+                onClick={handleCopy}
+                className="ios-btn flex-1 py-2 text-xs gap-1.5"
+              >
+                {copiedMain ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedMain ? 'Copied' : 'Copy'}
+              </button>
+              
+              <button
+                onClick={handleSend}
+                className="ios-btn-primary flex-1 py-2 text-xs gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Send
+              </button>
+              
+              <button
+                onClick={(e) => { e.stopPropagation(); handleSpeak(getDisplayText(), showTranslated); }}
+                className={`ios-btn w-9 h-9 ${speakingId ? 'text-primary' : ''}`}
+              >
+                {speakingId ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+
+              {isCustom && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                  className="ios-btn w-9 h-9"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Follow-up Section */}
+      {response.followUpText && !isEditing && (
+        <div className="border-t border-border/30">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowFollowUp(!showFollowUp); }}
+            className="w-full flex items-center justify-between p-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="font-medium">Follow-up suggestion</span>
+            {showFollowUp ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          
+          {showFollowUp && (
+            <div className="px-4 pb-4 space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {supercharged && showTranslated && followUpTranslation 
+                  ? followUpTranslation 
+                  : response.followUpText}
+              </p>
+              <button
+                onClick={handleCopyFollowUp}
+                className="ios-btn py-1.5 px-3 text-[10px] gap-1"
+              >
+                {copiedFollowUp ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                {copiedFollowUp ? 'Copied' : 'Copy follow-up'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const ResponseCards = () => {
+  const { 
+    currentResponses, 
+    selectedResponse, 
+    selectResponse,
+    selectedCustomer,
+    shareToMessages,
+    supercharged,
+  } = useSales();
+  
+  const [customTexts, setCustomTexts] = useState({});
+
+  // Show nothing if no customer selected or no responses
+  if (!selectedCustomer || currentResponses.length === 0) {
+    return null;
+  }
+
+  // Get first 2 responses + create a custom slot
+  const displayResponses = currentResponses.slice(0, 2);
+  const customResponse = { 
+    id: 'custom', 
+    text: customTexts['custom'] || '', 
+    followUpText: null 
+  };
+
+  const handleSend = (text) => {
+    shareToMessages(text);
     announceToScreenReader('Opening iMessage');
   };
 
-  const handleCopyFollowUp = async (response, e) => {
-    e.stopPropagation();
-    haptics.tap();
-    const key = `${response.id}-followup`;
-    const textToCopy = supercharged && showTranslated[key] && translations[key] 
-      ? translations[key] 
-      : response.followUpText;
-    
-    const success = await copyToClipboard(textToCopy);
-    if (success) {
-      haptics.success();
-      setCopiedId(key);
-      announceToScreenReader('Follow-up copied to clipboard');
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  };
-
-  const toggleLanguage = (key, e) => {
-    e.stopPropagation();
-    haptics.select();
-    setShowTranslated(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const startEditing = (responseId, text, e) => {
-    e.stopPropagation();
-    setEditingId(responseId);
-    if (!editedTexts[responseId]) {
-      setEditedTexts(prev => ({ ...prev, [responseId]: text }));
-    }
-  };
-
-  const cancelEditing = (e) => {
-    e.stopPropagation();
-    setEditingId(null);
-  };
-
-  const handleTextChange = (responseId, newText) => {
-    setEditedTexts(prev => ({ ...prev, [responseId]: newText }));
-    setEditedTranslations(prev => {
-      const updated = { ...prev };
-      delete updated[responseId];
-      return updated;
-    });
-  };
-
-  const translateEditedText = async (responseId, e) => {
-    e.stopPropagation();
-    const textToTranslate = editedTexts[responseId];
-    if (!textToTranslate) return;
-    
-    setTranslatingEdited(prev => ({ ...prev, [responseId]: true }));
-    
-    try {
-      const currentTargetLang = getTargetLanguage();
-      const result = await translateText(textToTranslate, 'es', currentTargetLang);
-      
-      if (result.success && result.translatedText) {
-        setEditedTranslations(prev => ({ ...prev, [responseId]: result.translatedText }));
-        setShowTranslated(prev => ({ ...prev, [responseId]: true }));
-      }
-    } catch (err) {
-      console.error('[Translation] Translation error:', err);
-    } finally {
-      setTranslatingEdited(prev => ({ ...prev, [responseId]: false }));
-    }
-  };
-
-  const handleSpeak = (response, e) => {
-    e.stopPropagation();
-    const key = response.id;
-    const text = getDisplayText(response);
-    const isTranslated = (editedTranslations[key] && showTranslated[key]) || 
-                      (supercharged && showTranslated[key] && translations[key]);
-    handleSpeakText(key, text, isTranslated);
+  const handleCustomTextChange = (text) => {
+    setCustomTexts(prev => ({ ...prev, custom: text }));
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between px-1">
-        <h2 
-          className="text-xs font-semibold uppercase tracking-wider"
-          style={{ 
-            color: 'rgba(255, 200, 150, 0.6)', 
-            fontFamily: "'Bebas Neue', sans-serif", 
-            letterSpacing: '0.12em' 
-          }}
-        >
-          GENERATED RESPONSES
-        </h2>
-        {supercharged && (
-          <span 
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255, 68, 68, 0.2) 0%, rgba(255, 100, 0, 0.15) 100%)',
-              border: '1px solid rgba(255, 100, 0, 0.3)',
-              color: '#ff6b6b',
-              fontFamily: "'Bebas Neue', sans-serif",
-              boxShadow: '0 0 12px rgba(255, 68, 68, 0.2)'
-            }}
-          >
-            <Flame className="w-3 h-3" />
-            SPORT MODE
-          </span>
-        )}
-      </div>
+    <div className="space-y-4 pb-32" data-testid="response-cards">
+      {/* Pre-generated Responses */}
+      {displayResponses.map((response, index) => (
+        <ResponseCard
+          key={response.id}
+          response={response}
+          index={index}
+          isSelected={selectedResponse?.id === response.id}
+          onSelect={() => selectResponse(response)}
+          onCopy={() => {}}
+          onSend={handleSend}
+          supercharged={supercharged}
+        />
+      ))}
       
-      <div className="space-y-3">
-        {currentResponses.map((response, index) => {
-          const isCopied = copiedId === response.id;
-          const isFollowUpCopied = copiedId === `${response.id}-followup`;
-          const isFollowUpExpanded = expandedFollowUp === response.id;
-          const followUpRule = FOLLOW_UP_RULES.find(r => r.id === response.followUp);
-          
-          const mainKey = response.id;
-          const followUpKey = `${response.id}-followup`;
-          const isMainTranslating = translating[mainKey];
-          const isFollowUpTranslating = translating[followUpKey];
-          const mainTranslation = translations[mainKey];
-          const followUpTranslation = translations[followUpKey];
-          const showMainTranslated = showTranslated[mainKey];
-          const showFollowUpTranslated = showTranslated[followUpKey];
-          
-          const displayedText = getDisplayText(response);
-          const isEditing = editingId === response.id;
-          
-          const displayedFollowUp = supercharged && showFollowUpTranslated && followUpTranslation 
-            ? followUpTranslation 
-            : response.followUpText;
-          
-          return (
-            <div
-              key={response.id}
-              onClick={() => !isEditing && selectResponse(response)}
-              className="infotainment-panel p-5 cursor-pointer luxury-transition"
-              data-testid={`response-card-${index}`}
-            >
-              {/* Response header - gauge cluster style */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="text-xs font-bold uppercase tracking-wider"
-                    style={{ 
-                      color: '#FF9F43',
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      letterSpacing: '0.1em',
-                      textShadow: '0 0 8px rgba(255, 159, 67, 0.4)'
-                    }}
-                  >
-                    RESPONSE {index + 1}
-                  </span>
-                  {supercharged && mainTranslation && !isEditing && (
-                    <button
-                      onClick={(e) => toggleLanguage(mainKey, e)}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold transition-all uppercase"
-                      style={{
-                        background: showMainTranslated ? 'rgba(255, 100, 0, 0.2)' : 'rgba(34, 211, 238, 0.15)',
-                        color: showMainTranslated ? '#ff8c00' : '#22d3ee',
-                        border: `1px solid ${showMainTranslated ? 'rgba(255, 100, 0, 0.35)' : 'rgba(34, 211, 238, 0.3)'}`,
-                        fontFamily: "'Bebas Neue', sans-serif",
-                      }}
-                      data-testid={`toggle-lang-${index}`}
-                    >
-                      <Languages className="w-3 h-3" />
-                      {showMainTranslated ? targetConfig.code.toUpperCase() : 'EN'}
-                    </button>
-                  )}
-                  {supercharged && isMainTranslating && (
-                    <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
-                  )}
-                  {isEditing && (
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      Editing
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {followUpRule && !isEditing && (
-                    <span 
-                      className="flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full"
-                      style={{
-                        background: 'hsla(220, 10%, 15%, 0.8)',
-                        color: 'hsla(220, 10%, 60%, 1)',
-                        border: '1px solid hsla(220, 8%, 25%, 0.5)'
-                      }}
-                    >
-                      <Clock className="w-3 h-3" />
-                      {followUpRule.label}
-                    </span>
-                  )}
-                  {isEditing ? (
-                    <button
-                      onClick={cancelEditing}
-                      className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-400 transition-colors"
-                      title="Cancel editing"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => startEditing(response.id, displayedText, e)}
-                      className="p-1.5 rounded-lg hover:bg-amber-500/20 text-muted-foreground hover:text-amber-400 transition-colors"
-                      title="Edit before sending"
-                      data-testid={`edit-response-${index}`}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Response text - editable or display */}
-              {isEditing ? (
-                <div className="mb-5">
-                  <textarea
-                    value={editedTexts[response.id] || displayedText}
-                    onChange={(e) => handleTextChange(response.id, e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="edit-response-textarea w-full p-3 rounded-lg text-[15px] leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-                    autoFocus
-                    data-testid={`edit-textarea-${index}`}
-                  />
-                  {/* Translate edited text button */}
-                  <div className="flex items-center gap-2 mt-2">
-                    <button
-                      onClick={(e) => translateEditedText(response.id, e)}
-                      disabled={translatingEdited[response.id] || !editedTexts[response.id]}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.2) 0%, hsla(25, 100%, 40%, 0.15) 100%)',
-                        border: '1px solid hsla(25, 100%, 50%, 0.3)',
-                        color: 'hsla(30, 100%, 60%, 1)',
-                      }}
-                      data-testid={`translate-edited-${index}`}
-                    >
-                      {translatingEdited[response.id] ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Translating...
-                        </>
-                      ) : (
-                        <>
-                          <Languages className="w-3.5 h-3.5" />
-                          Translate to {targetConfig.name}
-                        </>
-                      )}
-                    </button>
-                    {editedTranslations[response.id] && (
-                      <button
-                        onClick={(e) => toggleLanguage(mainKey, e)}
-                        className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
-                        style={{
-                          background: showTranslated[mainKey] ? 'hsla(25, 100%, 50%, 0.25)' : 'hsla(210, 80%, 50%, 0.2)',
-                          color: showTranslated[mainKey] ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
-                          border: `1px solid ${showTranslated[mainKey] ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(210, 80%, 50%, 0.3)'}`,
-                        }}
-                      >
-                        {showTranslated[mainKey] ? `${targetConfig.flag} ${targetConfig.name}` : '🇪🇸 Spanish'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[15px] text-foreground leading-relaxed mb-5">
-                  {displayedText}
-                </p>
-              )}
-              
-              {/* Action buttons */}
-              <div className="flex gap-2">
-                {/* Sport Mode Translate Button - Always visible when supercharged */}
-                {supercharged && !isEditing && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      haptics.tap();
-                      if (mainTranslation) {
-                        // Toggle between languages
-                        toggleLanguage(mainKey, e);
-                      } else {
-                        // Trigger translation
-                        translateResponse(response.id, response.text, false);
-                      }
-                    }}
-                    disabled={isMainTranslating}
-                    className="sport-translate-btn flex items-center justify-center gap-1.5"
-                    style={{
-                      background: showMainTranslated 
-                        ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
-                        : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
-                      border: `1px solid ${showMainTranslated ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
-                      color: showMainTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
-                      minWidth: '90px',
-                      padding: '10px 12px',
-                      borderRadius: '10px',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                    }}
-                    data-testid={`sport-translate-${index}`}
-                    title={mainTranslation ? (showMainTranslated ? 'Show Spanish' : `Show ${targetConfig.name}`) : `Translate to ${targetConfig.name}`}
-                  >
-                    {isMainTranslating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Languages className="w-4 h-4" />
-                        {mainTranslation ? (showMainTranslated ? targetConfig.flag : '🇪🇸') : targetConfig.flag}
-                      </>
-                    )}
-                  </button>
-                )}
-                {isSpeechSupported && (
-                  <button
-                    onClick={(e) => handleSpeak(response, e)}
-                    className="btn-steel flex items-center justify-center w-10"
-                    style={speakingId === response.id ? {
-                      background: 'linear-gradient(180deg, hsla(200, 70%, 45%, 0.3) 0%, hsla(200, 70%, 35%, 0.25) 100%)',
-                      borderColor: 'hsla(200, 80%, 55%, 0.5)',
-                      color: 'hsla(200, 90%, 65%, 1)',
-                    } : {}}
-                    data-testid={`speak-response-${index}`}
-                    title={speakingId === response.id ? "Stop speaking" : "Read aloud"}
-                  >
-                    {speakingId === response.id ? (
-                      <VolumeX className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-                <button
-                  onClick={(e) => handleCopy(response, e)}
-                  className="btn-steel flex-1 flex items-center justify-center gap-2"
-                  style={isCopied ? {
-                    background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
-                    borderColor: 'hsla(145, 60%, 45%, 0.4)',
-                    color: 'hsla(145, 70%, 60%, 1)',
-                  } : {}}
-                  data-testid={`copy-response-${index}`}
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      Copy
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  onClick={(e) => handleSendMessage(response, e)}
-                  className="btn-luxury flex-1 flex items-center justify-center gap-2"
-                  data-testid={`send-response-${index}`}
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  iMessage
-                </button>
-              </div>
-              
-              {/* Follow-up section */}
-              {response.followUpText && (
-                <div className="mt-5 pt-4" style={{ borderTop: '1px solid hsla(30, 15%, 18%, 0.5)' }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpandedFollowUp(isFollowUpExpanded ? null : response.id);
-                    }}
-                    className="flex items-center justify-between w-full text-left py-1 group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                        Follow-up ({followUpRule?.label})
-                      </span>
-                      {supercharged && isFollowUpTranslating && (
-                        <Loader2 className="w-3 h-3 animate-spin" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
-                      )}
-                    </div>
-                    {isFollowUpExpanded ? (
-                      <ChevronUp className="w-4 h-4" style={{ color: 'hsla(40, 70%, 55%, 1)' }} />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                    )}
-                  </button>
-                  
-                  {isFollowUpExpanded && (
-                    <div 
-                      className="mt-3 p-4 rounded-xl animate-fade-in"
-                      style={{
-                        background: 'linear-gradient(135deg, hsla(35, 40%, 20%, 0.2) 0%, hsla(25, 30%, 15%, 0.15) 100%)',
-                        border: '1px solid hsla(40, 40%, 30%, 0.25)'
-                      }}
-                    >
-                      <p className="text-sm text-foreground leading-relaxed mb-3">
-                        {displayedFollowUp}
-                      </p>
-                      
-                      {/* Follow-up action buttons */}
-                      <div className="flex gap-2">
-                        {/* Sport Mode Translate Button for Follow-up */}
-                        {supercharged && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              haptics.tap();
-                              if (followUpTranslation) {
-                                toggleLanguage(followUpKey, e);
-                              } else {
-                                translateResponse(response.id, response.followUpText, true);
-                              }
-                            }}
-                            disabled={isFollowUpTranslating}
-                            className="flex items-center justify-center gap-1.5"
-                            style={{
-                              background: showFollowUpTranslated 
-                                ? 'linear-gradient(180deg, hsla(25, 100%, 50%, 0.25) 0%, hsla(25, 100%, 40%, 0.2) 100%)'
-                                : 'linear-gradient(180deg, hsla(280, 70%, 50%, 0.2) 0%, hsla(280, 70%, 40%, 0.15) 100%)',
-                              border: `1px solid ${showFollowUpTranslated ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(280, 70%, 50%, 0.35)'}`,
-                              color: showFollowUpTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(280, 80%, 70%, 1)',
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                              minWidth: '70px',
-                            }}
-                            data-testid={`sport-translate-followup-${index}`}
-                          >
-                            {isFollowUpTranslating ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <>
-                                <Languages className="w-3.5 h-3.5" />
-                                {followUpTranslation ? (showFollowUpTranslated ? targetConfig.flag : '🇪🇸') : targetConfig.flag}
-                              </>
-                            )}
-                          </button>
-                        )}
-                        
-                        <button
-                          onClick={(e) => handleCopyFollowUp(response, e)}
-                          className="btn-steel flex-1 py-2 text-xs flex items-center justify-center gap-1.5"
-                          style={isFollowUpCopied ? {
-                            background: 'linear-gradient(180deg, hsla(145, 50%, 35%, 0.3) 0%, hsla(145, 50%, 25%, 0.25) 100%)',
-                            borderColor: 'hsla(145, 60%, 45%, 0.4)',
-                            color: 'hsla(145, 70%, 60%, 1)',
-                          } : {}}
-                        >
-                          {isFollowUpCopied ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              Copy Follow-up
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Custom Editable Response */}
+      <ResponseCard
+        key="custom"
+        response={customResponse}
+        index={2}
+        isSelected={selectedResponse?.id === 'custom'}
+        onSelect={() => selectResponse(customResponse)}
+        onCopy={() => {}}
+        onSend={handleSend}
+        supercharged={supercharged}
+        isCustom={true}
+        customText={customTexts['custom']}
+        onCustomTextChange={handleCustomTextChange}
+      />
     </div>
   );
 };
