@@ -232,16 +232,6 @@ async def tower_talk(request: TowerTalkRequest):
         trade_in = ctx.get('tradeIn')
         dealership = ctx.get('dealershipName', 'our dealership')
         salesperson = ctx.get('salespersonName', 'the sales rep')
-        style = ctx.get('salespersonStyle', 'friendly')
-        
-        style_guidance = {
-            'straight_shooter': 'Be direct and honest. Get to the point quickly while remaining professional.',
-            'friendly': 'Be warm, personable, and conversational. Build rapport while being helpful.',
-            'professional': 'Be polished and formal. Maintain a business-like tone while being approachable.',
-        }
-        
-        tone_guide = style_guidance.get(style, style_guidance['friendly'])
-        
         system_message = f"""You are an elite automotive sales consultant. Your approach: TRUSTED AUTHORITY - direct, calm, controlled, and laser-focused on moving the interaction from digital conversation to in-person meeting.
 
 Your personality: Confident expert who cuts through noise. You provide value, build trust through competence, and always drive toward the showroom visit.
