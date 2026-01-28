@@ -453,7 +453,7 @@ export const ResponseCards = () => {
                           border: `1px solid ${showTranslated[mainKey] ? 'hsla(25, 100%, 50%, 0.4)' : 'hsla(210, 80%, 50%, 0.3)'}`,
                         }}
                       >
-                        {showTranslated[mainKey] ? `${targetConfig.flag} ${targetConfig.name}` : '🇺🇸 English'}
+                        {showTranslated[mainKey] ? `${targetConfig.flag} ${targetConfig.name}` : '🇪🇸 Spanish'}
                       </button>
                     )}
                   </div>
