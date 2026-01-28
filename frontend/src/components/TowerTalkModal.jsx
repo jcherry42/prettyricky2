@@ -207,7 +207,7 @@ export const TowerTalkModal = () => {
       setIsSpeaking(false);
     } else {
       const textToSpeak = showTranslated && translatedResponse ? translatedResponse : response;
-      const lang = showTranslated ? 'es-ES' : 'en-US';
+      const lang = showTranslated ? 'es-ES' : 'es-US';
       speakText(textToSpeak, lang);
       toast.success('Reading aloud...', {
         description: showTranslated ? 'En español' : 'En español'
