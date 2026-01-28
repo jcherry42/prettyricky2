@@ -147,7 +147,7 @@ export const TowerTalkModal = () => {
     } else {
       if (recognitionRef.current) {
         try {
-          recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
+          recognitionRef.current.lang = supercharged ? 'es-US' : 'es-US';
           recognitionRef.current.start();
           setIsListening(true);
           toast.success('Listening...', {
