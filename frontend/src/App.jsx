@@ -3,7 +3,6 @@ import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
 import CustomerSelector from './components/CustomerSelector';
 import InquiryTypeSelector from './components/InquiryTypeSelector';
-import ToneSelector from './components/ToneSelector';
 import ResponseCards from './components/ResponseCards';
 import TowerTalkButton from './components/TowerTalkButton';
 import TowerTalkModal from './components/TowerTalkModal';
