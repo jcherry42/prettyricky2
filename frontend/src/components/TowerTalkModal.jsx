@@ -210,7 +210,7 @@ export const TowerTalkModal = () => {
       const lang = showTranslated ? 'es-ES' : 'en-US';
       speakText(textToSpeak, lang);
       toast.success('Reading aloud...', {
-        description: showTranslated ? 'En español' : 'In English'
+        description: showTranslated ? 'En español' : 'En español'
       });
     }
   }, [isSpeaking, showTranslated, translatedResponse, response, speakText]);
