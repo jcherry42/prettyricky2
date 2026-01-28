@@ -2482,6 +2482,30 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
             color: #ef4444;
           }
 
+          .printer-status-row {
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 16px;
+          }
+
+          .printer-connected {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #22c55e;
+            font-size: 13px;
+          }
+
+          .printer-not-connected {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #71717a;
+            font-size: 13px;
+          }
+
           .eject-send-btn {
             width: 100%;
             padding: 14px;
