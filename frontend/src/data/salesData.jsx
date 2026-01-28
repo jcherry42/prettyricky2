@@ -91,113 +91,130 @@ export const TEMPLATE_TOKENS = {
   '{sign_off}': 'Sign-off phrase',
 };
 
-// Default response templates - Psychology-driven responses
-// Principles used: Reciprocity, Social Proof, Scarcity, Authority, Liking, Commitment, Loss Aversion
+// Default response templates - TRUSTED AUTHORITY APPROACH
+// Direct, calm, controlled, focused on digital-to-in-person conversion
+// Every response should subtly drive toward the showroom visit
 export const DEFAULT_TEMPLATES = {
   new_lead: {
-    fast_direct: [
+    authority: [
       {
-        id: 'new_lead_direct_1',
-        template: "Hi {name}, the {vehicle} is available at {price}. Ready to see it? I can have it pulled up front. - {salesperson}",
-        followUp: '2_hours',
-      },
-      {
-        id: 'new_lead_direct_2', 
-        template: "{name}, got your inquiry on the {vehicle}. It's here and priced right at {price}. When works for you? - {salesperson}",
-        followUp: '2_hours',
-      },
-      {
-        id: 'new_lead_direct_3',
-        template: "{name} - {vehicle}, {price}, available now. I'm free today if you want to see it. - {salesperson}",
-        followUp: '2_hours',
-      },
-    ],
-    balanced: [
-      {
-        id: 'new_lead_balanced_1',
-        template: "Hi {name}! Thanks for reaching out about the {vehicle}. Great choice - it's one of our most popular models. I'd love to tell you more about it. Would you like to {appointment_phrase}? We're open {dealership_hours}. - {salesperson}, {dealership}",
+        id: 'new_lead_auth_1',
+        template: "{name}, I have the {vehicle} here and it's a solid choice. I've seen a lot of these go to happy owners. When can you come take a look? I'm here until 7. - {salesperson}",
         followUp: 'same_day',
       },
       {
-        id: 'new_lead_balanced_2',
-        template: "Hey {name}, I saw you were checking out the {vehicle}! I think you'll really like it in person. I'm here at {dealership} and happy to answer any questions. What's your schedule looking like? - {salesperson}",
+        id: 'new_lead_auth_2',
+        template: "Hi {name}. The {vehicle} you inquired about is available. It's one of the better examples we've had on the lot. Worth seeing in person - numbers always make more sense when you're here. When works for you? - {salesperson}",
         followUp: 'same_day',
-      },
-      {
-        id: 'new_lead_balanced_3',
-        template: "Hi {name}! Great taste - the {vehicle} is a fantastic choice. I've helped a lot of people find their perfect fit with this one. Would love to chat more about what you're looking for. Any time work for you this week? - {salesperson}",
-        followUp: 'same_day',
-      },
-    ],
-    soft_touch: [
-      {
-        id: 'new_lead_soft_1',
-        template: "Hi {name}, thank you for your interest in the {vehicle}. I'd love to help you find the perfect fit for your needs. No pressure at all - whenever you're ready, I'm here to help. Feel free to reach out anytime! - {salesperson} at {dealership}",
-        followUp: 'next_day',
-      },
-      {
-        id: 'new_lead_soft_2',
-        template: "Hello {name}! I noticed you were looking at the {vehicle}. Beautiful choice. I'm {salesperson} and I'd be happy to help whenever the time is right for you. No rush - just wanted to introduce myself and let you know I'm here. Have a great day!",
-        followUp: 'next_day',
-      },
-      {
-        id: 'new_lead_soft_3',
-        template: "Hi {name}, thanks for considering {dealership} for your car search! The {vehicle} is a wonderful option. I'm here if you have any questions at all - no obligation, just happy to help. Take your time and reach out whenever feels right. - {salesperson}",
-        followUp: 'next_day',
       },
     ],
   },
   
   price_question: {
-    fast_direct: [
+    authority: [
       {
-        id: 'price_direct_1',
-        template: "{name}, the {vehicle} is {price} out the door. That includes everything. Want me to run numbers on a payment? - {salesperson}",
-        followUp: '2_hours',
-      },
-      {
-        id: 'price_direct_2',
-        template: "{name} - {price} for the {vehicle}. That's our best price. I can also look at payment options if that helps. Let me know. - {salesperson}",
-        followUp: '2_hours',
-      },
-      {
-        id: 'price_direct_3',
-        template: "The {vehicle} is {price}. Happy to break down the numbers or get you pre-qualified in 5 minutes. Which works better, {name}? - {salesperson}",
-        followUp: '2_hours',
-      },
-    ],
-    balanced: [
-      {
-        id: 'price_balanced_1',
-        template: "Hi {name}! The {vehicle} is listed at {price}, but let's talk - I want to make sure we get you into the right vehicle at the right price. We've got some great options. Can you {appointment_phrase}? - {salesperson}",
+        id: 'price_auth_1',
+        template: "{name}, the {vehicle} is {price}. Happy to walk you through everything that includes when you come in. Seeing it in person is really the best way to understand the value. When's good? - {salesperson}",
         followUp: 'same_day',
       },
       {
-        id: 'price_balanced_2',
-        template: "Hey {name}, great question! The {vehicle} comes in at {price}. There might be some incentives we can apply too. Would you like to go over everything together? I'm here to help find what works best for your budget. - {salesperson}",
-        followUp: 'same_day',
-      },
-      {
-        id: 'price_balanced_3',
-        template: "Hi {name}! So the {vehicle} is {price}, but pricing is just one piece of the puzzle. Let me show you the full picture - value, features, and how we can make it work for you. When's a good time to chat? - {salesperson}",
+        id: 'price_auth_2',
+        template: "{name} - it's {price} for the {vehicle}. Price is one part of the equation. I can show you exactly what you're getting when you're here. We usually find a way to make things work. What's your schedule like? - {salesperson}",
         followUp: 'same_day',
       },
     ],
-    soft_touch: [
+  },
+
+  availability: {
+    authority: [
       {
-        id: 'price_soft_1',
-        template: "Hi {name}, great question about pricing! The {vehicle} is currently {price}. I know budget is important, and I'm here to help you find the best value. Would you like to discuss some options? No obligation at all. - {salesperson}",
-        followUp: 'next_day',
+        id: 'avail_auth_1',
+        template: "{name}, yes - the {vehicle} is here and available. I'd grab it soon if you're serious. These don't sit long. Can you come by today or tomorrow? - {salesperson}",
+        followUp: '2_hours',
       },
       {
-        id: 'price_soft_2',
-        template: "Hello {name}! Thanks for asking about the {vehicle}. It's priced at {price} right now. I'd be happy to walk you through everything included and explore what options might work for your situation. No pressure - just here to help! - {salesperson}",
-        followUp: 'next_day',
+        id: 'avail_auth_2',
+        template: "The {vehicle} is on the lot, {name}. I've got it cleaned up and ready. Worth the trip to see it in person - photos don't do it justice. I'm here until 8 tonight. - {salesperson}",
+        followUp: '2_hours',
+      },
+    ],
+  },
+
+  trade_in: {
+    authority: [
+      {
+        id: 'trade_auth_1',
+        template: "{name}, I can give you a solid number on the {trade_vehicle} when you bring it in. I've seen the market on these and I'll be straight with you. When can you come by? - {salesperson}",
+        followUp: 'same_day',
       },
       {
-        id: 'price_soft_3',
-        template: "Hi {name}, the {vehicle} is {price}. I know that's a big decision, and I want to make sure you feel completely comfortable. Happy to answer any questions or just chat about what you're looking for. Whenever you're ready! - {salesperson}",
-        followUp: 'next_day',
+        id: 'trade_auth_2',
+        template: "Absolutely can work with your trade, {name}. The {trade_vehicle} holds good value in this market. Let's get eyes on it and get you real numbers. When are you free? - {salesperson}",
+        followUp: 'same_day',
+      },
+    ],
+  },
+
+  financing: {
+    authority: [
+      {
+        id: 'finance_auth_1',
+        template: "{name}, we work with over a dozen lenders and I've gotten approvals for all kinds of situations. Let's get you in here and find the right option. Takes about 15 minutes. When works? - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'finance_auth_2',
+        template: "{name} - financing is the easy part. I've got options from 0% to flexible terms depending on what makes sense for you. Come in and we'll lay it all out. What's good for your schedule? - {salesperson}",
+        followUp: 'same_day',
+      },
+    ],
+  },
+
+  test_drive: {
+    authority: [
+      {
+        id: 'test_auth_1',
+        template: "{name}, absolutely - that's the only way to know if it's right for you. I'll have the {vehicle} pulled up and ready. What time works? - {salesperson}",
+        followUp: '2_hours',
+      },
+      {
+        id: 'test_auth_2',
+        template: "Let's do it, {name}. The {vehicle} drives as good as it looks. I'll have it warmed up for you. Can you make it in today? - {salesperson}",
+        followUp: '2_hours',
+      },
+    ],
+  },
+
+  follow_up: {
+    authority: [
+      {
+        id: 'follow_auth_1',
+        template: "{name}, just checking in on the {vehicle}. It's still available but I wanted to make sure you're not missing out. Let me know if you have questions - or better yet, come see it. - {salesperson}",
+        followUp: '3_days',
+      },
+      {
+        id: 'follow_auth_2',
+        template: "Hi {name} - circling back on the {vehicle}. Still thinking about it? I'm here when you're ready. Sometimes it helps to just come in and see it again. No pressure. - {salesperson}",
+        followUp: '3_days',
+      },
+    ],
+  },
+
+  objection: {
+    authority: [
+      {
+        id: 'objection_auth_1',
+        template: "{name}, I hear you. Let's talk it through when you come in - I've helped a lot of people work through the same concerns. Usually there's a path forward. When can you stop by? - {salesperson}",
+        followUp: 'same_day',
+      },
+      {
+        id: 'objection_auth_2',
+        template: "Totally understand, {name}. Look - I'm not going to push. But let me show you a few things in person that might change how you're thinking about it. Worth 20 minutes of your time. When's good? - {salesperson}",
+        followUp: 'same_day',
+      },
+    ],
+  },
+};
       },
     ],
   },
