@@ -126,7 +126,7 @@ export const TowerTalkModal = () => {
 
   useEffect(() => {
     if (recognitionRef.current && !isListening) {
-      recognitionRef.current.lang = supercharged ? 'es-US' : 'en-US';
+      recognitionRef.current.lang = supercharged ? 'es-US' : 'es-US';
     }
   }, [supercharged, isListening]);
 
