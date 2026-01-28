@@ -1913,6 +1913,25 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   };
 
   const addNote = async () => {
+    if (!newNote.trim()) return;
+    setAddingNote(true);
+    try {
+      await fetch(`${BACKEND_URL}/api/customers/${customer.id}/interaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interaction_type: 'note',
+          content: newNote
+        })
+      });
+      setNewNote('');
+      onRefresh();
+    } catch (e) {
+      console.error('Add note error:', e);
+    } finally {
+      setAddingNote(false);
+    }
+  };
 
   return (
     <div className="detail-overlay" onClick={onClose}>
