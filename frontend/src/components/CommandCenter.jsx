@@ -2001,20 +2001,20 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
 
         <div className="detail-actions">
           <button onClick={() => setShowEjectModal(true)} className="btn-eject">
-            <Send className="w-4 h-4" /> Eject
+            <Printer className="w-4 h-4" /> Eject
           </button>
           <button onClick={onEdit} className="btn-edit">
             <Edit3 className="w-4 h-4" /> Edit
           </button>
         </div>
 
-        {/* Eject Modal */}
+        {/* Eject (Print) Modal */}
         {showEjectModal && (
           <div className="eject-overlay" onClick={() => setShowEjectModal(false)}>
             <div className="eject-modal" onClick={e => e.stopPropagation()}>
               <div className="eject-header">
-                <Send className="w-5 h-5" />
-                <h3>Eject Snapshot</h3>
+                <Printer className="w-5 h-5" />
+                <h3>Print Profile</h3>
                 <button onClick={() => setShowEjectModal(false)} className="eject-close">
                   <X className="w-4 h-4" />
                 </button>
@@ -2022,7 +2022,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
               
               <div className="eject-content">
                 <p className="eject-desc">
-                  Send a snapshot of <strong>{customer.first_name}&apos;s</strong> profile to your phone via SMS.
+                  Print <strong>{customer.first_name}&apos;s</strong> profile to your connected printer.
                 </p>
                 
                 <div className="eject-preview">
@@ -2044,42 +2044,42 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
                   </div>
                 </div>
                 
-                <div className="eject-phone-input">
-                  <label>
-                    <Smartphone className="w-4 h-4" />
-                    Your Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={ejectPhone}
-                    onChange={e => setEjectPhone(e.target.value)}
-                    placeholder="+1 555-123-4567"
-                  />
-                  <span className="phone-hint">Include country code for best results</span>
+                <div className="printer-status-row">
+                  {getPrinterIP() ? (
+                    <div className="printer-connected">
+                      <Wifi className="w-4 h-4 text-green-500" />
+                      <span>Printer: {getPrinterIP()}</span>
+                    </div>
+                  ) : (
+                    <div className="printer-not-connected">
+                      <WifiOff className="w-4 h-4" />
+                      <span>No printer connected</span>
+                    </div>
+                  )}
                 </div>
                 
-                {ejectResult && (
-                  <div className={`eject-result ${ejectResult.success ? 'success' : 'error'}`}>
-                    {ejectResult.success ? (
+                {printResult && (
+                  <div className={`eject-result ${printResult.success ? 'success' : 'error'}`}>
+                    {printResult.success ? (
                       <>
                         <CheckCircle2 className="w-5 h-5" />
-                        <span>Snapshot sent to {ejectPhone}</span>
+                        <span>Print job sent!</span>
                       </>
                     ) : (
                       <>
                         <AlertCircle className="w-5 h-5" />
-                        <span>{ejectResult.error || ejectResult.hint || 'Failed to send'}</span>
+                        <span>{printResult.error || 'Print failed'}</span>
                       </>
                     )}
                   </div>
                 )}
                 
                 <button 
-                  onClick={handleEject} 
-                  disabled={!ejectPhone.trim() || ejecting}
+                  onClick={handlePrint} 
+                  disabled={!getPrinterIP() || printing}
                   className="eject-send-btn"
                 >
-                  {ejecting ? 'Sending...' : 'Send Snapshot'}
+                  {printing ? 'Printing...' : 'Print Profile'}
                 </button>
               </div>
             </div>
