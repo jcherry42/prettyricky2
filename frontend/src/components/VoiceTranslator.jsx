@@ -34,9 +34,9 @@ export const VoiceTranslator = () => {
 
   // Get target language from localStorage
   const targetLang = localStorage.getItem('defaultTargetLanguage') || 'es';
-  const sourceLang = targetLang === 'en' ? 'es' : 'en';
+  const sourceLang = targetLang === 'es' ? 'fr' : 'es';
   
-  const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.en;
+  const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.es;
   const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
 
   // Cleanup on unmount
