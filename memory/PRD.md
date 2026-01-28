@@ -27,10 +27,27 @@ All AI-generated responses and pre-built templates follow a single, consistent a
 - Korean 🇰🇷
 
 ### Tower Talk (AI ASSISTANT - FIXED)
-- Connected to OpenAI gpt-4o-mini
+- Connected to OpenAI gpt-4o-mini (MODEL NAME FIX: was "gpt-4.1-mini" which doesn't exist)
 - Embodies the app's trusted authority approach
 - Quick responses for common objections
 - Follow-up suggestions included
+
+### Printer Connection (NEW)
+- **Command Center → Printer tab**: Connect to network printers via IP address
+- Status indicator shows connected/disconnected state
+- Saved printer IP persists in localStorage
+
+### Eject Feature (REVISED - Print, not SMS)
+- **Print customer profiles** when viewing a customer in Command Center
+- **Print scanned driver's licenses** after successful OCR scan
+- Eject button appears on customer profile detail and after license scan
+- SMS/MMS functionality removed
+
+### Light Mode UI Enhancement
+- **Aqua Blue Liquid Glass inputs**: All text inputs have translucent aqua blue background
+- **Electric Green font**: Input text and placeholders in vibrant green (#00E676)
+- Shimmer animation effect on focus
+- High-contrast for readability
 
 ### Vehicle Database
 - **Active Inventory**: Vehicles for sale on lot
