@@ -65,7 +65,7 @@ export const TowerTalkModal = () => {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = supercharged ? 'es-US' : 'en-US';
+    recognition.lang = supercharged ? 'es-US' : 'es-US';
     
     recognition.onresult = (event) => {
       let interim = '';
