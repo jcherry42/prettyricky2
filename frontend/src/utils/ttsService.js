@@ -32,7 +32,7 @@ const getAudioContext = () => {
 /**
  * Generate and play speech using OpenAI TTS
  * @param {string} text - Text to speak
- * @param {string} language - Language code (en, es, fr, ja, ko)
+ * @param {string} language - Language code (es, fr, ko)
  * @param {object} options - Additional options
  * @returns {Promise<{success: boolean, duration?: number, error?: string}>}
  */
