@@ -5,12 +5,10 @@ import { speakText, stopSpeech } from '../utils/ttsService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-// Language config
+// Language config - Spanish, French, Korean only
 const LANG_CONFIG = {
-  en: { name: 'English', flag: '🇺🇸', code: 'en' },
   es: { name: 'Spanish', flag: '🇪🇸', code: 'es' },
   fr: { name: 'French', flag: '🇫🇷', code: 'fr' },
-  ja: { name: 'Japanese', flag: '🇯🇵', code: 'ja' },
   ko: { name: 'Korean', flag: '🇰🇷', code: 'ko' },
 };
 
