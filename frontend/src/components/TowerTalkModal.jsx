@@ -162,7 +162,7 @@ export const TowerTalkModal = () => {
   }, [isListening, supercharged]);
 
   // Voice output functions
-  const speakText = useCallback((text, lang = 'en-US') => {
+  const speakText = useCallback((text, lang = 'es-US') => {
     if (!isSpeechSynthesisSupported) {
       toast.error('Text-to-speech not supported', {
         description: 'Your browser does not support speech synthesis'
