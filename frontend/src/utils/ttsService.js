@@ -8,12 +8,10 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL ||
                     import.meta.env.REACT_APP_BACKEND_URL || 
                     '';
 
-// Language to optimal voice mapping
+// Language to optimal voice mapping - Spanish, French, Korean only
 const VOICE_BY_LANGUAGE = {
-  en: 'nova',      // Energetic, clear American English
   es: 'coral',     // Warm, friendly - perfect for Spanish
   fr: 'shimmer',   // Bright, expressive - suits French
-  ja: 'alloy',     // Neutral, balanced - clean for Japanese
   ko: 'echo',      // Smooth, calm - works well for Korean
 };
 
