@@ -134,7 +134,7 @@ const fallbackSpeak = (text, language, { onStart, onEnd, onError }) => {
       ko: 'ko-KR',
     };
     
-    utterance.lang = langMap[language] || 'en-US';
+    utterance.lang = langMap[language] || 'es-US';
     utterance.rate = 0.9;
     utterance.pitch = 1.0;
     
