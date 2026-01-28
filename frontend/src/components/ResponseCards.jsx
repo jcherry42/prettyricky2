@@ -251,7 +251,7 @@ export const ResponseCards = () => {
     
     try {
       const currentTargetLang = getTargetLanguage();
-      const result = await translateText(textToTranslate, 'en', currentTargetLang);
+      const result = await translateText(textToTranslate, 'es', currentTargetLang);
       
       if (result.success && result.translatedText) {
         setEditedTranslations(prev => ({ ...prev, [responseId]: result.translatedText }));
