@@ -507,7 +507,7 @@ export const TowerTalkModal = () => {
             >
               <Flame className="w-4 h-4" style={{ color: 'hsla(30, 100%, 55%, 1)' }} />
               <span style={{ color: 'hsla(35, 100%, 65%, 1)' }}>
-                Supercharg&apos;d: Type or speak in English or Spanish
+                Supercharg&apos;d: Type or speak in Spanish, French, or Korean
               </span>
             </div>
           )}
