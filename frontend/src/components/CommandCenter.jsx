@@ -1913,65 +1913,6 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   };
 
   const addNote = async () => {
-    if (!newNote.trim()) return;
-    setAddingNote(true);
-    try {
-      await fetch(`${BACKEND_URL}/api/customers/${customer.id}/interaction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          interaction_type: 'note',
-          content: newNote
-        })
-      });
-      setNewNote('');
-      onRefresh();
-    } catch (e) {
-      console.error('Add note error:', e);
-    } finally {
-      setAddingNote(false);
-    }
-  };
-
-  const handleEject = async () => {
-    if (!ejectPhone.trim()) return;
-    setEjecting(true);
-    setEjectResult(null);
-    
-    try {
-      // Save phone number for future use
-      await fetch(`${BACKEND_URL}/api/user/settings`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone_number: ejectPhone })
-      });
-      
-      // Send the snapshot
-      const res = await fetch(`${BACKEND_URL}/api/eject/customer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: customer.id,
-          recipient_phone: ejectPhone
-        })
-      });
-      
-      const data = await res.json();
-      setEjectResult(data);
-      
-      if (data.success) {
-        setTimeout(() => {
-          setShowEjectModal(false);
-          setEjectResult(null);
-          onRefresh();
-        }, 2000);
-      }
-    } catch (e) {
-      setEjectResult({ success: false, error: e.message });
-    } finally {
-      setEjecting(false);
-    }
-  };
 
   return (
     <div className="detail-overlay" onClick={onClose}>
