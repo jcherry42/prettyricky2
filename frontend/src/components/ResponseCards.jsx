@@ -495,7 +495,7 @@ export const ResponseCards = () => {
                       fontWeight: '600',
                     }}
                     data-testid={`sport-translate-${index}`}
-                    title={mainTranslation ? (showMainTranslated ? 'Show English' : `Show ${targetConfig.name}`) : `Translate to ${targetConfig.name}`}
+                    title={mainTranslation ? (showMainTranslated ? 'Show Spanish' : `Show ${targetConfig.name}`) : `Translate to ${targetConfig.name}`}
                   >
                     {isMainTranslating ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
