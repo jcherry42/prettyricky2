@@ -435,16 +435,70 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Integrations Tab */}
-          {activeTab === 'integrations' && (
-            <div className="cc-integrations">
-              <h3>CRM Integrations</h3>
-              <p className="cc-description">Connect your CRM to sync customers and vehicles automatically.</p>
-              <div className="integration-list">
-                <IntegrationItem name="VinSolutions" connected={false} />
-                <IntegrationItem name="DealerSocket" connected={false} />
-                <IntegrationItem name="eLeadCRM" connected={false} />
-                <IntegrationItem name="Custom API" connected={false} />
+          {/* Printer Tab */}
+          {activeTab === 'printer' && (
+            <div className="cc-printer">
+              <h3>Printer Connection</h3>
+              <p className="cc-description">Connect to a network printer via IP address to print licenses and profiles.</p>
+              
+              <div className="printer-status-card">
+                <div className="printer-status-icon">
+                  {printerStatus === 'connected' ? (
+                    <Wifi className="w-8 h-8 text-green-500" />
+                  ) : printerStatus === 'testing' ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+                  ) : (
+                    <WifiOff className="w-8 h-8 text-zinc-500" />
+                  )}
+                </div>
+                <div className="printer-status-text">
+                  <span className={`status-label ${printerStatus}`}>
+                    {printerStatus === 'connected' ? 'Connected' : 
+                     printerStatus === 'testing' ? 'Testing...' : 'Disconnected'}
+                  </span>
+                  {printerStatus === 'connected' && printerIP && (
+                    <span className="status-ip">{printerIP}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="printer-form">
+                <label>Printer IP Address</label>
+                <div className="printer-input-row">
+                  <input 
+                    type="text"
+                    placeholder="192.168.1.100"
+                    value={printerIP}
+                    onChange={(e) => setPrinterIP(e.target.value)}
+                    className="printer-ip-input"
+                    disabled={printerStatus === 'testing'}
+                  />
+                  {printerStatus === 'connected' ? (
+                    <button 
+                      onClick={disconnectPrinter}
+                      className="printer-btn disconnect"
+                    >
+                      Disconnect
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={testPrinterConnection}
+                      disabled={testingPrinter || !printerIP.trim()}
+                      className="printer-btn connect"
+                    >
+                      {testingPrinter ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Connect'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="printer-info">
+                <h4>Eject Feature</h4>
+                <p>When viewing a customer profile or after scanning a driver&apos;s license, use the <strong>Eject</strong> button to print:</p>
+                <ul>
+                  <li>Scanned driver&apos;s license image</li>
+                  <li>Customer profile snapshot</li>
+                </ul>
               </div>
             </div>
           )}
