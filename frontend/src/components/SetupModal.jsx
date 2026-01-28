@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Building2, User, Sliders, ChevronRight, Sparkles } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
-import { APPOINTMENT_PHRASES, SALESPERSON_STYLES, RESPONSE_TONES } from '../data/salesData';
+import { APPOINTMENT_PHRASES, SALESPERSON_STYLES } from '../data/salesData';
 import { toast } from 'sonner';
 
 export const SetupModal = () => {
