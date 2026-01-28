@@ -151,7 +151,7 @@ export const TowerTalkModal = () => {
           recognitionRef.current.start();
           setIsListening(true);
           toast.success('Listening...', {
-            description: supercharged ? 'Speak in English or Spanish' : 'Speak now'
+            description: supercharged ? 'Speak in Spanish, French, or Korean' : 'Speak now'
           });
         } catch (e) {
           console.error('Failed to start recognition:', e);
