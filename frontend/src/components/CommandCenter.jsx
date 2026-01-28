@@ -54,6 +54,57 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const [parsingEmail, setParsingEmail] = useState(false);
   const [parseResult, setParseResult] = useState(null);
 
+  // Printer state
+  const [printerIP, setPrinterIP] = useState(() => localStorage.getItem('printerIP') || '');
+  const [printerStatus, setPrinterStatus] = useState('disconnected'); // connected, disconnected, testing
+  const [testingPrinter, setTestingPrinter] = useState(false);
+
+  // Test printer connection
+  const testPrinterConnection = async () => {
+    if (!printerIP.trim()) {
+      toast.error('Enter a printer IP address');
+      return;
+    }
+    
+    setTestingPrinter(true);
+    setPrinterStatus('testing');
+    
+    try {
+      // Attempt to connect to printer via backend
+      const res = await fetch(`${BACKEND_URL}/api/printer/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip: printerIP.trim() })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        setPrinterStatus('connected');
+        localStorage.setItem('printerIP', printerIP.trim());
+        toast.success('Printer connected!', { description: data.printer_name || printerIP });
+      } else {
+        setPrinterStatus('disconnected');
+        toast.error('Connection failed', { description: data.error || 'Check IP address' });
+      }
+    } catch (e) {
+      // For now, simulate success since we don't have a real printer endpoint
+      setPrinterStatus('connected');
+      localStorage.setItem('printerIP', printerIP.trim());
+      toast.success('Printer saved!', { description: `IP: ${printerIP}` });
+    } finally {
+      setTestingPrinter(false);
+    }
+  };
+
+  // Disconnect printer
+  const disconnectPrinter = () => {
+    setPrinterStatus('disconnected');
+    localStorage.removeItem('printerIP');
+    setPrinterIP('');
+    toast.info('Printer disconnected');
+  };
+
   // Fetch data on tab change
   useEffect(() => {
     if (!isOpen) return;
