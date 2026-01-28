@@ -74,7 +74,7 @@ export const ResponseCards = () => {
     setTranslating(prev => ({ ...prev, [key]: true }));
     
     try {
-      const result = await translateText(text, 'en', currentTargetLang);
+      const result = await translateText(text, 'es', currentTargetLang);
       if (result?.success && result.translatedText) {
         setTranslations(prev => ({ ...prev, [key]: result.translatedText }));
       }
