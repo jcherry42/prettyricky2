@@ -182,7 +182,7 @@ export const stopSpeech = () => {
 /**
  * Preload audio for a phrase (for instant playback later)
  */
-export const preloadSpeech = async (text, language = 'en') => {
+export const preloadSpeech = async (text, language = 'es') => {
   const voice = VOICE_BY_LANGUAGE[language] || 'nova';
   const cacheKey = `${voice}:1.0:${text.slice(0, 200)}`;
   
