@@ -1376,6 +1376,187 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           opacity: 0.5;
           cursor: not-allowed;
         }
+
+        /* Printer Tab Styles */
+        .cc-printer {
+          padding: 16px;
+        }
+
+        .cc-printer h3 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 18px;
+          letter-spacing: 0.05em;
+          color: #fff;
+          margin-bottom: 6px;
+        }
+
+        .cc-printer h4 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 14px;
+          letter-spacing: 0.05em;
+          color: #FF9F43;
+          margin-bottom: 8px;
+        }
+
+        .cc-printer .cc-description {
+          font-size: 12px;
+          color: rgba(255,200,150,0.5);
+          margin-bottom: 20px;
+          line-height: 1.5;
+        }
+
+        .printer-status-card {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 20px;
+          border-radius: 16px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%);
+          border: 1px solid rgba(255,140,0,0.15);
+          margin-bottom: 20px;
+        }
+
+        .printer-status-icon {
+          padding: 12px;
+          border-radius: 12px;
+          background: rgba(0,0,0,0.3);
+        }
+
+        .printer-status-text {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .status-label {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 16px;
+          letter-spacing: 0.08em;
+        }
+
+        .status-label.connected { color: #22c55e; }
+        .status-label.testing { color: #f59e0b; }
+        .status-label.disconnected { color: #71717a; }
+
+        .status-ip {
+          font-size: 11px;
+          color: rgba(255,200,150,0.5);
+          font-family: monospace;
+        }
+
+        .printer-form {
+          margin-bottom: 24px;
+        }
+
+        .printer-form label {
+          display: block;
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,200,150,0.7);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin-bottom: 8px;
+        }
+
+        .printer-input-row {
+          display: flex;
+          gap: 10px;
+        }
+
+        .printer-ip-input {
+          flex: 1;
+          padding: 12px 14px;
+          border-radius: 10px;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid rgba(255,140,0,0.2);
+          color: #fff;
+          font-family: monospace;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        .printer-ip-input:focus {
+          border-color: rgba(255,140,0,0.5);
+        }
+
+        .printer-ip-input::placeholder {
+          color: rgba(255,200,150,0.3);
+        }
+
+        .printer-btn {
+          padding: 12px 20px;
+          border-radius: 10px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 13px;
+          letter-spacing: 0.08em;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .printer-btn.connect {
+          background: linear-gradient(180deg, rgba(34,197,94,0.25) 0%, rgba(22,163,74,0.2) 100%);
+          border: 1px solid rgba(34,197,94,0.4);
+          color: #22c55e;
+        }
+
+        .printer-btn.connect:hover:not(:disabled) {
+          background: linear-gradient(180deg, rgba(34,197,94,0.35) 0%, rgba(22,163,74,0.3) 100%);
+          box-shadow: 0 0 20px rgba(34,197,94,0.2);
+        }
+
+        .printer-btn.connect:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .printer-btn.disconnect {
+          background: linear-gradient(180deg, rgba(239,68,68,0.2) 0%, rgba(185,28,28,0.15) 100%);
+          border: 1px solid rgba(239,68,68,0.3);
+          color: #ef4444;
+        }
+
+        .printer-btn.disconnect:hover {
+          background: linear-gradient(180deg, rgba(239,68,68,0.3) 0%, rgba(185,28,28,0.25) 100%);
+        }
+
+        .printer-info {
+          padding: 16px;
+          border-radius: 12px;
+          background: rgba(255,140,0,0.05);
+          border: 1px solid rgba(255,140,0,0.15);
+        }
+
+        .printer-info p {
+          font-size: 12px;
+          color: rgba(255,200,150,0.6);
+          line-height: 1.6;
+          margin-bottom: 12px;
+        }
+
+        .printer-info ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .printer-info li {
+          font-size: 12px;
+          color: rgba(255,200,150,0.5);
+          padding: 6px 0;
+          padding-left: 20px;
+          position: relative;
+        }
+
+        .printer-info li::before {
+          content: '→';
+          position: absolute;
+          left: 0;
+          color: #FF9F43;
+        }
       `}</style>
     </div>,
     document.body
