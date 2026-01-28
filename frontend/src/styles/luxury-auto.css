@@ -974,3 +974,108 @@ html:not(.dark) .import-dropzone:hover {
   background: rgba(184, 134, 11, 0.05) !important;
   border-color: rgba(184, 134, 11, 0.4) !important;
 }
+
+/* ==================== LIGHT MODE - LIQUID GLASS AQUA INPUTS ==================== */
+/* Aqua blue liquid glass with electric green font for all inputs in light mode */
+
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="email"],
+html:not(.dark) input[type="tel"],
+html:not(.dark) input[type="password"],
+html:not(.dark) input[type="number"],
+html:not(.dark) input[type="url"],
+html:not(.dark) input[type="search"],
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 188, 212, 0.12) 0%,
+    rgba(0, 229, 255, 0.08) 50%,
+    rgba(0, 188, 212, 0.15) 100%
+  ) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  color: #00E676 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 229, 255, 0.1),
+    0 0 20px rgba(0, 229, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+html:not(.dark) input[type="text"]:focus,
+html:not(.dark) input[type="email"]:focus,
+html:not(.dark) input[type="tel"]:focus,
+html:not(.dark) input[type="password"]:focus,
+html:not(.dark) input[type="number"]:focus,
+html:not(.dark) input[type="url"]:focus,
+html:not(.dark) input[type="search"]:focus,
+html:not(.dark) textarea:focus,
+html:not(.dark) select:focus {
+  border-color: rgba(0, 229, 255, 0.6) !important;
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 229, 255, 0.15),
+    0 0 30px rgba(0, 229, 255, 0.15),
+    0 0 0 3px rgba(0, 229, 255, 0.1) !important;
+  outline: none !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: rgba(0, 230, 118, 0.5) !important;
+}
+
+/* Electric green text for input values */
+html:not(.dark) .mclaren-input,
+html:not(.dark) .qa-field input,
+html:not(.dark) .qa-field textarea,
+html:not(.dark) .cc-input {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 188, 212, 0.12) 0%,
+    rgba(0, 229, 255, 0.08) 50%,
+    rgba(0, 188, 212, 0.15) 100%
+  ) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  color: #00E676 !important;
+}
+
+html:not(.dark) .mclaren-input:focus,
+html:not(.dark) .qa-field input:focus,
+html:not(.dark) .qa-field textarea:focus,
+html:not(.dark) .cc-input:focus {
+  border-color: rgba(0, 229, 255, 0.6) !important;
+  box-shadow: 
+    0 0 30px rgba(0, 229, 255, 0.15),
+    0 0 0 3px rgba(0, 229, 255, 0.1) !important;
+}
+
+/* Liquid glass shimmer effect */
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="email"],
+html:not(.dark) input[type="tel"],
+html:not(.dark) textarea {
+  position: relative;
+}
+
+html:not(.dark) input[type="text"]::before,
+html:not(.dark) textarea::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 229, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
