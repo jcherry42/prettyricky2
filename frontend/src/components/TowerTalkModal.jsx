@@ -660,7 +660,7 @@ export const TowerTalkModal = () => {
                           : 'hsla(220, 8%, 25%, 0.5)',
                       }}
                       data-testid="toggle-language-btn"
-                      title={showTranslated ? 'Show English' : 'Show Spanish'}
+                      title={showTranslated ? 'Show Spanish' : 'Show Spanish'}
                     >
                       <Languages 
                         className="w-4 h-4" 
