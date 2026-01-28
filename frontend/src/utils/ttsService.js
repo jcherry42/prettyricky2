@@ -36,7 +36,7 @@ const getAudioContext = () => {
  * @param {object} options - Additional options
  * @returns {Promise<{success: boolean, duration?: number, error?: string}>}
  */
-export const speakText = async (text, language = 'en', options = {}) => {
+export const speakText = async (text, language = 'es', options = {}) => {
   const {
     voice = VOICE_BY_LANGUAGE[language] || 'nova',
     speed = 1.0,
