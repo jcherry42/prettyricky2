@@ -38,7 +38,7 @@ const getAudioContext = () => {
  */
 export const speakText = async (text, language = 'es', options = {}) => {
   const {
-    voice = VOICE_BY_LANGUAGE[language] || 'nova',
+    voice = VOICE_BY_LANGUAGE[language] || 'coral',
     speed = 1.0,
     useHD = true,
     onStart = () => {},
