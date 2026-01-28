@@ -1,7 +1,7 @@
 # Supercharg'd - Product Requirements Document
 
 ## Original Problem Statement
-Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with proven persuasion psychology, CRM integration, and a highly stylized UI with a "GTA Vice City" meets high-end automotive aesthetic.
+Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with a TRUSTED AUTHORITY approach (direct, calm, controlled, focused on digital-to-in-person conversion), CRM integration, and a highly stylized "luxury car infotainment" UI aesthetic.
 
 ## Target Users
 - Automotive sales representatives
@@ -10,11 +10,27 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ## Core Features
 
-### Data Entry & Integration System
-- **File Upload**: CSV and Excel (.xlsx) import for bulk customers/vehicles
-- **Email Parsing**: AI-powered lead email parsing with auto-customer creation
-- **Manual Entry**: Premium liquid glass forms for customers and vehicles
-- **CRM Integration**: Connect via API keys to VinSolutions, DealerSocket, eLeadCRM, custom APIs
+### TRUSTED AUTHORITY Response Approach
+All AI-generated responses and pre-built templates follow a single, consistent approach:
+- **Direct & Calm**: No pushy sales tactics, just confident expertise
+- **In-Person Focused**: Every response subtly drives toward the showroom visit
+- **Value-Driven**: Focus on helping, not selling
+- 2 pre-generated responses per inquiry type + 1 custom editable box
+
+### Data Entry System (SIMPLIFIED)
+- **File Upload**: CSV and JSON import for bulk customers
+- **Manual Entry**: First name, last name, phone, email, vehicle of interest (VIN), lead status
+
+### Language Support (STREAMLINED)
+- Spanish 🇪🇸
+- French 🇫🇷
+- Korean 🇰🇷
+
+### Tower Talk (AI ASSISTANT - FIXED)
+- Connected to OpenAI gpt-4o-mini
+- Embodies the app's trusted authority approach
+- Quick responses for common objections
+- Follow-up suggestions included
 
 ### Vehicle Database
 - **Active Inventory**: Vehicles for sale on lot
