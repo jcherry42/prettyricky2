@@ -139,7 +139,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'inventory', label: 'Inventory', icon: Car },
     { id: 'import', label: 'Import', icon: Upload },
-    { id: 'integrations', label: 'CRM', icon: Link2 },
+    { id: 'printer', label: 'Printer', icon: Printer },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
