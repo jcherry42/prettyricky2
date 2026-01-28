@@ -698,7 +698,7 @@ export const TowerTalkModal = () => {
                         color: showTranslated ? 'hsla(30, 100%, 60%, 1)' : 'hsla(210, 100%, 70%, 1)',
                       }}
                     >
-                      {showTranslated ? 'Español' : 'English'}
+                      {showTranslated ? 'Español' : 'Español'}
                     </span>
                   </div>
                 )}
