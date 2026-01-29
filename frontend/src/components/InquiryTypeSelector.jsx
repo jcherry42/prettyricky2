@@ -1,111 +1,121 @@
 import React from 'react';
 import { 
-  Star, 
-  DollarSign, 
-  Calendar, 
-  Repeat, 
-  CreditCard, 
-  Car, 
-  Clock, 
-  MessageCircle 
+  Star, DollarSign, Calendar, Repeat, CreditCard, 
+  Car, Clock, MessageCircle 
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
-import { INQUIRY_TYPES } from '../data/salesData';
 
-const iconMap = {
-  'star': Star,
-  'dollar-sign': DollarSign,
-  'calendar': Calendar,
-  'repeat': Repeat,
-  'credit-card': CreditCard,
-  'car': Car,
-  'clock': Clock,
-  'message-circle': MessageCircle,
-};
+/**
+ * InquiryTypeSelector - 2027 Tesla-Inspired Design
+ * Colorful grid layout with vibrant icons
+ */
 
-// Theme colors - optimized for readability
-const getColors = (theme) => ({
-  isDark: theme === 'dark',
-  accent: theme === 'dark' ? '#FF9F43' : '#8B5A2B',
-  accentRgba: (alpha) => theme === 'dark' ? `rgba(255, 159, 67, ${alpha})` : `rgba(139, 90, 43, ${alpha})`,
-  textLabel: theme === 'dark' ? 'rgba(255, 200, 150, 0.6)' : '#5D4E37',
-  textMuted: theme === 'dark' ? 'rgba(255, 200, 150, 0.5)' : '#6B5B4B',
-  buttonBg: theme === 'dark' 
-    ? 'linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%)'
-    : '#FFFFFF',
-  buttonActiveBg: theme === 'dark'
-    ? 'linear-gradient(180deg, rgba(255, 140, 0, 0.25) 0%, rgba(255, 100, 0, 0.18) 100%)'
-    : '#FDF8F0',
-  buttonBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.1)' : 'rgba(139, 90, 43, 0.2)',
-  buttonActiveBorder: theme === 'dark' ? 'rgba(255, 140, 0, 0.5)' : '#8B5A2B',
-});
+const INQUIRY_TYPES = [
+  { 
+    id: 'new_lead', 
+    label: 'New Lead', 
+    icon: Star,
+    gradient: 'from-cyan-500 to-blue-500',
+    description: 'First contact'
+  },
+  { 
+    id: 'price_question', 
+    label: 'Price Question', 
+    icon: DollarSign,
+    gradient: 'from-green-500 to-emerald-500',
+    description: 'Pricing inquiry'
+  },
+  { 
+    id: 'availability', 
+    label: 'Availability', 
+    icon: Calendar,
+    gradient: 'from-purple-500 to-pink-500',
+    description: 'Stock check'
+  },
+  { 
+    id: 'trade_in', 
+    label: 'Trade-In', 
+    icon: Repeat,
+    gradient: 'from-orange-500 to-red-500',
+    description: 'Vehicle exchange'
+  },
+  { 
+    id: 'financing', 
+    label: 'Financing', 
+    icon: CreditCard,
+    gradient: 'from-yellow-500 to-orange-500',
+    description: 'Payment options'
+  },
+  { 
+    id: 'test_drive', 
+    label: 'Test Drive', 
+    icon: Car,
+    gradient: 'from-blue-500 to-indigo-500',
+    description: 'Schedule drive'
+  },
+  { 
+    id: 'follow_up', 
+    label: 'Follow Up', 
+    icon: Clock,
+    gradient: 'from-indigo-500 to-purple-500',
+    description: 'Check-in'
+  },
+  { 
+    id: 'objection', 
+    label: 'Objection', 
+    icon: MessageCircle,
+    gradient: 'from-pink-500 to-rose-500',
+    description: 'Address concerns'
+  },
+];
 
-export const InquiryTypeSelector = () => {
-  const { selectedInquiryType, selectInquiryType, selectedCustomer, theme } = useSales();
-  const colors = getColors(theme);
+const InquiryTypeSelector = () => {
+  const { selectedCustomer, selectedInquiryType, selectInquiryType } = useSales();
 
-  if (!selectedCustomer) return null;
+  if (!selectedCustomer) {
+    return null;
+  }
 
   return (
-    <div className="space-y-3 animate-fade-in">
-      <h2 
-        className="text-xs font-semibold uppercase tracking-wider px-1"
-        style={{ 
-          color: colors.textLabel, 
-          fontFamily: "'Bebas Neue', sans-serif", 
-          letterSpacing: '0.12em' 
-        }}
-      >
-        INQUIRY TYPE
-      </h2>
-      
-      {/* Infotainment-style grid - like car touchscreen buttons */}
-      <div 
-        className="infotainment-panel p-2"
-      >
-        <div className="grid grid-cols-4 gap-1.5">
-          {INQUIRY_TYPES.map((type) => {
-            const Icon = iconMap[type.icon] || MessageCircle;
-            const isActive = selectedInquiryType === type.id;
-            
-            return (
-              <button
-                key={type.id}
-                onClick={() => selectInquiryType(type.id)}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-300 luxury-transition"
-                style={{
-                  background: isActive ? colors.buttonActiveBg : colors.buttonBg,
-                  border: isActive 
-                    ? `1px solid ${colors.buttonActiveBorder}`
-                    : `1px solid ${colors.buttonBorder}`,
-                  boxShadow: isActive 
-                    ? `0 0 20px ${colors.accentRgba(0.2)}, inset 0 1px 0 rgba(255, 255, 255, 0.08)`
-                    : 'inset 0 1px 0 rgba(255, 255, 255, 0.02)',
-                }}
-                data-testid={`inquiry-${type.id}`}
-              >
-                <Icon 
-                  className="w-5 h-5 transition-colors"
-                  style={{ 
-                    color: isActive ? colors.accent : colors.textMuted,
-                    filter: isActive ? `drop-shadow(0 0 6px ${colors.accentRgba(0.6)})` : 'none'
-                  }}
-                />
-                <span 
-                  className="text-[10px] font-semibold text-center leading-tight transition-colors uppercase tracking-wide"
-                  style={{ 
-                    color: isActive ? colors.accent : colors.textLabel,
-                    textShadow: isActive && colors.isDark ? `0 0 10px ${colors.accentRgba(0.5)}` : 'none',
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    letterSpacing: '0.05em'
-                  }}
-                >
+    <div className="space-y-3 tesla-animate-in">
+      {/* Header */}
+      <div className="text-center">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+          What's the inquiry about?
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          Choose a response category
+        </p>
+      </div>
+
+      {/* Grid Layout - Tesla Style */}
+      <div className="tesla-inquiry-grid">
+        {INQUIRY_TYPES.map((type) => {
+          const Icon = type.icon;
+          const isSelected = selectedInquiryType === type.id;
+          
+          return (
+            <button
+              key={type.id}
+              onClick={() => selectInquiryType(type.id)}
+              className={`tesla-inquiry-btn ${isSelected ? 'selected' : ''}`}
+              aria-pressed={isSelected}
+              aria-label={`Select ${type.label} inquiry type`}
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow-lg`}>
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-center">
+                <div className="font-semibold text-sm">
                   {type.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                </div>
+                <div className="text-xs opacity-70">
+                  {type.description}
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
