@@ -388,6 +388,19 @@ export const ImportModal = () => {
                 />
               </div>
 
+              {/* Policy # */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Policy #</label>
+                <input
+                  type="text"
+                  value={formData.policyNumber}
+                  onChange={(e) => handleInputChange('policyNumber', e.target.value)}
+                  placeholder="POL-123456"
+                  className="w-full px-3 py-2.5 bg-muted/30 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                  data-testid="input-policy"
+                />
+              </div>
+
               {/* Vehicle of Interest (VIN) */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Vehicle of Interest (VIN)</label>
@@ -401,6 +414,38 @@ export const ImportModal = () => {
                   data-testid="input-vin"
                 />
                 <p className="text-[10px] text-muted-foreground">17-character Vehicle Identification Number</p>
+              </div>
+
+              {/* Trade-In Section */}
+              <div className="space-y-3 p-3 rounded-xl bg-muted/20 border border-border/50">
+                <label className="text-xs font-semibold text-primary uppercase tracking-wider">Trade-In Vehicle</label>
+                
+                {/* Trade VIN */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Trade VIN</label>
+                  <input
+                    type="text"
+                    value={formData.tradeVin}
+                    onChange={(e) => handleInputChange('tradeVin', e.target.value.toUpperCase())}
+                    placeholder="5YJSA1E26HF123456"
+                    maxLength={17}
+                    className="w-full px-3 py-2.5 bg-muted/30 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-mono uppercase"
+                    data-testid="input-trade-vin"
+                  />
+                </div>
+
+                {/* Trade Mileage */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Trade Mileage</label>
+                  <input
+                    type="text"
+                    value={formData.tradeMileage}
+                    onChange={(e) => handleInputChange('tradeMileage', e.target.value.replace(/[^\d,]/g, ''))}
+                    placeholder="45,000"
+                    className="w-full px-3 py-2.5 bg-muted/30 border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                    data-testid="input-trade-mileage"
+                  />
+                </div>
               </div>
 
               {/* Lead Status */}
