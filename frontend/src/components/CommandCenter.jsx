@@ -283,7 +283,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                   title="File Upload"
                   description="Import from CSV or JSON"
                   color="cyan"
-                  onClick={() => setShowImportModal(true)}
+                  onClick={() => { setActiveTab('customers'); toast.info('CSV import coming soon'); }}
                 />
                 <ImportOption 
                   icon={UserPlus}
