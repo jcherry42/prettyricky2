@@ -3020,9 +3020,6 @@ async def get_favorite_categories():
     return {"categories": FAVORITE_CATEGORIES}
 
 
-    """
-
-
 # ============== VISION EXTRACTION ENDPOINT ==============
 
 from vision_extraction_service import get_vision_service
