@@ -3065,12 +3065,6 @@ async def extract_customer_from_image(req: VisionExtractionRequest):
     except Exception as e:
         logger.error(f"Vision extraction error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Vision extraction failed: {str(e)}")
-    event_id = await event_processor.enqueue_event(test_event)
-    return {
-        "success": True,
-        "event_id": event_id,
-        "message": "Hot lead test event enqueued. Check notification service for SMS (if configured)."
-    }
 
 
 # ============== A/B TESTING ==============
