@@ -161,6 +161,15 @@ export const ImportModal = () => {
     setIsLoading(true);
     
     try {
+      // Build trade-in object if trade VIN provided
+      let tradeVehicle = null;
+      if (formData.tradeVin.trim()) {
+        tradeVehicle = {
+          vin: formData.tradeVin.trim(),
+          mileage: formData.tradeMileage.trim() ? parseInt(formData.tradeMileage.replace(/,/g, '')) : null
+        };
+      }
+
       // Create customer
       const customerPayload = {
         firstName: formData.firstName.trim(),
@@ -168,8 +177,10 @@ export const ImportModal = () => {
         name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
         phone: formData.phone.trim() || null,
         email: formData.email.trim() || null,
+        policyNumber: formData.policyNumber.trim() || null,
         leadStatus: formData.leadStatus,
         vehicleOfInterest: formData.vehicleVin.trim() || null,
+        tradeVehicle: tradeVehicle,
         source: 'manual_entry'
       };
 
