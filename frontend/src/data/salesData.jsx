@@ -279,21 +279,12 @@ export const processTemplate = (template, context) => {
 };
 
 // Build context object from current state
-export const buildContext = (customer, vehicle, dealership, salesperson, preferences) => {
+export const buildContext = (customer, dealership, salesperson, preferences) => {
   return {
     name: customer?.firstName || customer?.name?.split(' ')[0] || '',
     full_name: customer?.name || '',
-    vehicle: vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : '',
-    year: vehicle?.year || '',
-    make: vehicle?.make || '',
-    model: vehicle?.model || '',
-    trim: vehicle?.trim || '',
-    price: vehicle?.price ? `$${vehicle.price.toLocaleString()}` : '',
-    stock: vehicle?.stock || '',
-    trade_vehicle: customer?.tradeVehicle ? 
-      `${customer.tradeVehicle.year} ${customer.tradeVehicle.make} ${customer.tradeVehicle.model}` : '',
-    trade_value: customer?.tradeVehicle?.value ? 
-      `$${customer.tradeVehicle.value.toLocaleString()}` : '',
+    vehicle: customer?.vehicleOfInterest || 'the vehicle',
+    trade_vehicle: customer?.tradeVehicle?.vin || '',
     dealership: dealership?.name || '',
     dealership_address: dealership?.address || '',
     dealership_hours: dealership?.hours || '',
@@ -306,47 +297,36 @@ export const buildContext = (customer, vehicle, dealership, salesperson, prefere
 
 // Get responses for a given inquiry type - always returns authority templates
 export const getResponses = (inquiryType, tone, customTemplates = {}) => {
-  // Always use 'authority' templates regardless of tone passed
   const templates = customTemplates[inquiryType]?.authority || DEFAULT_TEMPLATES[inquiryType]?.authority || [];
   return templates;
 };
-
-// Default sample data
-export const DEFAULT_VEHICLES = [
-  { id: 'v1', year: 2024, make: 'Honda', model: 'Accord', trim: 'Sport', price: 32490, stock: 'H1234' },
-  { id: 'v2', year: 2024, make: 'Toyota', model: 'Camry', trim: 'XLE', price: 35070, stock: 'T5678' },
-  { id: 'v3', year: 2024, make: 'Ford', model: 'F-150', trim: 'XLT', price: 49995, stock: 'F9012' },
-  { id: 'v4', year: 2024, make: 'Chevrolet', model: 'Equinox', trim: 'LT', price: 33100, stock: 'C3456' },
-  { id: 'v5', year: 2024, make: 'BMW', model: 'X3', trim: 'xDrive30i', price: 48900, stock: 'B7890' },
-];
 
 export const DEFAULT_CUSTOMERS = [
   {
     id: 'c1',
     name: 'Alex Martinez',
     firstName: 'Alex',
+    lastName: 'Martinez',
     phone: '(555) 123-4567',
     email: 'alex.m@email.com',
-    vehicleInterest: 'v5',
-    tradeVehicle: { year: 2019, make: 'BMW', model: 'X1', value: 18500 },
     lastContact: '2 hours ago',
-    status: 'hot',
+    lead_status: 'new',
   },
   {
     id: 'c2',
     name: 'Sarah Johnson',
     firstName: 'Sarah',
+    lastName: 'Johnson',
     phone: '(555) 234-5678',
     email: 'sarah.j@email.com',
-    vehicleInterest: 'v1',
-    tradeVehicle: null,
     lastContact: 'Yesterday',
-    status: 'warm',
+    lead_status: 'contacted',
   },
   {
     id: 'c3',
     name: 'Michael Chen',
     firstName: 'Michael',
+    lastName: 'Chen',
     phone: '(555) 345-6789',
     email: 'mchen@email.com',
     vehicleInterest: 'v3',
