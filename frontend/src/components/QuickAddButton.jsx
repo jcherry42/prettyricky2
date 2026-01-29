@@ -81,6 +81,10 @@ export const QuickAddButton = () => {
       last_name: '',
       phone: '',
       email: '',
+      policy_number: '',
+      vehicle_vin: '',
+      trade_vin: '',
+      trade_mileage: '',
       lead_source: 'walk_in',
       notes: ''
     });
