@@ -1,7 +1,7 @@
 # Supercharg'd - Product Requirements Document
 
 ## Original Problem Statement
-Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with a TRUSTED AUTHORITY approach (direct, calm, controlled, focused on digital-to-in-person conversion), CRM integration, and a highly stylized "luxury car infotainment" UI aesthetic.
+Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with a TRUSTED AUTHORITY approach (direct, calm, controlled, focused on digital-to-in-person conversion), and a highly stylized "luxury car infotainment" UI aesthetic.
 
 ## Target Users
 - Automotive sales representatives
@@ -19,12 +19,14 @@ All AI-generated responses and pre-built templates follow a single, consistent a
 
 ### Data Entry System (SIMPLIFIED)
 - **File Upload**: CSV and JSON import for bulk customers
-- **Manual Entry**: First name, last name, phone, email, vehicle of interest (VIN), lead status
+- **Manual Entry**: First name, last name, phone, email, policy #, vehicle of interest (VIN), trade VIN, trade mileage, lead status
+- **REMOVED**: Email Parser, CRM Sync, Vehicle/Inventory import
 
 ### Language Support (STREAMLINED)
 - Spanish 🇪🇸
-- French 🇫🇷
+- French 🇫🇷  
 - Korean 🇰🇷
+- **REMOVED**: English, Japanese
 
 ### Tower Talk (AI ASSISTANT - FIXED)
 - Connected to OpenAI gpt-4o-mini (MODEL NAME FIX: was "gpt-4.1-mini" which doesn't exist)
@@ -32,16 +34,24 @@ All AI-generated responses and pre-built templates follow a single, consistent a
 - Quick responses for common objections
 - Follow-up suggestions included
 
-### Printer Connection (NEW)
+### Printer Connection
 - **Command Center → Printer tab**: Connect to network printers via IP address
 - Status indicator shows connected/disconnected state
 - Saved printer IP persists in localStorage
 
-### Eject Feature (REVISED - Print, not SMS)
+### Eject Feature (Print, not SMS)
 - **Print customer profiles** when viewing a customer in Command Center
 - **Print scanned driver's licenses** after successful OCR scan
 - Eject button appears on customer profile detail and after license scan
-- SMS/MMS functionality removed
+- **REMOVED**: SMS/MMS text messaging functionality
+
+### License Scanner (INTAKE)
+- **Take Photo**: Capture driver's license with device camera
+- **Upload Image**: Upload license image from device
+- **OCR Extraction**: AI-powered extraction of name, address, city, state, zip
+- **Create Customer**: One-click customer creation from license data
+- **Attach to Existing**: Link license to existing customer
+- **REMOVED**: VIN Scanner, vehicle inventory features
 
 ### Light Mode UI Enhancement
 - **Aqua Blue Liquid Glass inputs**: All text inputs have translucent aqua blue background
@@ -49,15 +59,11 @@ All AI-generated responses and pre-built templates follow a single, consistent a
 - Shimmer animation effect on focus
 - High-contrast for readability
 
-### Vehicle Database
-- **Active Inventory**: Vehicles for sale on lot
-- **Trade-Ins**: Customer trade-in vehicles (linked to customer profiles)
-- **VIN Scanner**: Enterprise-grade scanner with windshield mode, torch support, barcode formats
-- **Full NHTSA Data**: Engine, transmission, safety features, assembly location
-
 ### Customer Profiles
-- Store: Name, Address, Phone, Email, Lead Source, Lead Status
-- **License Image**: Driver's license image saved to profile (NEW)
+- Store: Name, Address, Phone, Email, Policy #, Lead Source, Lead Status
+- Trade-In: VIN, Mileage
+- **License Image**: Driver's license image saved to profile
+- **REMOVED**: Vehicle of Interest linking to inventory
 - Notes with interaction history tracking
 - Attach up to 2 vehicles of interest per customer
 - Link trade-in vehicles to customers
