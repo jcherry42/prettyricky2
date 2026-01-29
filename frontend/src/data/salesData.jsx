@@ -329,10 +329,8 @@ export const DEFAULT_CUSTOMERS = [
     lastName: 'Chen',
     phone: '(555) 345-6789',
     email: 'mchen@email.com',
-    vehicleInterest: 'v3',
-    tradeVehicle: { year: 2018, make: 'Ford', model: 'F-150', value: 24000 },
     lastContact: '3 days ago',
-    status: 'warm',
+    lead_status: 'appointment',
   },
 ];
 
