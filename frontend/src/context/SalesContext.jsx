@@ -4,7 +4,6 @@ import {
   loadFromStorage,
   saveToStorage,
   DEFAULT_TEMPLATES,
-  DEFAULT_VEHICLES,
   DEFAULT_CUSTOMERS,
   DEFAULT_DEALERSHIP,
   DEFAULT_SALESPERSON,
@@ -31,16 +30,13 @@ const initialState = {
   isSetupComplete: false,
   
   // Data
-  vehicles: DEFAULT_VEHICLES,
   customers: DEFAULT_CUSTOMERS,
   customTemplates: {},
   favorites: [],
   
   // Current selection
   selectedCustomer: null,
-  selectedVehicle: null,
   selectedInquiryType: null,
-  selectedTone: 'balanced',
   
   // Generated responses
   currentResponses: [],
@@ -51,14 +47,12 @@ const initialState = {
   showImport: false,
   showTowerTalk: false,
   showFavorites: false,
-  showVS: false,  // VS Battle Card mode
-  showAnalytics: false,  // Analytics Dashboard
-  showAdminSettings: false,  // Admin Settings Panel
+  showAdminSettings: false,
   isOffline: !navigator.onLine,
   
   // Theme & Modes
-  theme: 'dark',  // 'light' or 'dark'
-  supercharged: false,  // Supercharg'd translation mode
+  theme: 'dark',
+  supercharged: false,
 };
 
 // Action types
@@ -67,13 +61,10 @@ const ACTIONS = {
   SET_SALESPERSON: 'SET_SALESPERSON',
   SET_PREFERENCES: 'SET_PREFERENCES',
   SET_SETUP_COMPLETE: 'SET_SETUP_COMPLETE',
-  SET_VEHICLES: 'SET_VEHICLES',
   SET_CUSTOMERS: 'SET_CUSTOMERS',
   SET_CUSTOM_TEMPLATES: 'SET_CUSTOM_TEMPLATES',
   SELECT_CUSTOMER: 'SELECT_CUSTOMER',
-  SELECT_VEHICLE: 'SELECT_VEHICLE',
   SELECT_INQUIRY_TYPE: 'SELECT_INQUIRY_TYPE',
-  SELECT_TONE: 'SELECT_TONE',
   SET_RESPONSES: 'SET_RESPONSES',
   SELECT_RESPONSE: 'SELECT_RESPONSE',
   TOGGLE_SETUP: 'TOGGLE_SETUP',
