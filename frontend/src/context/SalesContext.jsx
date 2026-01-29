@@ -288,7 +288,6 @@ export function SalesProvider({ children }) {
       const templates = getResponses(state.selectedInquiryType, state.selectedTone, state.customTemplates);
       const context = buildContext(
         state.selectedCustomer,
-        state.selectedVehicle,
         state.dealership,
         state.salesperson,
         state.preferences
@@ -311,21 +310,18 @@ export function SalesProvider({ children }) {
       
       dispatch({ type: ACTIONS.SET_RESPONSES, payload: processed });
     }
-  }, [state.selectedInquiryType, state.selectedTone, state.selectedCustomer, state.selectedVehicle, state.dealership, state.salesperson, state.preferences, state.customTemplates]);
+  }, [state.selectedInquiryType, state.selectedTone, state.selectedCustomer, state.dealership, state.salesperson, state.preferences, state.customTemplates]);
 
   // Actions
   const setDealership = (data) => dispatch({ type: ACTIONS.SET_DEALERSHIP, payload: data });
   const setSalesperson = (data) => dispatch({ type: ACTIONS.SET_SALESPERSON, payload: data });
   const setPreferences = (data) => dispatch({ type: ACTIONS.SET_PREFERENCES, payload: data });
   const setSetupComplete = (value) => dispatch({ type: ACTIONS.SET_SETUP_COMPLETE, payload: value });
-  const setVehicles = (data) => dispatch({ type: ACTIONS.SET_VEHICLES, payload: data });
   const setCustomers = (data) => dispatch({ type: ACTIONS.SET_CUSTOMERS, payload: data });
   const setCustomTemplates = (data) => dispatch({ type: ACTIONS.SET_CUSTOM_TEMPLATES, payload: data });
   
   const selectCustomer = (customer) => dispatch({ type: ACTIONS.SELECT_CUSTOMER, payload: customer });
-  const selectVehicle = (vehicle) => dispatch({ type: ACTIONS.SELECT_VEHICLE, payload: vehicle });
   const selectInquiryType = (type) => dispatch({ type: ACTIONS.SELECT_INQUIRY_TYPE, payload: type });
-  const selectTone = (tone) => dispatch({ type: ACTIONS.SELECT_TONE, payload: tone });
   const selectResponse = (response) => dispatch({ type: ACTIONS.SELECT_RESPONSE, payload: response });
   
   const toggleSetup = (value) => dispatch({ type: ACTIONS.TOGGLE_SETUP, payload: value });
@@ -385,22 +381,16 @@ export function SalesProvider({ children }) {
     return openMessages(text, targetPhone);
   };
 
-  // Get vehicle by ID
-  const getVehicleById = (id) => state.vehicles.find(v => v.id === id);
-
   const value = {
     ...state,
     setDealership,
     setSalesperson,
     setPreferences,
     setSetupComplete,
-    setVehicles,
     setCustomers,
     setCustomTemplates,
     selectCustomer,
-    selectVehicle,
     selectInquiryType,
-    selectTone,
     selectResponse,
     toggleSetup,
     toggleImport,
@@ -415,7 +405,6 @@ export function SalesProvider({ children }) {
     copyToClipboard,
     shareToMessages,
     sendToMessages,
-    getVehicleById,
     toggleTheme,
     toggleSuperchargedMode,
   };
