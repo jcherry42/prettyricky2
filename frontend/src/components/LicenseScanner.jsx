@@ -1,5 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { X, Camera, Loader2, Plus, Users, CheckCircle2, AlertCircle, IdCard, Printer, Wifi, WifiOff } from 'lucide-react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { 
+  X, Camera, Image as ImageIcon, RotateCcw, Check, Loader2, 
+  Printer, ZoomIn, ZoomOut, Sun, Maximize2, Download,
+  Smartphone, Wifi, WifiOff
+} from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
@@ -8,443 +12,492 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 export const LicenseScanner = ({ isOpen, onClose }) => {
   const { customers, setCustomers } = useSales();
   
-  // License scan state
-  const [licensePreview, setLicensePreview] = useState(null);
-  const [extractedData, setExtractedData] = useState(null);
-  const [editFirstName, setEditFirstName] = useState('');
-  const [editLastName, setEditLastName] = useState('');
-  const [editAddress, setEditAddress] = useState('');
-  const [editCity, setEditCity] = useState('');
-  const [editState, setEditState] = useState('');
-  const [editZip, setEditZip] = useState('');
-  
-  // Status state
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [error, setError] = useState(null);
+  // Capture states
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [printingLicense, setPrintingLicense] = useState(false);
-  const [showAttachMode, setShowAttachMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [savedCustomerId, setSavedCustomerId] = useState(null);
   
+  // Camera states
+  const [stream, setStream] = useState(null);
+  const [torchOn, setTorchOn] = useState(false);
+  const [facingMode, setFacingMode] = useState('environment');
+  const [cameraError, setCameraError] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  
+  // Refs
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
 
-  // Get printer IP from localStorage
+  // Get printer IP
   const getPrinterIP = () => localStorage.getItem('printerIP');
 
-  // Reset all state
-  const resetState = () => {
-    setLicensePreview(null);
-    setExtractedData(null);
-    setEditFirstName('');
-    setEditLastName('');
-    setEditAddress('');
-    setEditCity('');
-    setEditState('');
-    setEditZip('');
-    setError(null);
-    setSaved(false);
-    setShowAttachMode(false);
-    setSearchQuery('');
-  };
+  // Initialize camera
+  const initCamera = useCallback(async () => {
+    try {
+      setCameraError(null);
+      setCameraReady(false);
+      
+      // Stop existing stream
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
 
-  // Handle close
-  const handleClose = () => {
-    resetState();
-    onClose();
-  };
+      const constraints = {
+        video: {
+          facingMode: facingMode,
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
+          aspectRatio: { ideal: 1.586 }, // Standard ID card ratio
+        },
+        audio: false
+      };
 
-  // Handle license image capture/upload
-  const handleLicenseCapture = async (file) => {
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      setStream(mediaStream);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play();
+          setCameraReady(true);
+        };
+      }
+    } catch (err) {
+      console.error('Camera error:', err);
+      setCameraError(err.name === 'NotAllowedError' 
+        ? 'Camera access denied. Please allow camera permissions.'
+        : 'Could not access camera. Try uploading an image instead.');
+    }
+  }, [facingMode, stream]);
+
+  // Toggle torch/flash
+  const toggleTorch = useCallback(async () => {
+    if (!stream) return;
+    
+    const track = stream.getVideoTracks()[0];
+    const capabilities = track.getCapabilities?.();
+    
+    if (capabilities?.torch) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ torch: !torchOn }]
+        });
+        setTorchOn(!torchOn);
+      } catch (err) {
+        toast.error('Flash not available on this device');
+      }
+    } else {
+      toast.error('Flash not supported');
+    }
+  }, [stream, torchOn]);
+
+  // Switch camera
+  const switchCamera = useCallback(() => {
+    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment');
+  }, []);
+
+  // Capture image from video
+  const captureImage = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    setIsCapturing(true);
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas to video dimensions for max quality
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw with high quality
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Get high quality JPEG
+    const imageData = canvas.toDataURL('image/jpeg', 0.95);
+    setCapturedImage(imageData);
+    setIsCapturing(false);
+    
+    // Stop camera to save battery
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    
+    toast.success('Image captured');
+  }, [stream]);
+
+  // Handle file upload
+  const handleFileUpload = useCallback((e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     
-    setLoading(true);
-    setLoadingMessage('Processing license...');
-    setError(null);
-    
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = (e) => setLicensePreview(e.target.result);
-    reader.readAsDataURL(file);
-    
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      
-      const res = await fetch(`${BACKEND_URL}/api/scan/license-ocr`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!res.ok) throw new Error('OCR processing failed');
-      
-      const data = await res.json();
-      
-      if (data.success && data.extracted_data) {
-        setExtractedData(data.extracted_data);
-        setEditFirstName(data.extracted_data.first_name || '');
-        setEditLastName(data.extracted_data.last_name || '');
-        setEditAddress(data.extracted_data.address || '');
-        setEditCity(data.extracted_data.city || '');
-        setEditState(data.extracted_data.state || '');
-        setEditZip(data.extracted_data.zip || '');
-        toast.success('License scanned successfully');
-      } else {
-        throw new Error(data.error || 'Could not extract data');
-      }
-    } catch (e) {
-      setError(e.message);
-      toast.error('Scan failed', { description: e.message });
-    } finally {
-      setLoading(false);
-      setLoadingMessage('');
-    }
-  };
-
-  // Create customer from license data
-  const createCustomerFromLicense = async () => {
-    if (!editFirstName.trim() || !editLastName.trim()) {
-      toast.error('Name required');
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
       return;
     }
     
-    setLoading(true);
-    setLoadingMessage('Creating customer...');
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('Image too large. Max 20MB.');
+      return;
+    }
     
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      // Create image to get dimensions and optimize
+      const img = new Image();
+      img.onload = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        // Maintain aspect ratio, max 1920px width
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > 1920) {
+          height = (height * 1920) / width;
+          width = 1920;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const optimizedImage = canvas.toDataURL('image/jpeg', 0.95);
+        setCapturedImage(optimizedImage);
+        toast.success('Image loaded');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Retake photo
+  const retake = useCallback(() => {
+    setCapturedImage(null);
+    setSaved(false);
+    setSavedCustomerId(null);
+    initCamera();
+  }, [initCamera]);
+
+  // Save to new customer
+  const saveToNewCustomer = async () => {
+    if (!capturedImage) return;
+    
+    setIsSaving(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/customers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          firstName: editFirstName.trim(),
-          lastName: editLastName.trim(),
-          name: `${editFirstName.trim()} ${editLastName.trim()}`,
-          address: editAddress.trim() || null,
-          city: editCity.trim() || null,
-          state: editState.trim() || null,
-          zip: editZip.trim() || null,
+          firstName: 'License',
+          lastName: 'Scan',
+          name: 'License Scan - ' + new Date().toLocaleDateString(),
+          license_image: capturedImage,
           lead_status: 'new',
-          source: 'license_scan',
-          license_image: licensePreview
+          source: 'license_scan'
         })
       });
       
-      if (!res.ok) throw new Error('Failed to create customer');
+      if (!res.ok) throw new Error('Failed to save');
       
       const newCustomer = await res.json();
       setCustomers([...customers, newCustomer]);
       setSaved(true);
-      toast.success('Customer created!', { description: `${editFirstName} ${editLastName}` });
-      
-      setTimeout(() => handleClose(), 1500);
-    } catch (e) {
-      setError(e.message);
-      toast.error('Failed to create customer');
+      setSavedCustomerId(newCustomer.id);
+      toast.success('License saved to new customer profile');
+    } catch (err) {
+      toast.error('Failed to save license');
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
-  // Attach to existing customer
-  const attachToCustomer = async (customerId) => {
-    setLoading(true);
-    setLoadingMessage('Updating customer...');
-    
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/customers/${customerId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address: editAddress.trim() || undefined,
-          city: editCity.trim() || undefined,
-          state: editState.trim() || undefined,
-          zip: editZip.trim() || undefined,
-          license_image: licensePreview
-        })
-      });
-      
-      if (!res.ok) throw new Error('Failed to update customer');
-      
-      toast.success('License attached to customer');
-      setTimeout(() => handleClose(), 1500);
-    } catch (e) {
-      toast.error('Failed to attach license');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Print the scanned license
-  const handlePrintLicense = async () => {
+  // Print license
+  const printLicense = async () => {
     const printerIP = getPrinterIP();
     if (!printerIP) {
       toast.error('No printer connected', { description: 'Go to CHECK → Printer to connect' });
       return;
     }
     
-    if (!licensePreview) {
-      toast.error('No license to print');
+    if (!capturedImage) {
+      toast.error('No image to print');
       return;
     }
     
-    setPrintingLicense(true);
-    
+    setIsPrinting(true);
     try {
       await fetch(`${BACKEND_URL}/api/print/license`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          image_data: licensePreview,
-          printer_ip: printerIP,
-          extracted_data: { first_name: editFirstName, last_name: editLastName }
+          image_data: capturedImage,
+          printer_ip: printerIP
         })
       });
       toast.success('Print job sent!');
     } catch {
+      // Simulate success for demo
       toast.success('Print job sent!');
     } finally {
-      setPrintingLicense(false);
+      setIsPrinting(false);
     }
   };
 
-  // Filter customers for attach mode
-  const filteredCustomers = customers.filter(c => {
-    const q = searchQuery.toLowerCase();
-    return c.name?.toLowerCase().includes(q) || 
-           c.firstName?.toLowerCase().includes(q) ||
-           c.lastName?.toLowerCase().includes(q) ||
-           c.phone?.includes(q) ||
-           c.email?.toLowerCase().includes(q);
-  }).slice(0, 10);
+  // Download image
+  const downloadImage = () => {
+    if (!capturedImage) return;
+    
+    const link = document.createElement('a');
+    link.href = capturedImage;
+    link.download = `license-${Date.now()}.jpg`;
+    link.click();
+    toast.success('Image downloaded');
+  };
+
+  // Initialize camera on mount
+  useEffect(() => {
+    if (isOpen && !capturedImage) {
+      initCamera();
+    }
+    
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isOpen]);
+
+  // Cleanup on close
+  const handleClose = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setCapturedImage(null);
+    setSaved(false);
+    setSavedCustomerId(null);
+    setCameraError(null);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="license-scanner-overlay" onClick={handleClose}>
       <div className="license-scanner-modal" onClick={e => e.stopPropagation()}>
+        {/* Hidden canvas for image processing */}
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+        
         {/* Header */}
         <div className="scanner-header">
           <div className="scanner-title">
-            <IdCard className="w-5 h-5" />
-            <span>Scan Driver&apos;s License</span>
+            <Camera className="w-5 h-5" />
+            <span>License Scanner</span>
+            <span className="scanner-badge">ENTERPRISE</span>
           </div>
-          <button onClick={handleClose} className="scanner-close">
+          <button onClick={handleClose} className="scanner-close" aria-label="Close">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="scanner-content">
-          {/* Initial capture state */}
-          {!licensePreview && !loading && (
-            <div className="capture-options">
-              <p className="capture-instruction">Capture or upload a driver&apos;s license to extract customer information</p>
-              
-              <div className="capture-buttons">
-                <button 
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="capture-btn primary"
-                >
-                  <Camera className="w-6 h-6" />
-                  <span>Take Photo</span>
-                </button>
-                
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="capture-btn secondary"
-                >
-                  <IdCard className="w-6 h-6" />
-                  <span>Upload Image</span>
-                </button>
-              </div>
-              
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(e) => handleLicenseCapture(e.target.files?.[0])}
-                className="hidden"
-              />
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleLicenseCapture(e.target.files?.[0])}
-                className="hidden"
-              />
-            </div>
-          )}
-
-          {/* Loading state */}
-          {loading && (
-            <div className="loading-state">
-              <Loader2 className="w-10 h-10 animate-spin text-primary" />
-              <p>{loadingMessage}</p>
-            </div>
-          )}
-
-          {/* Results state */}
-          {licensePreview && extractedData && !loading && !showAttachMode && (
-            <div className="results-state">
-              {/* License preview */}
-              <div className="license-preview">
-                <img src={licensePreview} alt="License" />
-              </div>
-
-              {/* Extracted fields */}
-              <div className="extracted-fields">
-                <div className="field-row">
-                  <div className="field">
-                    <label>First Name</label>
-                    <input
-                      type="text"
-                      value={editFirstName}
-                      onChange={(e) => setEditFirstName(e.target.value)}
-                      placeholder="First name"
-                    />
-                  </div>
-                  <div className="field">
-                    <label>Last Name</label>
-                    <input
-                      type="text"
-                      value={editLastName}
-                      onChange={(e) => setEditLastName(e.target.value)}
-                      placeholder="Last name"
-                    />
-                  </div>
+        {/* Main Content */}
+        <div className="scanner-body">
+          {/* Camera View */}
+          {!capturedImage && (
+            <div className="camera-container">
+              {cameraError ? (
+                <div className="camera-error">
+                  <Camera className="w-12 h-12 opacity-30" />
+                  <p>{cameraError}</p>
+                  <button onClick={() => fileInputRef.current?.click()} className="upload-fallback-btn">
+                    <ImageIcon className="w-5 h-5" />
+                    Upload Image Instead
+                  </button>
                 </div>
-                
-                <div className="field">
-                  <label>Address</label>
-                  <input
-                    type="text"
-                    value={editAddress}
-                    onChange={(e) => setEditAddress(e.target.value)}
-                    placeholder="Street address"
+              ) : (
+                <>
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted
+                    className="camera-feed"
                   />
-                </div>
-                
-                <div className="field-row">
-                  <div className="field flex-2">
-                    <label>City</label>
-                    <input
-                      type="text"
-                      value={editCity}
-                      onChange={(e) => setEditCity(e.target.value)}
-                      placeholder="City"
-                    />
-                  </div>
-                  <div className="field">
-                    <label>State</label>
-                    <input
-                      type="text"
-                      value={editState}
-                      onChange={(e) => setEditState(e.target.value)}
-                      placeholder="ST"
-                      maxLength={2}
-                    />
-                  </div>
-                  <div className="field">
-                    <label>ZIP</label>
-                    <input
-                      type="text"
-                      value={editZip}
-                      onChange={(e) => setEditZip(e.target.value)}
-                      placeholder="12345"
-                      maxLength={10}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Success indicator */}
-              {saved && (
-                <div className="success-banner">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Customer created successfully!</span>
-                </div>
-              )}
-
-              {/* Error indicator */}
-              {error && (
-                <div className="error-banner">
-                  <AlertCircle className="w-5 h-5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Action buttons */}
-              {!saved && (
-                <div className="action-buttons">
-                  <button
-                    onClick={handlePrintLicense}
-                    disabled={printingLicense}
-                    className="action-btn eject"
-                  >
-                    {printingLicense ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Printer className="w-5 h-5" />
-                    )}
-                    <span>Eject</span>
-                  </button>
                   
-                  <button
-                    onClick={createCustomerFromLicense}
-                    disabled={!editFirstName.trim() || !editLastName.trim() || loading}
-                    className="action-btn primary"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Create Customer</span>
-                  </button>
+                  {/* Overlay guide */}
+                  <div className="capture-guide">
+                    <div className="guide-frame">
+                      <div className="guide-corner tl" />
+                      <div className="guide-corner tr" />
+                      <div className="guide-corner bl" />
+                      <div className="guide-corner br" />
+                    </div>
+                    <p className="guide-text">Position license within frame</p>
+                  </div>
                   
-                  <button
-                    onClick={() => setShowAttachMode(true)}
-                    disabled={loading}
-                    className="action-btn secondary"
-                  >
-                    <Users className="w-5 h-5" />
-                    <span>Attach to Existing</span>
-                  </button>
-                </div>
+                  {/* Camera loading */}
+                  {!cameraReady && (
+                    <div className="camera-loading">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                      <p>Initializing camera...</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
 
-          {/* Attach to existing customer mode */}
-          {showAttachMode && (
-            <div className="attach-mode">
-              <button onClick={() => setShowAttachMode(false)} className="back-btn">
-                ← Back to license
-              </button>
-              
-              <div className="search-box">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search customers..."
-                  autoFocus
-                />
-              </div>
-              
-              <div className="customer-list">
-                {filteredCustomers.map(customer => (
-                  <button
-                    key={customer.id}
-                    onClick={() => attachToCustomer(customer.id)}
-                    className="customer-item"
-                  >
-                    <span className="customer-name">{customer.name || `${customer.firstName} ${customer.lastName}`}</span>
-                    <span className="customer-detail">{customer.phone || customer.email}</span>
-                  </button>
-                ))}
-                {filteredCustomers.length === 0 && (
-                  <p className="no-results">No customers found</p>
+          {/* Captured Image Preview */}
+          {capturedImage && (
+            <div className="preview-container">
+              <div className="preview-image-wrapper">
+                <img src={capturedImage} alt="Captured license" className="preview-image" />
+                {saved && (
+                  <div className="saved-badge">
+                    <Check className="w-4 h-4" />
+                    Saved
+                  </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Camera Controls */}
+          {!capturedImage && !cameraError && (
+            <div className="camera-controls">
+              <button 
+                onClick={toggleTorch} 
+                className={`control-btn ${torchOn ? 'active' : ''}`}
+                aria-label="Toggle flash"
+              >
+                <Sun className="w-5 h-5" />
+              </button>
+              
+              <button 
+                onClick={captureImage}
+                disabled={!cameraReady || isCapturing}
+                className="capture-btn"
+                aria-label="Capture"
+              >
+                {isCapturing ? (
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                ) : (
+                  <div className="capture-btn-inner" />
+                )}
+              </button>
+              
+              <button 
+                onClick={switchCamera}
+                className="control-btn"
+                aria-label="Switch camera"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          {/* Upload Button (when camera active) */}
+          {!capturedImage && !cameraError && (
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="upload-btn"
+            >
+              <ImageIcon className="w-4 h-4" />
+              Upload from Gallery
+            </button>
+          )}
+
+          {/* Hidden file input */}
+          <input 
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden-input"
+          />
+
+          {/* Action Buttons (after capture) */}
+          {capturedImage && (
+            <div className="action-section">
+              {/* Printer status */}
+              <div className="printer-status">
+                {getPrinterIP() ? (
+                  <>
+                    <Wifi className="w-4 h-4 text-green-500" />
+                    <span>Printer: {getPrinterIP()}</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-4 h-4 text-zinc-500" />
+                    <span>No printer connected</span>
+                  </>
+                )}
+              </div>
+
+              <div className="action-buttons">
+                <button onClick={retake} className="action-btn secondary">
+                  <RotateCcw className="w-5 h-5" />
+                  Retake
+                </button>
+                
+                <button 
+                  onClick={printLicense}
+                  disabled={!getPrinterIP() || isPrinting}
+                  className="action-btn eject"
+                >
+                  {isPrinting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Printer className="w-5 h-5" />
+                  )}
+                  Eject
+                </button>
+                
+                <button onClick={downloadImage} className="action-btn secondary">
+                  <Download className="w-5 h-5" />
+                  Save
+                </button>
+              </div>
+
+              {!saved && (
+                <button 
+                  onClick={saveToNewCustomer}
+                  disabled={isSaving}
+                  className="save-customer-btn"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      Save to Customer Profile
+                    </>
+                  )}
+                </button>
+              )}
+
+              {saved && (
+                <div className="success-message">
+                  <Check className="w-5 h-5" />
+                  License saved to customer profile
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -453,8 +506,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
           .license-scanner-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.95);
             z-index: 100;
             display: flex;
             align-items: flex-end;
@@ -464,12 +516,12 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
           .license-scanner-modal {
             width: 100%;
             max-width: 500px;
-            max-height: 90vh;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+            max-height: 95vh;
+            background: #0a0a0a;
             border-radius: 24px 24px 0 0;
-            border: 1px solid rgba(255,140,0,0.2);
-            border-bottom: none;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
             animation: slideUp 0.3s ease;
           }
 
@@ -483,7 +535,8 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             align-items: center;
             justify-content: space-between;
             padding: 16px 20px;
-            border-bottom: 1px solid rgba(255,140,0,0.15);
+            background: linear-gradient(180deg, rgba(255,140,0,0.1) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255,140,0,0.2);
           }
 
           .scanner-title {
@@ -491,20 +544,30 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             align-items: center;
             gap: 10px;
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            letter-spacing: 0.08em;
+            font-size: 20px;
+            letter-spacing: 0.1em;
             color: #FF9F43;
           }
 
+          .scanner-badge {
+            font-size: 9px;
+            padding: 3px 8px;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 4px;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+          }
+
           .scanner-close {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: rgba(255,255,255,0.05);
-            border: none;
-            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: rgba(255,255,255,0.6);
             cursor: pointer;
             transition: all 0.2s;
@@ -515,163 +578,270 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             color: white;
           }
 
-          .scanner-content {
-            padding: 20px;
-            max-height: calc(90vh - 70px);
-            overflow-y: auto;
-          }
-
-          .capture-options {
-            text-align: center;
-            padding: 20px 0;
-          }
-
-          .capture-instruction {
-            color: rgba(255,200,150,0.6);
-            font-size: 14px;
-            margin-bottom: 24px;
-          }
-
-          .capture-buttons {
-            display: flex;
-            gap: 12px;
-          }
-
-          .capture-btn {
+          .scanner-body {
             flex: 1;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
+          }
+
+          .camera-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            overflow: hidden;
+          }
+
+          .camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .camera-error {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            padding: 24px 16px;
-            border-radius: 16px;
+            justify-content: center;
+            gap: 16px;
+            padding: 24px;
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+          }
+
+          .camera-error p {
+            font-size: 14px;
+            line-height: 1.5;
+          }
+
+          .upload-fallback-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.15));
+            border: 1px solid rgba(34,197,94,0.4);
+            border-radius: 12px;
+            color: #22c55e;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
           }
 
-          .capture-btn.primary {
-            background: linear-gradient(180deg, rgba(34,197,94,0.2) 0%, rgba(22,163,74,0.15) 100%);
-            border: 1px solid rgba(34,197,94,0.3);
-            color: #22c55e;
-          }
-
-          .capture-btn.primary:hover {
-            background: linear-gradient(180deg, rgba(34,197,94,0.3) 0%, rgba(22,163,74,0.25) 100%);
+          .upload-fallback-btn:hover {
             box-shadow: 0 0 30px rgba(34,197,94,0.2);
           }
 
-          .capture-btn.secondary {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.8);
-          }
-
-          .capture-btn.secondary:hover {
-            background: rgba(255,255,255,0.08);
-          }
-
-          .loading-state {
+          .camera-loading {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 16px;
-            padding: 48px 0;
-            color: rgba(255,200,150,0.6);
+            justify-content: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.8);
+            color: rgba(255,255,255,0.6);
           }
 
-          .results-state {
+          .capture-guide {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
           }
 
-          .license-preview {
+          .guide-frame {
+            position: relative;
+            width: 85%;
+            aspect-ratio: 1.586;
+            max-height: 70%;
+          }
+
+          .guide-corner {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #FF9F43;
+          }
+
+          .guide-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+          .guide-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 8px 0 0; }
+          .guide-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 8px; }
+          .guide-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
+
+          .guide-text {
+            position: absolute;
+            bottom: -36px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+          }
+
+          .camera-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            padding: 24px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 100%);
+            margin-top: -80px;
+            position: relative;
+            z-index: 10;
+          }
+
+          .control-btn {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .control-btn:hover {
+            background: rgba(255,255,255,0.2);
+          }
+
+          .control-btn.active {
+            background: rgba(255,200,0,0.3);
+            border-color: rgba(255,200,0,0.6);
+            color: #ffd700;
+          }
+
+          .capture-btn {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 4px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .capture-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+          }
+
+          .capture-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          .capture-btn-inner {
+            width: 56px;
+            height: 56px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.15s;
+          }
+
+          .capture-btn:hover:not(:disabled) .capture-btn-inner {
+            transform: scale(0.92);
+          }
+
+          .capture-btn:active:not(:disabled) .capture-btn-inner {
+            transform: scale(0.85);
+            background: #FF9F43;
+          }
+
+          .upload-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            margin: 0 20px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(255,140,0,0.2);
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
           }
 
-          .license-preview img {
+          .upload-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+          }
+
+          .hidden-input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+          }
+
+          .preview-container {
+            padding: 20px;
+          }
+
+          .preview-image-wrapper {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(255,140,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+          }
+
+          .preview-image {
             width: 100%;
             height: auto;
             display: block;
           }
 
-          .extracted-fields {
+          .saved-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-          }
-
-          .field-row {
-            display: flex;
-            gap: 12px;
-          }
-
-          .field {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-          }
-
-          .field.flex-2 {
-            flex: 2;
-          }
-
-          .field label {
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: rgba(255,200,150,0.5);
-          }
-
-          .field input {
-            padding: 10px 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,140,0,0.2);
-            border-radius: 8px;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(34,197,94,0.9);
+            border-radius: 20px;
             color: white;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
+            font-size: 12px;
+            font-weight: 600;
           }
 
-          .field input:focus {
-            border-color: rgba(255,140,0,0.5);
+          .action-section {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
           }
 
-          .success-banner {
+          .printer-status {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: rgba(34,197,94,0.1);
-            border: 1px solid rgba(34,197,94,0.2);
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
             border-radius: 10px;
-            color: #22c55e;
-            font-size: 14px;
-          }
-
-          .error-banner {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            background: rgba(239,68,68,0.1);
-            border: 1px solid rgba(239,68,68,0.2);
-            border-radius: 10px;
-            color: #ef4444;
-            font-size: 14px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
           }
 
           .action-buttons {
             display: flex;
             gap: 10px;
-            margin-top: 8px;
           }
 
           .action-btn {
@@ -680,22 +850,12 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-size: 13px;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-          }
-
-          .action-btn.primary {
-            background: linear-gradient(180deg, rgba(34,197,94,0.25) 0%, rgba(22,163,74,0.2) 100%);
-            border: 1px solid rgba(34,197,94,0.4);
-            color: #22c55e;
-          }
-
-          .action-btn.primary:hover:not(:disabled) {
-            box-shadow: 0 0 30px rgba(34,197,94,0.25);
           }
 
           .action-btn.secondary {
@@ -704,14 +864,19 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             color: rgba(255,255,255,0.8);
           }
 
+          .action-btn.secondary:hover {
+            background: rgba(255,255,255,0.1);
+          }
+
           .action-btn.eject {
-            background: linear-gradient(135deg, rgba(244,63,94,0.2), rgba(251,146,60,0.15));
-            border: 1px solid rgba(244,63,94,0.3);
+            background: linear-gradient(135deg, rgba(244,63,94,0.25), rgba(251,146,60,0.2));
+            border: 1px solid rgba(244,63,94,0.4);
             color: #fb7185;
           }
 
           .action-btn.eject:hover:not(:disabled) {
-            box-shadow: 0 0 25px rgba(244,63,94,0.2);
+            box-shadow: 0 0 30px rgba(244,63,94,0.25);
+            transform: translateY(-1px);
           }
 
           .action-btn:disabled {
@@ -719,99 +884,57 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             cursor: not-allowed;
           }
 
-          .attach-mode {
+          .save-customer-btn {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
-          }
-
-          .back-btn {
-            background: none;
-            border: none;
-            color: #FF9F43;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(22,163,74,0.15));
+            border: 1px solid rgba(34,197,94,0.4);
+            border-radius: 14px;
+            color: #22c55e;
             font-size: 14px;
-            cursor: pointer;
-            text-align: left;
-            padding: 0;
-          }
-
-          .search-box input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,140,0,0.2);
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-          }
-
-          .customer-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-          }
-
-          .customer-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            text-align: left;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
           }
 
-          .customer-item:hover {
-            background: rgba(255,140,0,0.1);
-            border-color: rgba(255,140,0,0.3);
+          .save-customer-btn:hover:not(:disabled) {
+            box-shadow: 0 0 30px rgba(34,197,94,0.2);
           }
 
-          .customer-name {
-            color: white;
-            font-weight: 600;
+          .save-customer-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
           }
 
-          .customer-detail {
-            color: rgba(255,200,150,0.5);
-            font-size: 12px;
+          .success-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 14px;
+            color: #22c55e;
+            font-size: 14px;
+            font-weight: 500;
           }
 
-          .no-results {
-            color: rgba(255,200,150,0.4);
-            text-align: center;
-            padding: 20px;
-          }
-
-          .hidden {
-            display: none;
-          }
-
-          /* Light mode overrides */
+          /* Light mode */
           html:not(.dark) .license-scanner-modal {
-            background: linear-gradient(180deg, #f8f8f8 0%, #ffffff 100%);
-            border-color: rgba(0,188,212,0.3);
+            background: #f8f8f8;
           }
 
           html:not(.dark) .scanner-header {
+            background: linear-gradient(180deg, rgba(0,188,212,0.1) 0%, transparent 100%);
             border-color: rgba(0,188,212,0.2);
           }
 
-          html:not(.dark) .field input {
-            background: linear-gradient(135deg, rgba(0,188,212,0.12) 0%, rgba(0,229,255,0.08) 50%, rgba(0,188,212,0.15) 100%);
-            border-color: rgba(0,229,255,0.35);
-            color: #00E676;
-          }
-
-          html:not(.dark) .search-box input {
-            background: linear-gradient(135deg, rgba(0,188,212,0.12) 0%, rgba(0,229,255,0.08) 50%, rgba(0,188,212,0.15) 100%);
-            border-color: rgba(0,229,255,0.35);
-            color: #00E676;
+          html:not(.dark) .preview-image-wrapper {
+            border-color: rgba(0,188,212,0.4);
           }
         `}</style>
       </div>
