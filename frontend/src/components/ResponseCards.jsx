@@ -71,20 +71,20 @@ const ResponseCard = ({
     setIsTranslating(false);
   };
 
-  // Translate when supercharged mode is active
+  // Translate when supercharged mode is active - fixed to avoid cascading renders
   useEffect(() => {
     if (supercharged && response.text && !translation) {
-      // Use timeout to avoid cascading renders
+      // Use setTimeout to defer state update
       const timer = setTimeout(() => translateContent(), 0);
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supercharged, response.text, targetLang]);
 
-  // Clear translation when supercharged is turned off
+  // Clear translation when supercharged is turned off - fixed to avoid cascading renders
   useEffect(() => {
     if (!supercharged && showTranslated) {
-      // Use timeout to avoid cascading renders
+      // Use setTimeout to defer state update
       const timer = setTimeout(() => setShowTranslated(false), 0);
       return () => clearTimeout(timer);
     }
