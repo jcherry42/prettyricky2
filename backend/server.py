@@ -3033,41 +3033,6 @@ async def get_favorite_categories():
 
 # Register webhook event handlers
 def register_notification_handlers():
-    """Register handlers to connect webhook events to notifications"""
-    # Hot lead events -> SMS alert
-    event_processor.register_handler(EventType.LEAD_STATUS_CHANGED.value, handle_lead_status_change_event)
-    
-    # Deal events -> logging (can be extended to notifications)
-    event_processor.register_handler(EventType.DEAL_CREATED.value, handle_deal_event)
-    event_processor.register_handler(EventType.DEAL_UPDATED.value, handle_deal_event)
-    
-    # Customer events with hot flag -> SMS alert
-    async def customer_created_handler(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
-        """Check if new customer is a hot lead and notify"""
-        if payload.get('is_hot') or payload.get('lead_status', '').lower() == 'hot':
-            return await handle_hot_lead_event(payload, event)
-        return {"success": True, "message": "Customer created but not a hot lead"}
-    
-    event_processor.register_handler(EventType.CUSTOMER_CREATED.value, customer_created_handler)
-    event_processor.register_handler(EventType.CUSTOMER_UPDATED.value, customer_created_handler)
-    
-    logger.info("Notification handlers registered for webhook events")
-
-
-# Register handlers on module load
-register_notification_handlers()
-
-
-@api_router.post("/events/test-hot-lead")
-async def test_hot_lead_event(
-    customer_name: str = "Test Customer",
-    customer_phone: str = "+1234567890",
-    vehicle_interest: str = "2024 Test Vehicle",
-    salesperson_phone: str = "+1987654321"
-):
-    """Test hot lead event processing (for development/testing)"""
-    test_event = WebhookEvent(
-        webhook_id="test-webhook",
         event_type=EventType.CUSTOMER_CREATED.value,
         payload={
             "customer_name": customer_name,
