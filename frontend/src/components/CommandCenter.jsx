@@ -2306,28 +2306,6 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
 
 // Settings Tab Component
 
-  const handleFileImport = async () => {
-    if (!file) return;
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('import_type', importType);
-      
-      const res = await fetch(`${BACKEND_URL}/api/import/file`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      setResult(data);
-      if (data.success) setTimeout(onSuccess, 1500);
-    } catch (e) {
-      setResult({ success: false, error: e.message });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEmailParse = async () => {
     if (!emailBody.trim()) return;
     setLoading(true);
