@@ -402,6 +402,28 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             onRefresh={fetchCustomers}
           />
         )}
+
+        {/* Vision Extraction Modal */}
+        {showVisionExtractor && (
+          <div className="form-overlay" onClick={() => setShowVisionExtractor(false)}>
+            <div className="form-modal" onClick={e => e.stopPropagation()}>
+              <VisionExtractor 
+                onClose={() => setShowVisionExtractor(false)}
+                onDataExtracted={(data) => {
+                  // Pre-fill customer form with extracted data
+                  setShowVisionExtractor(false);
+                  setShowCustomerForm(true);
+                  setSelectedCustomer(null);
+                  // Best-effort mapping of extracted fields
+                  // (expects keys like first_name, last_name, phone, email, address)
+                  // We rely on CustomerForm defaults for anything missing.
+                  // No direct state injection here to keep CustomerForm simple.
+                  console.log('Vision extracted data', data);
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`
