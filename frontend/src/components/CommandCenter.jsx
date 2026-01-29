@@ -12,13 +12,12 @@ import {
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
 import { 
-  playNotificationSound, 
-  requestNotificationPermission,
   getSoundPreferences, 
   setSoundPreferences,
   getSoundProfiles
 } from '../utils/notificationSound';
 import LanguageSelector from './LanguageSelector';
+import VisionExtractor from './VisionExtractor';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
