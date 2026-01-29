@@ -695,6 +695,37 @@ export const QuickAddButton = () => {
           color: #fca5a5;
         }
 
+        /* Trade-In Section */
+        .qa-trade-section {
+          padding: 12px;
+          border-radius: 12px;
+          background: rgba(255, 140, 0, 0.05);
+          border: 1px solid rgba(255, 140, 0, 0.15);
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .qa-section-label {
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: #FF9F43;
+        }
+
+        .qa-trade-section .qa-field {
+          margin: 0;
+        }
+
+        .font-mono {
+          font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+        }
+
+        .uppercase {
+          text-transform: uppercase;
+        }
+
         .qa-save-btn {
           margin-top: 6px;
           padding: 14px;
