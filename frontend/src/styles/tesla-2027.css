@@ -389,7 +389,7 @@ html:not(.dark) .status-label {
   text-shadow: 0 1px 4px rgba(0, 217, 255, 0.3);
 }
 
-/* BLUE GLASS INPUT BOXES WITH NEON TEXT */
+/* BLUE GLASS INPUT BOXES WITH ELECTRIC GREEN NEON TEXT */
 html:not(.dark) .printer-ip-input,
 html:not(.dark) .cc-input,
 html:not(.dark) input[type="text"],
@@ -404,22 +404,22 @@ html:not(.dark) textarea {
     inset 0 -1px 2px rgba(255, 255, 255, 0.5) !important;
   backdrop-filter: blur(12px);
   
-  /* NEON TEXT EFFECT */
-  color: #0080FF !important;
+  /* ELECTRIC GREEN NEON TEXT EFFECT */
+  color: #00FF88 !important;
   font-weight: 600;
   text-shadow: 
-    0 0 8px rgba(0, 217, 255, 0.6),
-    0 0 16px rgba(0, 150, 255, 0.4),
-    0 2px 4px rgba(0, 100, 200, 0.3);
+    0 0 10px rgba(0, 255, 136, 0.8),
+    0 0 20px rgba(0, 255, 136, 0.5),
+    0 2px 4px rgba(0, 200, 100, 0.4);
 }
 
 html:not(.dark) .printer-ip-input::placeholder,
 html:not(.dark) .cc-input::placeholder,
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-  color: rgba(0, 128, 255, 0.5) !important;
+  color: rgba(0, 255, 136, 0.4) !important;
   font-weight: 500;
-  text-shadow: 0 0 4px rgba(0, 217, 255, 0.3);
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.3);
 }
 
 html:not(.dark) .printer-ip-input:focus,
@@ -429,16 +429,16 @@ html:not(.dark) textarea:focus {
   background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 150, 255, 0.28) 100%) !important;
   border-color: rgba(0, 217, 255, 0.7) !important;
   box-shadow: 
-    0 0 0 3px rgba(0, 217, 255, 0.15),
+    0 0 0 3px rgba(0, 255, 136, 0.15),
     0 6px 20px rgba(0, 150, 255, 0.3),
     inset 0 2px 4px rgba(0, 217, 255, 0.15),
     inset 0 -1px 2px rgba(255, 255, 255, 0.6) !important;
   
-  /* ENHANCED NEON ON FOCUS */
+  /* ENHANCED ELECTRIC GREEN NEON ON FOCUS */
   text-shadow: 
-    0 0 12px rgba(0, 217, 255, 0.8),
-    0 0 20px rgba(0, 150, 255, 0.6),
-    0 2px 6px rgba(0, 100, 200, 0.4);
+    0 0 15px rgba(0, 255, 136, 1),
+    0 0 25px rgba(0, 255, 136, 0.7),
+    0 2px 8px rgba(0, 200, 100, 0.5);
 }
 
 /* BLUE GLASS INFO SECTIONS */
@@ -565,6 +565,124 @@ html:not(.dark) .settings-section {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+
+
+/* ==================== DARK MODE - LIMO GLASS WITH AMBER NEON ==================== */
+
+/* DEEPLY TINTED LIMO GLASS INPUT BOXES WITH AMBER NEON TEXT */
+html.dark .printer-ip-input,
+html.dark .cc-input,
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="tel"],
+html.dark textarea {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 25, 20, 0.98) 100%) !important;
+  border: 2px solid rgba(255, 180, 0, 0.3) !important;
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.6),
+    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    inset 0 -1px 2px rgba(255, 180, 0, 0.1) !important;
+  backdrop-filter: blur(16px);
+  
+  /* AMBER REFLECTIVE NEON TEXT */
+  color: #FFB84D !important;
+  font-weight: 600;
+  text-shadow: 
+    0 0 12px rgba(255, 184, 77, 0.9),
+    0 0 24px rgba(255, 160, 50, 0.6),
+    0 2px 6px rgba(200, 120, 20, 0.5);
+}
+
+html.dark .printer-ip-input::placeholder,
+html.dark .cc-input::placeholder,
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: rgba(255, 184, 77, 0.4) !important;
+  font-weight: 500;
+  text-shadow: 0 0 6px rgba(255, 160, 50, 0.3);
+}
+
+html.dark .printer-ip-input:focus,
+html.dark .cc-input:focus,
+html.dark input:focus,
+html.dark textarea:focus {
+  background: linear-gradient(135deg, rgba(25, 22, 18, 0.98) 0%, rgba(35, 28, 20, 1) 100%) !important;
+  border-color: rgba(255, 180, 0, 0.6) !important;
+  box-shadow: 
+    0 0 0 3px rgba(255, 180, 0, 0.15),
+    0 8px 24px rgba(255, 160, 50, 0.4),
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    inset 0 -1px 2px rgba(255, 180, 0, 0.2) !important;
+  
+  /* ENHANCED AMBER GLOW ON FOCUS */
+  text-shadow: 
+    0 0 18px rgba(255, 184, 77, 1),
+    0 0 32px rgba(255, 160, 50, 0.8),
+    0 3px 10px rgba(200, 120, 20, 0.6);
+}
+
+/* LIMO GLASS STAT CARDS - DARK MODE */
+html.dark .cc-stat-card {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(25, 22, 20, 0.95) 100%);
+  border: 1px solid rgba(255, 180, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 180, 0, 0.1);
+}
+
+/* LIMO GLASS ITEMS - DARK MODE */
+html.dark .cc-item {
+  background: linear-gradient(135deg, rgba(18, 18, 18, 0.85) 0%, rgba(22, 20, 18, 0.9) 100%);
+  border: 1px solid rgba(255, 180, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .cc-item:hover {
+  background: linear-gradient(135deg, rgba(25, 22, 20, 0.95) 0%, rgba(30, 25, 22, 1) 100%);
+  border-color: rgba(255, 180, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(255, 160, 50, 0.2);
+}
+
+/* ==================== GOLD BUTTONS WITH GLOW ==================== */
+
+.gold-btn,
+.btn-gold,
+button[class*="save"],
+button[class*="add-customer"],
+.save-profile-btn,
+.add-customer-btn {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  color: #1a1a1a !important;
+  font-weight: 700 !important;
+  border: none !important;
+  box-shadow: 
+    0 4px 20px rgba(255, 215, 0, 0.5),
+    0 0 30px rgba(255, 165, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.gold-btn:hover,
+.btn-gold:hover,
+button[class*="save"]:hover,
+button[class*="add-customer"]:hover,
+.save-profile-btn:hover,
+.add-customer-btn:hover {
+  background: linear-gradient(135deg, #FFED4E 0%, #FFB84D 100%) !important;
+  box-shadow: 
+    0 6px 30px rgba(255, 215, 0, 0.7),
+    0 0 50px rgba(255, 165, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-2px) !important;
+}
+
+.gold-btn:active,
+.btn-gold:active {
+  transform: translateY(0) !important;
+  box-shadow: 
+    0 2px 12px rgba(255, 215, 0, 0.4),
+    0 0 20px rgba(255, 165, 0, 0.3) !important;
+}
+
 }
 
 .tesla-inquiry-btn.selected {
