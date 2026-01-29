@@ -481,8 +481,8 @@ metadata:
   test_sequence: 2
 
 test_plan:
-  current_focus: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings", "Translation of Edited Text Feature"]
-  stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
+  current_focus: ["Sound Logic Implementation", "Vision Extraction Wiring", "Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
+  stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings", "Sound Logic Implementation", "Vision Extraction Wiring"]
   test_all: false
   test_priority: "high_first"
 
