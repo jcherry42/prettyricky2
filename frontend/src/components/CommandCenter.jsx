@@ -279,6 +279,13 @@ export const CommandCenter = ({ isOpen, onClose }) => {
               <h3>Import Data</h3>
               <div className="import-options">
                 <ImportOption 
+                  icon={FileUp}
+                  title="File Upload"
+                  description="Import from CSV or JSON"
+                  color="cyan"
+                  onClick={() => setShowImportModal(true)}
+                />
+                <ImportOption 
                   icon={UserPlus}
                   title="Manual Entry"
                   description="Add customer manually"
