@@ -9,21 +9,21 @@
 const SOUND_PROFILES = {
   spanish: {
     name: 'Spanish 🇪🇸',
-    customerAdded: '/sounds/spanish-success.mp3',
-    eject: '/sounds/spanish-eject.mp3',
-    sportMode: '/sounds/spanish-sport.mp3'
+    customerAdded: '/sounds/jdm.wav',
+    eject: '/sounds/jdm.wav',
+    sportMode: '/sounds/jdm.wav'
   },
   french: {
     name: 'French 🇫🇷',
-    customerAdded: '/sounds/french-success.mp3',
-    eject: '/sounds/french-eject.mp3',
-    sportMode: '/sounds/french-sport.mp3'
+    customerAdded: '/sounds/euro.wav',
+    eject: '/sounds/euro.wav',
+    sportMode: '/sounds/euro.wav'
   },
   korean: {
     name: 'Korean 🇰🇷',
-    customerAdded: '/sounds/korean-success.mp3',
-    eject: '/sounds/korean-eject.mp3',
-    sportMode: '/sounds/korean-sport.mp3'
+    customerAdded: '/sounds/merica.wav',
+    eject: '/sounds/merica.wav',
+    sportMode: '/sounds/merica.wav'
   }
 };
 
