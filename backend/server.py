@@ -3020,14 +3020,6 @@ async def get_favorite_categories():
     return {"categories": FAVORITE_CATEGORIES}
 
 
-
-    )
-    
-    logger.info(f"Status change notification sent: {result.notification_id}")
-    return {"success": result.success, "notification_id": result.notification_id}
-
-
-async def handle_deal_event(payload: Dict[str, Any], event: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handler for deal events - logs and optionally notifies
     """

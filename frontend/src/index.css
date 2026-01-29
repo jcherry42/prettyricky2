@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Chonburi&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Smooch+Sans:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import './styles/tokens.css';
 @import './styles/animations.css';
 @import './styles/luxury-auto.css';
@@ -10,17 +10,17 @@
 
 /* ============================================
    SUPERCHARG'D - Premium Automotive Sales App
-   Chonburi Font Throughout
+   Smooch Sans Font Throughout
    ============================================ */
 
 /* Global Font Override */
 * {
-  font-family: 'Chonburi', cursive !important;
+  font-family: 'Smooch Sans', sans-serif !important;
 }
 
 /* GTA Vice City Text Styles */
 .vice-city-title {
-  font-family: 'Chonburi', cursive;
+  font-family: 'Smooch Sans', sans-serif;
   font-size: 1.4rem;
   letter-spacing: 0.15em;
   background: linear-gradient(180deg, 
