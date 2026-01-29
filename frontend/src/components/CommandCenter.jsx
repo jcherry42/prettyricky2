@@ -111,36 +111,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     }
   };
 
-  const parseLeadEmail = async () => {
-    if (!emailBody.trim()) return;
-    setParsingEmail(true);
-    setParseResult(null);
-    
-    try {
-      const formData = new FormData();
-      formData.append('email_body', emailBody);
-      formData.append('email_subject', emailSubject);
-      formData.append('email_from', emailFrom);
-      
-      const res = await fetch(`${BACKEND_URL}/api/import/email`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      const data = await res.json();
-      setParseResult(data);
-      
-      if (data.success && data.customer_id) {
-        // Refresh customers list
-        fetchCustomers();
-      }
-    } catch (e) {
-      setParseResult({ success: false, error: e.message });
-    } finally {
-      setParsingEmail(false);
-    }
-  };
-
   const fetchCustomers = async () => {
     setLoading(true);
     try {
@@ -149,22 +119,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
       setCustomers(data.customers || []);
     } catch (e) {
       console.error('Failed to fetch customers:', e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchVehicles = async (category = null) => {
-    setLoading(true);
-    try {
-      const url = category 
-        ? `${BACKEND_URL}/api/vehicles/inventory?category=${category}`
-        : `${BACKEND_URL}/api/vehicles/inventory`;
-      const res = await fetch(url);
-      const data = await res.json();
-      setVehicles(data.vehicles || []);
-    } catch (e) {
-      console.error('Failed to fetch vehicles:', e);
     } finally {
       setLoading(false);
     }
