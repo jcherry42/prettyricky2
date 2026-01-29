@@ -2317,51 +2317,17 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   
   const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
   const [notificationPermission, setNotificationPermission] = useState('default');
-    account_sid: '',
-    auth_token: '',
-    from_number: '',
-  });
-  const [showSecret, setShowSecret] = useState(false);
-  const [saving, setSaving] = useState(false);
-  
+
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
     }
-    // Check Twilio config
-    fetch(`${BACKEND_URL}/api/notifications/config`)
-      .then(res => res.json())
-      .then(data => setTwilioConfigured(data.sms_configured))
-      .catch(() => {});
   }, []);
   
   const handleSaveProfile = () => {
     setDealership(dealershipForm);
     setSalesperson(salespersonForm);
     toast.success('Profile settings saved!');
-  };
-  
-      toast.error('Please fill all Twilio fields');
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/notifications/config/twilio`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (res.ok) {
-        toast.success('Twilio configured!');
-        setTwilioConfigured(true);
-        setTwilioForm({ account_sid: '', auth_token: '', from_number: '' });
-      } else {
-        toast.error('Failed to configure Twilio');
-      }
-    } catch (e) {
-      toast.error('Error saving configuration');
-    } finally {
-      setSaving(false);
-    }
   };
   
   return (
