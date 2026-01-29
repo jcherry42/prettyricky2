@@ -203,7 +203,15 @@ export const Header = () => {
 
         {/* Sport Mode with Fire Effect */}
         <button
-          onClick={toggleSuperchargedMode}
+          onClick={() => {
+            if (!supercharged) {
+              // Play sound only when activating Sport Mode
+              import('../utils/notificationSound').then(mod => {
+                mod.playSportModeSound?.();
+              }).catch(() => {});
+            }
+            toggleSuperchargedMode();
+          }}
           className={`sport-fire-btn ${supercharged ? 'active' : ''}`}
           data-testid="toggle-supercharged-btn"
         >
