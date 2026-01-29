@@ -293,6 +293,13 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                   color="green"
                   onClick={() => { setActiveTab('customers'); setShowCustomerForm(true); }}
                 />
+                <ImportOption 
+                  icon={Image}
+                  title="Vision Extraction"
+                  description="Screenshot → Customer data"
+                  color="purple"
+                  onClick={() => setShowVisionExtractor(true)}
+                />
               </div>
             </div>
           )}
