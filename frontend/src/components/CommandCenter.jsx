@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
-  X, Users, Car, Upload, Mail, Link2, BarChart3, 
-  Search, Plus, ChevronRight, Settings, Database,
+  X, Users, Upload, BarChart3, 
+  Search, Plus, ChevronRight, Settings,
   FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
-  Clock, Tag, MessageSquare, CheckCircle2, AlertCircle,
-  Send, Smartphone, Zap, Bell, Volume2, VolumeX, Building2,
-  User, Save, Eye, EyeOff, TestTube, Loader2, ToggleLeft, ToggleRight,
+  Clock, Tag, CheckCircle2, AlertCircle,
+  Zap, Bell, Volume2, VolumeX, Building2,
+  User, Save, Eye, EyeOff, Loader2, ToggleLeft, ToggleRight,
   Printer, Wifi, WifiOff
 } from 'lucide-react';
 import { toast } from 'sonner';
