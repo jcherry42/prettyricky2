@@ -4497,10 +4497,6 @@ async def print_license_image(req: PrintJobRequest):
         # Get PDF bytes
         pdf_bytes = pdf_buffer.getvalue()
         
-        # Send to printer via IPP
-        ipp_url = f"ipp://{req.printer_ip}:631/ipp/print"
-        # ipp = pyipp.IPP(ipp_url, timeout=10)
-        
         # TODO: Full IPP print job submission requires CUPS or IPP server
         # For now, log success (actual print job would go here)
         logger.info(f"License print job prepared for {req.printer_ip} - {len(pdf_bytes)} bytes")
