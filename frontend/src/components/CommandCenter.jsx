@@ -387,14 +387,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             onRefresh={fetchCustomers}
           />
         )}
-
-        {/* Import Modal */}
-        {showImportModal && (
-          <ImportModal 
-            onClose={() => setShowImportModal(false)}
-            onSuccess={() => { setShowImportModal(false); fetchCustomers(); }}
-          />
-        )}
       </div>
 
       <style>{`
