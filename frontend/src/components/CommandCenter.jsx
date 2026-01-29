@@ -2463,22 +2463,7 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
             </div>
           </div>
           
-          <div className="browser-notif">
-            <span>Browser Notifications</span>
-            <button
-              className={`notif-btn ${notificationPermission === 'granted' ? 'enabled' : ''}`}
-              onClick={async () => {
-                const perm = await requestNotificationPermission();
-                setNotificationPermission(perm);
-                if (perm === 'granted') {
-                  toast.success('Notifications enabled!');
-                }
-              }}
-              disabled={notificationPermission === 'granted'}
-            >
-              {notificationPermission === 'granted' ? 'Enabled' : 'Enable'}
-            </button>
-          </div>
+          {/* Browser notifications removed per latest spec */}
         </div>
       </div>
       
