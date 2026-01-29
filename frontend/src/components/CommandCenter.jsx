@@ -188,7 +188,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'inventory', label: 'Inventory', icon: Car },
     { id: 'import', label: 'Import', icon: Upload },
     { id: 'printer', label: 'Printer', icon: Printer },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -202,17 +201,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
       c.last_name?.toLowerCase().includes(q) ||
       c.phone?.includes(q) ||
       c.email?.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredVehicles = vehicles.filter(v => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      v.make?.toLowerCase().includes(q) ||
-      v.model?.toLowerCase().includes(q) ||
-      v.vin?.toLowerCase().includes(q) ||
-      String(v.year).includes(q)
     );
   });
 
