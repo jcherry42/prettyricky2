@@ -698,6 +698,59 @@ html:not(.dark) .tesla-inquiry-btn {
   color: rgba(0, 0, 0, 0.7);
 }
 
+
+
+/* ==================== CUSTOMERS TAB SEARCH BAR - BLUE GLASS ==================== */
+
+/* Blue Glass Search Bar in Light Mode */
+html:not(.dark) .cc-search-blue-glass {
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 150, 255, 0.18) 100%) !important;
+  border: 2px solid rgba(0, 217, 255, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(0, 150, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(10px);
+}
+
+html:not(.dark) .cc-search-blue-glass input {
+  color: #00FF88 !important;
+  font-weight: 600;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 136, 0.7),
+    0 0 18px rgba(0, 255, 136, 0.4);
+}
+
+html:not(.dark) .cc-search-blue-glass input::placeholder {
+  color: rgba(0, 255, 136, 0.4) !important;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.25);
+}
+
+html:not(.dark) .cc-search-blue-glass svg {
+  color: rgba(0, 217, 255, 0.7);
+}
+
+/* Dark Mode - Limo Glass Search Bar */
+html.dark .cc-search-blue-glass {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(25, 22, 20, 0.95) 100%) !important;
+  border: 2px solid rgba(255, 180, 0, 0.25) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 180, 0, 0.1) !important;
+}
+
+html.dark .cc-search-blue-glass input {
+  color: #FFB84D !important;
+  font-weight: 600;
+  text-shadow: 
+    0 0 12px rgba(255, 184, 77, 0.8),
+    0 0 22px rgba(255, 160, 50, 0.5);
+}
+
+html.dark .cc-search-blue-glass input::placeholder {
+  color: rgba(255, 184, 77, 0.4) !important;
+  text-shadow: 0 0 6px rgba(255, 160, 50, 0.3);
+}
+
+html.dark .cc-search-blue-glass svg {
+  color: rgba(255, 180, 0, 0.6);
+}
+
 html:not(.dark) .tesla-inquiry-btn:hover {
   border-color: var(--tesla-electric-blue);
   color: #111;

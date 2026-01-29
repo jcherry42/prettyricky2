@@ -226,7 +226,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           {activeTab === 'customers' && (
             <div className="cc-customers">
               <div className="cc-toolbar">
-                <div className="cc-search">
+                <div className="cc-search cc-search-blue-glass">
                   <Search className="w-4 h-4" />
                   <input 
                     type="text" 
@@ -235,7 +235,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                     onChange={e => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <button onClick={() => setShowCustomerForm(true)} className="cc-add-btn">
+                <button onClick={() => setShowCustomerForm(true)} className="cc-add-btn gold-btn">
                   <Plus className="w-4 h-4" />
                   Add Customer
                 </button>
