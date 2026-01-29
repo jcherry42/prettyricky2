@@ -2306,27 +2306,6 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
 
 // Settings Tab Component
 
-  const handleEmailParse = async () => {
-    if (!emailBody.trim()) return;
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('email_body', emailBody);
-      
-      const res = await fetch(`${BACKEND_URL}/api/import/email`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      setResult(data);
-      if (data.success) setTimeout(onSuccess, 1500);
-    } catch (e) {
-      setResult({ success: false, error: e.message });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="import-overlay" onClick={onClose}>
       <div className="import-modal" onClick={e => e.stopPropagation()}>
