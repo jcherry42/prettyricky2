@@ -81,7 +81,7 @@ const InquiryTypeSelector = () => {
       {/* Header */}
       <div className="text-center">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-          What's the inquiry about?
+          What&apos;s the inquiry about?
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
           Choose a response category

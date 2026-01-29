@@ -162,7 +162,7 @@ const CustomerSelector = () => {
           {filteredCustomers.length === 0 && searchQuery && (
             <div className="text-center py-8">
               <p className="text-gray-600 dark:text-gray-400">
-                No customers found matching "{searchQuery}"
+                No customers found matching &quot;{searchQuery}&quot;
               </p>
             </div>
           )}
