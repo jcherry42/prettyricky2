@@ -40,7 +40,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   
   // Sub-modals
   const [showCustomerForm, setShowCustomerForm] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   // Printer state
