@@ -213,7 +213,6 @@ export function SalesProvider({ children }) {
     const dealership = loadFromStorage(STORAGE_KEYS.DEALERSHIP_SETUP, DEFAULT_DEALERSHIP);
     const salesperson = loadFromStorage(STORAGE_KEYS.SALESPERSON_SETUP, DEFAULT_SALESPERSON);
     const preferences = loadFromStorage(STORAGE_KEYS.USER_PREFERENCES, DEFAULT_PREFERENCES);
-    const vehicles = loadFromStorage(STORAGE_KEYS.VEHICLES, DEFAULT_VEHICLES);
     const customers = loadFromStorage(STORAGE_KEYS.CUSTOMERS, DEFAULT_CUSTOMERS);
     const customTemplates = loadFromStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, {});
     const favorites = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
