@@ -78,8 +78,6 @@ export const Header = () => {
   const [startupPhase, setStartupPhase] = useState(hasPlayedStartup ? 5 : 0);
   // Brake light state - activates on screen tap
   const [brakesPressed, setBrakesPressed] = useState(false);
-  // VIN Scanner modal state
-  const [vinScannerOpen, setVinScannerOpen] = useState(false);
   // Command Center modal state
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
 
