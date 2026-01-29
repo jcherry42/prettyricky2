@@ -42,6 +42,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showVisionExtractor, setShowVisionExtractor] = useState(false);
+  const [showVisionExtractor, setShowVisionExtractor] = useState(false);
 
   // Printer state
   const [printerIP, setPrinterIP] = useState(() => localStorage.getItem('printerIP') || '');
