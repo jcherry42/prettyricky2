@@ -19,6 +19,7 @@ import {
   getSoundProfiles
 } from '../utils/notificationSound';
 import LanguageSelector from './LanguageSelector';
+import ImportModal from './ImportModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
