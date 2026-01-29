@@ -128,11 +128,28 @@ export const QuickAddButton = () => {
     haptics.button();
     
     try {
+      // Build trade-in object if trade VIN provided
+      let tradeVehicle = null;
+      if (formData.trade_vin.trim()) {
+        tradeVehicle = {
+          vin: formData.trade_vin.trim(),
+          mileage: formData.trade_mileage.trim() ? parseInt(formData.trade_mileage.replace(/,/g, '')) : null
+        };
+      }
+
       const res = await fetch(`${BACKEND_URL}/api/customers/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          email: formData.email,
+          policy_number: formData.policy_number.trim() || null,
+          vehicle_of_interest: formData.vehicle_vin.trim() || null,
+          trade_vehicle: tradeVehicle,
+          lead_source: formData.lead_source,
+          notes: formData.notes,
           lead_status: 'new'
         })
       });
