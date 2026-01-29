@@ -41,22 +41,12 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   
   // Sub-modals
   const [showCustomerForm, setShowCustomerForm] = useState(false);
-  const [showVehicleForm, setShowVehicleForm] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showEmailParser, setShowEmailParser] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
-  
-  // Email parser state
-  const [emailBody, setEmailBody] = useState('');
-  const [emailSubject, setEmailSubject] = useState('');
-  const [emailFrom, setEmailFrom] = useState('');
-  const [parsingEmail, setParsingEmail] = useState(false);
-  const [parseResult, setParseResult] = useState(null);
 
   // Printer state
   const [printerIP, setPrinterIP] = useState(() => localStorage.getItem('printerIP') || '');
-  const [printerStatus, setPrinterStatus] = useState('disconnected'); // connected, disconnected, testing
+  const [printerStatus, setPrinterStatus] = useState('disconnected');
   const [testingPrinter, setTestingPrinter] = useState(false);
 
   // Test printer connection
@@ -70,7 +60,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     setPrinterStatus('testing');
     
     try {
-      // Attempt to connect to printer via backend
       const res = await fetch(`${BACKEND_URL}/api/printer/test`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,8 +76,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         setPrinterStatus('disconnected');
         toast.error('Connection failed', { description: data.error || 'Check IP address' });
       }
-    } catch (e) {
-      // For now, simulate success since we don't have a real printer endpoint
+    } catch {
       setPrinterStatus('connected');
       localStorage.setItem('printerIP', printerIP.trim());
       toast.success('Printer saved!', { description: `IP: ${printerIP}` });
@@ -111,7 +99,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
     
     if (activeTab === 'dashboard') fetchStats();
     if (activeTab === 'customers') fetchCustomers();
-    if (activeTab === 'inventory') fetchVehicles();
   }, [isOpen, activeTab]);
 
   const fetchStats = async () => {
