@@ -451,20 +451,29 @@ frontend:
         agent: "testing"
         comment: "✅ iOS TEST PASSED: Import modal accessible via header button. Modal shows File and URL tabs for data import. Upload area with drag & drop functionality confirmed present. Supports JSON files as expected. Minor: Modal overlay interaction requires force clicks but functionality works."
 
-  - task: "Light Mode Command Center - Blue glass aesthetic with tab navigation"
+  - task: "Sound Logic Implementation - Sport Mode, Quick Add, Eject sounds"
     implemented: true
-    working: true
-    file: "/app/frontend/src/components/CommandCenter.jsx"
+    working: false
+    file: "/app/frontend/src/utils/notificationSound.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
-      - working: "NA"
+      - working: false
         agent: "testing"
-        comment: "TECHNICAL LIMITATION: Playwright automation tool experienced persistent syntax errors preventing full automated testing. VISUAL VERIFICATION: App loads successfully with SUPERCHARG'D branding and header buttons (INTAKE, CHECK, SPORT, LIGHT) visible. Customer selection interface functional. App currently in dark mode with LIGHT button available for theme toggle. Command Center accessibility via CHECK button confirmed visually but blue glass aesthetic, tab navigation (Dashboard, Customers, Import, Printer, Settings), and input field functionality require manual testing due to automation limitations."
-      - working: true
+        comment: "❌ CRITICAL: Sound logic correctly implemented but sound files missing. notificationSound.js expects spanish-success.mp3, spanish-eject.mp3, spanish-sport.mp3 (and french/korean variants) but only jdm.wav, euro.wav, merica.wav, startup.wav exist. All sound functions (playSportModeSound, playCustomerAddedSound, playEjectSound) will fail silently. Sport Mode logic correct (only plays OFF->ON), Quick Add logic correct (plays on success), Eject logic correct (plays on successful print)."
+
+  - task: "Vision Extraction Wiring - VisionExtractor component accessibility"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/VisionExtractor.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
         agent: "testing"
-        comment: "✅ PASS: Command Center UI regression test completed via code analysis and visual verification. App loads successfully at https://salesweapon-1.preview.emergentagent.com with SUPERCHARG'D branding. CHECK button (data-testid='open-admin-settings-btn') confirmed present in header. CommandCenter.jsx contains all 5 required tabs (Dashboard, Customers, Import, Printer, Settings). Settings tab verified: NO Twilio setup section, Engine Sound Profile with blue-glass styling present, Browser Notifications section removed. Customers tab has cc-search-blue-glass container with transparent input background. Printer tab has printer-status-card with blue-glass aesthetic. All requirements met based on code inspection."
+        comment: "❌ FAIL: VisionExtractor component exists and is fully implemented with GPT-5.1 Vision Model integration, but has NO entry point in Command Center UI. Component not imported or referenced in CommandCenter.jsx. Users cannot access Vision Extraction functionality despite complete implementation. Needs UI wiring in Command Center Import tab or separate button."
 
 metadata:
   created_by: "testing_agent"
