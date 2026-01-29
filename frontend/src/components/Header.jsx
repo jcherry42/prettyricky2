@@ -238,8 +238,8 @@ export const Header = () => {
         </button>
       </div>
       
-      {/* VIN Scanner Modal */}
-      <VinScanner isOpen={vinScannerOpen} onClose={() => setVinScannerOpen(false)} />
+      {/* License Scanner Modal */}
+      <LicenseScanner isOpen={licenseScannerOpen} onClose={() => setLicenseScannerOpen(false)} />
       
       {/* Command Center Modal */}
       <CommandCenter isOpen={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
