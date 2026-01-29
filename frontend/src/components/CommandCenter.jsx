@@ -1668,6 +1668,9 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
     } catch (e) {
       // Simulate success for now since we don't have a real print endpoint
       setPrintResult({ success: true });
+      import('../utils/notificationSound').then(mod => {
+        mod.playEjectSound?.();
+      }).catch(() => {});
       toast.success('Print job sent!', { description: `Printing ${customer.first_name}'s profile` });
       setTimeout(() => {
         setShowEjectModal(false);
