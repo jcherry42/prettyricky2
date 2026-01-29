@@ -2304,8 +2304,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   );
 };
 
-// Import Modal Component
-const ImportModal = ({ onClose, onSuccess }) => {
+// Settings Tab Component
   const [mode, setMode] = useState('file'); // 'file' or 'email'
   const [importType, setImportType] = useState('customers');
   const [file, setFile] = useState(null);
