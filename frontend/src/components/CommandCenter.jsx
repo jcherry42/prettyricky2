@@ -2305,12 +2305,6 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
 };
 
 // Settings Tab Component
-  const [mode, setMode] = useState('file'); // 'file' or 'email'
-  const [importType, setImportType] = useState('customers');
-  const [file, setFile] = useState(null);
-  const [emailBody, setEmailBody] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
 
   const handleFileImport = async () => {
     if (!file) return;
