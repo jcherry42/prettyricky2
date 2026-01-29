@@ -388,8 +388,12 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         {/* Customer Form Modal */}
         {showCustomerForm && (
           <CustomerForm 
-            onClose={() => { setShowCustomerForm(false); fetchCustomers(); }}
             customer={selectedCustomer}
+            initialData={prefillCustomerData}
+            onClose={() => {
+              setShowCustomerForm(false);
+              setPrefillCustomerData(null);
+            }}
           />
         )}
 
