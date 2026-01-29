@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Russo+One&family=Chakra+Petch:wght@400;600;700&family=Manrope:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chonburi&display=swap');
 @import './styles/tokens.css';
 @import './styles/animations.css';
 @import './styles/luxury-auto.css';
@@ -9,13 +9,18 @@
 @tailwind utilities;
 
 /* ============================================
-   SUPERCHARG'D - GTA Vice City Meets JDM
-   R34 Skyline Inspired | Neon Miami Aesthetic
+   SUPERCHARG'D - Premium Automotive Sales App
+   Chonburi Font Throughout
    ============================================ */
+
+/* Global Font Override */
+* {
+  font-family: 'Chonburi', cursive !important;
+}
 
 /* GTA Vice City Text Styles */
 .vice-city-title {
-  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  font-family: 'Chonburi', cursive;
   font-size: 1.4rem;
   letter-spacing: 0.15em;
   background: linear-gradient(180deg, 
