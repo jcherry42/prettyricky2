@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
+import { LicenseScanner } from './LicenseScanner';
 import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
