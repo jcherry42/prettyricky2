@@ -13,6 +13,11 @@
    Smooch Sans Font Throughout
    ============================================ */
 
+/* Global Font Size Increase by 20% */
+html {
+  font-size: 120% !important;
+}
+
 /* Global Font Override */
 * {
   font-family: 'Smooch Sans', sans-serif !important;
@@ -21,7 +26,7 @@
 /* GTA Vice City Text Styles */
 .vice-city-title {
   font-family: 'Smooch Sans', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.68rem; /* 1.4rem * 1.2 */
   letter-spacing: 0.15em;
   background: linear-gradient(180deg, 
     #ff6b9d 0%, 
