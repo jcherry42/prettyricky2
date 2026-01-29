@@ -4477,8 +4477,9 @@ async def print_license_image(req: PrintJobRequest):
         temp_img.seek(0)
         
         # Draw image on PDF
+        from reportlab.lib.utils import ImageReader as RLImageReader
         c.drawImage(
-            pyipp.image.ImageReader(temp_img),
+            RLImageReader(temp_img),
             x, y, width=new_width, height=new_height
         )
         
