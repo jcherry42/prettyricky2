@@ -156,6 +156,10 @@ export const QuickAddButton = () => {
       
       if (res.ok) {
         haptics.success();
+        // Play subtle success chime for new customer
+        import('../utils/notificationSound').then(mod => {
+          mod.playCustomerAddedSound?.();
+        }).catch(() => {});
         setSaved(true);
         announceToScreenReader('Customer added successfully');
         
