@@ -2424,23 +2424,8 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
               onChange={e => setSalespersonForm({...salespersonForm, name: e.target.value})}
             />
           </div>
-          <div className="s-field">
-            <label>Preferred Greeting</label>
-            <div className="greeting-options">
-              {['Good to hear from you', 'Thanks for reaching out', 'Great news'].map(phrase => (
-                <button
-                  key={phrase}
-                  type="button"
-                  className={`greeting-btn ${salespersonForm.preferredPhrase === phrase ? 'active' : ''}`}
-                  onClick={() => setSalespersonForm({...salespersonForm, preferredPhrase: phrase})}
-                >
-                  {phrase}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
-        <button className="save-settings-btn" onClick={handleSaveProfile}>
+        <button className="save-settings-btn gold-btn" onClick={handleSaveProfile}>
           <Save className="w-4 h-4" /> Save Profile
         </button>
       </div>
