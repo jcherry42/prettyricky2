@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Sun, Moon, AlertTriangle, Flame } from 'lucide-react';
+import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
-import { VinScanner } from './VinScanner';
 import { CommandCenter } from './CommandCenter';
 import { getSoundPreferences } from '../utils/notificationSound';
 
