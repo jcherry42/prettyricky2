@@ -174,23 +174,6 @@ export const Header = () => {
 
       {/* Row 2: Action Buttons */}
       <div className="header-row-2">
-        {/* Intake Scanner - Electric Green */}
-        <button
-          onClick={() => setVinScannerOpen(true)}
-          className="header-btn electric-green"
-          data-testid="intake-scanner-btn"
-        >
-          <svg viewBox="0 0 24 24" className="header-btn-icon" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="8" />
-            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
-            <line x1="12" y1="4" x2="12" y2="7" strokeLinecap="round" />
-            <line x1="12" y1="17" x2="12" y2="20" strokeLinecap="round" />
-            <line x1="4" y1="12" x2="7" y2="12" strokeLinecap="round" />
-            <line x1="17" y1="12" x2="20" y2="12" strokeLinecap="round" />
-          </svg>
-          <span>INTAKE</span>
-        </button>
-
         {/* Command Center */}
         <button
           onClick={() => setCommandCenterOpen(true)}
