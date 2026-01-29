@@ -102,10 +102,6 @@ function salesReducer(state, action) {
     case ACTIONS.SET_SETUP_COMPLETE:
       return { ...state, isSetupComplete: action.payload };
       
-    case ACTIONS.SET_VEHICLES:
-      saveToStorage(STORAGE_KEYS.VEHICLES, action.payload);
-      return { ...state, vehicles: action.payload };
-      
     case ACTIONS.SET_CUSTOMERS:
       saveToStorage(STORAGE_KEYS.CUSTOMERS, action.payload);
       return { ...state, customers: action.payload };
@@ -115,32 +111,18 @@ function salesReducer(state, action) {
       return { ...state, customTemplates: action.payload };
       
     case ACTIONS.SELECT_CUSTOMER:
-      const customer = action.payload;
-      const vehicle = customer?.vehicleInterest ? 
-        state.vehicles.find(v => v.id === customer.vehicleInterest) : null;
       return { 
         ...state, 
-        selectedCustomer: customer,
-        selectedVehicle: vehicle,
+        selectedCustomer: action.payload,
         selectedInquiryType: null,
         currentResponses: [],
         selectedResponse: null,
       };
       
-    case ACTIONS.SELECT_VEHICLE:
-      return { ...state, selectedVehicle: action.payload };
-      
     case ACTIONS.SELECT_INQUIRY_TYPE:
       return { 
         ...state, 
         selectedInquiryType: action.payload,
-        selectedResponse: null,
-      };
-      
-    case ACTIONS.SELECT_TONE:
-      return { 
-        ...state, 
-        selectedTone: action.payload,
         selectedResponse: null,
       };
       
