@@ -3065,31 +3065,6 @@ async def extract_customer_from_image(req: VisionExtractionRequest):
     except Exception as e:
         logger.error(f"Vision extraction error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Vision extraction failed: {str(e)}")
-
-    Handler for deal events - logs and optionally notifies
-    """
-    deal_stage = payload.get('deal_stage', 'unknown')
-    customer_name = payload.get('customer_name', 'Unknown')
-    amount = payload.get('amount', 0)
-    
-    logger.info(f"Deal event processed: {customer_name} - {deal_stage} - ${amount}")
-    return {"success": True, "deal_stage": deal_stage, "amount": amount}
-
-
-# Register webhook event handlers
-def register_notification_handlers():
-        event_type=EventType.CUSTOMER_CREATED.value,
-        payload={
-            "customer_name": customer_name,
-            "customer_phone": customer_phone,
-            "vehicle_interest": vehicle_interest,
-            "salesperson_phone": salesperson_phone,
-            "salesperson_name": "Test Salesperson",
-            "is_hot": True,
-        },
-        source="test"
-    )
-    
     event_id = await event_processor.enqueue_event(test_event)
     return {
         "success": True,
