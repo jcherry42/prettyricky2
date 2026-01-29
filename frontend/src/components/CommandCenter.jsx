@@ -2317,14 +2317,12 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   
   const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
   const [notificationPermission, setNotificationPermission] = useState('default');
-  const [twilioForm, setTwilioForm] = useState({
     account_sid: '',
     auth_token: '',
     from_number: '',
   });
   const [showSecret, setShowSecret] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [twilioConfigured, setTwilioConfigured] = useState(false);
   
   useEffect(() => {
     if ('Notification' in window) {
@@ -2343,8 +2341,6 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
     toast.success('Profile settings saved!');
   };
   
-  const handleSaveTwilio = async () => {
-    if (!twilioForm.account_sid || !twilioForm.auth_token || !twilioForm.from_number) {
       toast.error('Please fill all Twilio fields');
       return;
     }
@@ -2353,7 +2349,6 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
       const res = await fetch(`${BACKEND_URL}/api/notifications/config/twilio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(twilioForm),
       });
       if (res.ok) {
         toast.success('Twilio configured!');
@@ -2456,11 +2451,11 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
       </div>
       
-      {/* Notifications Section */}
-      <div className="settings-section">
+      {/* Engine Sound Profile Section - Blue Glass */}
+      <div className="settings-section engine-sound-profile">
         <div className="section-header">
-          <Bell className="w-5 h-5" style={{ color: '#FFBF00' }} />
-          <h4>Notifications</h4>
+          <Volume2 className="w-5 h-5" style={{ color: '#FFBF00' }} />
+          <h4>Engine Sound Profile</h4>
         </div>
         
         {/* Sound Settings */}
@@ -2521,56 +2516,6 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
       </div>
       
-      {/* Twilio SMS Section */}
-      <div className="settings-section">
-        <div className="section-header">
-          <Phone className="w-5 h-5" style={{ color: '#FFBF00' }} />
-          <h4>SMS Notifications (Twilio)</h4>
-          {twilioConfigured && <span className="config-badge">Configured</span>}
-        </div>
-        <div className="settings-form">
-          <div className="s-field">
-            <label>Account SID</label>
-            <input 
-              type="text"
-              placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              value={twilioForm.account_sid}
-              onChange={e => setTwilioForm({...twilioForm, account_sid: e.target.value})}
-            />
-          </div>
-          <div className="s-field">
-            <label>Auth Token</label>
-            <div className="secret-input">
-              <input 
-                type={showSecret ? 'text' : 'password'}
-                placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                value={twilioForm.auth_token}
-                onChange={e => setTwilioForm({...twilioForm, auth_token: e.target.value})}
-              />
-              <button type="button" onClick={() => setShowSecret(!showSecret)}>
-                {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-          <div className="s-field">
-            <label>From Phone Number</label>
-            <input 
-              type="text"
-              placeholder="+15551234567"
-              value={twilioForm.from_number}
-              onChange={e => setTwilioForm({...twilioForm, from_number: e.target.value})}
-            />
-          </div>
-        </div>
-        <button 
-          className="save-settings-btn" 
-          onClick={handleSaveTwilio}
-          disabled={saving}
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {twilioConfigured ? 'Update Twilio' : 'Configure Twilio'}
-        </button>
-      </div>
       
       <style>{`
         .settings-tab {

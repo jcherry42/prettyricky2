@@ -868,6 +868,22 @@ body.modal-open {
 
 /* Blue Glass Search Bar in Light Mode - ONE UNIFIED BOX */
 html:not(.dark) .cc-search-blue-glass {
+
+
+/* Engine Sound Profile - Blue Tinted Glass in Light Mode */
+html:not(.dark) .engine-sound-profile {
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 180, 255, 0.4) 100%) !important;
+  border: 1px solid rgba(0, 150, 255, 0.5) !important;
+}
+
+html:not(.dark) .engine-sound-profile .section-header {
+  color: #003d7a !important;
+}
+
+html:not(.dark) .engine-sound-profile .section-header h3 {
+  color: #003d7a !important;
+}
+
   background: linear-gradient(135deg, rgba(0, 120, 255, 0.4) 0%, rgba(0, 180, 255, 0.5) 100%) !important;
   border: 2px solid rgba(0, 150, 255, 0.6) !important;
   box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
