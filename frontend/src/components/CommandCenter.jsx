@@ -2305,7 +2305,6 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
 };
 
 // Settings Tab Component
-// Settings Tab Component
 const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   const { 
     dealership, 
