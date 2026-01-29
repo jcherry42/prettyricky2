@@ -334,16 +334,16 @@ html:not(.dark) h4 {
 
 /* BLUE GLASS STAT CARDS */
 html:not(.dark) .cc-stat-card {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 150, 255, 0.18) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 180, 255, 0.4) 100%);
+  border: 1px solid rgba(0, 150, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 120, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);
 }
 
 html:not(.dark) .cc-stat-value {
-  color: #0066cc !important;
+  color: #FF6600 !important;
   font-weight: 700;
-  text-shadow: 0 2px 8px rgba(0, 217, 255, 0.3);
+  text-shadow: 0 2px 8px rgba(255, 102, 0, 0.4);
 }
 
 html:not(.dark) .cc-stat-label {
@@ -353,16 +353,16 @@ html:not(.dark) .cc-stat-label {
 
 /* BLUE GLASS ITEMS */
 html:not(.dark) .cc-item {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(0, 150, 255, 0.12) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.25) 0%, rgba(0, 180, 255, 0.35) 100%);
+  border: 1px solid rgba(0, 150, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 120, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(8px);
 }
 
 html:not(.dark) .cc-item:hover {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.22) 100%);
-  border-color: rgba(0, 217, 255, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 217, 255, 0.25);
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.35) 0%, rgba(0, 180, 255, 0.45) 100%);
+  border-color: rgba(0, 180, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.35);
   transform: translateY(-2px);
 }
 
@@ -389,56 +389,56 @@ html:not(.dark) .status-label {
   text-shadow: 0 1px 4px rgba(0, 217, 255, 0.3);
 }
 
-/* BLUE GLASS INPUT BOXES WITH ELECTRIC GREEN NEON TEXT */
+/* BLUE GLASS INPUT BOXES WITH SAFETY ORANGE NEON TEXT */
 html:not(.dark) .printer-ip-input,
 html:not(.dark) .cc-input,
 html:not(.dark) input[type="text"],
 html:not(.dark) input[type="email"],
 html:not(.dark) input[type="tel"],
 html:not(.dark) textarea {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.22) 100%) !important;
-  border: 2px solid rgba(0, 217, 255, 0.4) !important;
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.35) 0%, rgba(0, 180, 255, 0.45) 100%) !important;
+  border: 2px solid rgba(0, 150, 255, 0.5) !important;
   box-shadow: 
-    0 4px 12px rgba(0, 150, 255, 0.2),
-    inset 0 2px 4px rgba(0, 217, 255, 0.1),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.5) !important;
+    0 4px 12px rgba(0, 120, 255, 0.3),
+    inset 0 2px 4px rgba(0, 180, 255, 0.2),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.3) !important;
   backdrop-filter: blur(12px);
   
-  /* ELECTRIC GREEN NEON TEXT EFFECT */
-  color: #00FF88 !important;
-  font-weight: 600;
+  /* SAFETY ORANGE NEON TEXT EFFECT */
+  color: #FF6600 !important;
+  font-weight: 700;
   text-shadow: 
-    0 0 10px rgba(0, 255, 136, 0.8),
-    0 0 20px rgba(0, 255, 136, 0.5),
-    0 2px 4px rgba(0, 200, 100, 0.4);
+    0 0 12px rgba(255, 102, 0, 0.9),
+    0 0 24px rgba(255, 102, 0, 0.6),
+    0 2px 6px rgba(200, 80, 0, 0.5);
 }
 
 html:not(.dark) .printer-ip-input::placeholder,
 html:not(.dark) .cc-input::placeholder,
 html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
-  color: rgba(0, 255, 136, 0.4) !important;
+  color: rgba(255, 102, 0, 0.45) !important;
   font-weight: 500;
-  text-shadow: 0 0 6px rgba(0, 255, 136, 0.3);
+  text-shadow: 0 0 8px rgba(255, 102, 0, 0.4);
 }
 
 html:not(.dark) .printer-ip-input:focus,
 html:not(.dark) .cc-input:focus,
 html:not(.dark) input:focus,
 html:not(.dark) textarea:focus {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 150, 255, 0.28) 100%) !important;
-  border-color: rgba(0, 217, 255, 0.7) !important;
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.45) 0%, rgba(0, 180, 255, 0.55) 100%) !important;
+  border-color: rgba(0, 180, 255, 0.7) !important;
   box-shadow: 
-    0 0 0 3px rgba(0, 255, 136, 0.15),
-    0 6px 20px rgba(0, 150, 255, 0.3),
-    inset 0 2px 4px rgba(0, 217, 255, 0.15),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.6) !important;
+    0 0 0 3px rgba(255, 102, 0, 0.15),
+    0 6px 20px rgba(0, 120, 255, 0.4),
+    inset 0 2px 4px rgba(0, 180, 255, 0.25),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.4) !important;
   
-  /* ENHANCED ELECTRIC GREEN NEON ON FOCUS */
+  /* ENHANCED SAFETY ORANGE NEON ON FOCUS */
   text-shadow: 
-    0 0 15px rgba(0, 255, 136, 1),
-    0 0 25px rgba(0, 255, 136, 0.7),
-    0 2px 8px rgba(0, 200, 100, 0.5);
+    0 0 18px rgba(255, 102, 0, 1),
+    0 0 32px rgba(255, 102, 0, 0.8),
+    0 3px 10px rgba(200, 80, 0, 0.6);
 }
 
 /* BLUE GLASS INFO SECTIONS */
@@ -713,31 +713,32 @@ html:not(.dark) .tesla-inquiry-btn {
 
 /* Blue Glass Search Bar in Light Mode - ONE UNIFIED BOX */
 html:not(.dark) .cc-search-blue-glass {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.12) 0%, rgba(0, 150, 255, 0.18) 100%) !important;
-  border: 2px solid rgba(0, 217, 255, 0.35) !important;
-  box-shadow: 0 4px 12px rgba(0, 150, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.4) 0%, rgba(0, 180, 255, 0.5) 100%) !important;
+  border: 2px solid rgba(0, 150, 255, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   backdrop-filter: blur(10px);
 }
 
 html:not(.dark) .cc-search-blue-glass input {
   background: transparent !important;
   border: none !important;
-  color: #00FF88 !important;
-  font-weight: 600;
+  color: #FF6600 !important;
+  font-weight: 700;
   text-shadow: 
-    0 0 10px rgba(0, 255, 136, 0.7),
-    0 0 18px rgba(0, 255, 136, 0.4);
+    0 0 12px rgba(255, 102, 0, 0.8),
+    0 0 22px rgba(255, 102, 0, 0.5);
   outline: none !important;
   box-shadow: none !important;
 }
 
 html:not(.dark) .cc-search-blue-glass input::placeholder {
-  color: rgba(0, 255, 136, 0.4) !important;
-  text-shadow: 0 0 6px rgba(0, 255, 136, 0.25);
+  color: rgba(255, 102, 0, 0.45) !important;
+  text-shadow: 0 0 8px rgba(255, 102, 0, 0.35);
 }
 
 html:not(.dark) .cc-search-blue-glass svg {
-  color: rgba(0, 217, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
 }
 
 /* Dark Mode - Limo Glass Search Bar - ONE UNIFIED BOX */
