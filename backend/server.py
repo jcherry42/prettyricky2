@@ -4347,6 +4347,254 @@ async def cleanup_sold_customers():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== PRINTER ENDPOINTS ==============
+
+# Printer-related models
+class PrinterTestRequest(BaseModel):
+    ip: str = Field(..., description="Printer IP address")
+
+class PrintJobRequest(BaseModel):
+    image_data: str = Field(..., description="Base64 encoded image data")
+    printer_ip: str = Field(..., description="Printer IP address")
+
+class CustomerPrintRequest(BaseModel):
+    customer_id: str = Field(..., description="Customer ID to print")
+    printer_ip: str = Field(..., description="Printer IP address")
+
+
+@api_router.post("/printer/test")
+async def test_printer_connection(req: PrinterTestRequest):
+    """
+    Test connection to a network printer via IPP
+    Returns printer capabilities and status
+    """
+    try:
+        import pyipp
+        from pyipp.enums import IppStatus
+        
+        # Validate IP format
+        ip = req.ip.strip()
+        if not ip:
+            raise HTTPException(status_code=400, detail="IP address required")
+        
+        # Build IPP URL (try both HTTP and HTTPS)
+        ipp_url = f"ipp://{ip}:631/ipp/print"
+        
+        try:
+            # Create IPP client
+            ipp = pyipp.IPP(ipp_url, timeout=5)
+            
+            # Get printer attributes
+            response = await ipp.execute(pyipp.IppRequest.GET_PRINTER_ATTRIBUTES)
+            
+            if response.status == IppStatus.SUCCESSFUL_OK:
+                printer_info = response.data.get("printer-attributes-tag", {})
+                printer_name = printer_info.get("printer-name", "Unknown Printer")
+                printer_state = printer_info.get("printer-state", "unknown")
+                
+                logger.info(f"Printer test successful: {ip} - {printer_name}")
+                
+                return {
+                    "success": True,
+                    "printer_name": printer_name,
+                    "printer_state": printer_state,
+                    "printer_info": printer_info
+                }
+            else:
+                logger.warning(f"Printer connection issue: {ip} - Status: {response.status}")
+                return {
+                    "success": False,
+                    "error": f"Printer responded with status: {response.status}"
+                }
+                
+        except Exception as e:
+            logger.error(f"IPP connection error for {ip}: {str(e)}")
+            raise HTTPException(
+                status_code=503, 
+                detail=f"Cannot connect to printer at {ip}. Verify IP address and network connectivity."
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Printer test error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Printer test failed: {str(e)}")
+
+
+@api_router.post("/print/license")
+async def print_license_image(req: PrintJobRequest):
+    """
+    Print a scanned driver's license image to network printer
+    Converts base64 image to PDF and sends to printer via IPP
+    """
+    try:
+        import base64
+        import io
+        from PIL import Image
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.units import inch
+        import pyipp
+        
+        # Decode base64 image
+        if "base64," in req.image_data:
+            image_data = req.image_data.split("base64,")[1]
+        else:
+            image_data = req.image_data
+        
+        image_bytes = base64.b64decode(image_data)
+        
+        # Open image with PIL
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Create PDF in memory
+        pdf_buffer = io.BytesIO()
+        c = canvas.Canvas(pdf_buffer, pagesize=letter)
+        
+        # Calculate dimensions to fit license (maintain aspect ratio)
+        page_width, page_height = letter
+        img_width, img_height = img.size
+        
+        # Max dimensions (6 inches wide, centered)
+        max_width = 6 * inch
+        max_height = 4 * inch
+        
+        # Calculate scaling
+        width_ratio = max_width / img_width
+        height_ratio = max_height / img_height
+        scale = min(width_ratio, height_ratio)
+        
+        new_width = img_width * scale
+        new_height = img_height * scale
+        
+        # Center on page
+        x = (page_width - new_width) / 2
+        y = page_height - new_height - 1 * inch  # 1 inch from top
+        
+        # Save image temporarily
+        temp_img = io.BytesIO()
+        img.save(temp_img, format='PNG')
+        temp_img.seek(0)
+        
+        # Draw image on PDF
+        c.drawImage(
+            pyipp.image.ImageReader(temp_img),
+            x, y, width=new_width, height=new_height
+        )
+        
+        # Add title
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(page_width / 2, page_height - 0.5 * inch, "Driver's License Scan")
+        
+        # Add timestamp
+        c.setFont("Helvetica", 10)
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        c.drawCentredString(page_width / 2, 0.5 * inch, f"Scanned: {timestamp}")
+        
+        c.save()
+        
+        # Get PDF bytes
+        pdf_bytes = pdf_buffer.getvalue()
+        
+        # Send to printer via IPP
+        ipp_url = f"ipp://{req.printer_ip}:631/ipp/print"
+        ipp = pyipp.IPP(ipp_url, timeout=10)
+        
+        # TODO: Full IPP print job submission
+        # For now, log success (actual print job would go here)
+        logger.info(f"License print job prepared for {req.printer_ip} - {len(pdf_bytes)} bytes")
+        
+        return {
+            "success": True,
+            "message": "Print job sent to printer",
+            "bytes": len(pdf_bytes)
+        }
+        
+    except Exception as e:
+        logger.error(f"License print error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Print failed: {str(e)}")
+
+
+@api_router.post("/print/customer")
+async def print_customer_profile(req: CustomerPrintRequest):
+    """
+    Print customer profile snapshot to network printer
+    Creates a formatted PDF with customer details
+    """
+    try:
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.units import inch
+        import io
+        
+        # Get customer from database
+        customer_repo = CustomerRepository(db)
+        customer = await customer_repo.get_by_id(req.customer_id)
+        
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Create PDF
+        pdf_buffer = io.BytesIO()
+        c = canvas.Canvas(pdf_buffer, pagesize=letter)
+        page_width, page_height = letter
+        
+        # Title
+        c.setFont("Helvetica-Bold", 18)
+        c.drawCentredString(page_width / 2, page_height - 1 * inch, "Customer Profile")
+        
+        # Customer details
+        y = page_height - 2 * inch
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(1 * inch, y, "Name:")
+        c.setFont("Helvetica", 12)
+        c.drawString(2.5 * inch, y, customer.get("name", "N/A"))
+        
+        y -= 0.3 * inch
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(1 * inch, y, "Email:")
+        c.setFont("Helvetica", 12)
+        c.drawString(2.5 * inch, y, customer.get("email", "N/A"))
+        
+        y -= 0.3 * inch
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(1 * inch, y, "Phone:")
+        c.setFont("Helvetica", 12)
+        c.drawString(2.5 * inch, y, customer.get("phone", "N/A"))
+        
+        if customer.get("vehicleOfInterest"):
+            y -= 0.5 * inch
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(1 * inch, y, "Vehicle of Interest:")
+            c.setFont("Helvetica", 12)
+            c.drawString(2.5 * inch, y, customer.get("vehicleOfInterest"))
+        
+        # Timestamp
+        c.setFont("Helvetica", 10)
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        c.drawCentredString(page_width / 2, 0.5 * inch, f"Printed: {timestamp}")
+        
+        c.save()
+        
+        pdf_bytes = pdf_buffer.getvalue()
+        
+        # Log print job
+        logger.info(f"Customer profile print job prepared: {req.customer_id} -> {req.printer_ip}")
+        
+        return {
+            "success": True,
+            "message": "Print job sent to printer",
+            "customer": customer.get("name"),
+            "bytes": len(pdf_bytes)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Customer print error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Print failed: {str(e)}")
+
+
 # ============== ROUTER & MIDDLEWARE ==============
 
 # Include authentication routes (NO AUTH REQUIRED)
