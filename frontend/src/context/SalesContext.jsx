@@ -237,12 +237,10 @@ export function SalesProvider({ children }) {
         dealership,
         salesperson,
         preferences,
-        vehicles,
         customers,
         customTemplates,
         favorites,
         isSetupComplete,
-        selectedTone: preferences.defaultTone || 'balanced',
         theme: savedTheme,
         supercharged: savedSupercharged,
       },
@@ -266,14 +264,11 @@ export function SalesProvider({ children }) {
   // Performance cleanup listener - trim stale data on deep cleanup
   useEffect(() => {
     const handleDeepCleanup = () => {
-      // Clear generated responses to free memory (they can be regenerated)
       dispatch({ type: ACTIONS.SET_RESPONSES, payload: [] });
     };
     
     const handleEmergencyCleanup = () => {
-      // Reset selection state to free memory
       dispatch({ type: ACTIONS.SELECT_CUSTOMER, payload: null });
-      dispatch({ type: ACTIONS.SELECT_VEHICLE, payload: null });
       dispatch({ type: ACTIONS.SELECT_INQUIRY_TYPE, payload: null });
       dispatch({ type: ACTIONS.SET_RESPONSES, payload: [] });
     };
