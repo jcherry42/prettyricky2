@@ -41,6 +41,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showVisionExtractor, setShowVisionExtractor] = useState(false);
+  const [prefillCustomerData, setPrefillCustomerData] = useState(null);
 
   // Printer state
   const [printerIP, setPrinterIP] = useState(() => localStorage.getItem('printerIP') || '');
@@ -1374,16 +1375,22 @@ const IntegrationItem = ({ name, connected }) => (
 );
 
 // Customer Form Component
-const CustomerForm = ({ onClose, customer }) => {
+const CustomerForm = ({ onClose, customer, initialData }) => {
   const [formData, setFormData] = useState({
-    first_name: customer?.first_name || '',
-    last_name: customer?.last_name || '',
-    phone: customer?.phone || '',
-    email: customer?.email || '',
-    address: customer?.address || '',
-    lead_source: customer?.lead_source || 'manual',
-    lead_status: customer?.lead_status || 'new',
-    notes: customer?.notes || '',
+    first_name: customer?.first_name || initialData?.first_name || '',
+    last_name: customer?.last_name || initialData?.last_name || '',
+    phone: customer?.phone || initialData?.phone || '',
+    email: customer?.email || initialData?.email || '',
+    address: customer?.address || initialData?.address || '',
+    policy_number: customer?.policy_number || initialData?.policy_number || '',
+    vehicle_vin: customer?.vehicle_of_interest || initialData?.vehicle_vin || '',
+    trade_vin: customer?.trade_vehicle?.vin || initialData?.trade_vin || '',
+    trade_mileage: (customer?.trade_vehicle?.mileage != null
+      ? String(customer.trade_vehicle.mileage)
+      : (initialData?.trade_mileage || '')),
+    lead_source: customer?.lead_source || initialData?.lead_source || 'manual',
+    lead_status: customer?.lead_status || initialData?.lead_status || 'new',
+    notes: customer?.notes || initialData?.notes || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -1395,11 +1402,64 @@ const CustomerForm = ({ onClose, customer }) => {
         ? `${BACKEND_URL}/api/customers/${customer.id}`
         : `${BACKEND_URL}/api/customers/create`;
       const method = customer ? 'PATCH' : 'POST';
+
+      let payload;
+      if (customer) {
+        // For edits, send full customer payload with optional trade/policy fields
+        let tradeVehicle = null;
+        if (formData.trade_vin?.trim()) {
+          tradeVehicle = {
+            vin: formData.trade_vin.trim(),
+            mileage: formData.trade_mileage?.trim()
+              ? parseInt(formData.trade_mileage.replace(/,/g, ''), 10)
+              : null,
+          };
+        }
+
+        payload = {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          email: formData.email,
+          address: formData.address,
+          policy_number: formData.policy_number?.trim() || null,
+          vehicle_of_interest: formData.vehicle_vin?.trim() || null,
+          trade_vehicle: tradeVehicle,
+          lead_source: formData.lead_source,
+          lead_status: formData.lead_status,
+          notes: formData.notes,
+        };
+      } else {
+        // For new customers, match Quick Add payload shape
+        let tradeVehicle = null;
+        if (formData.trade_vin?.trim()) {
+          tradeVehicle = {
+            vin: formData.trade_vin.trim(),
+            mileage: formData.trade_mileage?.trim()
+              ? parseInt(formData.trade_mileage.replace(/,/g, ''), 10)
+              : null,
+          };
+        }
+
+        payload = {
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          phone: formData.phone,
+          email: formData.email,
+          address: formData.address,
+          policy_number: formData.policy_number?.trim() || null,
+          vehicle_of_interest: formData.vehicle_vin?.trim() || null,
+          trade_vehicle: tradeVehicle,
+          lead_source: formData.lead_source,
+          notes: formData.notes,
+          lead_status: formData.lead_status,
+        };
+      }
       
       await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       onClose();
     } catch (e) {
