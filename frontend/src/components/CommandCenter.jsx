@@ -334,58 +334,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {/* Inventory Tab */}
-          {activeTab === 'inventory' && (
-            <div className="cc-inventory">
-              <div className="cc-toolbar">
-                <div className="cc-search">
-                  <Search className="w-4 h-4" />
-                  <input 
-                    type="text" 
-                    placeholder="Search vehicles..." 
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className="cc-filter-btns">
-                  <button onClick={() => fetchVehicles()} className="cc-filter-btn">All</button>
-                  <button onClick={() => fetchVehicles('active_inventory')} className="cc-filter-btn">Inventory</button>
-                  <button onClick={() => fetchVehicles('trade_in')} className="cc-filter-btn">Trade-Ins</button>
-                </div>
-              </div>
-              
-              <div className="cc-list">
-                {loading ? (
-                  <div className="cc-loading">Loading...</div>
-                ) : filteredVehicles.length === 0 ? (
-                  <div className="cc-empty">No vehicles found</div>
-                ) : (
-                  filteredVehicles.map(vehicle => (
-                    <div 
-                      key={vehicle.id} 
-                      className="cc-list-item vehicle"
-                      onClick={() => setSelectedVehicle(vehicle)}
-                    >
-                      <div className="item-avatar vehicle">
-                        <Car className="w-5 h-5" />
-                      </div>
-                      <div className="item-info">
-                        <span className="item-name">{vehicle.year} {vehicle.make} {vehicle.model}</span>
-                        <span className="item-meta">
-                          {vehicle.vin && <span className="vin">{vehicle.vin}</span>}
-                        </span>
-                      </div>
-                      <span className={`item-category ${vehicle.category}`}>
-                        {vehicle.category === 'trade_in' ? 'Trade-In' : 'Inventory'}
-                      </span>
-                      <ChevronRight className="w-4 h-4 item-chevron" />
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Import Tab */}
           {activeTab === 'import' && (
             <div className="cc-import">
@@ -394,16 +342,9 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                 <ImportOption 
                   icon={FileUp}
                   title="File Upload"
-                  description="Import from CSV or Excel"
+                  description="Import from CSV or JSON"
                   color="cyan"
                   onClick={() => setShowImportModal(true)}
-                />
-                <ImportOption 
-                  icon={Mail}
-                  title="Email Parser"
-                  description="Parse lead emails"
-                  color="amber"
-                  onClick={() => setShowEmailParser(true)}
                 />
                 <ImportOption 
                   icon={UserPlus}
@@ -411,13 +352,6 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                   description="Add customer manually"
                   color="green"
                   onClick={() => { setActiveTab('customers'); setShowCustomerForm(true); }}
-                />
-                <ImportOption 
-                  icon={Link2}
-                  title="CRM Sync"
-                  description="Connect your CRM"
-                  color="purple"
-                  onClick={() => setActiveTab('integrations')}
                 />
               </div>
             </div>
