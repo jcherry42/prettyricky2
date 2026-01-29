@@ -410,15 +410,26 @@ export const CommandCenter = ({ isOpen, onClose }) => {
               <VisionExtractor 
                 onClose={() => setShowVisionExtractor(false)}
                 onDataExtracted={(data) => {
-                  // Pre-fill customer form with extracted data
+                  // Map vision fields into our unified customer form prefill state
+                  const mapped = {
+                    first_name: data.firstName || '',
+                    last_name: data.lastName || '',
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    address: data.address || '',
+                    policy_number: data.policyNumber || '',
+                    vehicle_vin: data.vehicleOfInterest || '',
+                    trade_vin: data.tradeVin || '',
+                    trade_mileage: data.tradeMileage || '',
+                    lead_source: data.leadSource || 'vision_extract',
+                    lead_status: data.leadStatus || 'new',
+                    notes: data.notes || '',
+                  };
+
+                  setPrefillCustomerData(mapped);
                   setShowVisionExtractor(false);
-                  setShowCustomerForm(true);
                   setSelectedCustomer(null);
-                  // Best-effort mapping of extracted fields
-                  // (expects keys like first_name, last_name, phone, email, address)
-                  // We rely on CustomerForm defaults for anything missing.
-                  // No direct state injection here to keep CustomerForm simple.
-                  console.log('Vision extracted data', data);
+                  setShowCustomerForm(true);
                 }}
               />
             </div>
