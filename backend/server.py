@@ -3021,6 +3021,54 @@ async def get_favorite_categories():
 
 
     """
+
+
+# ============== VISION EXTRACTION ENDPOINT ==============
+
+from vision_extraction_service import get_vision_service
+
+class VisionExtractionRequest(BaseModel):
+    """Vision extraction request"""
+    image_base64: str = Field(..., description="Base64 encoded image (PNG, JPEG, WEBP)")
+    additional_context: Optional[str] = Field(None, description="Optional context to help extraction")
+
+
+@api_router.post("/vision/extract-customer")
+async def extract_customer_from_image(req: VisionExtractionRequest):
+    """
+    Extract customer data from image using GPT-5.1 vision
+    Elite enterprise-grade extraction
+    """
+    try:
+        vision_service = get_vision_service()
+        
+        # Validate image format
+        if not vision_service.validate_image_format(req.image_base64):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid image format. Only PNG, JPEG, and WEBP are supported."
+            )
+        
+        # Extract data
+        result = await vision_service.extract_customer_data(
+            image_base64=req.image_base64,
+            additional_context=req.additional_context
+        )
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=result.get("error", "Vision extraction failed")
+            )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Vision extraction error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Vision extraction failed: {str(e)}")
+
     Handler for deal events - logs and optionally notifies
     """
     deal_stage = payload.get('deal_stage', 'unknown')

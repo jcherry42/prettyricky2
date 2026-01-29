@@ -698,6 +698,167 @@ button[class*="add-customer"]:hover,
 html:not(.dark) .tesla-inquiry-btn {
   background: white;
   border: 2px solid rgba(0, 0, 0, 0.1);
+
+
+/* ==================== COMMAND CENTER FONT SIZE BOOST ==================== */
+
+/* ALL Command Center text 75% LARGER - 315% total (180% * 1.75) */
+
+/* Header and tabs */
+.cc-header,
+.cc-header *,
+.cc-tabs,
+.cc-tab {
+  font-size: 315% !important;
+}
+
+.cc-header h2 {
+  font-size: 350% !important;
+}
+
+/* ALL BODY CONTENT - MASSIVE */
+.cc-modal,
+.cc-body,
+.cc-body *,
+.cc-section-title,
+.cc-description,
+.cc-stat-card,
+.cc-stat-card *,
+.cc-stat-value,
+.cc-stat-label,
+.cc-item,
+.cc-item *,
+.item-name,
+.item-meta,
+.cc-input,
+.printer-ip-input,
+.printer-status-card,
+.printer-status-card *,
+.printer-info,
+.printer-info *,
+.settings-section,
+.settings-section *,
+.s-field,
+.s-field *,
+.s-field label,
+.s-field input,
+.cc-search,
+.cc-search *,
+.cc-search input,
+.cc-search-blue-glass,
+.cc-search-blue-glass *,
+.cc-search-blue-glass input,
+.customer-form,
+.customer-form *,
+.form-field,
+.form-field *,
+.form-field label,
+.form-field input,
+.cc-customers,
+.cc-customers *,
+.import-options,
+.import-options *,
+.io-title,
+.io-desc,
+.cc-toolbar,
+.cc-toolbar *,
+.cc-add-btn,
+label,
+input,
+textarea,
+select,
+button,
+span,
+p,
+div,
+h3,
+h4 {
+  font-size: 315% !important;
+}
+
+/* Section titles even larger */
+.cc-section-title,
+.section-header h3,
+.settings-section h3 {
+  font-size: 350% !important;
+}
+
+
+
+/* ==================== MOBILE KEYBOARD OPTIMIZATION ==================== */
+
+/* Smooth keyboard interactions on mobile */
+@media (max-width: 768px) {
+  /* When keyboard is open, make modal scrollable within viewport */
+  .cc-modal {
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .cc-body {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 40px !important;
+  }
+
+  /* Ensure inputs are visible when focused */
+  input:focus,
+  textarea:focus {
+    scroll-margin-top: 100px;
+    scroll-margin-bottom: 100px;
+  }
+
+  /* Add padding at bottom of forms for keyboard clearance */
+  .customer-form,
+  .settings-section,
+  .printer-config {
+    padding-bottom: 300px !important;
+  }
+
+  /* Quick Add Modal optimization */
+  .qa-modal {
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+
+  .qa-form {
+    padding-bottom: 300px !important;
+  }
+
+  /* Import Modal optimization */
+  .import-modal {
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+
+  .im-body {
+    padding-bottom: 300px !important;
+  }
+}
+
+/* Prevent body scroll when modals are open */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* iOS Safari keyboard handling */
+@supports (-webkit-touch-callout: none) {
+  .cc-modal {
+    max-height: 85vh !important;
+  }
+  
+  /* Adjust for iOS safe area */
+  .cc-modal,
+  .qa-modal,
+  .import-modal {
+    padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+  }
+}
+
   color: rgba(0, 0, 0, 0.7);
 }
 
