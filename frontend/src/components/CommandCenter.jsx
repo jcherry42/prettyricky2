@@ -7,7 +7,7 @@ import {
   Clock, Tag, CheckCircle2, AlertCircle,
   Zap, Bell, Volume2, VolumeX, Building2,
   User, Save, Eye, EyeOff, Loader2, ToggleLeft, ToggleRight,
-  Printer, Wifi, WifiOff, Mail, MessageSquare
+  Printer, Wifi, WifiOff, Mail, MessageSquare, Image
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
