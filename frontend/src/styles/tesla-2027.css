@@ -1,0 +1,538 @@
+/* ============================================
+   TESLA 2027 DESIGN SYSTEM
+   Clean, Card-Based, Vibrant & Lively
+   Inspired by Tesla OS but with personality
+   ============================================ */
+
+/* ==================== CORE 2027 DESIGN TOKENS ==================== */
+
+:root {
+  /* Tesla-inspired Clean Surfaces */
+  --tesla-surface: rgba(255, 255, 255, 0.98);
+  --tesla-surface-hover: rgba(255, 255, 255, 1);
+  --tesla-surface-dark: rgba(18, 18, 18, 0.98);
+  --tesla-surface-dark-hover: rgba(28, 28, 28, 1);
+  
+  /* Vibrant Accent Colors - More Colorful & Lively */
+  --tesla-electric-blue: #00D9FF;
+  --tesla-neon-green: #00FF88;
+  --tesla-cyber-orange: #FF6B35;
+  --tesla-plasma-purple: #B84FFF;
+  --tesla-volt-yellow: #FFD93D;
+  
+  /* Gradient Overlays */
+  --tesla-gradient-1: linear-gradient(135deg, #00D9FF 0%, #B84FFF 100%);
+  --tesla-gradient-2: linear-gradient(135deg, #00FF88 0%, #00D9FF 100%);
+  --tesla-gradient-3: linear-gradient(135deg, #FF6B35 0%, #FFD93D 100%);
+  
+  /* Shadows - Soft & Floating */
+  --tesla-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --tesla-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --tesla-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --tesla-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  
+  /* Light Mode Shadows - More Prominent */
+  --tesla-shadow-light-sm: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --tesla-shadow-light-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --tesla-shadow-light-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
+  
+  /* Border Radius - Smooth & Modern */
+  --tesla-radius-sm: 12px;
+  --tesla-radius-md: 16px;
+  --tesla-radius-lg: 20px;
+  --tesla-radius-xl: 24px;
+  
+  /* Transitions - Smooth & Quick */
+  --tesla-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --tesla-transition-slow: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== TESLA CARD SYSTEM ==================== */
+
+.tesla-card {
+  background: var(--tesla-surface-dark);
+  border-radius: var(--tesla-radius-lg);
+  padding: 20px;
+  box-shadow: var(--tesla-shadow-md);
+  transition: var(--tesla-transition);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tesla-card:hover {
+  background: var(--tesla-surface-dark-hover);
+  box-shadow: var(--tesla-shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Light Mode Cards - High Contrast, Readable */
+html:not(.dark) .tesla-card {
+  background: var(--tesla-surface);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--tesla-shadow-light-md);
+}
+
+html:not(.dark) .tesla-card:hover {
+  background: var(--tesla-surface-hover);
+  box-shadow: var(--tesla-shadow-light-lg);
+}
+
+/* ==================== CUSTOMER SELECTION - 2027 STYLE ==================== */
+
+.tesla-customer-selector {
+  background: var(--tesla-surface-dark);
+  border-radius: var(--tesla-radius-xl);
+  padding: 24px;
+  box-shadow: var(--tesla-shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: var(--tesla-transition);
+}
+
+.tesla-customer-selector:hover {
+  box-shadow: var(--tesla-shadow-xl);
+  border-color: rgba(0, 217, 255, 0.3);
+}
+
+html:not(.dark) .tesla-customer-selector {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: var(--tesla-shadow-light-lg);
+}
+
+html:not(.dark) .tesla-customer-selector:hover {
+  border-color: rgba(0, 217, 255, 0.5);
+}
+
+.tesla-customer-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.tesla-customer-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tesla-gradient-2);
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+.tesla-customer-info {
+  flex: 1;
+}
+
+.tesla-customer-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+html:not(.dark) .tesla-customer-name {
+  color: #111;
+}
+
+.tesla-customer-meta {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+}
+
+html:not(.dark) .tesla-customer-meta {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.tesla-chevron {
+  color: rgba(255, 255, 255, 0.4);
+  transition: var(--tesla-transition);
+}
+
+html:not(.dark) .tesla-chevron {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+.tesla-customer-selector:hover .tesla-chevron {
+  color: var(--tesla-electric-blue);
+  transform: translateX(4px);
+}
+
+/* ==================== RESPONSE CARDS - TESLA STYLE ==================== */
+
+.tesla-response-card {
+  background: var(--tesla-surface-dark);
+  border-radius: var(--tesla-radius-lg);
+  padding: 20px;
+  box-shadow: var(--tesla-shadow-md);
+  border: 2px solid transparent;
+  transition: var(--tesla-transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.tesla-response-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--tesla-gradient-1);
+  opacity: 0;
+  transition: var(--tesla-transition);
+}
+
+.tesla-response-card:hover::before {
+  opacity: 1;
+}
+
+.tesla-response-card:hover {
+  border-color: rgba(0, 217, 255, 0.4);
+  box-shadow: var(--tesla-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.tesla-response-card.selected {
+  border-color: var(--tesla-electric-blue);
+  box-shadow: 0 8px 32px rgba(0, 217, 255, 0.25);
+}
+
+.tesla-response-card.selected::before {
+  opacity: 1;
+}
+
+/* Light Mode Response Cards */
+html:not(.dark) .tesla-response-card {
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--tesla-shadow-light-md);
+}
+
+html:not(.dark) .tesla-response-card:hover {
+  border-color: rgba(0, 217, 255, 0.6);
+  box-shadow: var(--tesla-shadow-light-lg);
+}
+
+html:not(.dark) .tesla-response-card.selected {
+  border-color: var(--tesla-electric-blue);
+  box-shadow: 0 8px 40px rgba(0, 217, 255, 0.3);
+}
+
+/* ==================== ACTION BUTTONS - VIBRANT ==================== */
+
+.tesla-btn {
+  padding: 14px 24px;
+  border-radius: var(--tesla-radius-md);
+  font-weight: 600;
+  font-size: 15px;
+  transition: var(--tesla-transition);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tesla-btn-primary {
+  background: var(--tesla-gradient-1);
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 217, 255, 0.4);
+}
+
+.tesla-btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(0, 217, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.tesla-btn-success {
+  background: var(--tesla-gradient-2);
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 255, 136, 0.4);
+}
+
+.tesla-btn-success:hover {
+  box-shadow: 0 6px 24px rgba(0, 255, 136, 0.6);
+  transform: translateY(-2px);
+}
+
+.tesla-btn-warning {
+  background: var(--tesla-gradient-3);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+}
+
+.tesla-btn-warning:hover {
+  box-shadow: 0 6px 24px rgba(255, 107, 53, 0.6);
+  transform: translateY(-2px);
+}
+
+/* ==================== COMMAND CENTER - LIGHT MODE FIX ==================== */
+
+/* Make Command Center text highly readable in light mode */
+html:not(.dark) .cc-overlay {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px);
+}
+
+html:not(.dark) .cc-modal {
+  background: white !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2) !important;
+}
+
+html:not(.dark) .cc-header {
+  background: linear-gradient(135deg, #00D9FF 0%, #B84FFF 100%);
+  color: white !important;
+}
+
+html:not(.dark) .cc-header h2,
+html:not(.dark) .cc-header p {
+  color: white !important;
+}
+
+html:not(.dark) .cc-tabs {
+  background: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .cc-tab {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+html:not(.dark) .cc-tab:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+html:not(.dark) .cc-tab.active {
+  background: white;
+  color: #00D9FF !important;
+  border-bottom: 2px solid #00D9FF;
+}
+
+html:not(.dark) .cc-body {
+  background: #f8f9fa;
+}
+
+html:not(.dark) .cc-section-title,
+html:not(.dark) .cc-description,
+html:not(.dark) h3,
+html:not(.dark) h4 {
+  color: #111 !important;
+}
+
+html:not(.dark) .cc-stat-card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--tesla-shadow-light-sm);
+}
+
+html:not(.dark) .cc-stat-value {
+  color: #111 !important;
+}
+
+html:not(.dark) .cc-stat-label {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+html:not(.dark) .cc-item {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--tesla-shadow-light-sm);
+}
+
+html:not(.dark) .cc-item:hover {
+  background: rgba(0, 217, 255, 0.05);
+  border-color: rgba(0, 217, 255, 0.3);
+}
+
+html:not(.dark) .item-name {
+  color: #111 !important;
+}
+
+html:not(.dark) .item-meta {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+html:not(.dark) .printer-status-card {
+  background: white !important;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .status-label {
+  color: #111 !important;
+}
+
+html:not(.dark) .printer-ip-input {
+  background: white !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  color: #111 !important;
+}
+
+html:not(.dark) .printer-info h4,
+html:not(.dark) .printer-info p,
+html:not(.dark) .printer-info li {
+  color: #111 !important;
+}
+
+/* ==================== INQUIRY TYPE BUTTONS - COLORFUL ==================== */
+
+.tesla-inquiry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.tesla-inquiry-btn {
+  padding: 16px;
+  border-radius: var(--tesla-radius-md);
+  background: var(--tesla-surface-dark);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  transition: var(--tesla-transition);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tesla-inquiry-btn:hover {
+  border-color: var(--tesla-electric-blue);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.tesla-inquiry-btn.selected {
+  background: var(--tesla-gradient-1);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 217, 255, 0.5);
+}
+
+html:not(.dark) .tesla-inquiry-btn {
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+html:not(.dark) .tesla-inquiry-btn:hover {
+  border-color: var(--tesla-electric-blue);
+  color: #111;
+}
+
+html:not(.dark) .tesla-inquiry-btn.selected {
+  background: var(--tesla-gradient-1);
+  color: white;
+  border-color: transparent;
+}
+
+/* ==================== FLOATING ACTION ELEMENTS ==================== */
+
+.tesla-fab {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tesla-gradient-1);
+  color: white;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+  cursor: pointer;
+  transition: var(--tesla-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tesla-fab:hover {
+  box-shadow: 0 12px 32px rgba(0, 217, 255, 0.6);
+  transform: translateY(-4px) scale(1.05);
+}
+
+.tesla-fab:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* ==================== ANIMATIONS - SMOOTH & LIVELY ==================== */
+
+@keyframes tesla-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tesla-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tesla-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tesla-animate-in {
+  animation: tesla-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tesla-fade-in {
+  animation: tesla-fade-in 0.2s ease;
+}
+
+.tesla-scale-in {
+  animation: tesla-scale-in 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== RESPONSIVE TOUCH TARGETS ==================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .tesla-card,
+  .tesla-btn,
+  .tesla-inquiry-btn {
+    min-height: 48px; /* Minimum touch target size */
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+.tesla-focus-ring:focus-visible {
+  outline: 2px solid var(--tesla-electric-blue);
+  outline-offset: 2px;
+}
+
+.tesla-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
