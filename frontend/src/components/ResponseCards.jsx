@@ -47,20 +47,6 @@ const ResponseCard = ({
   const targetLang = getTargetLanguage();
   const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
 
-  // Translate when supercharged mode is active
-  useEffect(() => {
-    if (supercharged && response.text && !translation) {
-      translateContent();
-    }
-  }, [supercharged, response.text, targetLang]);
-
-  // Clear translation when supercharged is turned off
-  useEffect(() => {
-    if (!supercharged) {
-      setShowTranslated(false);
-    }
-  }, [supercharged]);
-
   const translateContent = async () => {
     if (!response.text && !editText) return;
     
@@ -84,6 +70,20 @@ const ResponseCard = ({
     }
     setIsTranslating(false);
   };
+
+  // Translate when supercharged mode is active
+  useEffect(() => {
+    if (supercharged && response.text && !translation) {
+      translateContent();
+    }
+  }, [supercharged, response.text, targetLang]);
+
+  // Clear translation when supercharged is turned off
+  useEffect(() => {
+    if (!supercharged) {
+      setShowTranslated(false);
+    }
+  }, [supercharged]);
 
   const handleSpeak = async (text, isTranslated = false) => {
     const id = isTranslated ? 'translated' : 'original';
