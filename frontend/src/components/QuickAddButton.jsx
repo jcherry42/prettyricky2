@@ -332,6 +332,59 @@ export const QuickAddButton = () => {
                 </div>
 
                 <div className="qa-field">
+                  <label htmlFor="qa-policy">
+                    <Tag className="w-3 h-3" /> Policy #
+                  </label>
+                  <input 
+                    id="qa-policy"
+                    type="text"
+                    placeholder="POL-123456"
+                    value={formData.policy_number}
+                    onChange={e => handleChange('policy_number', e.target.value)}
+                  />
+                </div>
+
+                <div className="qa-field">
+                  <label htmlFor="qa-vehicle-vin">Vehicle of Interest (VIN)</label>
+                  <input 
+                    id="qa-vehicle-vin"
+                    type="text"
+                    placeholder="1HGCM82633A123456"
+                    value={formData.vehicle_vin}
+                    onChange={e => handleChange('vehicle_vin', e.target.value.toUpperCase())}
+                    maxLength={17}
+                    className="font-mono uppercase"
+                  />
+                </div>
+
+                {/* Trade-In Section */}
+                <div className="qa-trade-section">
+                  <label className="qa-section-label">Trade-In Vehicle</label>
+                  <div className="qa-field">
+                    <label htmlFor="qa-trade-vin">Trade VIN</label>
+                    <input 
+                      id="qa-trade-vin"
+                      type="text"
+                      placeholder="5YJSA1E26HF123456"
+                      value={formData.trade_vin}
+                      onChange={e => handleChange('trade_vin', e.target.value.toUpperCase())}
+                      maxLength={17}
+                      className="font-mono uppercase"
+                    />
+                  </div>
+                  <div className="qa-field">
+                    <label htmlFor="qa-trade-mileage">Trade Mileage</label>
+                    <input 
+                      id="qa-trade-mileage"
+                      type="text"
+                      placeholder="45,000"
+                      value={formData.trade_mileage}
+                      onChange={e => handleChange('trade_mileage', e.target.value.replace(/[^\d,]/g, ''))}
+                    />
+                  </div>
+                </div>
+
+                <div className="qa-field">
                   <label htmlFor="qa-source">
                     <Tag className="w-3 h-3" /> Lead Source
                   </label>
