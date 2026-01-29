@@ -28,7 +28,10 @@ export const ImportModal = () => {
     lastName: '',
     phone: '',
     email: '',
+    policyNumber: '',
     vehicleVin: '',
+    tradeVin: '',
+    tradeMileage: '',
     leadStatus: 'new'
   });
 
@@ -38,7 +41,10 @@ export const ImportModal = () => {
       lastName: '',
       phone: '',
       email: '',
+      policyNumber: '',
       vehicleVin: '',
+      tradeVin: '',
+      tradeMileage: '',
       leadStatus: 'new'
     });
     setStatus({ type: null, message: '', details: null });
