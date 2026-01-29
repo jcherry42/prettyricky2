@@ -203,17 +203,17 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                   <div className="stat-card purple">
-                    <div className="stat-icon"><Car className="w-5 h-5" /></div>
+                    <div className="stat-icon"><Users className="w-5 h-5" /></div>
                     <div className="stat-info">
-                      <span className="stat-value">{stats.vehicles?.active_inventory || 0}</span>
-                      <span className="stat-label">Active Inventory</span>
+                      <span className="stat-value">{stats.customers?.contacted || 0}</span>
+                      <span className="stat-label">Contacted</span>
                     </div>
                   </div>
                   <div className="stat-card rose">
-                    <div className="stat-icon"><Car className="w-5 h-5" /></div>
+                    <div className="stat-icon"><CheckCircle2 className="w-5 h-5" /></div>
                     <div className="stat-info">
-                      <span className="stat-value">{stats.vehicles?.trade_ins || 0}</span>
-                      <span className="stat-label">Trade-Ins</span>
+                      <span className="stat-value">{stats.customers?.appointment || 0}</span>
+                      <span className="stat-label">Appointments</span>
                     </div>
                   </div>
                 </div>
