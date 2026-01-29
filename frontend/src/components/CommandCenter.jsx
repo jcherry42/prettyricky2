@@ -1472,7 +1472,7 @@ const CustomerForm = ({ onClose, customer }) => {
           </div>
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-cancel">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-save">
+            <button type="submit" disabled={saving} className="btn-save gold-btn">
               {saving ? 'Saving...' : 'Save Customer'}
             </button>
           </div>
