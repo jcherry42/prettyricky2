@@ -3033,7 +3033,7 @@ class VisionExtractionRequest(BaseModel):
     additional_context: Optional[str] = Field(None, description="Optional context to help extraction")
 
 
-@api_router.post("/vision/extract-customer")
+@api_router.post("/api/vision/extract-customer")
 async def extract_customer_from_image(req: VisionExtractionRequest):
     """
     Extract customer data from image using GPT-5.1 vision
