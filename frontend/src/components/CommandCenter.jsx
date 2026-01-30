@@ -931,122 +931,123 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
         /* Import Options */
         /* ============================================
-           IMPORT OPTIONS - designo INSTRUMENT CLUSTER
-           Premium Mode Selector with Wood Bezel
+           IMPORT OPTIONS - designo W140 INSTRUMENT CLUSTER
+           Authentic 5-Gauge Layout with Walnut Bezel
            ============================================ */
         .import-options {
           display: flex;
           align-items: stretch;
           justify-content: center;
-          gap: 12px;
-          padding: 16px;
+          gap: 16px;
+          padding: 20px 24px;
+          /* Walnut wood bezel frame - authentic W140 style */
           background: 
-            /* Wood bezel frame */
-            linear-gradient(180deg, rgba(92, 74, 31, 0.15) 0%, rgba(139, 105, 20, 0.08) 50%, rgba(92, 74, 31, 0.15) 100%);
-          border-radius: 20px;
-          border: 2px solid rgba(139, 105, 20, 0.25);
+            radial-gradient(ellipse 60% 40% at 30% 30%, rgba(120, 70, 30, 0.2) 0%, transparent 50%),
+            radial-gradient(ellipse 50% 50% at 70% 70%, rgba(90, 50, 20, 0.15) 0%, transparent 50%),
+            linear-gradient(90deg, #4A3018 0%, #6B4524 25%, #5C3A1E 50%, #7A4F2A 75%, #4A3018 100%);
+          border-radius: 16px;
+          border: 3px solid rgba(90, 60, 25, 0.6);
           box-shadow: 
-            inset 0 2px 4px rgba(255, 220, 160, 0.1),
-            inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-            0 4px 16px rgba(0, 0, 0, 0.3);
+            inset 0 2px 4px rgba(255, 200, 140, 0.12),
+            inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+            0 6px 20px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(0, 0, 0, 0.3);
         }
 
         .import-option {
           flex: 1 1 0;
-          max-width: 180px;
+          max-width: 160px;
         }
 
         .import-option {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 10px;
-          padding: 20px 16px;
-          border-radius: 12px;
-          /* Brushed metal gauge face */
+          gap: 12px;
+          padding: 24px 16px 20px;
+          /* W140 gauge face - black with fine radial texture */
           background: 
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 1px,
-              rgba(255, 255, 255, 0.02) 1px,
-              rgba(255, 255, 255, 0.02) 2px
-            ),
-            linear-gradient(180deg, rgba(45, 42, 38, 0.95) 0%, rgba(28, 26, 24, 0.98) 100%);
-          border: 2px solid rgba(80, 70, 55, 0.5);
+            radial-gradient(circle at 50% 30%, rgba(60, 55, 50, 0.4) 0%, transparent 60%),
+            radial-gradient(circle at 50% 50%, #1a1816 0%, #0d0c0b 70%, #080706 100%);
+          border-radius: 50%;
+          border: 3px solid rgba(60, 45, 30, 0.7);
           cursor: pointer;
           text-align: center;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow: 
-            inset 0 1px 1px rgba(255, 200, 140, 0.08),
-            inset 0 -1px 2px rgba(0, 0, 0, 0.4),
-            0 2px 8px rgba(0, 0, 0, 0.3);
+            inset 0 3px 6px rgba(0, 0, 0, 0.6),
+            inset 0 -1px 3px rgba(255, 180, 100, 0.05),
+            0 4px 12px rgba(0, 0, 0, 0.5);
+          aspect-ratio: 1;
+          min-width: 130px;
+          min-height: 130px;
+          justify-content: center;
         }
 
         .import-option:hover {
           background: 
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 1px,
-              rgba(255, 200, 120, 0.03) 1px,
-              rgba(255, 200, 120, 0.03) 2px
-            ),
-            linear-gradient(180deg, rgba(55, 50, 42, 0.95) 0%, rgba(35, 32, 28, 0.98) 100%);
-          border-color: rgba(200, 160, 80, 0.5);
-          transform: translateY(-3px);
+            radial-gradient(circle at 50% 30%, rgba(80, 70, 55, 0.5) 0%, transparent 60%),
+            radial-gradient(circle at 50% 50%, #252220 0%, #151310 70%, #0a0908 100%);
+          border-color: rgba(180, 140, 80, 0.5);
+          transform: scale(1.05);
           box-shadow: 
-            inset 0 1px 2px rgba(255, 200, 140, 0.12),
-            inset 0 -1px 2px rgba(0, 0, 0, 0.4),
-            0 8px 20px rgba(0, 0, 0, 0.4),
-            0 0 15px rgba(200, 160, 80, 0.15);
+            inset 0 3px 6px rgba(0, 0, 0, 0.5),
+            inset 0 -1px 3px rgba(255, 180, 100, 0.1),
+            0 8px 24px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(255, 180, 80, 0.1);
         }
 
         .import-option .io-icon {
-          width: 52px;
-          height: 52px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          /* Gauge needle mount style */
-          background: radial-gradient(circle, rgba(45, 40, 35, 0.9) 0%, rgba(25, 22, 20, 0.95) 100%);
-          border: 2px solid rgba(100, 85, 60, 0.4);
+          /* Chrome needle mount */
+          background: 
+            radial-gradient(circle, rgba(200, 195, 185, 0.15) 0%, rgba(80, 75, 70, 0.2) 100%);
+          border: 2px solid rgba(120, 100, 70, 0.3);
           box-shadow: 
-            inset 0 1px 2px rgba(255, 200, 140, 0.1),
-            0 2px 6px rgba(0, 0, 0, 0.4);
+            inset 0 1px 2px rgba(255, 255, 255, 0.1),
+            0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .import-option.cyan .io-icon { 
-          background: radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(20, 120, 140, 0.3) 100%);
-          border-color: rgba(34, 211, 238, 0.4);
+          background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(20, 100, 120, 0.4) 100%);
+          border-color: rgba(34, 211, 238, 0.5);
           color: #22d3ee;
-          box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+          box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 8px rgba(34, 211, 238, 0.2);
         }
         .import-option.green .io-icon { 
-          background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(20, 100, 60, 0.3) 100%);
-          border-color: rgba(34, 197, 94, 0.4);
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, rgba(20, 80, 50, 0.4) 100%);
+          border-color: rgba(34, 197, 94, 0.5);
           color: #22c55e;
-          box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+          box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.2);
         }
         .import-option.purple .io-icon { 
-          background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(100, 50, 150, 0.3) 100%);
-          border-color: rgba(168, 85, 247, 0.4);
+          background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(80, 40, 120, 0.4) 100%);
+          border-color: rgba(168, 85, 247, 0.5);
           color: #a855f7;
-          box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+          box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 8px rgba(168, 85, 247, 0.2);
         }
 
         .import-option .io-title {
-          font-size: 13px;
+          font-size: 11px;
           font-weight: 700;
-          color: rgba(255, 220, 160, 0.95);
+          /* Amber illuminated gauge text - authentic W140 */
+          color: #FFB850;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.8px;
+          text-shadow: 
+            0 0 8px rgba(255, 180, 80, 0.7),
+            0 0 16px rgba(255, 160, 60, 0.4);
         }
 
         .import-option .io-desc {
-          font-size: 11px;
-          color: rgba(180, 160, 130, 0.7);
+          font-size: 9px;
+          color: rgba(180, 160, 130, 0.6);
+          letter-spacing: 0.3px;
         }
 
         /* Integrations */
