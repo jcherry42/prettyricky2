@@ -117,9 +117,8 @@ export const copyToClipboard = async (text) => {
     }
     
     return { success: false, method: 'clipboard', error: 'Copy failed' };
-  } catch (err) {
-    console.error('[Clipboard] Failed to copy:', err);
-    return { success: false, method: 'clipboard', error: err.message };
+  } catch {
+    return { success: false, method: 'clipboard', error: 'Copy failed' };
   }
 };
 
