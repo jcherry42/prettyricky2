@@ -19,53 +19,55 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - **Light Mode**: Dusty rose + sage green on ivory
 - Applied throughout: modals, customer cards, response cards
 
-#### Animated Ambient Lighting Effects
-- **Breathing glow**: Subtle pulsing on wood bezels (6s cycle)
-- **Icon glow**: Pulsing color halos on icons (3s cycle)
-- **Border glow**: Interactive highlight on hover (2s cycle)
-- **Text glow**: Amber illumination pulse on gauge text (3s cycle)
+#### 64-Color Ambient Lighting System (NEW)
+- **Background Effect**: Radial gradients cycling through 64 colors on screen edges
+- **Card Glow**: Subtle color-cycling glow behind tesla-cards, customer cards, response cards
+- **30-second cycle**: Medium-speed color cycling through full spectrum
+- **3 Intensity Levels**: Subtle (4% opacity), Medium (8%), Vivid (12%)
+- **Toggle**: On/Off switch in Settings tab
+- **Persisted**: Preference saved to localStorage
 
 #### Import Data Tab - W140 Instrument Cluster
 - Icon-focused circular gauge buttons
-- Large, detailed colorful icons (72px) - cyan, green, purple
-- Chrome bezel borders with glowing halos
-- Title text centered below each icon
-- No description text (cleaner design)
+- **Dark mode**: Icons hidden, just amber-glowing titles on dark gauge faces
+- **Light mode**: Icons hidden, white titles on ivory gauge faces
 - Walnut wood bezel frame
 
 ### Components Styled
 - ✅ Command Center Modal (Picasso + wood bezel + breathing animation)
-- ✅ Import Tab (W140 instrument cluster with chrome gauge buttons)
+- ✅ Import Tab (W140 instrument cluster - icons hidden, titles only)
 - ✅ IntakeHub (centered position, wood bezel, designo nappa)
 - ✅ Customer Cards (quilted nappa + Picasso + stitching)
-- ✅ Inquiry Buttons (uniform 110px height, wood bezel borders)
+- ✅ Inquiry Buttons (uniform 100px height, all identical size)
 - ✅ Response Cards (wood accent bar + nappa texture)
 - ✅ Tower Talk (designo cardinal red accent)
 
 ### Typography
-- Command Center: 75% larger font sizes
-- Generated Responses: 75% larger (1.25rem body, 1.4rem titles)
-- Import options: Standard 1rem for readability
+- Command Center tabs: 50% larger (15px)
+- Search bar: 20% smaller (11px)
+- Add Customer button: 50% larger (18px)
+- Generated Responses: 75% larger (1.25rem body)
 
 ### Sound Design
-- All audio fades gradually (1 second fade-out)
-- Startup sound: 3-second fade-in/fade-out
+- Sport Mode sound: Uses user's selected engine profile (merica/euro/jdm)
+- Smooth fade-out over last 1.2 seconds of audio
+- Ease-out curve for natural fade
 
 ---
 
 ## What's Been Completed (January 30, 2026)
 
-### UI Enhancements ✅
-1. **IntakeHub centered** - Modal now appears in screen center
-2. **Import buttons redesigned** - Icon-focused with large colorful icons, no descriptions
-3. **Inquiry buttons uniform** - All 8 buttons exactly 110px height
-4. **Font size increased 75%** - Command Center and response cards
-5. **Animated ambient lighting** - Breathing, glowing, pulsing effects
-6. **Code cleanup** - Removed duplicate and dead CSS rules
+### Session Updates ✅
+1. **Sport Mode Sound Fix** - Now plays selected engine profile with fade-out
+2. **Financing Button Size** - Fixed to match all other inquiry buttons (100px uniform)
+3. **Dark Mode Import Buttons** - Now match light mode (icons hidden, just titles)
+4. **Font Sizes Adjusted** - Tabs +50%, search -20%, add customer +50%
+5. **64-Color Ambient Lighting** - Full implementation with settings toggle
 
 ### Bug Fixes ✅
 1. **Search bar box-in-box** - Fixed in light mode
 2. **CSS syntax errors** - Cleaned orphaned blocks
+3. **Inquiry button sizing** - All 8 buttons now uniform
 
 ---
 
