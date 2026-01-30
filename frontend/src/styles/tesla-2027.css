@@ -1289,6 +1289,21 @@ html.dark .cc-search-blue-glass:focus-within {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 50% larger font */
+  font-size: 1.5rem !important;
+}
+
+.tesla-fab span {
+  font-size: 1.5rem !important;
+}
+
+/* Add Customer button - 50% larger */
+.cc-add-btn {
+  font-size: 18px !important;
+}
+
+.cc-add-btn span {
+  font-size: 18px !important;
 }
 
 .tesla-fab:hover {
