@@ -1007,32 +1007,16 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             0 0 20px rgba(255, 180, 80, 0.1);
         }
 
-        /* Dark mode: hide icon backgrounds, show icons directly with glow - matching light mode structure */
+        /* Dark mode: hide icon backgrounds, icons hidden to match light mode */
         .import-option .io-icon {
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s ease;
-          /* No background - just icon with glow */
-          background: transparent;
-          border: none;
+          display: none;
         }
 
-        /* Dark mode icons: colorful with glow effect */
-        .import-option.cyan .io-icon { 
-          color: #22d3ee;
-          filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.6)) drop-shadow(0 0 24px rgba(34, 211, 238, 0.4));
-        }
-        .import-option.green .io-icon { 
-          color: #22c55e;
-          filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 24px rgba(34, 197, 94, 0.4));
-        }
+        /* Dark mode - icons are hidden */
+        .import-option.cyan .io-icon,
+        .import-option.green .io-icon,
         .import-option.purple .io-icon { 
-          color: #a855f7;
-          filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.4));
+          display: none;
         }
 
         .import-option .io-title {
