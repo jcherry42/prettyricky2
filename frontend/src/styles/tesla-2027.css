@@ -769,11 +769,12 @@ html:not(.dark) .customer-form-field {
   border: 1px solid rgba(0, 150, 255, 0.3);
 }
 
-/* SETTINGS TAB - BLUE GLASS */
+/* SETTINGS TAB - LIGHT MODE uses Designo palette (avoid blue glass) */
+/* NOTE: luxury-auto.css provides the primary light-mode settings-section styling. */
 html:not(.dark) .settings-section {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(0, 150, 255, 0.12) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(180, 140, 80, 0.12);
+  box-shadow: 0 8px 26px rgba(0,0,0,0.06);
 }
 
 /* ==================== INQUIRY TYPE BUTTONS - UNIFORM SIZE ==================== */
