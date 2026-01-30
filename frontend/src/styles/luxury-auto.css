@@ -1592,21 +1592,21 @@ html:not(.dark) .io-title {
   position: absolute;
   inset: 0;
   background: 
-    /* Primary curve - dusty rose */
+    /* Primary curve - dusty rose - INCREASED VISIBILITY */
     radial-gradient(ellipse 180% 90% at 10% 40%, 
-      rgba(180, 100, 120, 0.12) 0%, 
-      rgba(160, 90, 110, 0.07) 35%,
+      rgba(180, 100, 120, 0.2) 0%, 
+      rgba(160, 90, 110, 0.12) 35%,
       transparent 65%
     ),
     /* Secondary - sage green */
     radial-gradient(ellipse 140% 100% at 90% 60%, 
-      rgba(100, 140, 100, 0.1) 0%, 
-      rgba(90, 130, 90, 0.06) 40%,
+      rgba(100, 140, 100, 0.16) 0%, 
+      rgba(90, 130, 90, 0.1) 40%,
       transparent 70%
     ),
     /* Accent - honey gold */
     radial-gradient(ellipse 100% 80% at 50% 90%, 
-      rgba(200, 160, 100, 0.08) 0%, 
+      rgba(200, 160, 100, 0.14) 0%, 
       transparent 55%
     );
   pointer-events: none;
@@ -1617,27 +1617,27 @@ html:not(.dark) .io-title {
   position: absolute;
   inset: 0;
   background: 
-    /* Artistic flowing strokes */
+    /* Artistic flowing strokes - INCREASED VISIBILITY */
     conic-gradient(from 200deg at 25% 50%, 
       transparent 0deg, 
-      rgba(180, 100, 120, 0.1) 40deg, 
-      rgba(190, 110, 130, 0.06) 80deg,
+      rgba(180, 100, 120, 0.16) 40deg, 
+      rgba(190, 110, 130, 0.1) 80deg,
       transparent 120deg
     ),
     conic-gradient(from 30deg at 75% 50%, 
       transparent 0deg, 
-      rgba(100, 140, 100, 0.08) 50deg, 
-      rgba(110, 150, 110, 0.04) 100deg,
+      rgba(100, 140, 100, 0.14) 50deg, 
+      rgba(110, 150, 110, 0.08) 100deg,
       transparent 150deg
     ),
     /* Gold accent thread */
     conic-gradient(from 300deg at 50% 85%, 
       transparent 0deg, 
-      rgba(180, 140, 80, 0.06) 25deg, 
+      rgba(180, 140, 80, 0.1) 25deg, 
       transparent 50deg
     );
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 /* ==================== WOOD BEZEL FRAME SYSTEM ==================== */
