@@ -1342,6 +1342,175 @@ html:not(.dark) textarea::before {
   100% { left: 200%; }
 }
 
+/* ============================================
+   ANIMATED AMBIENT LIGHTING EFFECTS
+   Mercedes 64-Color Ambient Lighting Inspired
+   ============================================ */
+
+/* Soft pulsing glow on wood bezels */
+@keyframes ambientPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 15px rgba(255, 180, 80, 0.15),
+      0 0 30px rgba(255, 160, 60, 0.08),
+      inset 0 1px 2px rgba(255, 200, 140, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 0 25px rgba(255, 180, 80, 0.25),
+      0 0 50px rgba(255, 160, 60, 0.15),
+      inset 0 1px 2px rgba(255, 200, 140, 0.15);
+  }
+}
+
+@keyframes ambientPulseLight {
+  0%, 100% {
+    box-shadow: 
+      0 0 12px rgba(200, 160, 80, 0.12),
+      0 0 24px rgba(180, 140, 60, 0.06),
+      inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 20px rgba(200, 160, 80, 0.2),
+      0 0 40px rgba(180, 140, 60, 0.1),
+      inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Subtle color shift animation */
+@keyframes ambientColorShift {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  25% {
+    filter: hue-rotate(-5deg) brightness(1.02);
+  }
+  50% {
+    filter: hue-rotate(0deg) brightness(1.05);
+  }
+  75% {
+    filter: hue-rotate(5deg) brightness(1.02);
+  }
+}
+
+/* Apply ambient pulse to wood bezels */
+.designo-bezel {
+  animation: ambientPulse 4s ease-in-out infinite;
+}
+
+html:not(.dark) .designo-bezel {
+  animation: ambientPulseLight 4s ease-in-out infinite;
+}
+
+/* Ambient glow on icons */
+@keyframes iconGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px currentColor) drop-shadow(0 0 24px currentColor);
+  }
+}
+
+.import-option .io-icon svg {
+  animation: iconGlow 3s ease-in-out infinite;
+}
+
+/* Pulsing border glow */
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(200, 160, 80, 0.4);
+  }
+  50% {
+    border-color: rgba(255, 200, 100, 0.6);
+  }
+}
+
+.designo-card:hover,
+.designo-customer-card:hover,
+.designo-modal:hover {
+  animation: borderGlow 2s ease-in-out infinite;
+}
+
+/* Soft breathing effect on modals */
+@keyframes breathe {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 1px rgba(60, 50, 40, 0.8),
+      0 0 0 2px rgba(100, 80, 55, 0.4),
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      0 0 60px rgba(255, 140, 60, 0.05);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 1px rgba(80, 65, 50, 0.9),
+      0 0 0 3px rgba(120, 95, 65, 0.5),
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      0 0 100px rgba(255, 160, 80, 0.1);
+  }
+}
+
+.cc-modal,
+.designo-modal {
+  animation: breathe 6s ease-in-out infinite;
+}
+
+/* Light mode breathing */
+@keyframes breatheLight {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 1px rgba(200, 170, 120, 0.4),
+      0 24px 80px rgba(0, 0, 0, 0.12),
+      0 0 40px rgba(200, 160, 80, 0.08);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 2px rgba(220, 185, 130, 0.5),
+      0 24px 80px rgba(0, 0, 0, 0.12),
+      0 0 60px rgba(200, 160, 80, 0.15);
+  }
+}
+
+html:not(.dark) .cc-modal,
+html:not(.dark) .designo-modal {
+  animation: breatheLight 6s ease-in-out infinite;
+}
+
+/* Gauge needle animation on hover for import buttons */
+@keyframes needleWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+.import-option:hover .io-icon {
+  animation: needleWiggle 0.3s ease-in-out;
+}
+
+/* Text glow pulse */
+@keyframes textGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(255, 180, 80, 0.6),
+      0 0 16px rgba(255, 160, 60, 0.3);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(255, 200, 100, 0.8),
+      0 0 24px rgba(255, 180, 80, 0.5),
+      0 0 36px rgba(255, 160, 60, 0.3);
+  }
+}
+
+.io-title {
+  animation: textGlow 3s ease-in-out infinite;
+}
+
+html:not(.dark) .io-title {
+  animation: none;
+}
+
 
 /* ============================================
    designo PICASSO HAND-PAINTED PATTERNS
