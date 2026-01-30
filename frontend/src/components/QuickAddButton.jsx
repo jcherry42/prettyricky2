@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, User, Phone, Mail, Tag, MessageSquare, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import haptics from '../utils/haptics';
 import { announceToScreenReader, createFocusTrap } from '../utils/accessibility';
+import { useSales } from '../context/SalesContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
