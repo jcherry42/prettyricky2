@@ -272,139 +272,174 @@ html:not(.dark) .tesla-response-card.selected {
   transform: translateY(-2px);
 }
 
-/* ==================== COMMAND CENTER - LIGHT MODE FIX ==================== */
+/* ==================== COMMAND CENTER - LIGHT MODE (DESIGNO IVORY + BLUE) ==================== */
 
-/* Make Command Center text highly readable in light mode */
+/* Ivory cabin with walnut + subtle blue tech accents */
 html:not(.dark) .cc-overlay {
-  background: rgba(240, 248, 255, 0.95) !important;
+  background: rgba(240, 235, 225, 0.95) !important;
   backdrop-filter: blur(20px);
 }
 
 html:not(.dark) .cc-modal {
-  background: linear-gradient(135deg, rgba(230, 242, 255, 0.98) 0%, rgba(240, 248, 255, 0.98) 100%) !important;
-  border: 1px solid rgba(0, 150, 255, 0.2);
-  box-shadow: 0 24px 64px rgba(0, 150, 255, 0.3) !important;
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.25) !important; /* walnut edge */
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1) !important;
+}
+
+/* Quilted texture softened in light mode */
+html:not(.dark) .cc-modal::before,
+html:not(.dark) .cc-modal::after {
+  opacity: 0.18 !important;
 }
 
 html:not(.dark) .cc-header {
-  background: linear-gradient(135deg, #00D9FF 0%, #0080FF 100%);
-  color: white !important;
-  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.4);
+  background: #FAF7F2 !important; /* ivory header */
+  border-bottom-color: rgba(139, 90, 43, 0.18) !important;
 }
 
-html:not(.dark) .cc-header h2,
-html:not(.dark) .cc-header p {
-  color: white !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+html:not(.dark) .cc-title,
+html:not(.dark) .cc-header-title {
+  color: #8B5A2B !important; /* designo walnut */
+  text-shadow: none !important;
+}
+
+html:not(.dark) .cc-subtitle {
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .cc-close {
+  background: #F5F0E8 !important;
+  border-color: rgba(139, 90, 43, 0.2) !important;
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .cc-close:hover {
+  background: #EDE5D8 !important;
+  color: #8B5A2B !important;
 }
 
 html:not(.dark) .cc-tabs {
-  background: rgba(0, 150, 255, 0.05);
-  border-bottom: 1px solid rgba(0, 150, 255, 0.2);
+  background: #FAF7F2 !important;
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
 }
 
 html:not(.dark) .cc-tab {
-  color: rgba(0, 100, 200, 0.7) !important;
-  font-weight: 500;
+  color: #5D4E37 !important;
+  font-weight: 500 !important;
 }
 
-html:not(.dark) .cc-tab:hover {
-  background: rgba(0, 150, 255, 0.1);
-  color: #0080FF !important;
+html:not(.dark) .cc-tab:hover:not(.active) {
+  color: #0F518C !important; /* subtle blue accent on hover */
+  background: rgba(139, 90, 43, 0.08) !important;
 }
 
 html:not(.dark) .cc-tab.active {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 128, 255, 0.15) 100%);
-  color: #0080FF !important;
-  border-bottom: 3px solid #00D9FF;
-  font-weight: 600;
+  color: #0F518C !important;
+  border-bottom-color: #0F518C !important;
+  background: rgba(139, 90, 43, 0.08) !important;
+  font-weight: 600 !important;
 }
 
 html:not(.dark) .cc-body {
-  background: linear-gradient(180deg, rgba(240, 248, 255, 0.8) 0%, rgba(230, 242, 255, 0.9) 100%);
+  background: linear-gradient(180deg,
+    hsl(35, 40%, 94%) 0%,
+    hsl(32, 35%, 90%) 50%,
+    hsl(30, 30%, 87%) 100%
+  );
 }
 
 html:not(.dark) .cc-section-title,
 html:not(.dark) .cc-description,
 html:not(.dark) h3,
 html:not(.dark) h4 {
-  color: #003d7a !important;
+  color: #2D1F0F !important;
   font-weight: 600;
 }
 
-/* BLUE GLASS STAT CARDS */
+/* STAT CARDS: ivory glass over wood, blue numerics */
 html:not(.dark) .cc-stat-card {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 180, 255, 0.4) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 120, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(250, 246, 238, 0.98) 100%
+  );
+  border: 1px solid rgba(139, 90, 43, 0.22);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
 }
 
 html:not(.dark) .cc-stat-value {
-  color: #FF6600 !important;
+  color: #0F518C !important; /* subtle Mercedes blue */
   font-weight: 700;
   text-shadow: none !important;
 }
 
 html:not(.dark) .cc-stat-label {
-  color: #004d99 !important;
+  color: #5D4E37 !important;
   font-weight: 500;
 }
 
-/* BLUE GLASS ITEMS */
+/* CUSTOMER ITEMS: light ivory card with blue accent */
 html:not(.dark) .cc-item {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.25) 0%, rgba(0, 180, 255, 0.35) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.4);
-  box-shadow: 0 2px 8px rgba(0, 120, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(8px);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(250, 247, 241, 0.98) 100%
+  );
+  border: 1px solid rgba(139, 90, 43, 0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(6px);
 }
 
 html:not(.dark) .cc-item:hover {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.35) 0%, rgba(0, 180, 255, 0.45) 100%);
-  border-color: rgba(0, 180, 255, 0.6);
-  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.35);
+  background: linear-gradient(135deg,
+    rgba(250, 247, 241, 0.98) 0%,
+    rgba(244, 239, 232, 0.98) 100%
+  );
+  border-color: rgba(15, 81, 140, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
 }
 
 html:not(.dark) .item-name {
-  color: #003d7a !important;
+  color: #2D1F0F !important;
   font-weight: 600;
 }
 
 html:not(.dark) .item-meta {
-  color: #0066cc !important;
+  color: #0F518C !important;
 }
 
-/* BLUE GLASS PRINTER CARD */
+/* PRINTER CARD: ivory glass with blue tech edge */
 html:not(.dark) .printer-status-card {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 150, 255, 0.15) 100%) !important;
-  border: 1px solid rgba(0, 150, 255, 0.3);
-  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(242, 246, 252, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(15, 81, 140, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
 }
 
 html:not(.dark) .status-label {
-  color: #0066cc !important;
+  color: #0F518C !important;
   font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 217, 255, 0.3);
 }
 
-/* BLUE GLASS INPUT BOXES WITH SAFETY ORANGE TEXT - NO GLOW */
+/* INPUTS: keep blue glass + safety orange text but soften */
 html:not(.dark) .printer-ip-input,
 html:not(.dark) .cc-input,
 html:not(.dark) input[type="text"],
 html:not(.dark) input[type="email"],
 html:not(.dark) input[type="tel"],
 html:not(.dark) textarea {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.35) 0%, rgba(0, 180, 255, 0.45) 100%) !important;
-  border: 2px solid rgba(0, 150, 255, 0.5) !important;
-  box-shadow: 
-    0 4px 12px rgba(0, 120, 255, 0.3),
-    inset 0 2px 4px rgba(0, 180, 255, 0.2),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.3) !important;
-  backdrop-filter: blur(12px);
-  
-  /* SAFETY ORANGE TEXT - NO GLOW */
+  background: linear-gradient(135deg,
+    rgba(0, 120, 255, 0.22) 0%,
+    rgba(0, 180, 255, 0.32) 100%
+  ) !important;
+  border: 2px solid rgba(0, 120, 200, 0.55) !important;
+  box-shadow:
+    0 3px 10px rgba(0, 120, 200, 0.25),
+    inset 0 2px 3px rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(10px);
   color: #FF6600 !important;
   font-weight: 700;
   text-shadow: none !important;
@@ -416,104 +451,65 @@ html:not(.dark) input::placeholder,
 html:not(.dark) textarea::placeholder {
   color: rgba(255, 102, 0, 0.5) !important;
   font-weight: 500;
-  text-shadow: none !important;
 }
 
 html:not(.dark) .printer-ip-input:focus,
 html:not(.dark) .cc-input:focus,
 html:not(.dark) input:focus,
 html:not(.dark) textarea:focus {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.45) 0%, rgba(0, 180, 255, 0.55) 100%) !important;
-  border-color: rgba(0, 180, 255, 0.7) !important;
-  box-shadow: 
-    0 0 0 3px rgba(255, 102, 0, 0.15),
-    0 6px 20px rgba(0, 120, 255, 0.4),
-    inset 0 2px 4px rgba(0, 180, 255, 0.25),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.4) !important;
-  
-  /* NO GLOW ON FOCUS EITHER */
-  text-shadow: none !important;
+  background: linear-gradient(135deg,
+    rgba(0, 130, 255, 0.3) 0%,
+    rgba(0, 190, 255, 0.4) 100%
+  ) !important;
+  border-color: rgba(0, 120, 200, 0.8) !important;
+  box-shadow:
+    0 0 0 3px rgba(15, 81, 140, 0.12),
+    0 6px 18px rgba(0, 120, 200, 0.35) !important;
 }
 
-/* BLUE GLASS INFO SECTIONS */
+/* INFO SECTIONS */
 html:not(.dark) .printer-info,
 html:not(.dark) .cc-info-card {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(0, 150, 255, 0.12) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(245, 241, 234, 0.98) 100%
+  );
+  border: 1px solid rgba(139, 90, 43, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(8px);
 }
 
 html:not(.dark) .printer-info h4,
 html:not(.dark) .printer-info p,
 html:not(.dark) .printer-info li {
-  color: #003d7a !important;
+  color: #2D1F0F !important;
   font-weight: 500;
 }
 
 html:not(.dark) .printer-info strong {
-  color: #0066cc !important;
+  color: #0F518C !important;
   font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 217, 255, 0.2);
 }
 
-/* BLUE GLASS BUTTONS */
-html:not(.dark) .printer-btn,
-html:not(.dark) .cc-button {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.2) 0%, rgba(0, 150, 255, 0.3) 100%);
-  border: 2px solid rgba(0, 217, 255, 0.5);
-  color: #0066cc !important;
-  font-weight: 600;
-  text-shadow: 0 1px 4px rgba(0, 217, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(0, 150, 255, 0.2);
-}
-
-html:not(.dark) .printer-btn:hover,
-html:not(.dark) .cc-button:hover {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.3) 0%, rgba(0, 150, 255, 0.4) 100%);
-  border-color: rgba(0, 217, 255, 0.7);
-  box-shadow: 0 6px 20px rgba(0, 150, 255, 0.35);
-  text-shadow: 0 0 8px rgba(0, 217, 255, 0.6);
-}
-
-/* BLUE GLASS LABELS */
-html:not(.dark) .cc-label,
-html:not(.dark) label {
-  color: #003d7a !important;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 150, 255, 0.1);
-}
-
-/* BLUE GLASS SELECT/DROPDOWN */
-html:not(.dark) select {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.22) 100%) !important;
-  border: 2px solid rgba(0, 217, 255, 0.4) !important;
-  color: #0080FF !important;
-  font-weight: 600;
-  text-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
-  box-shadow: 0 4px 12px rgba(0, 150, 255, 0.2);
-}
-
-/* IMPORT OPTIONS - BLUE GLASS */
+/* IMPORT OPTIONS: instrument-cluster tiles on ivory */
 html:not(.dark) .import-option {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(0, 150, 255, 0.12) 100%);
-  border: 1px solid rgba(0, 150, 255, 0.25);
-  box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid rgba(139, 90, 43, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 html:not(.dark) .import-option:hover {
-  background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.22) 100%);
-  border-color: rgba(0, 217, 255, 0.5);
-  box-shadow: 0 4px 16px rgba(0, 150, 255, 0.25);
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.35);
 }
 
 html:not(.dark) .io-title {
-  color: #003d7a !important;
+  color: #2D1F0F !important;
   font-weight: 600;
 }
 
 html:not(.dark) .io-desc {
-  color: #0066cc !important;
+  color: #5D4E37 !important;
 }
 
 /* CUSTOMER FORM - BLUE GLASS */
