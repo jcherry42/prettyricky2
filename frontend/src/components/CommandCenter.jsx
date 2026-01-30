@@ -169,18 +169,27 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
             <Settings className="w-5 h-5" />
             <span>Command Center</span>
           </div>
-          <button onClick={onClose} className="cc-close">
+          <button 
+            onClick={onClose} 
+            className="cc-close"
+            aria-label="Close Command Center"
+            data-testid="cc-close-btn"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="cc-tabs">
+        <div className="cc-tabs" role="tablist" aria-label="Command Center tabs">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`cc-tab ${activeTab === tab.id ? 'active' : ''}`}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`${tab.id}-panel`}
+              data-testid={`cc-tab-${tab.id}`}
             >
               <tab.icon className="w-4 h-4" />
               <span>{tab.label}</span>
