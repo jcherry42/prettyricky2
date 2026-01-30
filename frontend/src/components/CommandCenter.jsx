@@ -95,20 +95,13 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
   }, []);
 
   // Fetch data on tab change
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    if (activeTab === 'dashboard') fetchStats();
-    if (activeTab === 'customers') fetchCustomers();
-  }, [isOpen, activeTab]);
-
   const fetchStats = useCallback(async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/dashboard/stats`);
       const data = await res.json();
       setStats(data);
-    } catch (e) {
-      console.error('Failed to fetch stats:', e);
+    } catch {
+      // Stats fetch failed - silent
     }
   }, []);
 
@@ -118,12 +111,19 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
       const res = await fetch(`${BACKEND_URL}/api/customers/list?limit=50`);
       const data = await res.json();
       setCustomers(data.customers || []);
-    } catch (e) {
-      console.error('Failed to fetch customers:', e);
+    } catch {
+      // Customers fetch failed - silent
     } finally {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    if (activeTab === 'dashboard') fetchStats();
+    if (activeTab === 'customers') fetchCustomers();
+  }, [isOpen, activeTab, fetchStats, fetchCustomers]);
 
   // Memoized filtered customers for search
   const filteredCustomers = useMemo(() => {

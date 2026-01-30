@@ -42,13 +42,6 @@ export const VoiceTranslator = () => {
   const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.es;
   const targetConfig = { name: 'English', flag: 'EN', code: 'en' };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopRecording();
-    };
-  }, []);
-
   // Stop recording and cleanup
   const stopRecording = useCallback(() => {
     if (timerRef.current) {
