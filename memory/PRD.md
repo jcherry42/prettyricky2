@@ -34,11 +34,11 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Walnut wood bezel frame
 
 ### Components Styled
-- ✅ Command Center Modal (Picasso + wood bezel + breathing animation)
-- ✅ Import Tab (W140 instrument cluster - icons hidden, titles only)
+- ✅ Command Center Modal (Rounded 28px, Picasso swirl, wood bezel)
+- ✅ Import Tab (W140 instrument cluster - icons visible, glowing text on top)
 - ✅ IntakeHub (centered position, wood bezel, designo nappa)
 - ✅ Customer Cards (quilted nappa + Picasso + stitching)
-- ✅ Inquiry Buttons (uniform 100px height, all identical size)
+- ✅ Inquiry Buttons (100px uniform, ROUNDED glass effect, Picasso swirl on press)
 - ✅ Response Cards (wood accent bar + nappa texture)
 - ✅ Tower Talk (designo cardinal red accent)
 
