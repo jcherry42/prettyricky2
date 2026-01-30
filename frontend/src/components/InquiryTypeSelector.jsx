@@ -39,8 +39,7 @@ const INQUIRY_TYPES = [
     id: 'financing', 
     label: 'Financing', 
     icon: CreditCard,
-    gradient: 'from-yellow-500 to-orange-500',
-    description: 'Payment options'
+    gradient: 'from-yellow-500 to-orange-500'
   },
   { 
     id: 'test_drive', 
