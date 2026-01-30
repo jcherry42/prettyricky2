@@ -75,108 +75,110 @@ h1, h2, h3 {
 
 @layer base {
   :root {
-    /* ========== LIGHT MODE - Daytona Beach Day ========== */
-    /* Vibrant, Punchy, High-Visibility */
-    --background: 195 100% 97%;
-    --foreground: 20 25% 12%;
+    /* ========== LIGHT MODE - designo Ivory ========== */
+    /* Mercedes-Benz designo Interior Program inspired */
+    /* Nappa Leather, Open-Pore Wood, Brushed Aluminum */
+    --background: 38 35% 94%;
+    --foreground: 25 30% 15%;
     
-    /* Card - Clean with warmth */
-    --card: 30 40% 96%;
-    --card-foreground: 20 25% 12%;
+    /* Card - Soft Ivory Nappa Leather */
+    --card: 40 30% 96%;
+    --card-foreground: 25 30% 15%;
     
-    /* Muted - Soft cream */
-    --muted: 35 30% 92%;
-    --muted-foreground: 25 15% 40%;
+    /* Muted - Silk Beige */
+    --muted: 38 25% 90%;
+    --muted-foreground: 28 20% 40%;
     
-    /* Borders - Warm gold tint */
-    --border: 35 25% 82%;
-    --input: 35 30% 94%;
-    --ring: 190 100% 45%;
+    /* Borders - Brushed Aluminum */
+    --border: 35 15% 78%;
+    --input: 40 28% 93%;
+    --ring: 28 85% 45%;
     
-    /* Primary - Vice Cyan */
-    --primary: 190 100% 50%;
+    /* Primary - designo Copper/Bronze */
+    --primary: 28 75% 42%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary - Vice Pink/Magenta */
-    --secondary: 300 100% 50%;
+    /* Secondary - designo Cardinal Red */
+    --secondary: 0 70% 45%;
     --secondary-foreground: 0 0% 100%;
     
-    /* Accent - Electric Blue */
-    --accent: 210 100% 50%;
+    /* Accent - Burnished Wood */
+    --accent: 25 65% 38%;
     --accent-foreground: 0 0% 100%;
     
     /* Status Colors */
-    --success: 145 85% 40%;
+    --success: 145 65% 38%;
     --success-foreground: 145 100% 98%;
-    --warning: 45 100% 50%;
-    --warning-foreground: 45 100% 10%;
-    --destructive: 350 100% 50%;
+    --warning: 40 95% 48%;
+    --warning-foreground: 40 100% 10%;
+    --destructive: 0 75% 48%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Wood Grain - Light Oak */
-    --wood-light: 30 35% 75%;
-    --wood-dark: 28 30% 60%;
-    --wood-accent: 32 40% 65%;
+    /* designo Materials - Light */
+    --wood-light: 25 35% 68%;
+    --wood-dark: 22 40% 32%;
+    --wood-accent: 28 45% 45%;
+    --carbon: 220 5% 82%;
+    --steel: 220 8% 58%;
+    --steel-highlight: 38 12% 85%;
+    --chrome: 220 5% 40%;
     
-    /* Tower Talk - Deep Red */
-    --tower: 0 75% 42%;
+    /* Tower Talk - designo Cardinal Red */
+    --tower: 0 72% 40%;
     --tower-foreground: 0 0% 100%;
     
-    /* Luxury Materials - Light */
-    --wood-light: 28 30% 75%;
-    --wood-dark: 25 25% 65%;
-    --carbon: 220 5% 85%;
-    --steel: 220 8% 60%;
-    --steel-highlight: 220 12% 78%;
-    --chrome: 220 5% 35%;
-    
     /* Ambient Light Colors */
-    --ambient-gold: 40 90% 45%;
-    --ambient-blue: 210 90% 50%;
-    --ambient-red: 0 90% 50%;
-    --ambient-white: 0 0% 30%;
+    --ambient-gold: 38 88% 48%;
+    --ambient-blue: 210 85% 50%;
+    --ambient-red: 0 85% 50%;
+    --ambient-white: 0 0% 35%;
     
     /* Radius */
-    --radius: 0.75rem;
+    --radius: 0.625rem;
     
     /* Light mode specific */
     --overlay-bg: 0 0% 0%;
     --text-shadow: 0 0% 100%;
+    
+    /* designo specific variables */
+    --designo-nappa: linear-gradient(165deg, #F5F0E8 0%, #E8E0D5 50%, #F2EDE5 100%);
+    --designo-wood: linear-gradient(90deg, #8B6914 0%, #A67C00 25%, #8B6914 50%, #9A7B1A 75%, #8B6914 100%);
+    --designo-metal: linear-gradient(180deg, #C8C4BC 0%, #A8A498 50%, #B8B4AC 100%);
   }
 
-  /* ========== DARK MODE - Midnight Run ========== */
-  /* Warm, Luxury Interior, Amber Glow, Wood Grain */
+  /* ========== DARK MODE - designo Night ========== */
+  /* Deep Black Nappa, Illuminated Wood Trim, Ambient Lighting */
   .dark {
-    --background: 20 18% 5%;
-    --foreground: 35 30% 92%;
+    --background: 25 25% 6%;
+    --foreground: 38 25% 90%;
     
-    --card: 22 20% 9%;
-    --card-foreground: 35 30% 92%;
+    --card: 28 22% 10%;
+    --card-foreground: 38 25% 90%;
     
-    --muted: 25 18% 13%;
-    --muted-foreground: 32 20% 55%;
+    --muted: 25 20% 14%;
+    --muted-foreground: 35 18% 52%;
     
-    --border: 28 15% 18%;
-    --input: 24 18% 10%;
-    --ring: 40 100% 50%;
+    --border: 30 18% 20%;
+    --input: 28 20% 11%;
+    --ring: 38 95% 52%;
     
-    /* Primary - JDM Amber */
-    --primary: 40 100% 50%;
-    --primary-foreground: 20 18% 5%;
+    /* Primary - designo Amber Glow */
+    --primary: 38 95% 52%;
+    --primary-foreground: 25 25% 6%;
     
-    /* Secondary - Turbo Red */
-    --secondary: 8 100% 55%;
+    /* Secondary - designo Red Accent */
+    --secondary: 5 85% 52%;
     --secondary-foreground: 0 0% 100%;
     
-    /* Accent - Warm amber glow */
-    --accent: 35 90% 55%;
-    --accent-foreground: 20 18% 5%;
+    /* Accent - Warm Amber */
+    --accent: 32 88% 52%;
+    --accent-foreground: 25 25% 6%;
     
-    --success: 145 70% 45%;
+    --success: 145 68% 42%;
     --success-foreground: 145 100% 95%;
-    --warning: 45 100% 55%;
-    --warning-foreground: 45 100% 8%;
-    --destructive: 0 80% 55%;
+    --warning: 42 95% 52%;
+    --warning-foreground: 42 100% 8%;
+    --destructive: 0 78% 52%;
     --destructive-foreground: 0 0% 100%;
     
     --tower: 0 85% 50%;
