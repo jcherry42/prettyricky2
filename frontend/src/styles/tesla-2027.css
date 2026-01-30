@@ -1052,33 +1052,75 @@ button[class*="add-customer"]:hover,
 }
 
 
-/* ==================== COMMAND CENTER TYPOGRAPHY ==================== */
+/* ==================== COMMAND CENTER TYPOGRAPHY - 75% LARGER ==================== */
 
-/* Keep modal content at sensible sizes */
-.cc-modal,
-.cc-body,
-.cc-header,
-.cc-tabs,
-.cc-stat-card,
-.cc-item,
-.cc-search,
-.cc-search-blue-glass,
-.cc-toolbar,
-.import-options,
-.import-option,
-.io-title,
-.io-desc,
-.cc-add-btn {
-  font-size: inherit !important;
+/* Modal content font scaling */
+.cc-modal {
+  font-size: 1.75rem !important;
+}
+
+.cc-body {
+  font-size: 1.4rem !important;
 }
 
 /* Section titles */
 .cc-section-title,
 .section-header h3,
-.settings-section h3 {
+.settings-section h3,
+.cc-import h3 {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+}
+
+/* Stat cards and items */
+.cc-stat-card,
+.cc-stat-value,
+.cc-stat-label {
+  font-size: 1.3rem !important;
+}
+
+.cc-item,
+.cc-customer-item {
   font-size: 1.25rem !important;
 }
 
+/* Form elements */
+.cc-input,
+.cc-toolbar input,
+.cc-search input {
+  font-size: 1.25rem !important;
+}
+
+/* Tabs */
+.cc-tabs {
+  font-size: 1.1rem !important;
+}
+
+.cc-tab {
+  font-size: 1.1rem !important;
+  padding: 12px 18px !important;
+}
+
+/* Generated responses - 75% larger */
+.tesla-response-card,
+.tesla-response-card .response-text,
+.tesla-response-card p {
+  font-size: 1.25rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Response titles */
+.response-title,
+.tesla-response-card h4 {
+  font-size: 1.4rem !important;
+}
+
+/* Keep import options at readable size */
+.import-options,
+.import-option,
+.io-title {
+  font-size: 1rem !important;
+}
 
 
 /* ==================== MOBILE KEYBOARD OPTIMIZATION ==================== */
