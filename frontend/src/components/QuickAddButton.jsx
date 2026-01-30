@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, User, Phone, Mail, Tag, MessageSquare, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import haptics from '../utils/haptics';
