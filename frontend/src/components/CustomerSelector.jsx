@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { ChevronRight, Search, X } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 
@@ -183,4 +183,4 @@ const CustomerSelector = () => {
   );
 };
 
-export default CustomerSelector;
+export default memo(CustomerSelector);
