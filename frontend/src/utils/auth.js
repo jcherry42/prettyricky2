@@ -47,7 +47,6 @@ class AuthService {
       await this.setAuth(data);
       return data;
     } catch (error) {
-      console.error('[Auth] Registration error:', error);
       throw error;
     }
   }
@@ -69,7 +68,6 @@ class AuthService {
       await this.setAuth(data);
       return data;
     } catch (error) {
-      console.error('[Auth] Login error:', error);
       throw error;
     }
   }
@@ -96,8 +94,8 @@ class AuthService {
           }
         });
       }
-    } catch (error) {
-      console.error('[Auth] Logout error:', error);
+    } catch {
+      // Logout error - silent
     } finally {
       this.token = null;
       this.user = null;
@@ -124,8 +122,7 @@ class AuthService {
       const user = await response.json();
       this.user = user;
       return user;
-    } catch (error) {
-      console.error('[Auth] Get current user error:', error);
+    } catch {
       return null;
     }
   }
