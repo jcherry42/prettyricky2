@@ -278,8 +278,11 @@ const IntakeHub = ({ isOpen, onClose }) => {
             align-items: center;
             justify-content: space-between;
             padding: 16px 20px;
-            background: linear-gradient(90deg, rgba(8,47,73,0.9), rgba(6,78,59,0.9));
-            border-bottom: 1px solid rgba(56,189,248,0.4);
+            background: linear-gradient(180deg,
+              rgba(0, 0, 0, 0.3) 0%,
+              rgba(0, 0, 0, 0.15) 100%
+            );
+            border-bottom: 1px solid rgba(139, 90, 43, 0.45);
           }
           .intake-title {
             display: flex;
@@ -288,7 +291,7 @@ const IntakeHub = ({ isOpen, onClose }) => {
             font-family: 'Smooch Sans', system-ui, sans-serif;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #67e8f9;
+            color: #FBD38D;
             font-size: 20px;
           }
           .intake-badge {
