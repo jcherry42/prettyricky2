@@ -30,7 +30,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
  * Performance optimized with memoization
  */
 export const CommandCenter = memo(({ isOpen, onClose }) => {
-  const { toggleImport } = useSales();
+  const { toggleImport, setCustomers: setGlobalCustomers } = useSales();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [customers, setCustomers] = useState([]);
@@ -120,6 +120,17 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
       setLoading(false);
     }
   }, []);
+
+  const refreshGlobalCustomers = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/customers?limit=200`);
+      const data = await res.json();
+      setGlobalCustomers(data.customers || []);
+    } catch {
+      // Silent
+    }
+  }, [setGlobalCustomers]);
+
 
   useEffect(() => {
     if (!isOpen) return;
@@ -446,7 +457,10 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
           <CustomerForm 
             customer={selectedCustomer}
             initialData={prefillCustomerData}
-            onSaved={fetchCustomers}
+            onSaved={async () => {
+              await fetchCustomers();
+              await refreshGlobalCustomers();
+            }}
             onClose={() => {
               setShowCustomerForm(false);
               setPrefillCustomerData(null);
