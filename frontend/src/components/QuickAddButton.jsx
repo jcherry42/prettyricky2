@@ -169,8 +169,7 @@ export const QuickAddButton = () => {
       } else {
         throw new Error('Failed to save');
       }
-    } catch (e) {
-      console.error('Failed to save customer:', e);
+    } catch {
       haptics.error();
       setErrors({ submit: 'Failed to save customer. Please try again.' });
       announceToScreenReader('Failed to save customer');
