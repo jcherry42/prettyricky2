@@ -261,7 +261,7 @@ const VisionExtractor = ({ onDataExtracted, onClose }) => {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .vision-extractor {
           padding: 24px;
           max-width: 600px;
