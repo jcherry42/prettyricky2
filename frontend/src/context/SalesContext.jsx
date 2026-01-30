@@ -341,6 +341,9 @@ export function SalesProvider({ children }) {
   const toggleAnalytics = (value) => dispatch({ type: ACTIONS.TOGGLE_ANALYTICS, payload: value });
   const toggleAdminSettings = (value) => dispatch({ type: ACTIONS.TOGGLE_ADMIN_SETTINGS, payload: value });
   
+  // Vehicle inventory actions
+  const setVehicleInventory = (data) => dispatch({ type: ACTIONS.SET_VEHICLE_INVENTORY, payload: data });
+  
   // Favorites actions
   const addFavorite = (favorite) => {
     const newFavorite = {
