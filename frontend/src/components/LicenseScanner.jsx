@@ -278,7 +278,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isOpen]);
+  }, [isOpen, capturedImage, initCamera, stream]);
 
   // Cleanup on close
   const handleClose = () => {
