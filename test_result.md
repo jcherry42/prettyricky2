@@ -148,6 +148,10 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
+      - working: true
+        agent: "main"
+        comment: "Validated backend translation via curl for es/fr/ko and fixed UI toggle behavior." 
+
     needs_retesting: false
     status_history:
       - working: true
