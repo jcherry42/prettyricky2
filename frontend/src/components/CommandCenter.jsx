@@ -2699,10 +2699,12 @@ const AmbientLightingSection = memo(() => {
       `}</style>
     </div>
   );
-};
+});
 
-// Settings Tab Component
-const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
+AmbientLightingSection.displayName = 'AmbientLightingSection';
+
+// Settings Tab Component (memoized)
+const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
   const { 
     dealership, 
     salesperson, 
