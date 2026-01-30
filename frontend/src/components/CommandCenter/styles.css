@@ -971,7 +971,7 @@ html:not(.dark) .io-title {
 .settings-tab {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px; /* reduce blank space */
 }
 
 .settings-form {
