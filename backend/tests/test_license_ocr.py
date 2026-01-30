@@ -79,9 +79,9 @@ class TestLicenseScanOCR:
             # Verify image is accessible
             img_response = requests.get(f"{BASE_URL}{data['image_url']}")
             assert img_response.status_code == 200
-            print(f"✅ Image is accessible")
+            print("✅ Image is accessible")
         else:
-            print(f"⚠️ No image_url in response (OCR may have failed early)")
+            print("⚠️ No image_url in response (OCR may have failed early)")
     
     def test_license_scan_with_jpeg(self, api_client, test_jpeg_bytes):
         """Test license scan with JPEG image"""
@@ -213,7 +213,7 @@ class TestCreateCustomerFromLicense:
         assert customers_response.status_code == 200
         customers = customers_response.json().get('customers', [])
         assert len(customers) > 0, "Customer should be found in database"
-        print(f"✅ Customer verified in database")
+        print("✅ Customer verified in database")
     
     def test_create_customer_missing_required_fields(self):
         """Test that create customer requires first_name, last_name, image_url"""
@@ -224,7 +224,7 @@ class TestCreateCustomerFromLicense:
         }
         response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require first_name"
-        print(f"✅ Missing first_name rejected")
+        print("✅ Missing first_name rejected")
         
         # Missing last_name
         form_data = {
@@ -233,7 +233,7 @@ class TestCreateCustomerFromLicense:
         }
         response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require last_name"
-        print(f"✅ Missing last_name rejected")
+        print("✅ Missing last_name rejected")
         
         # Missing image_url
         form_data = {
@@ -242,7 +242,7 @@ class TestCreateCustomerFromLicense:
         }
         response = requests.post(f"{BASE_URL}/api/license/create-customer", files=form_data)
         assert response.status_code == 422, "Should require image_url"
-        print(f"✅ Missing image_url rejected")
+        print("✅ Missing image_url rejected")
     
     def test_create_customer_partial_address(self, test_image_bytes):
         """Test creating customer with partial address info"""
@@ -328,7 +328,7 @@ class TestLicenseAttach:
         attach_response = requests.post(f"{BASE_URL}/api/license/attach", files=attach_form)
         
         assert attach_response.status_code == 404
-        print(f"✅ Invalid customer ID rejected with 404")
+        print("✅ Invalid customer ID rejected with 404")
 
 
 class TestLicenseUploadSimple:
@@ -380,7 +380,7 @@ class TestLicenseUploadSimple:
         result = response.json()
         assert result.get('success') == True
         assert result.get('customer_id') == customer_id
-        print(f"✅ Simple upload with customer_id works")
+        print("✅ Simple upload with customer_id works")
 
 
 class TestCleanup:

@@ -122,7 +122,7 @@ class TestVehiclesCRUD:
         response = requests.get(f"{BASE_URL}/api/vehicles/stats")
         assert response.status_code == 200
         data = response.json()
-        print(f"✓ Vehicle stats retrieved")
+        print("✓ Vehicle stats retrieved")
     
     def test_filter_vehicles_by_category(self):
         """Test filtering vehicles by category"""
@@ -157,7 +157,7 @@ class TestVINScanner:
         response = requests.get(f"{BASE_URL}/api/vin/decode/{invalid_vin}")
         # Should return 400 or 200 with error
         assert response.status_code in [200, 400]
-        print(f"✓ Invalid VIN handled correctly")
+        print("✓ Invalid VIN handled correctly")
     
     def test_vin_save_to_inventory(self):
         """Test /api/vin/save-to-inventory endpoint"""
@@ -244,7 +244,7 @@ class TestLicenseScanner:
         
         assert data.get('success') == True
         assert 'customer' in data
-        print(f"✓ License customer creation working")
+        print("✓ License customer creation working")
 
 
 class TestDataImport:
@@ -260,7 +260,7 @@ class TestDataImport:
         
         response = requests.post(f"{BASE_URL}/api/import/preview", json=request_data)
         assert response.status_code == 200
-        print(f"✓ Import preview working")
+        print("✓ Import preview working")
 
 
 class TestIntegrations:
@@ -280,7 +280,7 @@ class TestIntegrations:
         assert response.status_code == 200
         data = response.json()
         assert 'schema' in data
-        print(f"✓ Customer schema retrieved")
+        print("✓ Customer schema retrieved")
 
 
 class TestConversations:
@@ -291,7 +291,7 @@ class TestConversations:
         response = requests.get(f"{BASE_URL}/api/conversations/categories")
         assert response.status_code == 200
         data = response.json()
-        print(f"✓ Conversation categories retrieved")
+        print("✓ Conversation categories retrieved")
 
 
 if __name__ == "__main__":

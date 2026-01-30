@@ -253,7 +253,7 @@ class TestLicenseScanOCR:
         else:
             # Expected for blank test image
             assert "error" in data
-            print(f"✓ License scan correctly reported no data from blank image")
+            print("✓ License scan correctly reported no data from blank image")
     
     def test_license_scan_invalid_file_type(self):
         """Test license scan with invalid file type"""
