@@ -30,7 +30,7 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         ))}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .language-selector {
           display: flex;
           flex-direction: column;
