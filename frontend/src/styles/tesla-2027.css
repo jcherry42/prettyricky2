@@ -750,18 +750,16 @@ html:not(.dark) .settings-section {
 .tesla-inquiry-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 1fr;
   gap: 12px;
 }
 
-/* CRITICAL: Force ALL buttons to be identical size using aspect-ratio */
+/* All buttons must be exactly the same size - fixed height */
 .tesla-inquiry-grid > button,
 .tesla-inquiry-grid > .tesla-inquiry-btn {
-  width: 100% !important;
-  aspect-ratio: 1 / 1.1 !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  height: auto !important;
+  width: 100%;
+  height: 100px;
+  min-height: 100px;
+  max-height: 100px;
 }
 
 .tesla-inquiry-btn {
