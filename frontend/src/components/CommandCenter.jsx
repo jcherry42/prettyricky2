@@ -1857,10 +1857,12 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
       </div>
     </div>
   );
-};
+});
 
-// Customer Detail Component
-const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
+CustomerForm.displayName = 'CustomerForm';
+
+// Customer Detail Component (memoized)
+const CustomerDetail = memo(({ customer, onClose, onEdit, onRefresh }) => {
   const [newNote, setNewNote] = useState('');
   const [addingNote, setAddingNote] = useState(false);
   const [showEjectModal, setShowEjectModal] = useState(false);
@@ -1868,7 +1870,7 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   const [printResult, setPrintResult] = useState(null);
 
   // Get printer IP from localStorage
-  const getPrinterIP = () => localStorage.getItem('printerIP');
+  const getPrinterIP = useCallback(() => localStorage.getItem('printerIP'), []);
 
   const handlePrint = async () => {
     const printerIP = getPrinterIP();
