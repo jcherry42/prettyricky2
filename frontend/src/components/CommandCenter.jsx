@@ -947,15 +947,15 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
         /* Import Options */
         /* ============================================
-           IMPORT OPTIONS - ICON-AS-BUTTON DESIGN
-           Large colorful icons with centered title overlay
+           IMPORT OPTIONS - W140 INSTRUMENT CLUSTER
+           Circular gauge buttons matching light mode
            ============================================ */
         .import-options {
           display: flex;
-          align-items: center;
+          align-items: stretch;
           justify-content: center;
-          gap: 28px;
-          padding: 28px 32px;
+          gap: 20px;
+          padding: 24px 28px;
           /* Walnut wood bezel frame */
           background: 
             radial-gradient(ellipse 80% 50% at 15% 20%, rgba(140, 85, 35, 0.3) 0%, transparent 50%),
@@ -971,97 +971,90 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .import-option {
-          position: relative;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 120px;
-          height: 120px;
-          cursor: pointer;
-          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          /* No background - icon is the button */
-          background: transparent;
-          border: none;
+          gap: 12px;
+          padding: 24px 20px 20px;
+          min-width: 130px;
+          min-height: 130px;
+          /* Dark gauge face - matching light mode style */
+          background: 
+            radial-gradient(circle at 50% 30%, rgba(60, 55, 50, 0.5) 0%, transparent 60%),
+            radial-gradient(circle at 50% 50%, #1a1816 0%, #0d0c0b 70%, #080706 100%);
           border-radius: 50%;
+          border: 3px solid rgba(80, 65, 50, 0.6);
+          cursor: pointer;
+          text-align: center;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 
+            inset 0 3px 6px rgba(0, 0, 0, 0.6),
+            inset 0 -2px 4px rgba(255, 180, 100, 0.06),
+            0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .import-option:hover {
-          transform: scale(1.15) translateY(-6px);
-        }
-
-        .import-option:hover .io-icon-svg {
-          filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
-        }
-
-        /* Title centered on top of icon */
-        .import-option .io-title {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: 2;
-          font-size: 10px;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 1.2px;
-          color: #FFFFFF;
-          text-shadow: 
-            0 0 10px rgba(0, 0, 0, 0.9),
-            0 0 20px rgba(0, 0, 0, 0.7),
-            0 2px 4px rgba(0, 0, 0, 0.8);
-          text-align: center;
-          line-height: 1.3;
-          max-width: 90px;
-          pointer-events: none;
-        }
-
-        /* Large colorful icon as the button */
-        .import-option .io-icon-svg {
-          width: 100px;
-          height: 100px;
-          transition: all 0.35s ease;
-        }
-
-        /* Color variants */
-        .import-option.cyan .io-icon-svg { 
-          color: #22d3ee;
-          filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.6)) drop-shadow(0 0 30px rgba(34, 211, 238, 0.3));
-        }
-        .import-option.cyan:hover .io-title {
-          text-shadow: 
-            0 0 10px rgba(34, 211, 238, 0.9),
-            0 0 20px rgba(34, 211, 238, 0.6),
-            0 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        .import-option.green .io-icon-svg { 
-          color: #22c55e;
-          filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 30px rgba(34, 197, 94, 0.3));
-        }
-        .import-option.green:hover .io-title {
-          text-shadow: 
-            0 0 10px rgba(34, 197, 94, 0.9),
-            0 0 20px rgba(34, 197, 94, 0.6),
-            0 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        .import-option.purple .io-icon-svg { 
-          color: #a855f7;
-          filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
-        }
-        .import-option.purple:hover .io-title {
-          text-shadow: 
-            0 0 10px rgba(168, 85, 247, 0.9),
-            0 0 20px rgba(168, 85, 247, 0.6),
-            0 2px 4px rgba(0, 0, 0, 0.8);
+          background: 
+            radial-gradient(circle at 50% 30%, rgba(80, 70, 60, 0.6) 0%, transparent 60%),
+            radial-gradient(circle at 50% 50%, #252220 0%, #151310 70%, #0a0908 100%);
+          border-color: rgba(200, 160, 80, 0.5);
+          transform: scale(1.05) translateY(-4px);
+          box-shadow: 
+            inset 0 3px 6px rgba(0, 0, 0, 0.5),
+            inset 0 -2px 4px rgba(255, 180, 100, 0.1),
+            0 8px 24px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(255, 180, 80, 0.1);
         }
 
         .import-option .io-icon {
-          display: none;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+        }
+
+        /* Colorful icon backgrounds - matching light mode */
+        .import-option.cyan .io-icon { 
+          background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(20, 100, 120, 0.4) 100%);
+          border: 2px solid rgba(34, 211, 238, 0.5);
+          color: #22d3ee;
+          box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 8px rgba(34, 211, 238, 0.2);
+        }
+        .import-option.green .io-icon { 
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, rgba(20, 80, 50, 0.4) 100%);
+          border: 2px solid rgba(34, 197, 94, 0.5);
+          color: #22c55e;
+          box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.2);
+        }
+        .import-option.purple .io-icon { 
+          background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(80, 40, 120, 0.4) 100%);
+          border: 2px solid rgba(168, 85, 247, 0.5);
+          color: #a855f7;
+          box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 8px rgba(168, 85, 247, 0.2);
+        }
+
+        .import-option .io-title {
+          font-size: 11px;
+          font-weight: 700;
+          color: #FFB850;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          text-shadow: 
+            0 0 8px rgba(255, 180, 80, 0.6),
+            0 0 16px rgba(255, 160, 60, 0.3);
+          text-align: center;
+          line-height: 1.2;
         }
 
         .import-option .io-desc {
+          display: none;
+        }
+
+        .import-option .io-icon-svg {
           display: none;
         }
 
