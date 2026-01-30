@@ -14,7 +14,8 @@ import { useSales } from '../context/SalesContext';
 import { 
   getSoundPreferences, 
   setSoundPreferences,
-  getSoundProfiles
+  getSoundProfiles,
+  playNotificationSound
 } from '../utils/notificationSound';
 import LanguageSelector from './LanguageSelector';
 import VisionExtractor from './VisionExtractor';
