@@ -655,7 +655,7 @@ export const QuickAddButton = () => {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 11px;
+          font-size: 15px;
           font-weight: 600;
           color: rgba(255, 159, 67, 0.8);
           text-transform: uppercase;
@@ -710,7 +710,7 @@ export const QuickAddButton = () => {
         }
 
         .qa-error {
-          font-size: 11px;
+          font-size: 15px;
           color: #fca5a5;
         }
 
