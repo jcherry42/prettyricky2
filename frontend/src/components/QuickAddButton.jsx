@@ -315,6 +315,7 @@ export const QuickAddButton = () => {
                   <input 
                     id="qa-phone"
                     type="tel"
+                    inputMode="tel"
                     placeholder="555-123-4567"
                     value={formData.phone}
                     onChange={e => handleChange('phone', e.target.value)}
