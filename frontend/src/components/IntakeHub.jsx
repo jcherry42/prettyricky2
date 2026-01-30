@@ -133,7 +133,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             <span>Intake</span>
             <span className="intake-badge">DUAL MODE</span>
           </div>
-          <button onClick={onClose} className="intake-close" aria-label="Close">
+          <button onClick={onClose} className="intake-close" aria-label="Close Intake Hub" data-testid="intake-close-btn">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -143,6 +143,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           <button
             className={`intake-mode ${activeMode === 'license' ? 'active' : ''}`}
             onClick={() => setActiveMode('license')}
+            aria-label="License Scan mode"
+            data-testid="intake-mode-license"
           >
             <IdCard className="w-4 h-4" />
             <span>License Scan</span>
@@ -150,6 +152,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           <button
             className={`intake-mode ${activeMode === 'vin' ? 'active' : ''}`}
             onClick={() => setActiveMode('vin')}
+            aria-label="VIN Scanner mode"
+            data-testid="intake-mode-vin"
           >
             <Car className="w-4 h-4" />
             <span>VIN Scanner</span>
