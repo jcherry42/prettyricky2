@@ -281,17 +281,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
 }
 
 .section-header h4 {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(255, 200, 140, 0.9);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 200, 140, 0.92);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   margin: 0;
 }
 
