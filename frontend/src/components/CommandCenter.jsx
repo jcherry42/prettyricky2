@@ -2648,6 +2648,9 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
       </div>
       
+      {/* Ambient Lighting Section */}
+      <AmbientLightingSection />
+      
       
       <style>{`
         .settings-tab {
