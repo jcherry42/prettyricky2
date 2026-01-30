@@ -1162,32 +1162,6 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
           color: #22c55e;
         }
 
-        /* Email Parser Modal removed */
-          inset: 0;
-          background: rgba(10,8,6,0.95);
-          backdrop-filter: blur(12px);
-          z-index: 200;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 16px;
-        }
-
-        /* Email parser modal styles removed */
-          max-height: 85vh;
-          background: rgba(20,18,16,0.75);
-          backdrop-filter: blur(16px);
-          border-radius: 20px;
-          border: 1px solid rgba(255,191,0,0.25);
-          box-shadow: 
-            0 25px 50px rgba(0,0,0,0.6),
-            0 0 40px rgba(255,191,0,0.12),
-            inset 0 1px 0 rgba(255,255,255,0.08);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-        }
-
         .email-parser-header {
           display: flex;
           align-items: center;
