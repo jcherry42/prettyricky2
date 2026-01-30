@@ -295,6 +295,25 @@ frontend:
         agent: "testing"
         comment: "✅ PASS: Both provided VINs decode successfully and display decoded data." 
 
+
+  - task: "Tower Talk - UI can reach backend reliably in installed PWA"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/TowerTalkModal.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "Installed PWA fails instantly with 'Unable to connect. Check your internet connection and try again.'; user reports many backend-dependent features failing in PWA." 
+      - working: true
+        agent: "main"
+        comment: "Fixed root cause by updating BACKEND_URL fallbacks across frontend to use window.location.origin when env var is unavailable in PWA build; verified /api/tower-talk via curl." 
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Tower Talk end-to-end now works; connection error no longer occurs; VIN decode + translate also succeed." 
+
   - task: "License Scanner - Save creates customer via /api/customers legacy endpoint"
     implemented: true
     working: "NA"
