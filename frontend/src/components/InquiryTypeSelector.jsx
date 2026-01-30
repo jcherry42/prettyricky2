@@ -21,8 +21,7 @@ const INQUIRY_TYPES = [
     id: 'price_question', 
     label: 'Price Question', 
     icon: DollarSign,
-    gradient: 'from-green-500 to-emerald-500',
-    description: 'Pricing inquiry'
+    gradient: 'from-green-500 to-emerald-500'
   },
   { 
     id: 'availability', 
