@@ -52,8 +52,8 @@ export const VoiceTranslator = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try {
         mediaRecorderRef.current.stop();
-      } catch (e) {
-        console.log('[PTT] Stop error:', e);
+      } catch {
+        // Stop error - silent
       }
     }
     
