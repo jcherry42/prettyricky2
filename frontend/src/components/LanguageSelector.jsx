@@ -10,7 +10,9 @@ const LANGUAGES = [
   { code: 'ko', flag: '🇰🇷', name: 'Korean' }
 ];
 
-const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
+const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange, label = "Translation" }) => {
+  const currentValue = value ?? selectedLanguage;
+  const handleChange = onChange ?? onLanguageChange;
   return (
     <div className="language-selector">
       {label && (
@@ -20,8 +22,8 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         {LANGUAGES.map(lang => (
           <button
             key={lang.code}
-            onClick={() => onChange(lang.code)}
-            className={`flag-btn ${value === lang.code ? 'active' : ''}`}
+            onClick={() => handleChange?.(lang.code)}
+            className={`flag-btn ${currentValue === lang.code ? 'active' : ''}`}
             aria-label={`Select ${lang.name}`}
             title={lang.name}
           >
