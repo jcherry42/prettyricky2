@@ -161,10 +161,18 @@ const ResponseCard = ({
     onSend(text);
   };
 
-  const toggleTranslation = (e) => {
+  const toggleTranslation = async (e) => {
     e.stopPropagation();
     haptics.select();
-    setShowTranslated(!showTranslated);
+    
+    // If we don't have a translation yet, translate first
+    if (!translation && (response.text || editText)) {
+      await translateContent();
+      setShowTranslated(true);
+    } else {
+      // Toggle between translated and original
+      setShowTranslated(!showTranslated);
+    }
   };
 
   const saveCustomText = () => {
@@ -172,8 +180,8 @@ const ResponseCard = ({
       onCustomTextChange(editText);
     }
     setIsEditing(false);
-    // Trigger translation of custom text
-    if (supercharged && editText) {
+    // Trigger translation of custom text if showing translated
+    if (showTranslated && editText) {
       translateContent();
     }
   };
