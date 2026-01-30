@@ -204,6 +204,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: VIN decode API working excellently. Successfully decoded VIN 7MMVABDY7SN393788 with 100% confidence, returning comprehensive vehicle data (2025 Mazda CX-50) including year, make, model, trim, safety features, validation data."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: VIN decode from IntakeHub working PERFECTLY. Both provided VINs decoded successfully: JM3KKEHA3T1355103 → 2026 MAZDA CX-90, 7MMVAADW5TN144528 → 2026 MAZDA CX-50. IntakeHub → VIN Scanner mode → VIN input → Decode & Save to Inventory flow working flawlessly. Vehicle data appears in local inventory list immediately after decode."
 
   - task: "VIN Save Workflow - POST /api/vin/save-to-inventory with duplicate rejection"
     implemented: true
