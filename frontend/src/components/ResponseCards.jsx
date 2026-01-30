@@ -212,8 +212,8 @@ const ResponseCard = ({
           )}
         </div>
         
-        {/* Translate Button - Always visible for non-editing cards */}
-        {!isEditing && (
+        {/* Translate Button - Only in Sport mode */}
+        {supercharged && !isEditing && (
           <button
             onClick={toggleTranslation}
             disabled={isTranslating}
