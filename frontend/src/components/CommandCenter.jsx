@@ -599,11 +599,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           position: relative;
           z-index: 1;
           display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 4px;
-          padding: 10px 12px;
-          background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.15) 100%);
-          border-bottom: 1px solid rgba(255, 140, 0, 0.08);
+          grid-template-columns: repeat(5, 1fr);
+          gap: 6px;
+          padding: 12px 14px;
+          /* Brushed aluminum rail */
+          background: 
+            repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
+            linear-gradient(180deg, rgba(35, 32, 28, 0.95) 0%, rgba(25, 22, 18, 0.98) 100%);
+          border-bottom: 2px solid rgba(120, 90, 50, 0.35);
         }
 
         .cc-tab {
@@ -611,38 +614,39 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 3px;
-          padding: 8px 4px;
-          border-radius: 8px;
+          gap: 4px;
+          padding: 10px 6px;
+          border-radius: 10px;
           background: transparent;
-          border: 1px solid transparent;
-          color: rgba(255, 200, 150, 0.45);
+          border: 2px solid transparent;
+          color: rgba(255, 200, 150, 0.5);
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 400;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.1em;
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.2s;
+          transition: all 0.25s ease;
         }
         
         .cc-tab svg {
-          width: 18px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
         }
 
         .cc-tab:hover {
-          color: rgba(255, 200, 150, 0.75);
-          background: rgba(255, 140, 0, 0.08);
-          border-color: rgba(255, 140, 0, 0.1);
+          color: rgba(255, 200, 150, 0.85);
+          background: rgba(200, 160, 80, 0.1);
+          border-color: rgba(200, 160, 80, 0.2);
         }
 
         .cc-tab.active {
-          color: #FF9F43;
-          background: linear-gradient(180deg, rgba(255, 140, 0, 0.18) 0%, rgba(255, 100, 0, 0.12) 100%);
-          border-color: rgba(255, 140, 0, 0.25);
+          color: #FFB850;
+          background: linear-gradient(180deg, rgba(200, 160, 80, 0.2) 0%, rgba(180, 140, 60, 0.15) 100%);
+          border-color: rgba(200, 160, 80, 0.4);
+          text-shadow: 0 0 10px rgba(255, 180, 80, 0.5);
           box-shadow: 
-            0 0 15px rgba(255, 140, 0, 0.12),
+            0 0 15px rgba(200, 160, 80, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
