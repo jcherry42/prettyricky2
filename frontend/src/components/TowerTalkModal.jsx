@@ -334,8 +334,7 @@ export const TowerTalkModal = () => {
         }
         setIsTranslating(false);
       }
-    } catch (err) {
-      console.error('[Tower Talk] Exception:', err);
+    } catch {
       setError('Unable to connect. Check your internet connection and try again.');
     } finally {
       setIsLoading(false);
