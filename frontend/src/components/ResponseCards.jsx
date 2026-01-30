@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Copy, Check, MessageSquare, ChevronDown, ChevronUp, Languages, Flame, Loader2, Pencil, X, Volume2, VolumeX, Plus, Save } from 'lucide-react';
 import { translateText } from '../utils/translationService';
 import { speakText, stopSpeech } from '../utils/ttsService';
@@ -417,4 +417,4 @@ export const ResponseCards = () => {
   );
 };
 
-export default ResponseCards;
+export default memo(ResponseCards);
