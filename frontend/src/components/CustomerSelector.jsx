@@ -66,11 +66,15 @@ const CustomerSelector = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-12 py-4 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-gray-200 dark:border-zinc-800 focus:border-[#00D9FF] focus:outline-none transition-all text-gray-900 dark:text-white placeholder:text-gray-400"
+            aria-label="Search customers"
+            data-testid="customer-search-input"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
               className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+              aria-label="Clear search"
+              data-testid="clear-search-btn"
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>
@@ -121,6 +125,11 @@ const CustomerSelector = () => {
                 key={customer.id}
                 onClick={() => handleSelectCustomer(customer)}
                 className="tesla-card cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${customer.name}`}
+                data-testid={`customer-card-${customer.id}`}
+                onKeyDown={(e) => e.key === 'Enter' && handleSelectCustomer(customer)}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getStatusColor(customer.lead_status)} text-white font-semibold shadow-lg`}>
@@ -152,6 +161,8 @@ const CustomerSelector = () => {
             <button
               onClick={() => setShowAllCustomers(!showAllCustomers)}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00D9FF]/10 to-[#B84FFF]/10 hover:from-[#00D9FF]/20 hover:to-[#B84FFF]/20 border border-[#00D9FF]/30 text-[#00D9FF] font-medium transition-all"
+              aria-label={showAllCustomers ? 'Show fewer customers' : `Show all ${filteredCustomers.length} customers`}
+              data-testid="show-more-customers-btn"
             >
               {showAllCustomers 
                 ? 'Show Less' 
