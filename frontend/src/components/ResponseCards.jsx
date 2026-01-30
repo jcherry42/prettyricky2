@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, Check, MessageSquare, ChevronDown, ChevronUp, Languages, Flame, Loader2, Pencil, X, Volume2, VolumeX, Plus, Save } from 'lucide-react';
 import { translateText } from '../utils/translationService';
 import { speakText, stopSpeech } from '../utils/ttsService';
 import { useSales } from '../context/SalesContext';
-import { FOLLOW_UP_RULES } from '../data/salesData';
 import haptics from '../utils/haptics';
 import { announceToScreenReader } from '../utils/accessibility';
 
