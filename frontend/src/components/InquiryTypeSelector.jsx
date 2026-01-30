@@ -101,6 +101,7 @@ const InquiryTypeSelector = () => {
               className={`tesla-inquiry-btn ${isSelected ? 'selected' : ''}`}
               aria-pressed={isSelected}
               aria-label={`Select ${type.label} inquiry type`}
+              data-testid={`inquiry-type-${type.id}`}
             >
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow-lg`}>
                 <Icon className="w-5 h-5 text-white" />
