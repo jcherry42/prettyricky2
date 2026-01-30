@@ -212,8 +212,8 @@ const ResponseCard = ({
           )}
         </div>
         
-        {/* Language Toggle - Only show in Sport mode */}
-        {supercharged && (translation || isCustom) && !isEditing && (
+        {/* Translate Button - Always visible for non-editing cards */}
+        {!isEditing && (
           <button
             onClick={toggleTranslation}
             disabled={isTranslating}
