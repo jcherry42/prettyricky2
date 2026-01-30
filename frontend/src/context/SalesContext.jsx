@@ -34,6 +34,7 @@ const initialState = {
   customers: DEFAULT_CUSTOMERS,
   customTemplates: {},
   favorites: [],
+  vehicleInventory: [],
   
   // Current selection
   selectedCustomer: null,
