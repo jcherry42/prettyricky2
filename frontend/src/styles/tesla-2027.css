@@ -1055,13 +1055,6 @@ button[class*="add-customer"]:hover,
     0 0 20px rgba(255, 165, 0, 0.3) !important;
 }
 
-.tesla-inquiry-btn.selected {
-  background: var(--tesla-gradient-1);
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 4px 16px rgba(0, 217, 255, 0.5);
-}
-
 
 /* ==================== COMMAND CENTER TYPOGRAPHY - 75% LARGER ==================== */
 
