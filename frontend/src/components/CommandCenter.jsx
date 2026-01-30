@@ -159,17 +159,6 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  const filteredCustomers = customers.filter(c => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      c.first_name?.toLowerCase().includes(q) ||
-      c.last_name?.toLowerCase().includes(q) ||
-      c.phone?.includes(q) ||
-      c.email?.toLowerCase().includes(q)
-    );
-  });
-
   // Use portal to render outside header context
   return createPortal(
     <div className="cc-overlay" onClick={onClose}>
