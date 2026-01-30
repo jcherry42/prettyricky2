@@ -1507,26 +1507,30 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
   );
 };
 
-// Import Option Card - Circular gauge with icon and title
-const ImportOption = ({ icon: Icon, title, color, onClick }) => (
+// Import Option Card - Circular gauge with icon and title (memoized)
+const ImportOption = memo(({ icon: Icon, title, color, onClick }) => (
   <div className={`import-option ${color}`} onClick={onClick}>
     <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
     <span className="io-title">{title}</span>
   </div>
-);
+));
 
-// Integration Item
-const IntegrationItem = ({ name, connected }) => (
+ImportOption.displayName = 'ImportOption';
+
+// Integration Item (memoized)
+const IntegrationItem = memo(({ name, connected }) => (
   <div className="integration-item">
     <span className="int-name">{name}</span>
     <button className={`int-btn ${connected ? 'connected' : 'connect'}`}>
       {connected ? 'Connected' : 'Connect'}
     </button>
   </div>
-);
+));
 
-// Customer Form Component
-const CustomerForm = ({ onClose, customer, initialData }) => {
+IntegrationItem.displayName = 'IntegrationItem';
+
+// Customer Form Component (memoized)
+const CustomerForm = memo(({ onClose, customer, initialData }) => {
   const [formData, setFormData] = useState({
     first_name: customer?.first_name || initialData?.first_name || '',
     last_name: customer?.last_name || initialData?.last_name || '',
