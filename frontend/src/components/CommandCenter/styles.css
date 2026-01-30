@@ -1957,6 +1957,33 @@ html:not(.dark) .io-title {
   border: 1px solid rgba(255, 150, 50, 0.2);
 }
 
+/* Requested: +200% font size for the 64-color ambient lighting menu */
+.ambient-section .section-header h4 {
+  font-size: 28px;
+}
+
+.ambient-section .ambient-toggle span {
+  font-size: 26px;
+}
+
+.ambient-section .toggle-btn {
+  font-size: 24px;
+}
+
+.ambient-section .intensity-control label {
+  font-size: 26px;
+}
+
+.ambient-section .intensity-btn {
+  font-size: 22px;
+  padding: 12px 16px;
+}
+
+.ambient-section .ambient-desc {
+  font-size: 22px;
+  line-height: 1.35;
+}
+
 .ambient-settings {
   display: flex;
   flex-direction: column;
