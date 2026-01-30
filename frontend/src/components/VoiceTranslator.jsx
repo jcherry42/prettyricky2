@@ -177,8 +177,7 @@ export const VoiceTranslator = () => {
         audioChunksRef.current = [];
       };
       
-      mediaRecorder.onerror = (event) => {
-        console.error('[PTT] MediaRecorder error:', event.error);
+      mediaRecorder.onerror = () => {
         setError('Recording failed. Please try again.');
         stopRecording();
         setShowResult(true);
