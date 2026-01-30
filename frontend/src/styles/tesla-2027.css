@@ -427,9 +427,9 @@ html:not(.dark) .status-label {
 /* INPUTS: keep blue glass + safety orange text but soften */
 html:not(.dark) .printer-ip-input,
 html:not(.dark) .cc-input,
-html:not(.dark) input[type="text"],
-html:not(.dark) input[type="email"],
-html:not(.dark) input[type="tel"],
+html:not(.dark) input[type="text"]:not(.cc-search-blue-glass input),
+html:not(.dark) input[type="email"]:not(.cc-search-blue-glass input),
+html:not(.dark) input[type="tel"]:not(.cc-search-blue-glass input),
 html:not(.dark) textarea {
   background: linear-gradient(135deg,
     rgba(0, 120, 255, 0.22) 0%,
@@ -443,6 +443,21 @@ html:not(.dark) textarea {
   color: #FF6600 !important;
   font-weight: 700;
   text-shadow: none !important;
+}
+
+/* CRITICAL: Search bar input must be completely invisible/transparent */
+html:not(.dark) .cc-search-blue-glass input,
+html:not(.dark) .cc-search-blue-glass input[type="text"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  border-width: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
 }
 
 html:not(.dark) .printer-ip-input::placeholder,
