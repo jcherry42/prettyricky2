@@ -157,6 +157,17 @@ export const QuickAddButton = () => {
       });
       
       if (res.ok) {
+        const data = await res.json().catch(() => null);
+
+        // Immediately refresh global customer list so the new customer appears everywhere
+        try {
+          const listRes = await fetch(`${BACKEND_URL}/api/customers/list?limit=50`);
+          const listData = await listRes.json();
+          setCustomers(listData.customers || []);
+        } catch {
+          // If refresh fails, still allow close
+        }
+
         haptics.success();
         // Play subtle success chime for new customer
         import('../utils/notificationSound').then(mod => {
