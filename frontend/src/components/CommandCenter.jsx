@@ -235,12 +235,17 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                     placeholder="Search customers..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
+                    className="search-input-transparent"
                     style={{
                       background: 'transparent',
+                      backgroundColor: 'transparent',
+                      backgroundImage: 'none',
                       border: 'none',
+                      borderWidth: 0,
                       outline: 'none',
                       boxShadow: 'none',
                       WebkitAppearance: 'none',
+                      MozAppearance: 'none',
                       appearance: 'none'
                     }}
                   />
