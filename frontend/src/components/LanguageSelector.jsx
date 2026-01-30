@@ -46,7 +46,7 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         }
 
         html:not(.dark) .lang-label {
-          color: #003d7a;
+          color: #5C3A1E;
         }
 
         .lang-flags {
