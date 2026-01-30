@@ -45,8 +45,7 @@ const INQUIRY_TYPES = [
     id: 'test_drive', 
     label: 'Test Drive', 
     icon: Car,
-    gradient: 'from-blue-500 to-indigo-500',
-    description: 'Schedule drive'
+    gradient: 'from-blue-500 to-indigo-500'
   },
   { 
     id: 'follow_up', 
