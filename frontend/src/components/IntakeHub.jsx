@@ -472,7 +472,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             background: linear-gradient(180deg, rgba(15, 13, 12, 0.95) 0%, rgba(20, 18, 16, 0.98) 100%);
             color: #FFB850;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 13px;
+            font-size: 18px;
             font-weight: 600;
             text-shadow: none;
             box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -500,7 +500,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             border: 2px solid rgba(74, 222, 128, 0.5);
             background: linear-gradient(180deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%);
             color: #4ade80;
-            font-size: 13px;
+            font-size: 18px;
             font-weight: 600;
             text-shadow: none;
             transition: all 0.25s;
@@ -589,7 +589,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             border: 2px solid rgba(220, 80, 80, 0.5);
             background: linear-gradient(180deg, rgba(220, 80, 80, 0.15) 0%, rgba(180, 60, 60, 0.25) 100%);
             color: #f87171;
-            font-size: 13px;
+            font-size: 18px;
             font-weight: 600;
             display: flex;
             align-items: center;
