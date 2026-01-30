@@ -525,18 +525,18 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
           .license-scanner-modal {
             width: 100%;
             max-width: 500px;
-            max-height: 95vh;
+            max-height: calc(100vh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
             background: #0a0a0a;
-            border-radius: 24px 24px 0 0;
+            border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            animation: slideUp 0.3s ease;
+            animation: fadeIn 0.25s ease-out;
           }
 
-          @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+          @keyframes fadeIn {
+            from { transform: scale(0.97); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
           }
 
           .scanner-header {
