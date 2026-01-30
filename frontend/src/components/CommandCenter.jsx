@@ -291,7 +291,7 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
                   onClick={() => setShowCustomerForm(true)} 
                   className="cc-add-btn gold-btn"
                   aria-label="Add new customer"
-                  data-testid="cc-add-customer-btn"
+                  data-testid="add-customer-btn"
                 >
                   <Plus className="w-4 h-4" />
                   Add Customer
