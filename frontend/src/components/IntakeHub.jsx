@@ -386,7 +386,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               linear-gradient(180deg, #252220 0%, #1a1816 100%);
             border: 2px solid rgba(80, 60, 40, 0.5);
             color: rgba(255, 200, 140, 0.8);
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -518,7 +518,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 16px;
             color: rgba(255, 200, 140, 0.7);
             text-transform: uppercase;
             letter-spacing: 0.08em;
@@ -533,7 +533,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             border-radius: 10px;
             background: rgba(20, 18, 16, 0.8);
             border: 1px dashed rgba(100, 80, 50, 0.5);
-            font-size: 12px;
+            font-size: 16px;
             color: rgba(255, 200, 140, 0.5);
           }
           .vin-list {
@@ -554,7 +554,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             background: linear-gradient(180deg, #1f1d1b 0%, #151311 100%);
             border: 2px solid rgba(80, 60, 40, 0.4);
             color: rgba(255, 200, 140, 0.9);
-            font-size: 12px;
+            font-size: 16px;
             transition: all 0.2s;
           }
           .vin-item:hover {
