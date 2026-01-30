@@ -106,14 +106,14 @@ const CustomerSelector = () => {
           className="tesla-customer-selector cursor-pointer"
         >
           <div className="tesla-customer-header">
-            <div className={`tesla-customer-avatar ${getStatusColor(selectedCustomer.lead_status)}`}>
-              {getInitials(selectedCustomer.name)}
+            <div className={`tesla-customer-avatar ${getStatusColor(getCustomerStatus(selectedCustomer))}`}>
+              {getInitials(getCustomerName(selectedCustomer))}
             </div>
             <div className="tesla-customer-info">
-              <h3 className="tesla-customer-name">{selectedCustomer.name}</h3>
+              <h3 className="tesla-customer-name">{getCustomerName(selectedCustomer)}</h3>
               <p className="tesla-customer-meta">
                 {selectedCustomer.phone || selectedCustomer.email}
-                {selectedCustomer.vehicleOfInterest && ` • ${selectedCustomer.vehicleOfInterest}`}
+                {getCustomerVehicle(selectedCustomer) && ` • ${getCustomerVehicle(selectedCustomer)}`}
               </p>
             </div>
             <ChevronRight className="w-6 h-6 tesla-chevron" />
