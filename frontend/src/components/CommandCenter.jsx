@@ -946,16 +946,16 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
         /* Import Options */
         /* ============================================
-           IMPORT OPTIONS - designo W140 INSTRUMENT CLUSTER
-           Icon-Focused Gauge Buttons with Wood Bezel
+           IMPORT OPTIONS - ICON-AS-BUTTON DESIGN
+           Large colorful icons with centered title overlay
            ============================================ */
         .import-options {
           display: flex;
-          align-items: stretch;
+          align-items: center;
           justify-content: center;
-          gap: 20px;
-          padding: 24px 28px;
-          /* Walnut wood bezel frame - authentic W140 style */
+          gap: 28px;
+          padding: 28px 32px;
+          /* Walnut wood bezel frame */
           background: 
             radial-gradient(ellipse 80% 50% at 15% 20%, rgba(140, 85, 35, 0.3) 0%, transparent 50%),
             radial-gradient(ellipse 60% 60% at 85% 80%, rgba(110, 65, 25, 0.25) 0%, transparent 50%),
@@ -966,128 +966,98 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           box-shadow: 
             inset 0 3px 6px rgba(255, 200, 140, 0.12),
             inset 0 -4px 8px rgba(0, 0, 0, 0.5),
-            0 8px 28px rgba(0, 0, 0, 0.5),
-            0 0 0 1px rgba(0, 0, 0, 0.3);
+            0 8px 28px rgba(0, 0, 0, 0.5);
         }
 
         .import-option {
-          flex: 1 1 0;
-          max-width: 140px;
-          min-width: 120px;
-        }
-
-        .import-option {
+          position: relative;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 12px;
-          padding: 24px 16px 20px;
-          /* W140 gauge face - black with chrome bezel */
-          background: 
-            radial-gradient(circle at 50% 25%, rgba(70, 65, 60, 0.5) 0%, transparent 55%),
-            radial-gradient(circle at 50% 50%, #1a1816 0%, #0d0c0b 70%, #080706 100%);
-          border-radius: 50%;
-          border: 4px solid;
-          border-image: linear-gradient(180deg, #C8C8C8 0%, #888888 30%, #666666 50%, #888888 70%, #C8C8C8 100%) 1;
+          width: 120px;
+          height: 120px;
           cursor: pointer;
-          text-align: center;
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 
-            inset 0 4px 8px rgba(0, 0, 0, 0.7),
-            inset 0 -2px 4px rgba(255, 180, 100, 0.06),
-            0 6px 16px rgba(0, 0, 0, 0.6);
-          aspect-ratio: 1;
-          min-height: 140px;
+          /* No background - icon is the button */
+          background: transparent;
+          border: none;
+          border-radius: 50%;
         }
 
         .import-option:hover {
-          background: 
-            radial-gradient(circle at 50% 25%, rgba(90, 80, 70, 0.6) 0%, transparent 55%),
-            radial-gradient(circle at 50% 50%, #252220 0%, #151310 70%, #0a0908 100%);
-          border-image: linear-gradient(180deg, #E0E0E0 0%, #A8A8A8 30%, #888888 50%, #A8A8A8 70%, #E0E0E0 100%) 1;
-          transform: scale(1.08) translateY(-4px);
-          box-shadow: 
-            inset 0 4px 8px rgba(0, 0, 0, 0.6),
-            inset 0 -2px 4px rgba(255, 180, 100, 0.1),
-            0 12px 32px rgba(0, 0, 0, 0.6),
-            0 0 30px rgba(255, 180, 80, 0.12);
+          transform: scale(1.15) translateY(-6px);
         }
 
-        .import-option .io-icon {
-          width: 72px;
-          height: 72px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .import-option:hover .io-icon-svg {
+          filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
+        }
+
+        /* Title centered on top of icon */
+        .import-option .io-title {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 2;
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 1.2px;
+          color: #FFFFFF;
+          text-shadow: 
+            0 0 10px rgba(0, 0, 0, 0.9),
+            0 0 20px rgba(0, 0, 0, 0.7),
+            0 2px 4px rgba(0, 0, 0, 0.8);
+          text-align: center;
+          line-height: 1.3;
+          max-width: 90px;
+          pointer-events: none;
+        }
+
+        /* Large colorful icon as the button */
+        .import-option .io-icon-svg {
+          width: 100px;
+          height: 100px;
           transition: all 0.35s ease;
         }
 
-        /* Colorful, detailed icon styles */
-        .import-option.cyan .io-icon { 
-          background: radial-gradient(circle, rgba(34, 211, 238, 0.35) 0%, rgba(6, 182, 212, 0.5) 50%, rgba(20, 100, 120, 0.6) 100%);
-          border: 3px solid rgba(34, 211, 238, 0.7);
+        /* Color variants */
+        .import-option.cyan .io-icon-svg { 
           color: #22d3ee;
-          box-shadow: 
-            0 0 20px rgba(34, 211, 238, 0.5), 
-            0 0 40px rgba(34, 211, 238, 0.25),
-            inset 0 2px 4px rgba(255, 255, 255, 0.2);
+          filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.6)) drop-shadow(0 0 30px rgba(34, 211, 238, 0.3));
         }
-        .import-option.cyan:hover .io-icon {
-          box-shadow: 
-            0 0 30px rgba(34, 211, 238, 0.7), 
-            0 0 60px rgba(34, 211, 238, 0.4),
-            inset 0 2px 4px rgba(255, 255, 255, 0.3);
-          transform: scale(1.05);
-        }
-
-        .import-option.green .io-icon { 
-          background: radial-gradient(circle, rgba(34, 197, 94, 0.35) 0%, rgba(22, 163, 74, 0.5) 50%, rgba(20, 80, 50, 0.6) 100%);
-          border: 3px solid rgba(34, 197, 94, 0.7);
-          color: #22c55e;
-          box-shadow: 
-            0 0 20px rgba(34, 197, 94, 0.5), 
-            0 0 40px rgba(34, 197, 94, 0.25),
-            inset 0 2px 4px rgba(255, 255, 255, 0.2);
-        }
-        .import-option.green:hover .io-icon {
-          box-shadow: 
-            0 0 30px rgba(34, 197, 94, 0.7), 
-            0 0 60px rgba(34, 197, 94, 0.4),
-            inset 0 2px 4px rgba(255, 255, 255, 0.3);
-          transform: scale(1.05);
-        }
-
-        .import-option.purple .io-icon { 
-          background: radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, rgba(147, 51, 234, 0.5) 50%, rgba(80, 40, 120, 0.6) 100%);
-          border: 3px solid rgba(168, 85, 247, 0.7);
-          color: #a855f7;
-          box-shadow: 
-            0 0 20px rgba(168, 85, 247, 0.5), 
-            0 0 40px rgba(168, 85, 247, 0.25),
-            inset 0 2px 4px rgba(255, 255, 255, 0.2);
-        }
-        .import-option.purple:hover .io-icon {
-          box-shadow: 
-            0 0 30px rgba(168, 85, 247, 0.7), 
-            0 0 60px rgba(168, 85, 247, 0.4),
-            inset 0 2px 4px rgba(255, 255, 255, 0.3);
-          transform: scale(1.05);
-        }
-
-        .import-option .io-title {
-          font-size: 11px;
-          font-weight: 700;
-          /* Amber illuminated gauge text - authentic W140 */
-          color: #FFB850;
-          text-transform: uppercase;
-          letter-spacing: 1px;
+        .import-option.cyan:hover .io-title {
           text-shadow: 
-            0 0 10px rgba(255, 180, 80, 0.8),
-            0 0 20px rgba(255, 160, 60, 0.5);
-          text-align: center;
-          line-height: 1.2;
+            0 0 10px rgba(34, 211, 238, 0.9),
+            0 0 20px rgba(34, 211, 238, 0.6),
+            0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .import-option.green .io-icon-svg { 
+          color: #22c55e;
+          filter: drop-shadow(0 0 15px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 30px rgba(34, 197, 94, 0.3));
+        }
+        .import-option.green:hover .io-title {
+          text-shadow: 
+            0 0 10px rgba(34, 197, 94, 0.9),
+            0 0 20px rgba(34, 197, 94, 0.6),
+            0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .import-option.purple .io-icon-svg { 
+          color: #a855f7;
+          filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.3));
+        }
+        .import-option.purple:hover .io-title {
+          text-shadow: 
+            0 0 10px rgba(168, 85, 247, 0.9),
+            0 0 20px rgba(168, 85, 247, 0.6),
+            0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .import-option .io-icon {
+          display: none;
         }
 
         .import-option .io-desc {
