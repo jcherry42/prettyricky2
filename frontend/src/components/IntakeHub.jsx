@@ -298,9 +298,9 @@ const IntakeHub = ({ isOpen, onClose }) => {
             font-size: 10px;
             padding: 2px 8px;
             border-radius: 999px;
-            background: rgba(6,182,212,0.2);
-            border: 1px solid rgba(6,182,212,0.6);
-            color: #a5f3fc;
+            background: rgba(15, 81, 140, 0.2);
+            border: 1px solid rgba(15, 81, 140, 0.5);
+            color: #BFDBFE;
           }
           .intake-close {
             width: 36px;
