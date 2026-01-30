@@ -1465,12 +1465,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   );
 };
 
-// Import Option Card
-const ImportOption = ({ icon: Icon, title, description, color, onClick }) => (
+// Import Option Card - Icon-focused with detailed colorful icons
+const ImportOption = ({ icon: Icon, title, color, onClick }) => (
   <div className={`import-option ${color}`} onClick={onClick}>
-    <div className="io-icon"><Icon className="w-6 h-6" /></div>
+    <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
     <span className="io-title">{title}</span>
-    <span className="io-desc">{description}</span>
   </div>
 );
 
