@@ -6,7 +6,7 @@
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 
                     import.meta.env.REACT_APP_BACKEND_URL || 
-                    '';
+                    window.location.origin;
 
 // Language to optimal voice mapping - Spanish, French, Korean only
 const VOICE_BY_LANGUAGE = {
