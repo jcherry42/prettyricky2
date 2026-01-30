@@ -106,12 +106,9 @@
 
 test_plan:
   current_focus:
-    - "Customer Add Workflow - Quick Add refreshes global customers list"
     - "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
-    - "Legacy Customer Create - POST /api/customers (LicenseScanner/ImportModal compatibility)"
-    - "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
-    - "VIN Decode Workflow - GET /api/vin/decode endpoint"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
   test_all: false
   test_priority: "high_first"
 
