@@ -106,9 +106,8 @@
 
 test_plan:
   current_focus:
-    - "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
-  stuck_tasks: 
-    - "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
+    - "Import Data Tab Mode Selector Styling - Three-button cohesive centered layout"
+  stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
 
