@@ -15,8 +15,7 @@ const INQUIRY_TYPES = [
     id: 'new_lead', 
     label: 'New Lead', 
     icon: Star,
-    gradient: 'from-cyan-500 to-blue-500',
-    description: 'First contact'
+    gradient: 'from-cyan-500 to-blue-500'
   },
   { 
     id: 'price_question', 
