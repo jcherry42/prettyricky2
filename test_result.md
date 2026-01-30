@@ -281,15 +281,18 @@ backend:
 
   - task: "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/ResponseCards.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Translate toggle now calls translate API on first toggle ON (await translateContent) and then swaps text display. Toggle OFF returns to original." 
+        comment: "Translate toggle now calls translate API on first toggle ON (await translateContent) and then swaps text display. Toggle OFF returns to original."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Translation functionality working PERFECTLY. In Sport Mode, translate button successfully translates English text to Spanish, displays correct Spanish flag (🇪🇸), and text content changes completely. Toggle back works perfectly - reverts to original English text and shows US flag (🇺🇸). Translation is reversible as required. Target language confirmed as Spanish (one of es/fr/ko as specified)." 
 
   - task: "Translation Service - Use env backend URL only"
     implemented: true
