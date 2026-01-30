@@ -396,11 +396,13 @@ html:not(.dark) .cc-modal {
     repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 150, 100, 0.03) 22px, rgba(180, 150, 100, 0.03) 23px),
     repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 150, 100, 0.03) 22px, rgba(180, 150, 100, 0.03) 23px),
     linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%) !important;
-  /* Wood bezel border */
-  border: 3px solid transparent !important;
-  border-image: linear-gradient(135deg, #C9A86C 0%, #DFC08A 25%, #CAAD72 50%, #D8BB82 75%, #C9A86C 100%) 1 !important;
-  border-radius: 20px !important;
+  /* ROUNDED EDGES - solid border to preserve border-radius */
+  border: 3px solid #CAAD72 !important;
+  border-radius: 28px !important;
   box-shadow: 
+    /* Wood bezel gradient effect via multiple shadows */
+    inset 0 0 0 1px rgba(223, 192, 138, 0.6),
+    inset 0 0 0 2px rgba(201, 168, 108, 0.4),
     /* Chrome outer ring */
     0 0 0 1px rgba(220, 210, 195, 0.8),
     0 0 0 3px rgba(200, 180, 140, 0.4),
