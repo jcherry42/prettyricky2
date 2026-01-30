@@ -1010,9 +1010,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           color: #22c55e;
         }
 
-        /* Email Parser Modal */
-        .email-parser-overlay {
-          position: fixed;
+        /* Email Parser Modal removed */
           inset: 0;
           background: rgba(10,8,6,0.95);
           backdrop-filter: blur(12px);
