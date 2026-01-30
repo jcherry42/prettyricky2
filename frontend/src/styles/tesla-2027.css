@@ -214,20 +214,28 @@ html:not(.dark) .tesla-chevron {
   transform: translateX(4px);
 }
 
-/* ==================== RESPONSE CARDS - TESLA STYLE ==================== */
+/* ==================== RESPONSE CARDS - DESIGNO STYLE ==================== */
 
 .tesla-response-card {
-  background: var(--tesla-surface-dark);
-  border-radius: var(--tesla-radius-lg);
-  padding: 20px;
-  box-shadow: var(--tesla-shadow-md);
-  border: 2px solid transparent;
-  transition: var(--tesla-transition);
-  cursor: pointer;
   position: relative;
   overflow: hidden;
+  border-radius: var(--tesla-radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  /* designo Night nappa with subtle art */
+  background: 
+    radial-gradient(ellipse 100% 50% at 0% 30%, rgba(128, 40, 60, 0.04) 0%, transparent 40%),
+    repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(200, 160, 100, 0.015) 12px, rgba(200, 160, 100, 0.015) 13px),
+    repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(200, 160, 100, 0.015) 12px, rgba(200, 160, 100, 0.015) 13px),
+    linear-gradient(180deg, #1e1c1a 0%, #151311 100%);
+  border: 2px solid rgba(100, 80, 50, 0.35);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 200, 140, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: var(--tesla-transition);
 }
 
+/* Wood accent bar at top */
 .tesla-response-card::before {
   content: '';
   position: absolute;
@@ -235,9 +243,23 @@ html:not(.dark) .tesla-chevron {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--tesla-gradient-1);
+  background: linear-gradient(90deg, #5C3A1E 0%, #8B5A2B 30%, #6B4324 60%, #7A4F2A 100%);
   opacity: 0;
   transition: var(--tesla-transition);
+}
+
+/* Stitching */
+.tesla-response-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 12px 12px, rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  opacity: 0.5;
+  border-radius: var(--tesla-radius-lg);
 }
 
 .tesla-response-card:hover::before {
@@ -245,34 +267,61 @@ html:not(.dark) .tesla-chevron {
 }
 
 .tesla-response-card:hover {
-  border-color: rgba(0, 217, 255, 0.4);
-  box-shadow: var(--tesla-shadow-lg);
+  border-color: rgba(180, 140, 80, 0.5);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.06),
+    0 6px 20px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(200, 160, 80, 0.08);
   transform: translateY(-2px);
 }
 
 .tesla-response-card.selected {
-  border-color: var(--tesla-electric-blue);
-  box-shadow: 0 8px 32px rgba(0, 217, 255, 0.25);
+  border-color: rgba(200, 160, 80, 0.6);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.1),
+    0 8px 32px rgba(200, 160, 80, 0.2);
 }
 
 .tesla-response-card.selected::before {
   opacity: 1;
+  background: linear-gradient(90deg, #8B5A2B 0%, #C9A86C 30%, #DFC08A 60%, #8B5A2B 100%);
 }
 
 /* Light Mode Response Cards */
 html:not(.dark) .tesla-response-card {
-  background: white;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  box-shadow: var(--tesla-shadow-light-md);
+  background: 
+    radial-gradient(ellipse 100% 50% at 0% 30%, rgba(180, 100, 120, 0.04) 0%, transparent 40%),
+    repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(180, 150, 100, 0.025) 12px, rgba(180, 150, 100, 0.025) 13px),
+    repeating-linear-gradient(-45deg, transparent, transparent 12px, rgba(180, 150, 100, 0.025) 12px, rgba(180, 150, 100, 0.025) 13px),
+    linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  border: 2px solid rgba(200, 170, 120, 0.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .tesla-response-card::before {
+  background: linear-gradient(90deg, #C9A86C 0%, #DFC08A 30%, #CAAD72 60%, #D8BB82 100%);
+}
+
+html:not(.dark) .tesla-response-card::after {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 12px 12px, rgba(139, 90, 43, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.6;
 }
 
 html:not(.dark) .tesla-response-card:hover {
-  border-color: rgba(0, 217, 255, 0.6);
-  box-shadow: var(--tesla-shadow-light-lg);
+  border-color: rgba(180, 140, 80, 0.5);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 6px 20px rgba(0, 0, 0, 0.08),
+    0 0 12px rgba(200, 160, 80, 0.1);
 }
 
 html:not(.dark) .tesla-response-card.selected {
-  border-color: var(--tesla-electric-blue);
+  border-color: rgba(180, 140, 80, 0.6);
   box-shadow: 0 8px 40px rgba(0, 217, 255, 0.3);
 }
 
