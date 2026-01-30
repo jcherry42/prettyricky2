@@ -103,6 +103,22 @@
 #====================================================================================================
 
 
+
+test_plan:
+  current_focus:
+    - "Customer Add Workflow - Quick Add refreshes global customers list"
+    - "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
+    - "Legacy Customer Create - POST /api/customers (LicenseScanner/ImportModal compatibility)"
+    - "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
+    - "VIN Decode Workflow - GET /api/vin/decode endpoint"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Implemented fixes for customer add disappearing (global refresh + legacy /api/customers endpoint) and translation toggle now actually calls API and is reversible; VIN decode verified via curl with provided VINs. Please run UI regression tests for these flows." 
+
 # NOTE (Main agent): User-reported regressions (P0 bug bash)
 # - VIN decode failing on real VINs (provided 2 VINs)
 # - Add customer appears to disappear / not show in lists
