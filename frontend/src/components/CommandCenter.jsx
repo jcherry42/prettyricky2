@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   X, Users, Upload, BarChart3, 
@@ -24,9 +24,9 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 /**
  * Command Center - Premium Liquid Glass UI
- * Replaces the old Check Engine menu
+ * Performance optimized with memoization
  */
-export const CommandCenter = ({ isOpen, onClose }) => {
+export const CommandCenter = memo(({ isOpen, onClose }) => {
   const { toggleImport } = useSales();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
