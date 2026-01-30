@@ -33,8 +33,7 @@ const INQUIRY_TYPES = [
     id: 'trade_in', 
     label: 'Trade-In', 
     icon: Repeat,
-    gradient: 'from-orange-500 to-red-500',
-    description: 'Vehicle exchange'
+    gradient: 'from-orange-500 to-red-500'
   },
   { 
     id: 'financing', 
