@@ -118,8 +118,11 @@
 }
 
 .cc-tab:hover {
-  background: rgba(255,191,0,0.08);
-  color: rgba(255,255,255,0.8);
+  background: rgba(255,191,0,0.10);
+  border-color: rgba(255,191,0,0.14);
+  color: rgba(255,255,255,0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
 }
 
 .cc-tab.active {
