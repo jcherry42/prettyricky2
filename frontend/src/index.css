@@ -570,17 +570,27 @@ html:not(.dark) body {
 .header-luxury {
   @apply backdrop-blur-xl;
   background: 
-    url('https://www.transparenttextures.com/patterns/wood-pattern.png'),
+    /* designo Open-Pore Wood Trim with brushed metal accent */
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 105, 20, 0.08) 2px,
+      rgba(139, 105, 20, 0.08) 3px,
+      transparent 3px,
+      transparent 10px
+    ),
     linear-gradient(180deg, 
-      hsla(22, 25%, 10%, 0.98) 0%,
-      hsla(20, 20%, 7%, 0.99) 100%
+      hsla(28, 30%, 12%, 0.98) 0%,
+      hsla(25, 25%, 8%, 0.99) 100%
     );
-  background-size: 180px 180px, 100% 100%;
+  background-size: 20px 100%, 100% 100%;
   background-blend-mode: overlay, normal;
-  border-bottom: 1px solid hsla(30, 20%, 25%, 0.5);
+  border-bottom: 2px solid hsla(38, 45%, 35%, 0.4);
   box-shadow: 
-    0 4px 20px hsla(0, 0%, 0%, 0.4),
-    inset 0 -1px 0 hsla(40, 30%, 30%, 0.1);
+    0 4px 24px hsla(0, 0%, 0%, 0.5),
+    inset 0 1px 0 hsla(38, 50%, 50%, 0.08),
+    inset 0 -1px 0 hsla(25, 30%, 20%, 0.3);
 }
 
 /* Row 1: Taillights */
