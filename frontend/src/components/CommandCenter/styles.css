@@ -977,7 +977,7 @@ html:not(.dark) .io-title {
 .settings-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px; /* reduce blank space */
 }
 
 .s-field {
@@ -1793,7 +1793,7 @@ html:not(.dark) .io-title {
 .settings-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px; /* reduce blank space */
 }
 
 .s-field {
