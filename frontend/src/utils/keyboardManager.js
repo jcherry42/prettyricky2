@@ -162,8 +162,6 @@ export const initKeyboardManager = () => {
     setupInputHandlers();
     preventModalCloseOnKeyboard();
     handleOrientationChange();
-    
-    console.log('✅ Keyboard Manager initialized for mobile');
   }
 };
 
