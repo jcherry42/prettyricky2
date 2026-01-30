@@ -52,8 +52,7 @@ export function AuthProvider({ children }) {
         } else {
           dispatch({ type: ACTIONS.SET_USER, payload: null });
         }
-      } catch (error) {
-        console.error('[Auth] Init failed:', error);
+      } catch {
         dispatch({ type: ACTIONS.SET_USER, payload: null });
       }
     };
