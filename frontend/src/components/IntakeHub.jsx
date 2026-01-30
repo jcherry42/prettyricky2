@@ -430,7 +430,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             color: #FFB850;
             font-size: 14px;
             font-weight: 600;
-            text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+            text-shadow: none;
             box-shadow: 
               inset 0 1px 2px rgba(255, 200, 140, 0.08),
               0 3px 10px rgba(0, 0, 0, 0.3);
@@ -474,7 +474,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 13px;
             font-weight: 600;
-            text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+            text-shadow: none;
             box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
           }
           .vin-input:focus, .vin-mileage-input:focus {
