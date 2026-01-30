@@ -337,6 +337,7 @@ export const QuickAddButton = () => {
                   <input 
                     id="qa-email"
                     type="email"
+                    inputMode="email"
                     placeholder="john@example.com"
                     value={formData.email}
                     onChange={e => handleChange('email', e.target.value)}
