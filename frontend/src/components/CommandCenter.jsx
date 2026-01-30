@@ -486,13 +486,13 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           margin: auto;
           /* designo Night - Nappa leather with Picasso swirl */
           background: 
-            /* Picasso swirl - burgundy and teal */
-            radial-gradient(ellipse 180% 90% at 0% 40%, rgba(128, 40, 60, 0.1) 0%, transparent 55%),
-            radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.08) 0%, transparent 55%),
-            conic-gradient(from 170deg at 15% 65%, transparent 0deg, rgba(140, 50, 70, 0.06) 55deg, transparent 110deg),
-            conic-gradient(from 350deg at 85% 35%, transparent 0deg, rgba(50, 110, 130, 0.05) 45deg, transparent 90deg),
+            /* Picasso swirl - burgundy and teal - MORE VISIBLE */
+            radial-gradient(ellipse 180% 90% at 0% 40%, rgba(128, 40, 60, 0.18) 0%, transparent 55%),
+            radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.15) 0%, transparent 55%),
+            conic-gradient(from 170deg at 15% 65%, transparent 0deg, rgba(140, 50, 70, 0.12) 55deg, transparent 110deg),
+            conic-gradient(from 350deg at 85% 35%, transparent 0deg, rgba(50, 110, 130, 0.1) 45deg, transparent 90deg),
             /* Gold accent at bottom */
-            radial-gradient(ellipse 80% 50% at 50% 100%, rgba(200, 160, 80, 0.06) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 50% at 50% 100%, rgba(200, 160, 80, 0.1) 0%, transparent 50%),
             /* Quilted nappa base */
             repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
             repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
