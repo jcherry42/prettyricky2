@@ -515,8 +515,11 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             background: rgba(0,0,0,0.95);
             z-index: 100;
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
+            padding: 16px;
+            padding-top: env(safe-area-inset-top, 16px);
+            padding-bottom: env(safe-area-inset-bottom, 16px);
           }
 
           .license-scanner-modal {
