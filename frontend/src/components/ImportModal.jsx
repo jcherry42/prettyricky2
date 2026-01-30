@@ -3,7 +3,7 @@ import { X, Upload, FileText, Loader2, Database, UserPlus, Check, AlertCircle } 
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 // Lead status options
 const LEAD_STATUSES = [

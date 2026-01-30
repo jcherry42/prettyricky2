@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader, CheckCircle, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 /**
  * VisionExtractor - Elite Image-to-Data Component

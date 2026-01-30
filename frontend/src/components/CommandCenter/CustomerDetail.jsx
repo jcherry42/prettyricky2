@@ -6,7 +6,7 @@ import React, { useState, useCallback, memo } from 'react';
 import { X, Phone, Mail, MapPin, Tag, MessageSquare, Edit3, Printer, Wifi, WifiOff, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 const CustomerDetail = memo(({ customer, onClose, onEdit, onRefresh }) => {
   const [newNote, setNewNote] = useState('');

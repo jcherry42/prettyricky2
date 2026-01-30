@@ -7,7 +7,7 @@ import {
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 export const LicenseScanner = ({ isOpen, onClose }) => {
   const { customers, setCustomers } = useSales();

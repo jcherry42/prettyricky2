@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { validateVIN } from '../utils/enterprise';
 import { LicenseScanner } from './LicenseScanner';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 // Local vehicle inventory limit
 const MAX_VEHICLES = 150;

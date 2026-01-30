@@ -23,7 +23,7 @@ import CustomerForm from './CommandCenter/CustomerForm';
 import CustomerDetail from './CommandCenter/CustomerDetail';
 import './CommandCenter/styles.css';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 /**
  * Command Center - Premium Liquid Glass UI

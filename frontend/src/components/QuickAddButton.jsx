@@ -5,7 +5,7 @@ import haptics from '../utils/haptics';
 import { announceToScreenReader, createFocusTrap } from '../utils/accessibility';
 import { useSales } from '../context/SalesContext';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 /**
  * Enterprise-Grade Quick Add Customer Button

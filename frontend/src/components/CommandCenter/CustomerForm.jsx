@@ -5,7 +5,7 @@
 import React, { useState, memo } from 'react';
 import { X } from 'lucide-react';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 const CustomerForm = memo(({ onClose, customer, initialData, onSaved }) => {
   const [formData, setFormData] = useState({
