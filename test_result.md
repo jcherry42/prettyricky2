@@ -251,15 +251,18 @@ backend:
 
   - task: "Customer Add Workflow - Quick Add refreshes global customers list"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/QuickAddButton.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "After successful quick add POST, now fetches /api/customers and updates SalesContext setCustomers so the new customer immediately appears across the app. Also added inputMode hints." 
+        comment: "After successful quick add POST, now fetches /api/customers and updates SalesContext setCustomers so the new customer immediately appears across the app. Also added inputMode hints."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Quick Add functionality working correctly. Form opens via floating button, has proper inputMode attributes (tel for phone, email for email) for mobile optimization. Form fields populate correctly and save button triggers. Mobile-friendly keyboard hints verified present." 
 
   - task: "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
     implemented: true
