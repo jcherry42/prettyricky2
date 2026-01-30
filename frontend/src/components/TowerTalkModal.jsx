@@ -329,7 +329,8 @@ export const TowerTalkModal = () => {
 
       if (supercharged) {
         setIsTranslating(true);
-        const result = await translateText(data.response, 'en', 'es');
+        const targetLang = getTargetLanguage();
+        const result = await translateText(data.response, 'en', targetLang);
         if (result?.success && result.translatedText) {
           setTranslatedResponse(result.translatedText);
           setShowTranslated(true);
