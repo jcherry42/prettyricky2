@@ -19,6 +19,7 @@ import {
 } from '../utils/notificationSound';
 import LanguageSelector from './LanguageSelector';
 import VisionExtractor from './VisionExtractor';
+import './CommandCenter/styles.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
