@@ -132,12 +132,12 @@ export const playEjectSound = () => {
   }
 };
 
-// Play sport mode toggle sound
+// Play sport mode toggle sound (with fade-out)
 export const playSportModeSound = () => {
   const profile = getSoundProfile();
   const soundPath = SOUND_PROFILES[profile]?.sportMode;
   if (soundPath) {
-    playSound(soundPath, 0.8);
+    playSoundWithFade(soundPath, 0.8);
   }
 };
 
