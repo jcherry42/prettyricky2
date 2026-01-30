@@ -672,7 +672,7 @@ export const QuickAddButton = () => {
           background: rgba(0, 0, 0, 0.4);
           border: 1px solid rgba(255, 140, 0, 0.15);
           color: rgba(255, 240, 220, 0.95);
-          font-size: 14px;
+          font-size: 19px;
           outline: none;
           transition: all 0.2s;
         }
@@ -752,7 +752,7 @@ export const QuickAddButton = () => {
           background: linear-gradient(135deg, rgba(255, 159, 67, 0.3) 0%, rgba(200, 100, 0, 0.25) 100%);
           border: 1px solid rgba(255, 159, 67, 0.5);
           color: #FF9F43;
-          font-size: 14px;
+          font-size: 19px;
           font-weight: 600;
           font-family: 'Bebas Neue', sans-serif;
           letter-spacing: 0.08em;
