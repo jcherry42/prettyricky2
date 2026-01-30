@@ -1042,11 +1042,15 @@ button[class*="add-customer"]:hover,
   font-size: 1.25rem !important;
 }
 
-/* Form elements */
+/* Form elements - search bar 20% smaller */
 .cc-input,
 .cc-toolbar input,
 .cc-search input {
-  font-size: 1.25rem !important;
+  font-size: 1rem !important;
+}
+
+.cc-search-blue-glass input {
+  font-size: 11px !important;
 }
 
 /* Tabs - 50% larger font */
