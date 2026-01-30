@@ -1124,18 +1124,25 @@ button[class*="add-customer"]:hover,
   font-size: 15px !important;
 }
 
-/* Generated responses - 75% larger */
+/* Generated responses - 100% larger (doubled from base) */
 .tesla-response-card,
 .tesla-response-card .response-text,
-.tesla-response-card p {
-  font-size: 1.25rem !important;
-  line-height: 1.6 !important;
+.tesla-response-card p,
+.response-text-large {
+  font-size: 1.75rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Response card text specifically */
+.response-card p.response-text-large {
+  font-size: 1.75rem !important;
+  line-height: 1.7 !important;
 }
 
 /* Response titles */
 .response-title,
 .tesla-response-card h4 {
-  font-size: 1.4rem !important;
+  font-size: 1.9rem !important;
 }
 
 /* Keep import options at readable size */
