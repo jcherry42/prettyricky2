@@ -52,13 +52,13 @@ async def test_printer_connection(request: PrinterTestRequest):
                         "message": f"Printer found at {request.ip}",
                         "protocol": "IPP"
                     }
-            except:
+            except Exception:
                 pass
             
             # Try port 9100 (RAW printing)
             try:
                 response = await client.get(f"http://{request.ip}:9100/", timeout=2.0)
-            except:
+            except Exception:
                 # Port 9100 might not respond to HTTP but could still work for raw printing
                 pass
             
@@ -71,7 +71,7 @@ async def test_printer_connection(request: PrinterTestRequest):
                         "message": f"Printer web interface found at {request.ip}",
                         "protocol": "HTTP"
                     }
-            except:
+            except Exception:
                 pass
         
         # If we get here, assume it might still work (some printers don't respond to probes)

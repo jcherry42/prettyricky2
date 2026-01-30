@@ -57,7 +57,7 @@ async def get_dashboard_stats():
     if conversation_repo:
         try:
             conversation_count = await conversation_repo.count({})
-        except:
+        except Exception:
             pass
     
     return {
