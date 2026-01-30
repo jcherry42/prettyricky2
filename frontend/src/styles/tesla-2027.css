@@ -799,8 +799,14 @@ html:not(.dark) .settings-section {
   gap: 6px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* GLASS EFFECT - Dark mode */
+  /* GLASS EFFECT with PICASSO SWIRL - Dark mode */
   background: 
+    /* Picasso swirl - burgundy and teal */
+    radial-gradient(ellipse 150% 80% at 10% 30%, rgba(128, 40, 60, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 100% at 90% 70%, rgba(40, 100, 120, 0.1) 0%, transparent 50%),
+    conic-gradient(from 200deg at 20% 60%, transparent 0deg, rgba(140, 50, 70, 0.08) 50deg, transparent 100deg),
+    conic-gradient(from 20deg at 80% 40%, transparent 0deg, rgba(50, 110, 130, 0.06) 40deg, transparent 80deg),
+    /* Glass base */
     linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(0, 0, 0, 0.1) 100%),
     linear-gradient(180deg, rgba(40, 38, 35, 0.9) 0%, rgba(25, 23, 20, 0.95) 100%);
   backdrop-filter: blur(12px);
