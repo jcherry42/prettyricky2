@@ -42,7 +42,7 @@ const CustomerDetail = memo(({ customer, onClose, onEdit, onRefresh }) => {
       
       if (data.success) {
         setPrintResult({ success: true });
-        import('../utils/notificationSound').then(mod => {
+        import('../../utils/notificationSound').then(mod => {
           mod.playEjectSound?.();
         }).catch(() => {});
         toast.success('Print job sent!', { description: `Printing ${customer.first_name}'s profile` });
