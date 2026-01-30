@@ -416,7 +416,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           }
           .intake-copy {
             color: rgba(255, 200, 140, 0.7);
-            font-size: 14px;
+            font-size: 19px;
           }
           .intake-open-license-btn {
             display: flex;
@@ -428,7 +428,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             background: linear-gradient(180deg, #2a2725 0%, #1a1816 100%);
             border: 2px solid rgba(100, 80, 50, 0.5);
             color: #FFB850;
-            font-size: 14px;
+            font-size: 19px;
             font-weight: 600;
             text-shadow: none;
             box-shadow: 
