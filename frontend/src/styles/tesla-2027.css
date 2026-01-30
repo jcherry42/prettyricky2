@@ -777,11 +777,7 @@ html:not(.dark) .settings-section {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  /* FIXED SIZE - all buttons identical */
-  height: 110px;
-  min-height: 110px;
-  max-height: 110px;
-  min-width: 80px;
+  /* Let grid control size - remove fixed heights */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   /* designo gauge button style */
