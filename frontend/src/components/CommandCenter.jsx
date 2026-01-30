@@ -782,19 +782,32 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
           
           <div className="sound-profiles">
             <label>Engine Sound Profile</label>
-            <div className="profile-grid">
-              {/* Engine sound profiles controlled via flag buttons (Spanish, French, Korean) */}
-              <LanguageSelector
-                value={soundPrefs.profile}
-                onChange={(code) => {
-                  const map = { es: 'spanish', fr: 'french', ko: 'korean' };
-                  const profileId = map[code] || 'spanish';
-                  const newPrefs = { ...soundPrefs, profile: profileId };
-                  setSoundPrefsState(newPrefs);
-                  setSoundPreferences(newPrefs);
-                }}
-                label={null}
-              />
+            <div className="sound-profile-grid">
+              {[
+                { id: 'merica', label: "'Merica", icon: '🇺🇸' },
+                { id: 'euro', label: 'Euro', icon: '🇮🇹' },
+                { id: 'jdm', label: 'JDM', icon: '🇯🇵' },
+              ].map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`sound-profile-btn ${soundPrefs.profile === p.id ? 'active' : ''}`}
+                  onClick={() => {
+                    const newPrefs = { ...soundPrefs, profile: p.id };
+                    setSoundPrefsState(newPrefs);
+                    setSoundPreferences(newPrefs);
+
+                    // Preview if enabled
+                    if (newPrefs.enabled) {
+                      playNotificationSound(p.id);
+                    }
+                  }}
+                  aria-label={`Engine sound ${p.label}`}
+                >
+                  <span className="sound-profile-icon" aria-hidden="true">{p.icon}</span>
+                  <span className="sound-profile-label" aria-hidden="true">{p.label}</span>
+                </button>
+              ))}
             </div>
           </div>
           

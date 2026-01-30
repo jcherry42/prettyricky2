@@ -1052,47 +1052,46 @@ html:not(.dark) .io-title {
 }
 
 /* Engine sound profiles: make buttons as large as possible without scroll */
-.engine-sound-profile .profile-grid {
-  display: flex;
-  justify-content: center;
-}
-
-.engine-sound-profile .profile-grid > div,
-.engine-sound-profile .profile-grid .language-selector {
-  width: 100%;
-}
-
-.engine-sound-profile .language-selector {
-  width: 100%;
-}
-
-.engine-sound-profile .lang-flags {
-  display: flex;
+.engine-sound-profile .sound-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  justify-content: space-between;
 }
 
-.engine-sound-profile .flag-btn {
-  flex: 1;
-  width: auto;
-  height: 92px; /* ~2x visual presence without requiring scroll */
+.engine-sound-profile .sound-profile-btn {
+  height: 92px; /* +100% vs typical 46px controls */
   border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.engine-sound-profile .flag-emoji {
+.engine-sound-profile .sound-profile-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,191,0,0.25);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+}
+
+.engine-sound-profile .sound-profile-btn.active {
+  border-color: rgba(255,191,0,0.45);
+  box-shadow:
+    0 14px 28px rgba(0,0,0,0.32),
+    0 0 18px rgba(255, 140, 0, 0.14);
+}
+
+.engine-sound-profile .sound-profile-icon {
   font-size: 40px;
   line-height: 1;
 }
 
 /* Labels centered below in subtle glowing safety orange */
-.engine-sound-profile .flag-btn::after {
-  display: block;
+.engine-sound-profile .sound-profile-label {
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -1101,9 +1100,20 @@ html:not(.dark) .io-title {
   text-shadow: 0 0 10px rgba(255, 140, 0, 0.28);
 }
 
-.engine-sound-profile .flag-btn[aria-label*="Spanish"]::after { content: "Spanish"; }
-.engine-sound-profile .flag-btn[aria-label*="French"]::after { content: "French"; }
-.engine-sound-profile .flag-btn[aria-label*="Korean"]::after { content: "Korean"; }
+html:not(.dark) .engine-sound-profile .sound-profile-btn {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(180, 140, 80, 0.16);
+}
+
+html:not(.dark) .engine-sound-profile .sound-profile-btn:hover {
+  border-color: rgba(180, 140, 80, 0.30);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.10);
+}
+
+html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
+  border-color: rgba(255,191,0,0.60);
+  box-shadow: 0 16px 28px rgba(0,0,0,0.12), 0 0 18px rgba(255, 140, 0, 0.12);
+}
 
 .sound-toggle span {
   font-size: 13px;
