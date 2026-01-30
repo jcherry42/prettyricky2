@@ -1,107 +1,93 @@
 # Supercharg'd - Product Requirements Document
 
 ## Original Problem Statement
-Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with a TRUSTED AUTHORITY approach (direct, calm, controlled, focused on digital-to-in-person conversion), and a highly stylized **Mercedes-Benz designo Interior Program** UI aesthetic inspired by the 1990s W140 S-Class, R129 SL, and C140 Coupes.
-
-## Target Users
-- Automotive sales representatives
-- Car dealership staff
-- Sales managers
+Build an offline-capable, instant-use "sales weapon" application for automotive sales representatives. The application features AI-powered sales assistance with a TRUSTED AUTHORITY approach, and a highly stylized **Mercedes-Benz designo Interior Program** UI aesthetic inspired by the 1990s W140 S-Class.
 
 ## designo Interior Program UI Theme (January 30, 2026)
 
-### Design Philosophy - "Rolls Royce of Automotive Middleware"
-Inspired by authentic Mercedes-Benz designo Interior Program from the 1990s:
-- **W140 S-Class** (1991-1998) - The flagship, "best car in the world"
-- **R129 SL Roadster** - The glamorous sports car
-- **C140 Coupe** - The grand touring coupe
+### Implemented with "Excruciating Artistic Detail"
 
-### Materials & Textures Implemented
-1. **Nappa Leather**: Diamond-quilted pattern with contrast stitching dots (gold/walnut)
-2. **Burr Walnut Wood**: Rich grain with depth, swirls, and variations (dark mode)
-3. **Bird's-Eye Maple**: Light honey wood with distinctive eye patterns (light mode)
-4. **Brushed Aluminum**: Fine horizontal brushing on header rails and tabs
-5. **Chrome Accents**: Outer ring highlights on modals and buttons
+#### Materials & Textures
+1. **Nappa Leather**: Diamond-quilted pattern with contrast stitching dots
+2. **Burr Walnut Wood**: Rich grain bezels with depth and swirl patterns
+3. **Bird's-Eye Maple**: Light honey wood with distinctive eye patterns
+4. **Brushed Aluminum**: Fine horizontal brushing on header rails
+5. **Chrome Accents**: High-polish bezel borders
 
-### Picasso Hand-Painted Pattern
-The signature designo artistic swirl - literal yet tasteful:
-- **Dark Mode**: Burgundy and teal flowing curves on black nappa
-- **Light Mode**: Dusty rose and sage green on ivory nappa
-- Applied to: Modal backgrounds, customer cards, main app background
+#### Picasso Hand-Painted Patterns
+- **Dark Mode**: Burgundy + teal flowing artistic curves
+- **Light Mode**: Dusty rose + sage green on ivory
+- Applied throughout: modals, customer cards, response cards
 
-### Color Stories
-- **designo Night** (Dark Mode): Deep black nappa, amber gauge lighting, walnut bezels
-- **designo Ivory** (Light Mode): Cream/porcelain nappa, honey wood tones, maple bezels
+#### Animated Ambient Lighting Effects
+- **Breathing glow**: Subtle pulsing on wood bezels (6s cycle)
+- **Icon glow**: Pulsing color halos on icons (3s cycle)
+- **Border glow**: Interactive highlight on hover (2s cycle)
+- **Text glow**: Amber illumination pulse on gauge text (3s cycle)
 
-### W140 Instrument Cluster (Import Tab)
-- Five-gauge dashboard aesthetic with circular buttons
-- Walnut/maple wood bezel frame
-- Black gauge faces with illuminated icons
-- Amber text glow (authentic W140 instrument lighting)
+#### Import Data Tab - W140 Instrument Cluster
+- Icon-focused circular gauge buttons
+- Large, detailed colorful icons (72px) - cyan, green, purple
+- Chrome bezel borders with glowing halos
+- Title text centered below each icon
+- No description text (cleaner design)
+- Walnut wood bezel frame
 
-### UI Components Styled with designo Treatment
-- ✅ **Command Center Modal**: Nappa background + Picasso pattern + wood bezel border
-- ✅ **Import Tab**: W140 instrument cluster with three circular gauge buttons
-- ✅ **Header**: Brushed aluminum with subtle wood grain + wood-trimmed buttons
-- ✅ **Customer Cards**: Quilted nappa with Picasso accents + wood bezel border
-- ✅ **Inquiry Buttons**: Wood bezel borders + quilted background + stitching
-- ✅ **Response Cards**: Nappa texture + wood accent bar + stitching pattern
-- ✅ **Search Bar**: Unified blue-glass pill (box-in-box bug FIXED)
-- ✅ **All Borders**: Crisp wood-grain trim throughout
+### Components Styled
+- ✅ Command Center Modal (Picasso + wood bezel + breathing animation)
+- ✅ Import Tab (W140 instrument cluster with chrome gauge buttons)
+- ✅ IntakeHub (centered position, wood bezel, designo nappa)
+- ✅ Customer Cards (quilted nappa + Picasso + stitching)
+- ✅ Inquiry Buttons (uniform 110px height, wood bezel borders)
+- ✅ Response Cards (wood accent bar + nappa texture)
+- ✅ Tower Talk (designo cardinal red accent)
+
+### Typography
+- Command Center: 75% larger font sizes
+- Generated Responses: 75% larger (1.25rem body, 1.4rem titles)
+- Import options: Standard 1rem for readability
+
+### Sound Design
+- All audio fades gradually (1 second fade-out)
+- Startup sound: 3-second fade-in/fade-out
+
+---
+
+## What's Been Completed (January 30, 2026)
+
+### UI Enhancements ✅
+1. **IntakeHub centered** - Modal now appears in screen center
+2. **Import buttons redesigned** - Icon-focused with large colorful icons, no descriptions
+3. **Inquiry buttons uniform** - All 8 buttons exactly 110px height
+4. **Font size increased 75%** - Command Center and response cards
+5. **Animated ambient lighting** - Breathing, glowing, pulsing effects
+6. **Code cleanup** - Removed duplicate and dead CSS rules
+
+### Bug Fixes ✅
+1. **Search bar box-in-box** - Fixed in light mode
+2. **CSS syntax errors** - Cleaned orphaned blocks
 
 ---
 
 ## Core Features
 
 ### TRUSTED AUTHORITY Response Approach
-All AI-generated responses follow a consistent approach:
-- **Direct & Calm**: No pushy sales tactics, confident expertise
-- **In-Person Focused**: Every response drives toward showroom visit
-- **Value-Driven**: Focus on helping, not selling
+- Direct & Calm expertise
+- In-Person focused (driving to showroom)
+- Value-driven (helping, not selling)
 
-### Data Entry System
-- **File Upload**: CSV and JSON import
-- **Manual Entry**: Customer details, VIN, trade info
-- **Vision Extraction**: AI-powered document scanning
-
-### Language Support
-- Spanish 🇪🇸, French 🇫🇷, Korean 🇰🇷
-
-### Tower Talk (AI ASSISTANT)
-- OpenAI gpt-4o-mini powered
-- Quick responses for objections
-- Follow-up suggestions
+### Data Entry
+- File Upload (CSV/JSON)
+- Manual Entry
+- Vision Extraction
 
 ### IntakeHub
-- **License Scan**: Driver's license OCR extraction
-- **VIN Scanner**: Vehicle decoder with local inventory (150 max)
+- License Scan (OCR)
+- VIN Scanner (local inventory, 150 max)
 
-### Printer Connection
-- Network printer via IP address
-- Eject/print customer profiles and vehicle profiles
-
----
-
-## What's Been Implemented (January 30, 2026)
-
-### designo UI Overhaul ✅ COMPLETE
-1. **Picasso Hand-Painted Patterns** - Burgundy/teal (dark), rose/sage (light)
-2. **Wood Bezel Framing** - Walnut and bird's-eye maple borders everywhere
-3. **Nappa Leather Textures** - Diamond quilting with contrast stitching
-4. **W140 Instrument Cluster** - Import tab with circular gauge buttons
-5. **Crisp Borders** - Thoughtfully designed wood-grain trim throughout
-6. **Authentic Lighting** - Amber glow (dark), honey tones (light)
-
-### Bug Fixes ✅
-1. **Search Bar Box-in-Box Bug FIXED** - Light mode displays unified blue-glass pill
-2. **Uniform Button Sizing** - All inquiry buttons have consistent min-height/min-width
-3. **CSS Syntax Errors** - Cleaned up orphaned blocks and duplicate rules
-
-### Files Modified
-- `/app/frontend/src/styles/luxury-auto.css` - Complete designo material system
-- `/app/frontend/src/styles/tesla-2027.css` - Component styling updates
-- `/app/frontend/src/index.css` - Theme color variables
-- `/app/frontend/src/components/CommandCenter.jsx` - Modal styling with Picasso
+### Tower Talk
+- OpenAI GPT-4o-mini
+- Quick objection responses
 
 ---
 
@@ -109,45 +95,46 @@ All AI-generated responses follow a consistent approach:
 
 ### Frontend
 - React 18 + Vite
-- Tailwind CSS
+- Tailwind CSS + custom designo CSS
 - Capacitor for native mobile
-- lucide-react icons
 
 ### Backend
 - FastAPI (Python)
-- MongoDB (Motor async driver)
-- JWT authentication
-- OpenAI GPT integration
+- MongoDB
+- OpenAI integrations
 
 ---
 
 ## Prioritized Backlog
 
-### P0 (Critical) - ✅ COMPLETED
-- [x] Search bar box-in-box bug fix
-- [x] designo UI theme overhaul with Picasso patterns
-- [x] Wood bezel framing on all components
+### P0 - ✅ COMPLETED
+- [x] designo UI overhaul with Picasso patterns
+- [x] IntakeHub centered positioning
+- [x] Import buttons icon-focused redesign
 - [x] Uniform inquiry button sizing
+- [x] 75% font size increase
+- [x] Animated ambient lighting
+- [x] Code cleanup (dead/duplicate removal)
+- [x] Sound fade effects
 
 ### P1 (High)
 - [ ] Real CRM integration
 - [ ] Batch VIN scan mode
-- [ ] Response analytics dashboard
+- [ ] Response analytics
 
 ### P2 (Medium)
 - [ ] Offline data sync
-- [ ] Team management features
-- [ ] Export reports
+- [ ] Team management
 
 ---
 
 ## 3rd Party Integrations
-- **OpenAI GPT-4o-mini**: Tower Talk and Translation
-- **OpenAI Whisper**: Speech-to-text
-- **NHTSA vPIC API**: VIN decoding
-- **Emergent LLM Key**: Vision Extraction
+- OpenAI GPT-4o-mini (Tower Talk)
+- OpenAI Whisper (Speech-to-text)
+- NHTSA vPIC API (VIN decode)
+- Emergent LLM Key (Vision)
 
 ---
 
 ## Credentials
-- No login required. Application loads directly into main interface.
+- No login required
