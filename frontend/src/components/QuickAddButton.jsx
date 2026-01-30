@@ -17,7 +17,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
  * - Loading and success states
  */
 export const QuickAddButton = () => {
-  const { setCustomers } = require('../context/SalesContext')?.useSales?.() || {};
+  const { setCustomers } = useSales();
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
