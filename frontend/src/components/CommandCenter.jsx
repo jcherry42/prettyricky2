@@ -428,7 +428,7 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
                 </div>
               </div>
 
-              <div className="printer-info">
+              <div className="printer-info eject-info">
                 <h4>Eject Feature</h4>
                 <p>When viewing a customer profile or after scanning a driver&apos;s license, use the <strong>Eject</strong> button to print:</p>
                 <ul>
