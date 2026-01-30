@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { 
   Star, DollarSign, Calendar, Repeat, CreditCard, 
   Car, Clock, MessageCircle 
@@ -122,4 +122,4 @@ const InquiryTypeSelector = () => {
   );
 };
 
-export default InquiryTypeSelector;
+export default memo(InquiryTypeSelector);
