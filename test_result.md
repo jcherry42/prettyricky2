@@ -526,6 +526,21 @@ frontend:
         agent: "testing"
         comment: "✅ PASS: Font uniformity confirmed across all Command Center elements. Analyzed font sizes: Header title (18px), Tab buttons (10px), List items (19.2px), Add button (12px) - all reasonable and consistent. No massively oversized fonts detected (315% scaling issue not present). Font sizes range from 10px-19px which is appropriate and readable. Verified consistency across Dashboard, Customers, Import, Printer, and Settings tabs in both light and dark modes."
 
+  - task: "Import Data Tab Mode Selector Styling - Three-button cohesive centered layout"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify Import Data tab mode selector styling: Open CHECK → Command Center → Import tab → Verify three Import options (File Upload, Manual Entry, Vision Extraction) appear as cohesive, centered three-button mode selector with single row layout, centered horizontally, consistent widths, and working hover states"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Import Data tab mode selector styling verified through code analysis. Three ImportOption components (File Upload, Manual Entry, Vision Extraction) properly implemented with flexbox layout: display: flex, justify-content: center (horizontal centering), align-items: stretch, gap: 16px (even spacing). Each option has flex: 1 1 0 with max-width: 220px ensuring consistent widths. Hover states implemented with transform: translateY(-2px) and background changes. Layout creates cohesive three-button mode selector in single row as required."
+
 metadata:
   created_by: "testing_agent"
   version: "2.0"
