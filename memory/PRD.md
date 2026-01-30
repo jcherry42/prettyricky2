@@ -8,108 +8,100 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Car dealership staff
 - Sales managers
 
-## Core Features
-
-### TRUSTED AUTHORITY Response Approach
-All AI-generated responses and pre-built templates follow a single, consistent approach:
-- **Direct & Calm**: No pushy sales tactics, just confident expertise
-- **In-Person Focused**: Every response subtly drives toward the showroom visit
-- **Value-Driven**: Focus on helping, not selling
-- 2 pre-generated responses per inquiry type + 1 custom editable box
-
-### Data Entry System (SIMPLIFIED)
-- **File Upload**: CSV and JSON import for bulk customers
-- **Manual Entry**: First name, last name, phone, email, policy #, vehicle of interest (VIN), trade VIN, trade mileage, lead status
-- **REMOVED**: Email Parser, CRM Sync, Vehicle/Inventory import
-
-### Language Support (STREAMLINED)
-- Spanish 🇪🇸
-- French 🇫🇷  
-- Korean 🇰🇷
-- **REMOVED**: English, Japanese
-
-### Tower Talk (AI ASSISTANT)
-- Connected to OpenAI gpt-4o-mini
-- Embodies the app's trusted authority approach
-- Quick responses for common objections
-- Follow-up suggestions included
-
-### Printer Connection
-- **Command Center → Printer tab**: Connect to network printers via IP address
-- Status indicator shows connected/disconnected state
-- Saved printer IP persists in localStorage
-
-### Eject Feature (Print)
-- **Print customer profiles** when viewing a customer in Command Center
-- **Print scanned driver's licenses** after successful OCR scan
-- **Print vehicle profiles** from VIN scanner inventory
-- Eject button appears on customer profile detail and after license scan
-
-### IntakeHub (INTAKE Button)
-- Secondary menu with two options:
-  - **License Scan**: Driver's license OCR extraction
-  - **VIN Scanner**: Vehicle identification number decoder with local inventory
-
-### License Scanner
-- **Take Photo**: Capture driver's license with device camera
-- **Upload Image**: Upload license image from device
-- **OCR Extraction**: AI-powered extraction of name, address, city, state, zip
-- **Create Customer**: One-click customer creation from license data
-- **Attach to Existing**: Link license to existing customer
-
-### VIN Scanner & Local Inventory
-- **ISO 3779 Checksum Validation**: Real-time VIN verification
-- **NHTSA Database Integration**: Official US Government vehicle data
-- **Local Device Inventory**: Up to 150 vehicles stored per device
-- **Mileage Tracking**: Optional current mileage field
-- **Print Vehicle Profiles**: Eject function for scanned vehicles
-
-### Push-to-Talk Voice Translator
-- Transcribes customer speech (Spanish/French/Korean) into English text
-- Uses customer's selected language as source, translates to English
-- MediaRecorder + OpenAI Whisper backend
-
----
-
 ## designo Interior Program UI Theme (January 30, 2026)
 
-### Design Philosophy
-Inspired by the authentic Mercedes-Benz designo Interior Program from the 1990s:
-- **W140 S-Class** (1991-1998)
-- **R129 SL Roadster**
-- **C140 Coupe**
+### Design Philosophy - "Rolls Royce of Automotive Middleware"
+Inspired by authentic Mercedes-Benz designo Interior Program from the 1990s:
+- **W140 S-Class** (1991-1998) - The flagship, "best car in the world"
+- **R129 SL Roadster** - The glamorous sports car
+- **C140 Coupe** - The grand touring coupe
 
-### Materials & Textures
-1. **Nappa Leather**: Diamond-quilted pattern with contrast stitching
-2. **Burr Walnut Wood**: Rich grain with depth and swirl patterns
-3. **Bird's-Eye Maple**: Light wood with distinctive eye patterns
-4. **Brushed Aluminum**: Fine horizontal brushing
-5. **Chrome Accents**: High-polish reflective surfaces
+### Materials & Textures Implemented
+1. **Nappa Leather**: Diamond-quilted pattern with contrast stitching dots (gold/walnut)
+2. **Burr Walnut Wood**: Rich grain with depth, swirls, and variations (dark mode)
+3. **Bird's-Eye Maple**: Light honey wood with distinctive eye patterns (light mode)
+4. **Brushed Aluminum**: Fine horizontal brushing on header rails and tabs
+5. **Chrome Accents**: Outer ring highlights on modals and buttons
+
+### Picasso Hand-Painted Pattern
+The signature designo artistic swirl - literal yet tasteful:
+- **Dark Mode**: Burgundy and teal flowing curves on black nappa
+- **Light Mode**: Dusty rose and sage green on ivory nappa
+- Applied to: Modal backgrounds, customer cards, main app background
 
 ### Color Stories
 - **designo Night** (Dark Mode): Deep black nappa, amber gauge lighting, walnut bezels
-- **designo Ivory** (Light Mode): Cream/porcelain nappa, honey wood tones, soft shadows
+- **designo Ivory** (Light Mode): Cream/porcelain nappa, honey wood tones, maple bezels
 
-### UI Components Styled
-- **Import Data Tab**: W140-style instrument cluster with walnut bezel, circular gauge buttons
-- **Header**: Subtle wood grain texture with theme-appropriate colors
-- **Search Bar**: Unified blue-glass pill (fixed box-in-box bug)
-- **Inquiry Buttons**: Uniform sizing with colorful gradient icons
+### W140 Instrument Cluster (Import Tab)
+- Five-gauge dashboard aesthetic with circular buttons
+- Walnut/maple wood bezel frame
+- Black gauge faces with illuminated icons
+- Amber text glow (authentic W140 instrument lighting)
+
+### UI Components Styled with designo Treatment
+- ✅ **Command Center Modal**: Nappa background + Picasso pattern + wood bezel border
+- ✅ **Import Tab**: W140 instrument cluster with three circular gauge buttons
+- ✅ **Header**: Brushed aluminum with subtle wood grain + wood-trimmed buttons
+- ✅ **Customer Cards**: Quilted nappa with Picasso accents + wood bezel border
+- ✅ **Inquiry Buttons**: Wood bezel borders + quilted background + stitching
+- ✅ **Response Cards**: Nappa texture + wood accent bar + stitching pattern
+- ✅ **Search Bar**: Unified blue-glass pill (box-in-box bug FIXED)
+- ✅ **All Borders**: Crisp wood-grain trim throughout
 
 ---
 
-## What's Been Implemented (as of January 30, 2026)
+## Core Features
 
-### UI/UX Fixes ✅
-1. **Search Bar Box-in-Box Bug FIXED**: Light mode search bar now displays as unified blue-glass pill
-2. **Uniform Button Sizing**: Inquiry type buttons now have consistent min-height/min-width
-3. **designo Theme Overhaul**: Comprehensive styling based on authentic 90s Mercedes interior
+### TRUSTED AUTHORITY Response Approach
+All AI-generated responses follow a consistent approach:
+- **Direct & Calm**: No pushy sales tactics, confident expertise
+- **In-Person Focused**: Every response drives toward showroom visit
+- **Value-Driven**: Focus on helping, not selling
 
-### designo Theme Implementation ✅
-1. **luxury-auto.css**: New designo material classes (nappa, walnut, maple, chrome, ambient)
-2. **index.css**: Updated color variables for designo Ivory and designo Night
-3. **tesla-2027.css**: Updated light mode styling for import options and inputs
-4. **CommandCenter.jsx**: Import tab restyled as W140 instrument cluster
+### Data Entry System
+- **File Upload**: CSV and JSON import
+- **Manual Entry**: Customer details, VIN, trade info
+- **Vision Extraction**: AI-powered document scanning
+
+### Language Support
+- Spanish 🇪🇸, French 🇫🇷, Korean 🇰🇷
+
+### Tower Talk (AI ASSISTANT)
+- OpenAI gpt-4o-mini powered
+- Quick responses for objections
+- Follow-up suggestions
+
+### IntakeHub
+- **License Scan**: Driver's license OCR extraction
+- **VIN Scanner**: Vehicle decoder with local inventory (150 max)
+
+### Printer Connection
+- Network printer via IP address
+- Eject/print customer profiles and vehicle profiles
+
+---
+
+## What's Been Implemented (January 30, 2026)
+
+### designo UI Overhaul ✅ COMPLETE
+1. **Picasso Hand-Painted Patterns** - Burgundy/teal (dark), rose/sage (light)
+2. **Wood Bezel Framing** - Walnut and bird's-eye maple borders everywhere
+3. **Nappa Leather Textures** - Diamond quilting with contrast stitching
+4. **W140 Instrument Cluster** - Import tab with circular gauge buttons
+5. **Crisp Borders** - Thoughtfully designed wood-grain trim throughout
+6. **Authentic Lighting** - Amber glow (dark), honey tones (light)
+
+### Bug Fixes ✅
+1. **Search Bar Box-in-Box Bug FIXED** - Light mode displays unified blue-glass pill
+2. **Uniform Button Sizing** - All inquiry buttons have consistent min-height/min-width
+3. **CSS Syntax Errors** - Cleaned up orphaned blocks and duplicate rules
+
+### Files Modified
+- `/app/frontend/src/styles/luxury-auto.css` - Complete designo material system
+- `/app/frontend/src/styles/tesla-2027.css` - Component styling updates
+- `/app/frontend/src/index.css` - Theme color variables
+- `/app/frontend/src/components/CommandCenter.jsx` - Modal styling with Picasso
 
 ---
 
@@ -120,60 +112,40 @@ Inspired by the authentic Mercedes-Benz designo Interior Program from the 1990s:
 - Tailwind CSS
 - Capacitor for native mobile
 - lucide-react icons
-- Sonner for toasts
 
 ### Backend
 - FastAPI (Python)
 - MongoDB (Motor async driver)
 - JWT authentication
 - OpenAI GPT integration
-- OpenAI Whisper for speech-to-text
-
-### Key Files Modified This Session
-- `/app/frontend/src/styles/luxury-auto.css` - designo material system
-- `/app/frontend/src/styles/tesla-2027.css` - Light mode styling, search bar fix
-- `/app/frontend/src/index.css` - Theme color variables
-- `/app/frontend/src/components/CommandCenter.jsx` - Import tab styling, search bar fix
 
 ---
 
 ## Prioritized Backlog
 
-### P0 (Critical) - COMPLETED ✅
+### P0 (Critical) - ✅ COMPLETED
 - [x] Search bar box-in-box bug fix
-- [x] designo UI theme overhaul
+- [x] designo UI theme overhaul with Picasso patterns
+- [x] Wood bezel framing on all components
 - [x] Uniform inquiry button sizing
 
 ### P1 (High)
-- [ ] Apply designo styling to more components (customer cards, modals)
-- [ ] Real CRM integration (backend stubs exist)
-- [ ] Batch VIN scan mode for lot inventory
+- [ ] Real CRM integration
+- [ ] Batch VIN scan mode
+- [ ] Response analytics dashboard
 
 ### P2 (Medium)
-- [ ] Picasso hand-painted pattern accent option
-- [ ] Response analytics dashboard
 - [ ] Offline data sync
-- [ ] Refactor server.py into multiple routers
-
-### P3 (Low)
-- [ ] Custom theme color picker
+- [ ] Team management features
 - [ ] Export reports
-- [ ] Team management
 
 ---
 
 ## 3rd Party Integrations
 - **OpenAI GPT-4o-mini**: Tower Talk and Translation
-- **OpenAI Whisper**: Speech-to-text for voice translation
+- **OpenAI Whisper**: Speech-to-text
 - **NHTSA vPIC API**: VIN decoding
-- **Emergent LLM Key**: Vision Extraction (gpt-4-vision-preview)
-
----
-
-## Test Status
-- Search bar fix: Verified via screenshot (light mode)
-- Import tab designo styling: Verified via screenshot (both modes)
-- Inquiry button sizing: Verified via screenshot
+- **Emergent LLM Key**: Vision Extraction
 
 ---
 
