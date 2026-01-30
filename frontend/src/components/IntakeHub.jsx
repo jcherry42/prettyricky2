@@ -339,10 +339,13 @@ const IntakeHub = ({ isOpen, onClose }) => {
             text-transform: uppercase;
           }
           .intake-mode.active {
-            border-color: rgba(56,189,248,0.9);
-            box-shadow: 0 0 20px rgba(56,189,248,0.35);
-            background: radial-gradient(circle at top, rgba(34,211,238,0.28), rgba(15,23,42,0.95));
-            color: #e0f2fe;
+            border-color: rgba(15, 81, 140, 0.9);
+            box-shadow: 0 0 20px rgba(15, 81, 140, 0.35);
+            background: radial-gradient(circle at top,
+              rgba(15, 81, 140, 0.5) 0%,
+              rgba(20, 16, 12, 0.98) 60%
+            );
+            color: #E0F2FE;
           }
           .intake-body {
             flex: 1;
