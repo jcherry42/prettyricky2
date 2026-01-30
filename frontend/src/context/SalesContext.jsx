@@ -178,6 +178,10 @@ function salesReducer(state, action) {
       saveToStorage(STORAGE_KEYS.FAVORITES, action.payload);
       return { ...state, favorites: action.payload };
       
+    case ACTIONS.SET_VEHICLE_INVENTORY:
+      saveToStorage(STORAGE_KEYS.VEHICLES, action.payload);
+      return { ...state, vehicleInventory: action.payload };
+      
     case ACTIONS.SET_OFFLINE:
       return { ...state, isOffline: action.payload };
     
