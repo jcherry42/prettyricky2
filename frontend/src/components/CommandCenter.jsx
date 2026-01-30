@@ -930,16 +930,30 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         /* Import Options */
+        /* ============================================
+           IMPORT OPTIONS - designo INSTRUMENT CLUSTER
+           Premium Mode Selector with Wood Bezel
+           ============================================ */
         .import-options {
           display: flex;
           align-items: stretch;
           justify-content: center;
-          gap: 16px;
+          gap: 12px;
+          padding: 16px;
+          background: 
+            /* Wood bezel frame */
+            linear-gradient(180deg, rgba(92, 74, 31, 0.15) 0%, rgba(139, 105, 20, 0.08) 50%, rgba(92, 74, 31, 0.15) 100%);
+          border-radius: 20px;
+          border: 2px solid rgba(139, 105, 20, 0.25);
+          box-shadow: 
+            inset 0 2px 4px rgba(255, 220, 160, 0.1),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+            0 4px 16px rgba(0, 0, 0, 0.3);
         }
 
         .import-option {
           flex: 1 1 0;
-          max-width: 220px;
+          max-width: 180px;
         }
 
         .import-option {
@@ -947,43 +961,92 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           flex-direction: column;
           align-items: center;
           gap: 10px;
-          padding: 20px 12px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.05);
+          padding: 20px 16px;
+          border-radius: 12px;
+          /* Brushed metal gauge face */
+          background: 
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 1px,
+              rgba(255, 255, 255, 0.02) 1px,
+              rgba(255, 255, 255, 0.02) 2px
+            ),
+            linear-gradient(180deg, rgba(45, 42, 38, 0.95) 0%, rgba(28, 26, 24, 0.98) 100%);
+          border: 2px solid rgba(80, 70, 55, 0.5);
           cursor: pointer;
           text-align: center;
-          transition: all 0.2s;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 
+            inset 0 1px 1px rgba(255, 200, 140, 0.08),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+            0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .import-option:hover {
-          background: rgba(255,255,255,0.06);
-          transform: translateY(-2px);
+          background: 
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 1px,
+              rgba(255, 200, 120, 0.03) 1px,
+              rgba(255, 200, 120, 0.03) 2px
+            ),
+            linear-gradient(180deg, rgba(55, 50, 42, 0.95) 0%, rgba(35, 32, 28, 0.98) 100%);
+          border-color: rgba(200, 160, 80, 0.5);
+          transform: translateY(-3px);
+          box-shadow: 
+            inset 0 1px 2px rgba(255, 200, 140, 0.12),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+            0 8px 20px rgba(0, 0, 0, 0.4),
+            0 0 15px rgba(200, 160, 80, 0.15);
         }
 
         .import-option .io-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
+          /* Gauge needle mount style */
+          background: radial-gradient(circle, rgba(45, 40, 35, 0.9) 0%, rgba(25, 22, 20, 0.95) 100%);
+          border: 2px solid rgba(100, 85, 60, 0.4);
+          box-shadow: 
+            inset 0 1px 2px rgba(255, 200, 140, 0.1),
+            0 2px 6px rgba(0, 0, 0, 0.4);
         }
 
-        .import-option.cyan .io-icon { background: rgba(34,211,238,0.15); color: #22d3ee; }
-        .import-option.amber .io-icon { background: rgba(251,191,36,0.15); color: #fbbf24; }
-        .import-option.green .io-icon { background: rgba(34,197,94,0.15); color: #22c55e; }
-        .import-option.purple .io-icon { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .import-option.cyan .io-icon { 
+          background: radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(20, 120, 140, 0.3) 100%);
+          border-color: rgba(34, 211, 238, 0.4);
+          color: #22d3ee;
+          box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+        }
+        .import-option.green .io-icon { 
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(20, 100, 60, 0.3) 100%);
+          border-color: rgba(34, 197, 94, 0.4);
+          color: #22c55e;
+          box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+        .import-option.purple .io-icon { 
+          background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(100, 50, 150, 0.3) 100%);
+          border-color: rgba(168, 85, 247, 0.4);
+          color: #a855f7;
+          box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+        }
 
         .import-option .io-title {
           font-size: 13px;
-          font-weight: 600;
-          color: #fff;
+          font-weight: 700;
+          color: rgba(255, 220, 160, 0.95);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .import-option .io-desc {
           font-size: 11px;
-          color: #666;
+          color: rgba(180, 160, 130, 0.7);
         }
 
         /* Integrations */
