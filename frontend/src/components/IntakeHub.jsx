@@ -398,7 +398,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           .intake-mode.active {
             border-color: rgba(200, 160, 80, 0.6);
             color: #FFD080;
-            text-shadow: 0 0 8px rgba(255, 180, 80, 0.5);
+            text-shadow: none;
             box-shadow: 
               inset 0 1px 2px rgba(255, 200, 140, 0.1),
               inset 0 -1px 2px rgba(0, 0, 0, 0.3),
