@@ -230,11 +230,19 @@ export const CommandCenter = ({ isOpen, onClose }) => {
               <div className="cc-toolbar">
                 <div className="cc-search cc-search-blue-glass">
                   <Search className="w-4 h-4" />
-                  <input 
-                    type="text" 
-                    placeholder="Search customers..." 
+                  <input
+                    type="text"
+                    placeholder="Search customers..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      boxShadow: 'none',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
                   />
                 </div>
                 <button onClick={() => setShowCustomerForm(true)} className="cc-add-btn gold-btn">
