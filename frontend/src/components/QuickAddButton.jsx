@@ -302,6 +302,7 @@ export const QuickAddButton = () => {
                     <input 
                       id="qa-last-name"
                       type="text"
+                      inputMode="text"
                       placeholder="Smith"
                       value={formData.last_name}
                       onChange={e => handleChange('last_name', e.target.value)}
