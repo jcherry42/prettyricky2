@@ -182,7 +182,12 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - [x] Backend routes modularized (/routes/customers.py, vehicles.py, tower_talk.py, analytics.py)
 - [x] PWA/Offline support added (vite-plugin-pwa, offlineSync.js service)
 - [x] CommandCenter.jsx CSS import added for external styles
-- [x] Orphaned/broken CSS styles removed (25 lines cleaned)
+- [x] Orphaned/broken CSS styles removed
+- [x] **CommandCenter.jsx refactored: 3172 → 801 lines (75% reduction)**
+- [x] CustomerForm.jsx extracted (216 lines)
+- [x] CustomerDetail.jsx extracted (255 lines)
+- [x] All inline CSS migrated to external styles.css (1993 lines)
+- [x] PWA icons generated (512x512, 192x192)
 - [ ] Real CRM integration (deferred)
 - [ ] Batch VIN scan mode (deferred)
 
