@@ -318,7 +318,10 @@ const IntakeHub = ({ isOpen, onClose }) => {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 6px;
             padding: 10px 14px 6px;
-            background: radial-gradient(circle at top, rgba(8,47,73,0.9), rgba(15,23,42,0.95));
+            background: radial-gradient(circle at top,
+              rgba(20, 18, 15, 0.98) 0%,
+              rgba(12, 10, 8, 0.99) 100%
+            );
           }
           .intake-mode {
             display: flex;
