@@ -1062,10 +1062,10 @@ html:not(.dark) .io-title {
 
 .s-field label {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,191,0,0.7);
+  font-weight: 700;
+  color: rgba(255,191,0,0.68);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
 }
 
 .s-field input {
