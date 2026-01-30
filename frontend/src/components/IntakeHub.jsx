@@ -266,7 +266,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           .intake-modal {
             width: 100%;
             max-width: 520px;
-            max-height: 95vh;
+            max-height: 80vh;
+            margin-top: 8vh;
             background:
               linear-gradient(180deg,
                 rgba(22, 18, 14, 0.98) 0%,
