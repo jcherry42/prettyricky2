@@ -596,7 +596,10 @@ html:not(.dark) .settings-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  min-height: 100px;
+  min-width: 80px;
 }
 
 .tesla-inquiry-btn:hover {
