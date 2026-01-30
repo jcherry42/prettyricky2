@@ -918,9 +918,15 @@ export const CommandCenter = ({ isOpen, onClose }) => {
 
         /* Import Options */
         .import-options {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
+          display: flex;
+          align-items: stretch;
+          justify-content: center;
+          gap: 16px;
+        }
+
+        .import-option {
+          flex: 1 1 0;
+          max-width: 220px;
         }
 
         .import-option {
