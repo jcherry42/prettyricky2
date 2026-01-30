@@ -855,8 +855,6 @@ body.modal-open {
 /* ==================== CUSTOMERS TAB SEARCH BAR - BLUE GLASS ==================== */
 
 /* Blue Glass Search Bar in Light Mode - ONE UNIFIED BOX */
-html:not(.dark) .cc-search-blue-glass {
-
 
 /* Engine Sound Profile - Blue Tinted Glass in Light Mode */
 html:not(.dark) .engine-sound-profile {
