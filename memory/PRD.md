@@ -181,6 +181,8 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ### P1 - ✅ COMPLETED (Jan 30, 2026)
 - [x] Backend routes modularized (/routes/customers.py, vehicles.py, tower_talk.py, analytics.py)
 - [x] PWA/Offline support added (vite-plugin-pwa, offlineSync.js service)
+- [x] CommandCenter.jsx CSS import added for external styles
+- [x] Orphaned/broken CSS styles removed (25 lines cleaned)
 - [ ] Real CRM integration (deferred)
 - [ ] Batch VIN scan mode (deferred)
 
