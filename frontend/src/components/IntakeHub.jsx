@@ -632,6 +632,10 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               0 0 0 1px rgba(200, 170, 120, 0.4),
               0 30px 60px rgba(0,0,0,0.15);
           }
+          html:not(.dark) .intake-modal {
+            border-radius: 28px;
+          }
+
           html:not(.dark) .intake-header {
             background: 
               repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.25) 1px, rgba(255, 255, 255, 0.25) 2px),
