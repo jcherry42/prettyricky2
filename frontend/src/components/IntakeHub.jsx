@@ -267,36 +267,44 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             width: 100%;
             max-width: 520px;
             max-height: 80vh;
-            margin-top: 8vh;
+            /* CENTER OF SCREEN */
+            margin: auto;
             background:
-              linear-gradient(180deg,
-                rgba(22, 18, 14, 0.98) 0%,
-                rgba(12, 10, 8, 0.99) 100%
-              );
-            border-radius: 24px 24px 0 0;
+              /* Picasso swirl pattern */
+              radial-gradient(ellipse 180% 90% at 0% 40%, rgba(128, 40, 60, 0.08) 0%, transparent 55%),
+              radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.06) 0%, transparent 55%),
+              /* Quilted nappa */
+              repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
+              repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
+              linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
+            border-radius: 20px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(139, 90, 43, 0.45);
+            /* Wood bezel border */
+            border: 3px solid;
+            border-image: linear-gradient(135deg, #5C3A1E 0%, #7A4F2A 25%, #6B4324 50%, #8B5A2B 75%, #5C3A1E 100%) 1;
             box-shadow:
-              0 -16px 40px rgba(0,0,0,0.7),
-              0 0 0 1px rgba(0,0,0,0.6);
-            animation: slideUp 0.25s ease-out;
+              0 0 0 1px rgba(60, 50, 40, 0.8),
+              0 0 0 2px rgba(100, 80, 55, 0.4),
+              0 30px 60px rgba(0,0,0,0.6),
+              inset 0 1px 0 rgba(255, 200, 140, 0.05);
+            animation: fadeIn 0.25s ease-out;
           }
-          @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+          @keyframes fadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
           }
           .intake-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 16px 20px;
-            background: linear-gradient(180deg,
-              rgba(0, 0, 0, 0.3) 0%,
-              rgba(0, 0, 0, 0.15) 100%
-            );
-            border-bottom: 1px solid rgba(139, 90, 43, 0.45);
+            /* Brushed aluminum */
+            background: 
+              repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
+              linear-gradient(180deg, rgba(35, 32, 28, 0.95) 0%, rgba(25, 22, 18, 0.98) 100%);
+            border-bottom: 2px solid rgba(120, 90, 50, 0.35);
           }
           .intake-title {
             display: flex;
@@ -305,68 +313,125 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             font-family: 'Smooch Sans', system-ui, sans-serif;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #FBD38D;
+            /* Amber glow text */
+            color: #FFB850;
             font-size: 20px;
+            text-shadow: 0 0 10px rgba(255, 180, 80, 0.5);
           }
           .intake-badge {
             font-size: 10px;
             padding: 2px 8px;
             border-radius: 999px;
-            background: rgba(15, 81, 140, 0.2);
-            border: 1px solid rgba(15, 81, 140, 0.5);
-            color: #BFDBFE;
+            background: rgba(139, 90, 43, 0.3);
+            border: 1px solid rgba(200, 160, 80, 0.5);
+            color: #FFD080;
           }
           .intake-close {
             width: 36px;
             height: 36px;
             border-radius: 12px;
-            background: rgba(15,23,42,0.7);
-            border: 1px solid rgba(148,163,184,0.4);
-            color: rgba(248,250,252,0.8);
+            background: linear-gradient(180deg, #2a2725 0%, #1a1816 100%);
+            border: 2px solid rgba(100, 80, 50, 0.5);
+            color: rgba(255, 200, 140, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+          }
+          .intake-close:hover {
+            border-color: rgba(200, 160, 80, 0.6);
+            color: #FFD080;
           }
           .intake-modes {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 6px;
-            padding: 10px 14px 6px;
-            background: radial-gradient(circle at top,
-              rgba(20, 18, 15, 0.98) 0%,
-              rgba(12, 10, 8, 0.99) 100%
-            );
+            gap: 8px;
+            padding: 12px 16px;
+            /* Wood bezel frame */
+            background: 
+              radial-gradient(ellipse 60% 40% at 30% 30%, rgba(120, 70, 30, 0.2) 0%, transparent 50%),
+              linear-gradient(90deg, #5C3A1E 0%, #7A4F2A 50%, #6B4324 100%);
+            margin: 12px;
+            border-radius: 14px;
+            box-shadow: 
+              inset 0 2px 4px rgba(255, 200, 140, 0.1),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.3);
           }
           .intake-mode {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            border: 1px solid rgba(139, 90, 43, 0.45);
-            background: rgba(20, 16, 12, 0.9);
-            color: rgba(248, 244, 235, 0.9);
+            gap: 8px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            /* Gauge face */
+            background: 
+              radial-gradient(circle at 50% 30%, rgba(50, 45, 40, 0.5) 0%, transparent 50%),
+              linear-gradient(180deg, #252220 0%, #1a1816 100%);
+            border: 2px solid rgba(80, 60, 40, 0.5);
+            color: rgba(255, 200, 140, 0.8);
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.08em;
             text-transform: uppercase;
+            transition: all 0.25s;
+            box-shadow: 
+              inset 0 1px 2px rgba(255, 200, 140, 0.05),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.3);
           }
           .intake-mode.active {
-            border-color: rgba(15, 81, 140, 0.9);
-            box-shadow: 0 0 20px rgba(15, 81, 140, 0.35);
-            background: radial-gradient(circle at top,
-              rgba(15, 81, 140, 0.5) 0%,
-              rgba(20, 16, 12, 0.98) 60%
-            );
-            color: #E0F2FE;
+            border-color: rgba(200, 160, 80, 0.6);
+            color: #FFD080;
+            text-shadow: 0 0 8px rgba(255, 180, 80, 0.5);
+            box-shadow: 
+              inset 0 1px 2px rgba(255, 200, 140, 0.1),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+              0 0 15px rgba(200, 160, 80, 0.2);
           }
           .intake-body {
             flex: 1;
             overflow-y: auto;
+            padding: 16px;
+          }
+          .intake-license-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
+          .intake-copy {
+            color: rgba(255, 200, 140, 0.7);
+            font-size: 14px;
+          }
+          .intake-open-license-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #2a2725 0%, #1a1816 100%);
+            border: 2px solid rgba(100, 80, 50, 0.5);
+            color: #FFB850;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+            box-shadow: 
+              inset 0 1px 2px rgba(255, 200, 140, 0.08),
+              0 3px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.25s;
+          }
+          .intake-open-license-btn:hover {
+            border-color: rgba(200, 160, 80, 0.6);
+            color: #FFD080;
+            transform: translateY(-2px);
+            box-shadow: 
+              inset 0 1px 2px rgba(255, 200, 140, 0.12),
+              0 6px 16px rgba(0, 0, 0, 0.4),
+              0 0 15px rgba(200, 160, 80, 0.15);
           }
           .vin-panel {
-            padding: 16px 18px 20px;
+            padding: 0;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -382,17 +447,25 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.12em;
-            color: rgba(148,163,184,0.9);
+            color: rgba(255, 200, 140, 0.7);
             margin-bottom: 4px;
           }
           .vin-input, .vin-mileage-input {
-            padding: 10px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(51,65,85,0.9);
-            background: rgba(15,23,42,0.9);
-            color: #e5f2ff;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(80, 60, 40, 0.5);
+            background: linear-gradient(180deg, rgba(15, 13, 12, 0.95) 0%, rgba(20, 18, 16, 0.98) 100%);
+            color: #FFB850;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 13px;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+          }
+          .vin-input:focus, .vin-mileage-input:focus {
+            outline: none;
+            border-color: rgba(200, 160, 80, 0.6);
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 0 12px rgba(200, 160, 80, 0.15);
           }
           .vin-status {
             font-size: 11px;
@@ -400,43 +473,57 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           }
           .vin-status.valid {
             color: #4ade80;
+            text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
           }
           .vin-status.error {
             color: #f97373;
           }
           .vin-decode-btn {
             margin-top: 4px;
-            padding: 10px 14px;
-            border-radius: 999px;
-            border: none;
-            background: linear-gradient(135deg, rgba(34,197,94,0.3), rgba(22,163,74,0.3));
-            color: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid rgba(74, 222, 128, 0.5);
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.3) 100%);
+            color: #4ade80;
             font-size: 13px;
             font-weight: 600;
+            text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+            transition: all 0.25s;
+          }
+          .vin-decode-btn:hover:not(:disabled) {
+            border-color: rgba(74, 222, 128, 0.7);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+            transform: translateY(-2px);
+          }
+          .vin-decode-btn:disabled {
+            opacity: 0.5;
           }
           .vin-inventory-header {
-            margin-top: 12px;
+            margin-top: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-size: 12px;
-            color: rgba(148,163,184,0.9);
+            color: rgba(255, 200, 140, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
           }
           .vin-inventory-count {
             font-variant-numeric: tabular-nums;
+            color: #FFB850;
           }
           .vin-empty {
-            margin-top: 6px;
-            padding: 10px 12px;
-            border-radius: 12px;
-            background: rgba(15,23,42,0.95);
-            border: 1px dashed rgba(55,65,81,0.9);
+            margin-top: 8px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(20, 18, 16, 0.8);
+            border: 1px dashed rgba(100, 80, 50, 0.5);
             font-size: 12px;
-            color: rgba(148,163,184,0.9);
+            color: rgba(255, 200, 140, 0.5);
           }
           .vin-list {
-            margin-top: 6px;
-            max-height: 200px;
+            margin-top: 8px;
+            max-height: 180px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -448,15 +535,19 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             justify-content: space-between;
             gap: 8px;
             padding: 10px 12px;
-            border-radius: 12px;
-            background: rgba(15,23,42,0.9);
-            border: 1px solid rgba(55,65,81,0.9);
-            color: #e5e7eb;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #1f1d1b 0%, #151311 100%);
+            border: 2px solid rgba(80, 60, 40, 0.4);
+            color: rgba(255, 200, 140, 0.9);
             font-size: 12px;
+            transition: all 0.2s;
+          }
+          .vin-item:hover {
+            border-color: rgba(200, 160, 80, 0.5);
           }
           .vin-item.selected {
-            border-color: rgba(34,211,238,0.9);
-            box-shadow: 0 0 16px rgba(34,211,238,0.25);
+            border-color: rgba(200, 160, 80, 0.7);
+            box-shadow: 0 0 15px rgba(200, 160, 80, 0.2);
           }
           .vin-main {
             display: flex;
@@ -465,37 +556,145 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
           }
           .vin-title {
             font-weight: 600;
+            color: #FFD080;
           }
           .vin-sub {
             font-family: ui-monospace, monospace;
             font-size: 11px;
-            color: rgba(148,163,184,0.9);
+            color: rgba(255, 200, 140, 0.6);
           }
           .vin-mileage {
             font-size: 11px;
-            color: rgba(248,250,252,0.9);
+            color: #FFB850;
           }
           .vin-eject-btn {
-            margin-top: 8px;
-            padding: 10px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(248,113,113,0.85);
-            background: linear-gradient(135deg, rgba(248,113,113,0.2), rgba(248,113,113,0.35));
-            color: #fee2e2;
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(220, 80, 80, 0.5);
+            background: linear-gradient(180deg, rgba(220, 80, 80, 0.15) 0%, rgba(180, 60, 60, 0.25) 100%);
+            color: #f87171;
             font-size: 13px;
             font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
+            text-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
+            transition: all 0.25s;
+          }
+          .vin-eject-btn:hover:not(:disabled) {
+            border-color: rgba(248, 113, 113, 0.7);
+            box-shadow: 0 0 15px rgba(248, 113, 113, 0.2);
+            transform: translateY(-2px);
+          }
+          .vin-eject-btn:disabled {
+            opacity: 0.5;
           }
           .vin-warning {
-            margin-top: 8px;
+            margin-top: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             font-size: 11px;
-            color: #fed7aa;
+            color: #fbbf24;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+          }
+          
+          /* Light mode */
+          html:not(.dark) .intake-modal {
+            background:
+              radial-gradient(ellipse 180% 90% at 5% 35%, rgba(180, 100, 120, 0.08) 0%, transparent 55%),
+              radial-gradient(ellipse 140% 100% at 95% 65%, rgba(100, 140, 100, 0.06) 0%, transparent 55%),
+              repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 150, 100, 0.03) 22px, rgba(180, 150, 100, 0.03) 23px),
+              repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 150, 100, 0.03) 22px, rgba(180, 150, 100, 0.03) 23px),
+              linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%);
+            border-image: linear-gradient(135deg, #C9A86C 0%, #DFC08A 25%, #CAAD72 50%, #D8BB82 75%, #C9A86C 100%) 1;
+            box-shadow:
+              0 0 0 1px rgba(200, 170, 120, 0.4),
+              0 30px 60px rgba(0,0,0,0.15);
+          }
+          html:not(.dark) .intake-header {
+            background: 
+              repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.25) 1px, rgba(255, 255, 255, 0.25) 2px),
+              linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+            border-bottom-color: rgba(200, 170, 120, 0.3);
+          }
+          html:not(.dark) .intake-title {
+            color: #5C3A1E;
+            text-shadow: none;
+          }
+          html:not(.dark) .intake-badge {
+            background: rgba(139, 90, 43, 0.15);
+            border-color: rgba(180, 140, 80, 0.4);
+            color: #6B4324;
+          }
+          html:not(.dark) .intake-close {
+            background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+            border-color: rgba(180, 150, 100, 0.4);
+            color: #6B4324;
+          }
+          html:not(.dark) .intake-modes {
+            background: 
+              radial-gradient(circle 3px at 20% 30%, rgba(200, 160, 100, 0.3) 0%, transparent 100%),
+              radial-gradient(circle 2px at 80% 70%, rgba(190, 150, 95, 0.25) 0%, transparent 100%),
+              linear-gradient(90deg, #C9A86C 0%, #DFC08A 50%, #CAAD72 100%);
+          }
+          html:not(.dark) .intake-mode {
+            background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+            border-color: rgba(180, 150, 100, 0.4);
+            color: #5C3A1E;
+          }
+          html:not(.dark) .intake-mode.active {
+            border-color: rgba(180, 140, 80, 0.6);
+            color: #4A2E15;
+            text-shadow: none;
+          }
+          html:not(.dark) .intake-copy {
+            color: #6B4324;
+          }
+          html:not(.dark) .intake-open-license-btn {
+            background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+            border-color: rgba(180, 150, 100, 0.4);
+            color: #5C3A1E;
+            text-shadow: none;
+          }
+          html:not(.dark) .vin-input-row label {
+            color: #8B6914;
+          }
+          html:not(.dark) .vin-input, html:not(.dark) .vin-mileage-input {
+            background: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+            border-color: rgba(180, 150, 100, 0.4);
+            color: #5C3A1E;
+            text-shadow: none;
+          }
+          html:not(.dark) .vin-inventory-header {
+            color: #8B6914;
+          }
+          html:not(.dark) .vin-inventory-count {
+            color: #5C3A1E;
+          }
+          html:not(.dark) .vin-empty {
+            background: #F5F0E8;
+            border-color: rgba(180, 150, 100, 0.4);
+            color: #8B6914;
+          }
+          html:not(.dark) .vin-item {
+            background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+            border-color: rgba(180, 150, 100, 0.35);
+            color: #5C3A1E;
+          }
+          html:not(.dark) .vin-title {
+            color: #4A2E15;
+          }
+          html:not(.dark) .vin-sub {
+            color: #8B6914;
+          }
+          html:not(.dark) .vin-mileage {
+            color: #5C3A1E;
           }
         `}</style>
       </div>
