@@ -88,8 +88,7 @@ export const playNotificationSound = async (profile = null) => {
     
     await audio.play();
     return true;
-  } catch (error) {
-    console.warn('Sound playback failed:', error);
+  } catch {
     return false;
   }
 };
@@ -111,7 +110,6 @@ export const getSoundProfiles = () => {
  */
 export const requestNotificationPermission = async () => {
   if (!('Notification' in window)) {
-    console.warn('Browser does not support notifications');
     return 'unsupported';
   }
   
@@ -283,8 +281,7 @@ export const playSportModeSound = async () => {
     
     await audio.play();
     return audio;
-  } catch (error) {
-    console.warn('Failed to play sport mode sound:', error.message);
+  } catch {
     return null;
   }
 };
