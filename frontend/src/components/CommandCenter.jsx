@@ -1021,9 +1021,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           padding: 16px;
         }
 
-        .email-parser-modal {
-          width: 100%;
-          max-width: 400px;
+        /* Email parser modal styles removed */
           max-height: 85vh;
           background: rgba(20,18,16,0.75);
           backdrop-filter: blur(16px);
