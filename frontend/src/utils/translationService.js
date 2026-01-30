@@ -3,7 +3,7 @@
  * Implements caching, quality indicators, fallback mechanisms, and language detection
  */
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 // Translation cache for performance
 class TranslationCache {
