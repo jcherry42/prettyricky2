@@ -4,7 +4,7 @@
 
 import { secureStorage } from './secureStorage';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || '';
+const API_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
 class AuthService {
   constructor() {
