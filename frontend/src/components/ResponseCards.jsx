@@ -64,8 +64,8 @@ const ResponseCard = ({
           setFollowUpTranslation(followResult.translatedText);
         }
       }
-    } catch (err) {
-      console.error('[Translation error]:', err);
+    } catch {
+      // Translation error - silent
     }
     setIsTranslating(false);
   };
