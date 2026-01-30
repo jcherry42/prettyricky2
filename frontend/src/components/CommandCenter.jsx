@@ -480,7 +480,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         .cc-modal {
           position: relative;
           width: calc(100% - 32px);
-          max-width: 440px;
+          max-width: 520px;
           max-height: 85vh;
           margin: auto;
           /* designo Night - Nappa leather with Picasso swirl */
