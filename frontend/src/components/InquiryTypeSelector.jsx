@@ -106,13 +106,8 @@ const InquiryTypeSelector = () => {
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${type.gradient} flex items-center justify-center shadow-lg`}>
                 <Icon className="w-5 h-5 text-white" />
               </div>
-              <div className="text-center">
-                <div className="font-semibold text-sm">
-                  {type.label}
-                </div>
-                <div className="text-xs opacity-70">
-                  {type.description}
-                </div>
+              <div className="font-semibold text-sm text-center">
+                {type.label}
               </div>
             </button>
           );
