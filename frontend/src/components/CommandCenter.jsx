@@ -3131,6 +3131,9 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
       `}</style>
     </div>
   );
-};
+});
+
+SettingsTab.displayName = 'SettingsTab';
+CommandCenter.displayName = 'CommandCenter';
 
 export default CommandCenter;
