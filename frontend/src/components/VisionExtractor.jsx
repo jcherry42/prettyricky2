@@ -57,8 +57,7 @@ const VisionExtractor = ({ onDataExtracted, onClose }) => {
       };
       base64Reader.readAsDataURL(file);
 
-    } catch (error) {
-      console.error('Error processing image:', error);
+    } catch {
       toast.error('Failed to process image');
     }
   };
