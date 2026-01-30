@@ -51,8 +51,7 @@ const INQUIRY_TYPES = [
     id: 'follow_up', 
     label: 'Follow Up', 
     icon: Clock,
-    gradient: 'from-indigo-500 to-purple-500',
-    description: 'Check-in'
+    gradient: 'from-indigo-500 to-purple-500'
   },
   { 
     id: 'objection', 
