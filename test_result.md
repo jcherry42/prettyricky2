@@ -463,6 +463,67 @@ frontend:
         comment: "✅ iOS TEST PASSED: Inquiry Type Grid working perfectly. All 8 inquiry types found and displayed in grid format: New Lead, Price Question, Availability, Trade-In, Financing, Test Drive, Follow Up, Objection. Tap functionality working - selected New Lead successfully with proper blue highlighting."
 
   - task: "Tone Selector - 3 tones (Direct, Balanced, Soft) with description changes"
+
+  - task: "UI - IntakeHub modal centered on mobile with safe-area padding"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/IntakeHub.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "IntakeHub overlay already uses flex centering + safe-area padding; increased typography and removed text glow from inputs." 
+
+  - task: "UI - LicenseScanner modal centered on mobile (not stuck at top)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/LicenseScanner.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Changed overlay align-items to center + added safe-area padding; modal now uses centered card layout instead of bottom-sheet alignment." 
+
+  - task: "UI - Remove text glow from intake inputs (light/dark)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/IntakeHub.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Removed text-shadow glow from IntakeHub title/buttons and VIN input fields; light mode already had no glow." 
+
+  - task: "UI - Increase font sizes by ~35% (Quick Add + IntakeHub secondary text)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/QuickAddButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Increased Quick Add inputs to 19px and labels to 15px; increased IntakeHub small text sizes to match ~35% boost." 
+
+  - task: "UI - Inquiry buttons: icon + title centered; no descriptive text"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/InquiryTypeSelector.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Removed INQUIRY_TYPES description fields; buttons now render only icon and title (button sizing controlled by tesla-2027.css)." 
+
     implemented: true
     working: true
     file: "/app/frontend/src/components/ToneSelector.jsx"
