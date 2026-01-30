@@ -157,8 +157,6 @@ export const QuickAddButton = () => {
       });
       
       if (res.ok) {
-        const data = await res.json().catch(() => null);
-
         // Immediately refresh global customer list so the new customer appears everywhere
         try {
           const listRes = await fetch(`${BACKEND_URL}/api/customers/list?limit=50`);
