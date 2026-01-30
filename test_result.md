@@ -170,13 +170,16 @@ backend:
     implemented: true
     working: true
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "✅ PASS: POST /translate API working excellently. Successfully translated English to Spanish with 95% confidence. Automotive terminology preserved correctly. Enterprise-grade translation functioning as expected."
+      - working: false
+        agent: "user"
+        comment: "User reported translate button only changed flag; required actual text translation + reversible toggle + Spanish/French/Korean only."
 
   - task: "Analytics Dashboard API - GET /api/analytics/dashboard with fixed queries"
     implemented: true
