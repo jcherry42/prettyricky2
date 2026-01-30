@@ -51,7 +51,7 @@ export const getSoundProfiles = () => {
   }));
 };
 
-// Play sound for specific event
+// Play sound for specific event (simple, no fade)
 const playSound = (soundPath, volume = 0.7) => {
   try {
     const audio = new Audio(soundPath);
@@ -59,6 +59,58 @@ const playSound = (soundPath, volume = 0.7) => {
     audio.play().catch(() => {});
   } catch {
     // Sound initialization failed - silent
+  }
+};
+
+// Play sound with fade-out effect
+const playSoundWithFade = (soundPath, volume = 0.7) => {
+  try {
+    const audio = new Audio(soundPath);
+    audio.volume = volume;
+    
+    let fadeInterval = null;
+    let fadeStarted = false;
+    
+    audio.addEventListener('loadedmetadata', () => {
+      const duration = audio.duration;
+      const fadeStartAt = duration * 0.6; // Start fading at 60%
+      const fadeDuration = duration - fadeStartAt;
+      
+      fadeInterval = setInterval(() => {
+        const currentTime = audio.currentTime;
+        
+        if (currentTime >= fadeStartAt && !fadeStarted) {
+          fadeStarted = true;
+        }
+        
+        if (fadeStarted) {
+          const fadeElapsed = currentTime - fadeStartAt;
+          const fadeProgress = 1 - (fadeElapsed / fadeDuration);
+          
+          // Cubic easing for smooth fade
+          const easedProgress = fadeProgress * fadeProgress * fadeProgress;
+          audio.volume = Math.max(0, volume * easedProgress);
+          
+          if (fadeProgress <= 0.02 || audio.volume < 0.01) {
+            clearInterval(fadeInterval);
+            audio.pause();
+            audio.volume = 0;
+          }
+        }
+      }, 30);
+    });
+    
+    audio.addEventListener('ended', () => {
+      if (fadeInterval) clearInterval(fadeInterval);
+    });
+    
+    audio.addEventListener('error', () => {
+      if (fadeInterval) clearInterval(fadeInterval);
+    });
+    
+    audio.play().catch(() => {});
+  } catch {
+    // Sound with fade failed - silent
   }
 };
 
