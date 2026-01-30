@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { 
   X, Users, Upload, BarChart3, 
   Search, Plus, ChevronRight, Settings,
-  FileUp, UserPlus, Trash2, Edit3, Phone, MapPin,
+  FileUp, UserPlus, Trash2, Phone, MapPin,
   Clock, Tag, CheckCircle2, AlertCircle,
   Zap, Bell, Volume2, VolumeX, Building2,
   User, Save, Eye, EyeOff, Loader2, ToggleLeft, ToggleRight,
@@ -19,6 +19,8 @@ import {
 } from '../utils/notificationSound';
 import LanguageSelector from './LanguageSelector';
 import VisionExtractor from './VisionExtractor';
+import CustomerForm from './CommandCenter/CustomerForm';
+import CustomerDetail from './CommandCenter/CustomerDetail';
 import './CommandCenter/styles.css';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
