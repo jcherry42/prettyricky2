@@ -210,6 +210,13 @@ export const VoiceTranslator = () => {
     }
   }, [processAudio, stopRecording]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopRecording();
+    };
+  }, [stopRecording]);
+
   // Handle button press
   const handlePress = useCallback(() => {
     if (isProcessing) return;
