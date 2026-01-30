@@ -2557,21 +2557,18 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
           <div className="sound-profiles">
             <label>Engine Sound Profile</label>
             <div className="profile-grid">
-              {getSoundProfiles().map(profile => (
-                <button
-                  key={profile.id}
-                  className={`profile-btn ${soundPrefs.profile === profile.id ? 'active' : ''}`}
-                  onClick={() => {
-                    const newPrefs = { ...soundPrefs, profile: profile.id };
-                    setSoundPrefsState(newPrefs);
-                    setSoundPreferences(newPrefs);
-                    playNotificationSound(profile.id);
-                  }}
-                >
-                  <span className="profile-icon">{profile.icon}</span>
-                  <span className="profile-name">{profile.name}</span>
-                </button>
-              ))}
+              {/* Engine sound profiles controlled via flag buttons (Spanish, French, Korean) */}
+              <LanguageSelector
+                value={soundPrefs.profile}
+                onChange={(code) => {
+                  const map = { es: 'spanish', fr: 'french', ko: 'korean' };
+                  const profileId = map[code] || 'spanish';
+                  const newPrefs = { ...soundPrefs, profile: profileId };
+                  setSoundPrefsState(newPrefs);
+                  setSoundPreferences(newPrefs);
+                }}
+                label={null}
+              />
             </div>
           </div>
           
