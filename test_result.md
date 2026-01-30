@@ -263,15 +263,18 @@ backend:
 
   - task: "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/CommandCenter.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "CustomerForm now calls onSaved() which refreshes CommandCenter list + global SalesContext customers via /api/customers." 
+        comment: "CustomerForm now calls onSaved() which refreshes CommandCenter list + global SalesContext customers via /api/customers."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Command Center customer form has field population problems. First name field not filling correctly during testing. Form displays but data entry fails. Customer creation through Command Center → Customers → Add Customer not working reliably. Form validation and field mapping needs investigation." 
 
   - task: "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
     implemented: true
