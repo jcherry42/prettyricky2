@@ -64,10 +64,15 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 ## What's Been Completed (January 30, 2026)
 
 ### Latest Session Updates ✅
-1. **Import Buttons Uniform** - All 3 buttons now exactly 130px (fixed)
-2. **Translation Uses Settings Language** - Fixed TowerTalkModal to use settings language instead of hardcoded Spanish
-3. **Code Cleanup** - Removed unused imports (useRef, useCallback, FOLLOW_UP_RULES from ResponseCards.jsx)
-4. **Inquiry Buttons Picasso** - Added Picasso swirl pattern to all 8 buttons
+1. **Command Center Light Mode Rounded** - Fixed border-radius in light mode (28px, matching dark mode)
+2. **Lint Errors Fixed** - Fixed 3 errors:
+   - CommandCenter.jsx: setState in useEffect → lazy initialization
+   - LanguageSelector.jsx: removed `jsx` prop from style tag
+   - VisionExtractor.jsx: removed `jsx` prop from style tag
+3. **Import Buttons Uniform** - All 3 buttons now exactly 130px
+4. **Translation Uses Settings Language** - Fixed TowerTalkModal
+5. **Code Cleanup** - Removed unused imports from ResponseCards.jsx
+6. **Inquiry Buttons Picasso** - Added Picasso swirl pattern
 
 ### Previous Session ✅
 1. **Sport Mode Sound Fix** - Now plays selected engine profile with fade-out
@@ -78,6 +83,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 1. **Translation API key** - Fixed corrupted EMERGENT_LLM_KEY in backend/.env
 2. **Search bar box-in-box** - Fixed in light mode
 3. **CSS syntax errors** - Cleaned orphaned blocks
+
+---
+
+## Technical Debt / Future Refactoring
+- **CommandCenter.jsx**: 3103 lines with ~1900 lines of inline CSS - candidate for extraction
+- **Inline CSS**: Multiple `<style>` blocks should be consolidated into CSS modules
+- Consider extracting: ImportTab, PrinterTab, DashboardTab as separate components
 
 ---
 
