@@ -1341,3 +1341,719 @@ html:not(.dark) textarea::before {
   0% { left: -100%; }
   100% { left: 200%; }
 }
+
+
+/* ============================================
+   designo PICASSO HAND-PAINTED PATTERNS
+   Signature Artistic Swirls from 90s AMG Customization
+   ============================================ */
+
+/* ==================== PICASSO SWIRL - DARK MODE ==================== */
+/* Deep burgundy and teal flowing strokes on black nappa */
+
+.designo-picasso-dark {
+  position: relative;
+  overflow: hidden;
+}
+
+.designo-picasso-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    /* Primary flowing curve - burgundy */
+    radial-gradient(ellipse 200% 100% at 0% 50%, 
+      rgba(128, 40, 60, 0.12) 0%, 
+      rgba(100, 30, 50, 0.08) 30%,
+      transparent 60%
+    ),
+    /* Secondary wave - teal accent */
+    radial-gradient(ellipse 150% 80% at 100% 30%, 
+      rgba(40, 100, 120, 0.1) 0%, 
+      rgba(30, 80, 100, 0.06) 40%,
+      transparent 70%
+    ),
+    /* Tertiary accent - gold highlight */
+    radial-gradient(ellipse 80% 120% at 50% 100%, 
+      rgba(180, 140, 60, 0.06) 0%, 
+      transparent 50%
+    );
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.designo-picasso-dark::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    /* Flowing brushstroke curves */
+    conic-gradient(from 180deg at 20% 60%, 
+      transparent 0deg, 
+      rgba(128, 40, 60, 0.08) 45deg, 
+      rgba(140, 50, 70, 0.05) 90deg,
+      transparent 135deg
+    ),
+    conic-gradient(from 45deg at 80% 40%, 
+      transparent 0deg, 
+      rgba(40, 100, 120, 0.06) 60deg, 
+      rgba(50, 110, 130, 0.04) 120deg,
+      transparent 180deg
+    ),
+    /* Subtle gold thread */
+    conic-gradient(from 270deg at 50% 80%, 
+      transparent 0deg, 
+      rgba(200, 160, 80, 0.04) 30deg, 
+      transparent 60deg
+    );
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* ==================== PICASSO SWIRL - LIGHT MODE ==================== */
+/* Soft rose and sage on ivory nappa - elegant yet visible */
+
+.designo-picasso-light {
+  position: relative;
+  overflow: hidden;
+}
+
+.designo-picasso-light::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    /* Primary curve - dusty rose */
+    radial-gradient(ellipse 180% 90% at 10% 40%, 
+      rgba(180, 100, 120, 0.12) 0%, 
+      rgba(160, 90, 110, 0.07) 35%,
+      transparent 65%
+    ),
+    /* Secondary - sage green */
+    radial-gradient(ellipse 140% 100% at 90% 60%, 
+      rgba(100, 140, 100, 0.1) 0%, 
+      rgba(90, 130, 90, 0.06) 40%,
+      transparent 70%
+    ),
+    /* Accent - honey gold */
+    radial-gradient(ellipse 100% 80% at 50% 90%, 
+      rgba(200, 160, 100, 0.08) 0%, 
+      transparent 55%
+    );
+  pointer-events: none;
+}
+
+.designo-picasso-light::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    /* Artistic flowing strokes */
+    conic-gradient(from 200deg at 25% 50%, 
+      transparent 0deg, 
+      rgba(180, 100, 120, 0.1) 40deg, 
+      rgba(190, 110, 130, 0.06) 80deg,
+      transparent 120deg
+    ),
+    conic-gradient(from 30deg at 75% 50%, 
+      transparent 0deg, 
+      rgba(100, 140, 100, 0.08) 50deg, 
+      rgba(110, 150, 110, 0.04) 100deg,
+      transparent 150deg
+    ),
+    /* Gold accent thread */
+    conic-gradient(from 300deg at 50% 85%, 
+      transparent 0deg, 
+      rgba(180, 140, 80, 0.06) 25deg, 
+      transparent 50deg
+    );
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* ==================== WOOD BEZEL FRAME SYSTEM ==================== */
+/* Authentic walnut bezels for panels and cards */
+
+.designo-bezel {
+  position: relative;
+  padding: 8px;
+  background: 
+    /* Burr walnut with depth */
+    radial-gradient(ellipse 80% 50% at 15% 20%, rgba(140, 85, 35, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 60% at 85% 80%, rgba(110, 65, 25, 0.3) 0%, transparent 50%),
+    repeating-linear-gradient(
+      88deg,
+      transparent,
+      transparent 2px,
+      rgba(80, 45, 15, 0.12) 2px,
+      rgba(80, 45, 15, 0.12) 3px,
+      transparent 3px,
+      transparent 7px
+    ),
+    linear-gradient(135deg, #6B4324 0%, #8B5A2B 20%, #5C3A1E 40%, #7A4F2A 60%, #6B4324 80%, #8B5A2B 100%);
+  border-radius: 16px;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 200, 140, 0.15),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+    0 6px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(60, 35, 15, 0.5);
+}
+
+.designo-bezel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Light mode bezel - bird's-eye maple */
+html:not(.dark) .designo-bezel {
+  background: 
+    radial-gradient(circle 4px at 12% 18%, rgba(200, 160, 100, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 3px at 38% 12%, rgba(210, 170, 110, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 4px at 65% 22%, rgba(190, 150, 95, 0.32) 0%, transparent 100%),
+    radial-gradient(circle 3px at 88% 15%, rgba(205, 165, 105, 0.28) 0%, transparent 100%),
+    radial-gradient(circle 3px at 25% 85%, rgba(195, 155, 98, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 4px at 72% 88%, rgba(200, 160, 100, 0.32) 0%, transparent 100%),
+    repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 1px,
+      rgba(160, 120, 60, 0.06) 1px,
+      rgba(160, 120, 60, 0.06) 2px
+    ),
+    linear-gradient(135deg, #D4B86A 0%, #C9A86C 25%, #DFC08A 50%, #CAAD72 75%, #D8BB82 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(139, 90, 30, 0.15),
+    0 6px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(180, 140, 80, 0.3);
+}
+
+/* Chrome trim accent for bezels */
+.designo-bezel-chrome {
+  position: relative;
+}
+
+.designo-bezel-chrome::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    #F0F0F0 0%,
+    #C8C8C8 15%,
+    #E8E8E8 30%,
+    #A8A8A8 50%,
+    #D0D0D0 70%,
+    #B8B8B8 85%,
+    #E0E0E0 100%
+  );
+  z-index: -1;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+/* ==================== CRISP BORDER SYSTEM ==================== */
+/* Thoughtfully designed automotive-grade borders */
+
+.designo-border-subtle {
+  border: 1px solid rgba(139, 90, 43, 0.2);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.designo-border-accent {
+  border: 2px solid rgba(180, 140, 80, 0.4);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 220, 160, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.designo-border-chrome {
+  border: 2px solid;
+  border-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(200, 200, 200, 0.4) 50%,
+    rgba(255, 255, 255, 0.5) 100%
+  ) 1;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+html.dark .designo-border-subtle {
+  border-color: rgba(80, 60, 40, 0.5);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 200, 140, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .designo-border-accent {
+  border-color: rgba(140, 100, 50, 0.5);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 200, 140, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ==================== CARDS WITH FULL DESIGNO TREATMENT ==================== */
+
+.designo-card {
+  position: relative;
+  padding: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  /* Base nappa texture */
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(180, 140, 80, 0.03) 20px,
+      rgba(180, 140, 80, 0.03) 21px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(180, 140, 80, 0.03) 20px,
+      rgba(180, 140, 80, 0.03) 21px
+    ),
+    linear-gradient(165deg, #1e1c1a 0%, #141210 50%, #1a1816 100%);
+  border: 2px solid rgba(100, 75, 45, 0.4);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.08),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(40, 30, 20, 0.5);
+}
+
+/* Picasso pattern overlay on cards */
+.designo-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 150% 80% at 5% 30%, rgba(128, 40, 60, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 100% at 95% 70%, rgba(40, 100, 120, 0.06) 0%, transparent 50%),
+    conic-gradient(from 180deg at 20% 60%, transparent 0deg, rgba(140, 50, 70, 0.04) 60deg, transparent 120deg);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Contrast stitching dots */
+.designo-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 20px 20px, rgba(212, 175, 55, 0.08) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Light mode card */
+html:not(.dark) .designo-card {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 90, 43, 0.04) 20px,
+      rgba(139, 90, 43, 0.04) 21px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 90, 43, 0.04) 20px,
+      rgba(139, 90, 43, 0.04) 21px
+    ),
+    linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%);
+  border-color: rgba(180, 140, 90, 0.35);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(200, 170, 120, 0.3);
+}
+
+html:not(.dark) .designo-card::before {
+  background: 
+    radial-gradient(ellipse 150% 80% at 5% 30%, rgba(180, 100, 120, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 100% at 95% 70%, rgba(100, 140, 100, 0.06) 0%, transparent 50%),
+    conic-gradient(from 180deg at 20% 60%, transparent 0deg, rgba(190, 110, 130, 0.05) 60deg, transparent 120deg);
+  opacity: 0.8;
+}
+
+html:not(.dark) .designo-card::after {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.1) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 20px 20px, rgba(139, 90, 43, 0.1) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+}
+
+/* ==================== CUSTOMER CARD - DESIGNO STYLE ==================== */
+
+.designo-customer-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Nappa leather texture */
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.02) 16px, rgba(200, 160, 100, 0.02) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.02) 16px, rgba(200, 160, 100, 0.02) 17px),
+    linear-gradient(180deg, #1f1d1b 0%, #151311 100%);
+  border: 2px solid rgba(100, 80, 50, 0.35);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 200, 140, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Subtle Picasso accent */
+.designo-customer-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 100% 60% at 0% 50%, rgba(128, 40, 60, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 80% at 100% 50%, rgba(40, 100, 120, 0.04) 0%, transparent 35%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.designo-customer-card:hover {
+  border-color: rgba(200, 160, 80, 0.5);
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.03) 16px, rgba(200, 160, 100, 0.03) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.03) 16px, rgba(200, 160, 100, 0.03) 17px),
+    linear-gradient(180deg, #282420 0%, #1a1816 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(200, 160, 80, 0.08);
+}
+
+/* Light mode customer card */
+html:not(.dark) .designo-customer-card {
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.03) 16px, rgba(180, 150, 100, 0.03) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.03) 16px, rgba(180, 150, 100, 0.03) 17px),
+    linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  border-color: rgba(180, 150, 100, 0.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .designo-customer-card::before {
+  background: 
+    radial-gradient(ellipse 100% 60% at 0% 50%, rgba(180, 100, 120, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 80% at 100% 50%, rgba(100, 140, 100, 0.04) 0%, transparent 35%);
+  opacity: 0.7;
+}
+
+html:not(.dark) .designo-customer-card:hover {
+  border-color: rgba(180, 140, 80, 0.45);
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.04) 16px, rgba(180, 150, 100, 0.04) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.04) 16px, rgba(180, 150, 100, 0.04) 17px),
+    linear-gradient(180deg, #FFFFFF 0%, #FDF9F3 100%);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 15px rgba(200, 160, 80, 0.1);
+}
+
+/* ==================== MODAL WITH DESIGNO TREATMENT ==================== */
+
+.designo-modal {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  
+  /* Deep nappa base */
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(180, 140, 80, 0.02) 24px, rgba(180, 140, 80, 0.02) 25px),
+    repeating-linear-gradient(-45deg, transparent, transparent 24px, rgba(180, 140, 80, 0.02) 24px, rgba(180, 140, 80, 0.02) 25px),
+    linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
+  border: 3px solid rgba(100, 75, 45, 0.5);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 200, 140, 0.06),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.4),
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(60, 45, 30, 0.6);
+}
+
+/* Picasso pattern on modal */
+.designo-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    /* Burgundy flow */
+    radial-gradient(ellipse 200% 100% at -20% 50%, rgba(128, 40, 60, 0.1) 0%, rgba(100, 30, 50, 0.05) 40%, transparent 70%),
+    /* Teal counterflow */
+    radial-gradient(ellipse 180% 120% at 120% 30%, rgba(40, 100, 120, 0.08) 0%, rgba(30, 80, 100, 0.04) 45%, transparent 75%),
+    /* Gold accent at bottom */
+    radial-gradient(ellipse 100% 60% at 50% 110%, rgba(200, 160, 80, 0.06) 0%, transparent 60%),
+    /* Flowing curves */
+    conic-gradient(from 160deg at 10% 70%, transparent 0deg, rgba(140, 50, 70, 0.05) 50deg, transparent 100deg),
+    conic-gradient(from 340deg at 90% 30%, transparent 0deg, rgba(50, 110, 130, 0.04) 60deg, transparent 120deg);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Stitching pattern */
+.designo-modal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* Light mode modal */
+html:not(.dark) .designo-modal {
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(180, 150, 100, 0.03) 24px, rgba(180, 150, 100, 0.03) 25px),
+    repeating-linear-gradient(-45deg, transparent, transparent 24px, rgba(180, 150, 100, 0.03) 24px, rgba(180, 150, 100, 0.03) 25px),
+    linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%);
+  border-color: rgba(180, 140, 90, 0.4);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 6px rgba(139, 90, 43, 0.08),
+    0 24px 80px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(200, 170, 120, 0.4);
+}
+
+html:not(.dark) .designo-modal::before {
+  background: 
+    radial-gradient(ellipse 200% 100% at -20% 50%, rgba(180, 100, 120, 0.1) 0%, rgba(160, 90, 110, 0.05) 40%, transparent 70%),
+    radial-gradient(ellipse 180% 120% at 120% 30%, rgba(100, 140, 100, 0.08) 0%, rgba(90, 130, 90, 0.04) 45%, transparent 75%),
+    radial-gradient(ellipse 100% 60% at 50% 110%, rgba(200, 160, 100, 0.08) 0%, transparent 60%),
+    conic-gradient(from 160deg at 10% 70%, transparent 0deg, rgba(190, 110, 130, 0.06) 50deg, transparent 100deg),
+    conic-gradient(from 340deg at 90% 30%, transparent 0deg, rgba(110, 150, 110, 0.05) 60deg, transparent 120deg);
+  opacity: 0.9;
+}
+
+html:not(.dark) .designo-modal::after {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(139, 90, 43, 0.08) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+}
+
+/* ==================== BUTTON WITH WOOD BEZEL ==================== */
+
+.designo-btn-bezeled {
+  position: relative;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  /* Inner button face */
+  background: linear-gradient(180deg, #2a2725 0%, #1a1816 100%);
+  color: #FFB850;
+  text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+  
+  /* Wood bezel effect via box-shadow */
+  box-shadow: 
+    /* Outer wood bezel */
+    0 0 0 4px #6B4324,
+    0 0 0 5px rgba(120, 80, 35, 0.8),
+    0 0 0 6px rgba(90, 55, 25, 0.6),
+    /* Inner highlights */
+    inset 0 1px 2px rgba(255, 200, 140, 0.1),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    /* Drop shadow */
+    0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.designo-btn-bezeled:hover {
+  background: linear-gradient(180deg, #353230 0%, #252220 100%);
+  color: #FFD080;
+  text-shadow: 0 0 12px rgba(255, 200, 100, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 0 4px #7A4F2A,
+    0 0 0 5px rgba(140, 95, 45, 0.8),
+    0 0 0 6px rgba(100, 65, 30, 0.6),
+    inset 0 1px 2px rgba(255, 200, 140, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 180, 80, 0.1);
+}
+
+html:not(.dark) .designo-btn-bezeled {
+  background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+  color: #5C3A1E;
+  text-shadow: none;
+  box-shadow: 
+    0 0 0 4px #C9A86C,
+    0 0 0 5px rgba(210, 175, 115, 0.8),
+    0 0 0 6px rgba(180, 145, 85, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .designo-btn-bezeled:hover {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  color: #4A2E15;
+  box-shadow: 
+    0 0 0 4px #D4B86A,
+    0 0 0 5px rgba(220, 185, 120, 0.8),
+    0 0 0 6px rgba(190, 155, 95, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.08),
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    0 0 15px rgba(200, 160, 80, 0.15);
+}
+
+/* ==================== INPUT FIELDS - DESIGNO STYLE ==================== */
+
+.designo-input {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  
+  /* Recessed leather panel look */
+  background: 
+    linear-gradient(180deg, rgba(15, 13, 12, 0.95) 0%, rgba(20, 18, 16, 0.98) 100%);
+  border: 2px solid rgba(80, 60, 40, 0.5);
+  color: #FFB850;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 2px rgba(255, 200, 140, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.designo-input::placeholder {
+  color: rgba(255, 180, 80, 0.4);
+}
+
+.designo-input:focus {
+  outline: none;
+  border-color: rgba(200, 160, 80, 0.6);
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 2px rgba(255, 200, 140, 0.08),
+    0 0 0 3px rgba(200, 160, 80, 0.15),
+    0 0 15px rgba(255, 180, 80, 0.1);
+}
+
+html:not(.dark) .designo-input {
+  background: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+  border-color: rgba(180, 150, 100, 0.4);
+  color: #5C3A1E;
+  box-shadow: 
+    inset 0 2px 6px rgba(139, 90, 43, 0.1),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .designo-input::placeholder {
+  color: rgba(139, 90, 43, 0.4);
+}
+
+html:not(.dark) .designo-input:focus {
+  border-color: rgba(180, 140, 80, 0.6);
+  box-shadow: 
+    inset 0 2px 6px rgba(139, 90, 43, 0.08),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.6),
+    0 0 0 3px rgba(200, 160, 80, 0.1),
+    0 0 12px rgba(180, 140, 80, 0.1);
+}
+
+/* ==================== TABS WITH CHROME TRIM ==================== */
+
+.designo-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  /* Brushed aluminum rail */
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.03) 1px, rgba(255, 255, 255, 0.03) 2px),
+    linear-gradient(180deg, #3a3835 0%, #2a2725 50%, #353230 100%);
+  border: 1px solid rgba(80, 70, 55, 0.5);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.designo-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.designo-tab:hover:not(.active) {
+  color: rgba(255, 200, 140, 0.7);
+  background: rgba(255, 200, 140, 0.05);
+}
+
+.designo-tab.active {
+  background: linear-gradient(180deg, #252220 0%, #1a1816 100%);
+  color: #FFB850;
+  text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 200, 140, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+html:not(.dark) .designo-tabs {
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.2) 1px, rgba(255, 255, 255, 0.2) 2px),
+    linear-gradient(180deg, #E8E4DC 0%, #D8D0C4 50%, #E0D8CC 100%);
+  border-color: rgba(180, 150, 100, 0.3);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .designo-tab {
+  color: rgba(90, 70, 50, 0.6);
+}
+
+html:not(.dark) .designo-tab:hover:not(.active) {
+  color: #6B4324;
+  background: rgba(139, 90, 43, 0.08);
+}
+
+html:not(.dark) .designo-tab.active {
+  background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+  color: #5C3A1E;
+  text-shadow: none;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
