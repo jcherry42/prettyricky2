@@ -3,6 +3,7 @@ import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { LicenseScanner } from './LicenseScanner';
 import { CommandCenter } from './CommandCenter';
+import IntakeHub from './IntakeHub';
 import { getSoundPreferences } from '../utils/notificationSound';
 
 // Startup sound with smooth gradual fade-out effect
