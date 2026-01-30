@@ -1249,18 +1249,19 @@ body.modal-open {
 
 /* Blue Glass Search Bar in Light Mode - ONE UNIFIED BOX */
 
-/* Engine Sound Profile - Blue Tinted Glass in Light Mode */
+/* Engine Sound Profile - Designo palette in Light Mode (avoid blue tint) */
 html:not(.dark) .engine-sound-profile {
-  background: linear-gradient(135deg, rgba(0, 120, 255, 0.3) 0%, rgba(0, 180, 255, 0.4) 100%) !important;
-  border: 1px solid rgba(0, 150, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(180, 140, 80, 0.12) !important;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.06) !important;
 }
 
 html:not(.dark) .engine-sound-profile .section-header {
-  color: #003d7a !important;
+  color: #5C3A1E !important;
 }
 
 html:not(.dark) .engine-sound-profile .section-header h3 {
-  color: #003d7a !important;
+  color: #5C3A1E !important;
 }
 
 html:not(.dark) .cc-search-blue-glass {
