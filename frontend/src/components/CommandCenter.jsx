@@ -2690,13 +2690,12 @@ const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   });
   
   const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
-  const [notificationPermission, setNotificationPermission] = useState('default');
-
-  useEffect(() => {
+  const [notificationPermission, setNotificationPermission] = useState(() => {
     if ('Notification' in window) {
-      setNotificationPermission(Notification.permission);
+      return Notification.permission;
     }
-  }, []);
+    return 'default';
+  });
   
   const handleSaveProfile = () => {
     setDealership(dealershipForm);
