@@ -3178,6 +3178,66 @@ async def list_customers_filtered(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# Legacy endpoint compatibility (LicenseScanner + ImportModal)
+# These UI modules still POST to /api/customers with a legacy payload shape.
+# Map that payload into the unified /customers/create schema and return the created customer object.
+class LegacyCustomerCreateRequest(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    policyNumber: Optional[str] = None
+    leadStatus: Optional[str] = None
+    source: Optional[str] = None
+    vehicleOfInterest: Optional[str] = None
+    tradeVehicle: Optional[Dict[str, Any]] = None
+    license_image: Optional[str] = None
+
+
+@api_router.post("/customers")
+async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
+    # Build names
+    first_name = (payload.firstName or '').strip()
+    last_name = (payload.lastName or '').strip()
+
+    if not first_name and payload.name:
+        parts = payload.name.strip().split()
+        first_name = parts[0] if parts else ''
+        last_name = ' '.join(parts[1:]) if len(parts) > 1 else ''
+
+    # Minimal required fields for DB schema consistency
+    # (CustomerCreate validation enforces phone OR email, but license scans may not have either)
+    phone = (payload.phone or '').strip() or None
+    email = (payload.email or '').strip() or None
+
+    customer_id = str(uuid.uuid4())
+    customer_doc = {
+        "id": customer_id,
+        "first_name": first_name or "License",
+        "last_name": last_name or "Scan",
+        "phone": phone or "",
+        "email": email,
+        "address": payload.address,
+        "lead_source": payload.source or "manual",
+        "lead_status": payload.leadStatus or "new",
+        "notes": None,
+        "vehicle_interests": [],
+        "trade_in_vehicle_id": None,
+        "interactions": [],
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
+    }
+
+    # Carry license image into stored doc for later printing
+    if payload.license_image:
+        customer_doc["license_image"] = payload.license_image
+
+    await db.customers.insert_one(customer_doc)
+    return {k: v for k, v in customer_doc.items() if k != "_id"}
+
 @api_router.post("/customers/create")
 async def create_customer(customer: CustomerCreate):
     """Create a new customer"""
