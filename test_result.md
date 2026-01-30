@@ -218,6 +218,77 @@ backend:
     status_history:
       - working: true
         agent: "testing"
+
+frontend:
+  - task: "Command Center - Add Customer via CustomerForm persists and shows in list"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CommandCenter/CustomerForm.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "Auto test initially failed due to missing test ids; later manual automation succeeded after updating data-testid on Command Center open button + add-customer button."
+      - working: true
+        agent: "main"
+        comment: "Playwright screenshot flow confirms fields accept input and newly created customer appears in list immediately." 
+
+  - task: "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/ResponseCards.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported translate button only changed flag." 
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Translate toggles actual text, shows correct flags, and toggles back to original." 
+
+  - task: "Customer Add Workflow - Quick Add refreshes global customers list"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/QuickAddButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Quick Add works and inputMode hints present (tel/email)." 
+
+  - task: "VIN Decode - IntakeHub decodes provided VINs"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/IntakeHub.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported VIN scanning fails to decode actual VINs; provided VINs JM3KKEHA3T1355103 and 7MMVAADW5TN144528." 
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Both provided VINs decode successfully and display decoded data." 
+
+  - task: "License Scanner - Save creates customer via /api/customers legacy endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/LicenseScanner.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "UI loads; save flow not fully automatable due to camera capture constraints. Needs manual verification that Save creates a customer and it persists." 
+
         comment: "✅ PASS: VIN save workflow working perfectly. Successfully saved new VIN to inventory, then correctly rejected duplicate attempt with HTTP 409 status. Duplicate detection and rejection logic functioning as designed."
 
   - task: "Customer Statistics API - GET /api/customers/stats"
