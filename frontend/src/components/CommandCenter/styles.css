@@ -126,9 +126,14 @@
 }
 
 .cc-tab.active {
-  background: linear-gradient(135deg, rgba(255,191,0,0.15) 0%, rgba(255,140,0,0.1) 100%);
-  border-color: rgba(255,191,0,0.3);
+  background:
+    radial-gradient(ellipse 120% 100% at 30% 30%, rgba(255,191,0,0.20) 0%, transparent 55%),
+    linear-gradient(135deg, rgba(255,191,0,0.14) 0%, rgba(255,140,0,0.10) 100%);
+  border-color: rgba(255,191,0,0.30);
   color: #FFBF00;
+  box-shadow:
+    0 12px 26px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .cc-tab svg {
