@@ -102,6 +102,16 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
+
+# NOTE (Main agent): User-reported regressions (P0 bug bash)
+# - VIN decode failing on real VINs (provided 2 VINs)
+# - Add customer appears to disappear / not show in lists
+# - Translate button only changed flag (should translate text + be reversible; Spanish/French/Korean only)
+# - Intake hub + license scanner modals positioned too high on mobile
+# - Quick Add keyboard optimization, font sizes, remove glow
+#
+# This run focuses on: customers add+list refresh + translation toggle+translate + VIN decode regression + UI sanity.
+
 user_problem_statement: "Comprehensive Pending Features Testing - Test all pending features before final mobile build update including Eject SMS, Translation of Edited Text, Email Parser Import, Full E2E Customer Workflow, VIN Scanner Recent History, and Language Selector in Settings."
 
 backend:
