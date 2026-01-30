@@ -260,7 +260,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             background: rgba(0,0,0,0.85);
             z-index: 100;
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
           }
           .intake-modal {
