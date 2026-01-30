@@ -94,12 +94,12 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         }
 
         .flag-btn.active {
-          background: linear-gradient(135deg, #00D9FF 0%, #0080FF 100%);
-          border-color: transparent;
+          background: linear-gradient(135deg, rgba(255,191,0,0.45) 0%, rgba(255,140,0,0.32) 100%);
+          border-color: rgba(255,191,0,0.55);
           box-shadow: 
-            0 4px 16px rgba(0, 217, 255, 0.5),
-            0 0 30px rgba(0, 150, 255, 0.3);
-          transform: scale(1.05);
+            0 10px 22px rgba(0, 0, 0, 0.12),
+            0 0 18px rgba(255, 140, 0, 0.18);
+          transform: scale(1.04);
         }
 
         .flag-btn.active .flag-emoji {
