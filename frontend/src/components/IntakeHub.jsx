@@ -172,6 +172,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
                     onOpenLicenseScanner();
                   }
                 }}
+                aria-label="Open License Scanner"
+                data-testid="intake-open-license-scanner"
               >
                 <IdCard className="w-4 h-4" />
                 <span>Open License Scanner</span>
@@ -190,6 +192,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
                   maxLength={17}
                   placeholder="1HGCM82633A123456"
                   className="vin-input"
+                  aria-label="VIN number"
+                  data-testid="vin-input"
                 />
                 <input
                   type="text"
@@ -197,6 +201,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
                   onChange={(e) => setMileage(e.target.value.replace(/[^\d,]/g, ''))}
                   placeholder="Mileage (optional)"
                   className="vin-mileage-input"
+                  aria-label="Vehicle mileage"
+                  data-testid="vin-mileage-input"
                 />
               </div>
               {vinStatus.message && (
@@ -206,6 +212,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
                 className="vin-decode-btn"
                 disabled={!vinStatus.valid || decoding}
                 onClick={handleDecodeVIN}
+                aria-label={decoding ? 'Decoding VIN' : 'Decode VIN and save to inventory'}
+                data-testid="vin-decode-btn"
               >
                 {decoding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Decode & Save to Inventory'}
               </button>
