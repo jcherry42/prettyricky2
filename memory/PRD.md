@@ -194,7 +194,47 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - OpenAI GPT-4o-mini (Tower Talk)
 - OpenAI Whisper (Speech-to-text)
 - NHTSA vPIC API (VIN decode)
-- Emergent LLM Key (Vision)
+- Emergent LLM Key (Vision, Translation)
+
+---
+
+## Files Architecture (Updated Jan 30, 2026)
+
+### Frontend
+```
+/frontend/src/
+├── components/
+│   ├── CommandCenter/
+│   │   ├── index.jsx (optimized)
+│   │   ├── styles.css (1313 lines)
+│   │   ├── SettingsTab.jsx
+│   │   └── ImportTab.jsx
+│   ├── CommandCenter.jsx (3197 lines - main)
+│   ├── InquiryTypeSelector.jsx (data-testid: inquiry-type-*)
+│   ├── ResponseCards.jsx (data-testid: copy/send/translate-btn-*)
+│   ├── CustomerSelector.jsx (data-testid: customer-search-input)
+│   ├── IntakeHub.jsx (data-testid: intake-mode-*, vin-*)
+│   └── ErrorBoundary.jsx
+├── utils/
+│   ├── offlineSync.js (NEW - PWA sync queue)
+│   ├── logger.js
+│   └── accessibility.js
+└── styles/
+    └── tokens.css (design system variables)
+```
+
+### Backend
+```
+/backend/
+├── server.py (4196 lines - monolith, routes being extracted)
+├── routes/ (NEW)
+│   ├── __init__.py
+│   ├── customers.py
+│   ├── vehicles.py
+│   ├── tower_talk.py
+│   └── analytics.py
+└── *.py (supporting services)
+```
 
 ---
 
