@@ -223,6 +223,7 @@ export function SalesProvider({ children }) {
     const customers = loadFromStorage(STORAGE_KEYS.CUSTOMERS, DEFAULT_CUSTOMERS);
     const customTemplates = loadFromStorage(STORAGE_KEYS.CUSTOM_TEMPLATES, {});
     const favorites = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
+    const vehicleInventory = loadFromStorage(STORAGE_KEYS.VEHICLES, []);
     
     // Load theme preference
     const savedTheme = localStorage.getItem('closr_theme') || 'dark';
