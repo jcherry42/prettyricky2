@@ -6,6 +6,11 @@ import { translateText } from '../utils/translationService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+// Get target language from settings
+const getTargetLanguage = () => {
+  return localStorage.getItem('defaultTargetLanguage') || 'es';
+};
+
 // Quick Response Shortcuts - Common objections and situations
 const QUICK_SHORTCUTS = [
   { id: 'price_high', label: 'Price Too High', icon: '💰', situation: 'Customer says the price is too high and wants a better deal' },
