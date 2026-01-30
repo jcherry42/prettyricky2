@@ -218,6 +218,67 @@ backend:
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
+
+  - task: "Legacy Customer Create - POST /api/customers (LicenseScanner/ImportModal compatibility)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added /api/customers legacy endpoint to map legacy payloads (firstName/lastName/name/license_image/leadStatus) into stored customer docs so LicenseScanner/ImportModal saves do not disappear."
+
+  - task: "Customer Add Workflow - Quick Add refreshes global customers list"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/QuickAddButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "After successful quick add POST, now fetches /api/customers and updates SalesContext setCustomers so the new customer immediately appears across the app. Also added inputMode hints." 
+
+  - task: "Customer Add Workflow - CommandCenter CustomerForm triggers refresh"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "CustomerForm now calls onSaved() which refreshes CommandCenter list + global SalesContext customers via /api/customers." 
+
+  - task: "Translation UI - Translate button translates text and is reversible (es/fr/ko only)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ResponseCards.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Translate toggle now calls translate API on first toggle ON (await translateContent) and then swaps text display. Toggle OFF returns to original." 
+
+  - task: "Translation Service - Use env backend URL only"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/utils/translationService.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Removed hardcoded localhost fallback in translationService BACKEND_URL to avoid prod/mobile mismatch." 
+
     status_history:
       - working: true
         agent: "testing"
