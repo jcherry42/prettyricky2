@@ -1060,13 +1060,18 @@ html:not(.dark) .io-title {
 
 /* LanguageSelector used as sound profile picker (es/fr/ko) */
 .engine-sound-profile .language-selector {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  width: 100%;
 }
 
-.engine-sound-profile .language-option {
+.engine-sound-profile .lang-flags {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.engine-sound-profile .flag-btn {
   flex: 1;
+  width: auto;
   height: 92px; /* ~2x visual presence without requiring scroll */
   border-radius: 18px;
   display: flex;
@@ -1077,14 +1082,13 @@ html:not(.dark) .io-title {
   padding: 10px 8px;
 }
 
-.engine-sound-profile .language-option .flag {
+.engine-sound-profile .flag-emoji {
   font-size: 40px;
   line-height: 1;
 }
 
 /* Labels centered below in subtle glowing safety orange */
-.engine-sound-profile .language-option::after {
-  content: attr(aria-label);
+.engine-sound-profile .flag-btn::after {
   display: block;
   font-size: 14px;
   font-weight: 700;
@@ -1094,10 +1098,9 @@ html:not(.dark) .io-title {
   text-shadow: 0 0 10px rgba(255, 140, 0, 0.28);
 }
 
-/* Reduce the actual aria-label content used for :after */
-.engine-sound-profile .language-option[aria-label*="Spanish"]::after { content: "Spanish"; }
-.engine-sound-profile .language-option[aria-label*="French"]::after { content: "French"; }
-.engine-sound-profile .language-option[aria-label*="Korean"]::after { content: "Korean"; }
+.engine-sound-profile .flag-btn[aria-label*="Spanish"]::after { content: "Spanish"; }
+.engine-sound-profile .flag-btn[aria-label*="French"]::after { content: "French"; }
+.engine-sound-profile .flag-btn[aria-label*="Korean"]::after { content: "Korean"; }
 
   display: flex;
   align-items: center;
