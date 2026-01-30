@@ -5170,6 +5170,15 @@ html:not(.dark) .mclaren-input:focus {
   box-shadow: 
     0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
 }
+/* Force unified glass search pill in light mode */
+html:not(.dark) .cc-search.cc-search-blue-glass input {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
 
 /* Primary button - McLaren orange accent */
 .mclaren-btn-primary {
