@@ -248,6 +248,7 @@ export function SalesProvider({ children }) {
         customers,
         customTemplates,
         favorites,
+        vehicleInventory,
         isSetupComplete,
         theme: savedTheme,
         supercharged: savedSupercharged,
