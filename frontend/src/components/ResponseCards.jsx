@@ -265,7 +265,7 @@ const ResponseCard = ({
           </div>
         ) : (
           <>
-            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+            <p className="response-text-large text-foreground leading-relaxed whitespace-pre-wrap">
               {getDisplayText()}
             </p>
 
@@ -287,12 +287,15 @@ const ResponseCard = ({
                 Send
               </button>
               
-              <button
-                onClick={(e) => { e.stopPropagation(); handleSpeak(getDisplayText(), showTranslated); }}
-                className={`ios-btn w-9 h-9 ${speakingId ? 'text-primary' : ''}`}
-              >
-                {speakingId ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
+              {/* TTS Button - Only for custom/editable cards */}
+              {isCustom && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleSpeak(getDisplayText(), showTranslated); }}
+                  className={`ios-btn w-9 h-9 ${speakingId ? 'text-primary' : ''}`}
+                >
+                  {speakingId ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+              )}
 
               {isCustom && (
                 <button
