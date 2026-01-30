@@ -331,7 +331,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             /* Amber glow text */
             color: #FFB850;
             font-size: 20px;
-            text-shadow: 0 0 10px rgba(255, 180, 80, 0.5);
+            text-shadow: none;
           }
           .intake-badge {
             font-size: 10px;
