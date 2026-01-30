@@ -60,8 +60,8 @@ class CustomerInteraction(BaseModel):
 
 class CustomerCreate(BaseModel):
     first_name: str
-    last_name: str
-    phone: str
+    last_name: str = ""
+    phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
     lead_source: LeadSource = LeadSource.MANUAL
@@ -69,6 +69,13 @@ class CustomerCreate(BaseModel):
     notes: Optional[str] = None
     vehicle_interests: List[str] = Field(default_factory=list, max_length=2)  # Max 2 vehicles
     trade_in_vehicle_id: Optional[str] = None
+
+    # At least one contact method is required
+    @__import__('pydantic').model_validator(mode='after')
+    def _require_contact(self):
+        if not (self.phone and str(self.phone).strip()) and not (self.email and str(self.email).strip()):
+            raise ValueError('Either phone or email is required')
+        return self
 
 
 class CustomerUpdate(BaseModel):
