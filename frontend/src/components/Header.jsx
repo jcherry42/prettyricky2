@@ -177,9 +177,9 @@ export const Header = () => {
 
       {/* Row 2: Action Buttons */}
       <div className="header-row-2">
-        {/* License Scanner - Electric Green */}
+        {/* Intake Hub - License + VIN Scanner */}
         <button
-          onClick={() => setLicenseScannerOpen(true)}
+          onClick={() => setIntakeOpen(true)}
           className="header-btn electric-green"
           data-testid="intake-scanner-btn"
         >
