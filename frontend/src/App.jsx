@@ -14,7 +14,7 @@ import QuickAddButton from './components/QuickAddButton';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
-import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import ErrorBoundary from './components/ErrorBoundary';
 import performanceManager from './utils/performanceManager';
 import PerformanceMonitor from './components/PerformanceMonitor';
 
