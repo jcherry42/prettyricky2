@@ -124,7 +124,6 @@ export const translateText = async (text, sourceLang = 'auto', targetLang = 'es'
     };
 
   } catch (error) {
-    console.error('[Translation Service] Error:', error);
     return {
       success: false,
       error: error.message,
