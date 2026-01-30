@@ -691,7 +691,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             bottom: -36px;
             font-size: 13px;
             color: rgba(255,255,255,0.7);
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            text-shadow: none;
           }
 
           .camera-controls {
