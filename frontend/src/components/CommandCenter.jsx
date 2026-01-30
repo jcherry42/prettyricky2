@@ -1691,30 +1691,37 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
               type="tel" 
               value={formData.phone}
               onChange={e => setFormData({...formData, phone: e.target.value})}
+              data-testid="input-phone"
             />
           </div>
           <div className="form-field">
-            <label>Email</label>
+            <label htmlFor="email">Email</label>
             <input 
+              id="email"
               type="email" 
               value={formData.email}
               onChange={e => setFormData({...formData, email: e.target.value})}
+              data-testid="input-email"
             />
           </div>
           <div className="form-field">
-            <label>Address</label>
+            <label htmlFor="address">Address</label>
             <input 
+              id="address"
               type="text" 
               value={formData.address}
               onChange={e => setFormData({...formData, address: e.target.value})}
+              data-testid="input-address"
             />
           </div>
           <div className="form-row">
             <div className="form-field">
-              <label>Lead Source</label>
+              <label htmlFor="lead-source">Lead Source</label>
               <select 
+                id="lead-source"
                 value={formData.lead_source}
                 onChange={e => setFormData({...formData, lead_source: e.target.value})}
+                data-testid="select-lead-source"
               >
                 <option value="manual">Manual</option>
                 <option value="walk_in">Walk-In</option>
@@ -1725,10 +1732,12 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
               </select>
             </div>
             <div className="form-field">
-              <label>Status</label>
+              <label htmlFor="lead-status">Status</label>
               <select 
+                id="lead-status"
                 value={formData.lead_status}
                 onChange={e => setFormData({...formData, lead_status: e.target.value})}
+                data-testid="select-lead-status"
               >
                 <option value="new">New</option>
                 <option value="contacted">Contacted</option>
@@ -1740,17 +1749,32 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
             </div>
           </div>
           <div className="form-field">
-            <label>Notes</label>
+            <label htmlFor="notes">Notes</label>
             <textarea 
+              id="notes"
               rows={3}
               value={formData.notes}
               onChange={e => setFormData({...formData, notes: e.target.value})}
               placeholder="Add notes about this customer..."
+              data-testid="input-notes"
             />
           </div>
           <div className="form-actions">
-            <button type="button" onClick={onClose} className="btn-cancel">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-save gold-btn">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="btn-cancel"
+              data-testid="customer-form-cancel"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={saving} 
+              className="btn-save gold-btn"
+              aria-label={saving ? 'Saving customer' : 'Save customer'}
+              data-testid="customer-form-submit"
+            >
               {saving ? 'Saving...' : 'Save Customer'}
             </button>
           </div>
