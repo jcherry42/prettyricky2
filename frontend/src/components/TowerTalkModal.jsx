@@ -194,7 +194,6 @@ export const TowerTalkModal = () => {
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
       setIsSpeaking(false);
       if (event.error !== 'canceled') {
         toast.error('Could not read aloud');
