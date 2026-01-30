@@ -529,9 +529,43 @@ html:not(.dark) .settings-section {
 
 .tesla-inquiry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  padding: 16px 0;
+}
+
+/* Center bottom three inquiry types (Test Drive, Follow Up, Objection) under top row */
+.tesla-inquiry-grid button:nth-child(6),
+.tesla-inquiry-grid button:nth-child(7),
+.tesla-inquiry-grid button:nth-child(8) {
+  grid-column: auto;
+}
+
+/* Force layout: first row = first 5 items, second row centered 3 */
+.tesla-inquiry-grid {
+  grid-template-rows: auto auto;
+}
+
+.tesla-inquiry-grid button:nth-child(1),
+.tesla-inquiry-grid button:nth-child(2),
+.tesla-inquiry-grid button:nth-child(3),
+.tesla-inquiry-grid button:nth-child(4),
+.tesla-inquiry-grid button:nth-child(5) {
+  grid-row: 1;
+}
+
+.tesla-inquiry-grid button:nth-child(6) {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.tesla-inquiry-grid button:nth-child(7) {
+  grid-row: 2;
+  grid-column: 3;
+}
+
+.tesla-inquiry-grid button:nth-child(8) {
+  grid-row: 2;
+  grid-column: 4;
 }
 
 .tesla-inquiry-btn {
