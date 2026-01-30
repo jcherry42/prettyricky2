@@ -1639,8 +1639,8 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
         body: JSON.stringify(payload)
       });
       onClose();
-    } catch (e) {
-      console.error('Save error:', e);
+    } catch {
+      // Customer save failed - silent
     } finally {
       setSaving(false);
     }
@@ -1999,8 +1999,8 @@ const CustomerDetail = memo(({ customer, onClose, onEdit, onRefresh }) => {
       });
       setNewNote('');
       onRefresh();
-    } catch (e) {
-      console.error('Add note error:', e);
+    } catch {
+      // Note add failed - silent
     } finally {
       setAddingNote(false);
     }

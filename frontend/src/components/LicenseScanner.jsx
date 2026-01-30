@@ -67,7 +67,6 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
         };
       }
     } catch (err) {
-      console.error('Camera error:', err);
       setCameraError(err.name === 'NotAllowedError' 
         ? 'Camera access denied. Please allow camera permissions.'
         : 'Could not access camera. Try uploading an image instead.');
