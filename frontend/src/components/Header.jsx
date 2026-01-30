@@ -60,8 +60,8 @@ const playStartupSound = () => {
     });
     
     audio.play().catch(() => {});
-  } catch (e) {
-    console.warn('Startup sound failed:', e);
+  } catch {
+    // Startup sound failed - silent
   }
 };
 
