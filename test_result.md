@@ -498,9 +498,9 @@ frontend:
 
   - task: "Search Bar Blue Glass Styling - cc-search-blue-glass in Command Center Customers tab"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/CommandCenter.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -513,6 +513,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ RE-VERIFIED: Fixed CSS compilation error (unclosed block at line 858) and confirmed search bar implementation. Light mode: blue glass container (rgba(0,120,255,0.4) to rgba(0,180,255,0.5)) with border-radius:999px pill shape, transparent input background, safety orange text (#FF6600). Dark mode: limo glass container (rgba(12,12,12,0.95) to rgba(16,14,12,0.98)) with transparent input, amber glow text (#FFB84D). No nested box effect - unified pill design working correctly. App loads successfully at https://salesweapon-1.preview.emergentagent.com with proper Command Center → Customers tab navigation."
+      - working: false
+        agent: "testing"
+        comment: "❌ ISSUE FOUND: Re-tested search bar styling in light mode as requested. DARK MODE ✅ working correctly - unified limo-glass pill with transparent input (rgba(0,0,0,0) background, 0px border). LIGHT MODE ❌ has inner textbox styling issue - CSS analysis shows input has 'visible background: True' and 'visible border: True' creating nested box effect. Container has correct blue glass pill (border-radius: 999px) but input still shows distinct inner styling instead of being fully transparent. Need to fix light mode input CSS to match dark mode transparency (background: transparent, border: none)."
 
   - task: "Font Uniformity in Command Center - Consistent font sizes across elements"
     implemented: true
