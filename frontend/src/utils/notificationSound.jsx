@@ -232,36 +232,49 @@ if (typeof window !== 'undefined') {
 
 /**
  * Play Sport Mode activation sound with gradual fade out
+ * Uses the user's selected engine sound profile with smooth fade
  */
 export const playSportModeSound = async () => {
   try {
     const prefs = getSoundPreferences();
-    if (!prefs.enabled) return;
+    if (!prefs.enabled) return null;
     
-    const audio = new Audio('/sounds/jdm.wav');
-    audio.volume = prefs.volume * 0.8;
+    // Use the selected sound profile
+    const selectedProfile = prefs.profile || 'merica';
+    const soundProfile = SOUND_PROFILES[selectedProfile];
     
-    // Gradual fade out over 1.5 seconds before sound ends
-    const fadeOutDuration = 1500;
-    const fadeSteps = 30;
-    const fadeInterval = fadeOutDuration / fadeSteps;
+    if (!soundProfile) return null;
+    
+    const audio = new Audio(soundProfile.file);
+    const targetVolume = (prefs.volume || 0.7) * 0.9;
+    audio.volume = targetVolume;
+    
+    // Fade out over the last 1.2 seconds of the sound
+    const fadeOutTime = 1.2;
     
     audio.addEventListener('timeupdate', () => {
       if (audio.duration && !audio._fading) {
         const timeRemaining = audio.duration - audio.currentTime;
-        if (timeRemaining <= 1.5) {
+        
+        if (timeRemaining <= fadeOutTime && timeRemaining > 0) {
           audio._fading = true;
           const initialVolume = audio.volume;
+          const fadeSteps = 24;
+          const fadeInterval = (timeRemaining * 1000) / fadeSteps;
           let step = 0;
           
           const fadeTimer = setInterval(() => {
             step++;
-            const newVolume = initialVolume * (1 - (step / fadeSteps));
-            audio.volume = Math.max(0, newVolume);
+            const fadeProgress = step / fadeSteps;
+            // Ease-out curve for smoother fade
+            const easedProgress = 1 - Math.pow(1 - fadeProgress, 2);
+            audio.volume = Math.max(0, initialVolume * (1 - easedProgress));
             
-            if (step >= fadeSteps) {
+            if (step >= fadeSteps || audio.ended) {
               clearInterval(fadeTimer);
-              audio.pause();
+              if (!audio.ended) {
+                audio.pause();
+              }
             }
           }, fadeInterval);
         }
