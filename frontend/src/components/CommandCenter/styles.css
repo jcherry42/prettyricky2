@@ -358,6 +358,57 @@
 
 .toggle-btn.on {
   background: rgba(34,197,94,0.15);
+
+/* Command Center cohesion: unify button/toggle surface treatments */
+.printer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.printer-btn.connect {
+  background: linear-gradient(135deg, #FFBF00 0%, #FF8C00 100%);
+  border: none;
+  color: #000;
+}
+
+.printer-btn.disconnect {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+}
+
+.printer-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.printer-btn.connect:hover:not(:disabled) {
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35), 0 0 18px rgba(255, 140, 0, 0.10);
+}
+
+.printer-btn.disconnect:hover:not(:disabled) {
+  background: rgba(255,255,255,0.12);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.25);
+}
+
+/* Unify toggle buttons to match gold system */
+.toggle-btn {
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.toggle-btn.on {
+  background: linear-gradient(135deg, rgba(255,191,0,0.22) 0%, rgba(255,140,0,0.16) 100%);
+  border-color: rgba(255,191,0,0.28);
+  color: rgba(255,255,255,0.9);
+}
+
   border: 1px solid rgba(34,197,94,0.4);
   color: #22c55e;
 }
