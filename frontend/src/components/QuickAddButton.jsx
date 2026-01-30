@@ -52,25 +52,7 @@ export const QuickAddButton = () => {
     }
   }, [isOpen]);
 
-  // Handle escape key
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen && !saving) {
-        handleClose();
-      }
-    };
-    
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, saving]);
-
-  const handleOpen = () => {
-    haptics.button();
-    setIsOpen(true);
-    announceToScreenReader('Quick add customer form opened');
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (saving) return;
     haptics.tap();
     setIsOpen(false);
@@ -88,6 +70,24 @@ export const QuickAddButton = () => {
       lead_source: 'walk_in',
       notes: ''
     });
+  }, [saving]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isOpen && !saving) {
+        handleClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, saving, handleClose]);
+
+  const handleOpen = () => {
+    haptics.button();
+    setIsOpen(true);
+    announceToScreenReader('Quick add customer form opened');
   };
 
   const handleChange = (field, value) => {
