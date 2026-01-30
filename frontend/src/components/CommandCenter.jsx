@@ -1647,35 +1647,47 @@ const CustomerForm = memo(({ onClose, customer, initialData }) => {
   };
 
   return (
-    <div className="form-overlay" onClick={onClose}>
+    <div className="form-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="form-title">
       <div className="form-modal" onClick={e => e.stopPropagation()}>
         <div className="form-header">
-          <h3>{customer ? 'Edit Customer' : 'Add Customer'}</h3>
-          <button onClick={onClose} className="form-close"><X className="w-5 h-5" /></button>
+          <h3 id="form-title">{customer ? 'Edit Customer' : 'Add Customer'}</h3>
+          <button 
+            onClick={onClose} 
+            className="form-close"
+            aria-label="Close form"
+            data-testid="customer-form-close"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <form onSubmit={handleSubmit} className="form-content">
+        <form onSubmit={handleSubmit} className="form-content" data-testid="customer-form">
           <div className="form-row">
             <div className="form-field">
-              <label>First Name</label>
+              <label htmlFor="first-name">First Name</label>
               <input 
+                id="first-name"
                 type="text" 
                 value={formData.first_name}
                 onChange={e => setFormData({...formData, first_name: e.target.value})}
                 required
+                data-testid="input-first-name"
               />
             </div>
             <div className="form-field">
-              <label>Last Name</label>
+              <label htmlFor="last-name">Last Name</label>
               <input 
+                id="last-name"
                 type="text" 
                 value={formData.last_name}
                 onChange={e => setFormData({...formData, last_name: e.target.value})}
+                data-testid="input-last-name"
               />
             </div>
           </div>
           <div className="form-field">
-            <label>Phone</label>
+            <label htmlFor="phone">Phone</label>
             <input 
+              id="phone"
               type="tel" 
               value={formData.phone}
               onChange={e => setFormData({...formData, phone: e.target.value})}
