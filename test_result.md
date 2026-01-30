@@ -481,6 +481,42 @@ frontend:
         agent: "testing"
         comment: "✅ PASS: Vision Extraction properly wired and accessible. Found Vision Extraction option in Command Center → Import tab with description 'Screenshot → Customer data'. Modal opens successfully with 9 input elements for image upload/paste functionality. VisionExtractor component is properly imported and integrated into CommandCenter.jsx. Users can access Vision Extraction functionality through the Import tab as expected."
 
+  - task: "IntakeHub Dual Menu - INTAKE button opens modal with License Scan and VIN Scanner modes"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/IntakeHub.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test INTAKE button functionality: Tap INTAKE in header → IntakeHub modal appears → Verify License Scan and VIN Scanner modes → License Scan shows description + 'Open License Scanner' button → VIN Scanner shows VIN input + mileage + inventory list"
+
+  - task: "Search Bar Blue Glass Styling - cc-search-blue-glass in Command Center Customers tab"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify search bar styling: Open CHECK → Command Center → Customers tab → Verify search bar uses cc-search-blue-glass styling → Light mode: unified blue glass box with transparent inner input → Dark mode: unified limo-glass box with transparent inner input → No nested box effect"
+
+  - task: "Font Uniformity in Command Center - Consistent font sizes across elements"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify font consistency: Check font sizes of headers, tabs, cards, list items, import options, toolbar buttons in both light and dark modes → Confirm no massively oversized fonts (no 315% fonts) → Ensure consistent and readable sizing across elements"
+
 metadata:
   created_by: "testing_agent"
   version: "2.0"
