@@ -1494,7 +1494,7 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
     </div>,
     document.body
   );
-};
+});
 
 // Import Option Card - Circular gauge with icon and title (memoized)
 const ImportOption = memo(({ icon: Icon, title, color, onClick }) => (
