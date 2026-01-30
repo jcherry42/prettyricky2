@@ -952,7 +952,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         /* Import Options */
         /* ============================================
            IMPORT OPTIONS - W140 INSTRUMENT CLUSTER
-           Circular gauge buttons matching light mode
+           Icons visible with glowing text on top
            ============================================ */
         .import-options {
           display: flex;
@@ -979,11 +979,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 12px;
-          padding: 24px 20px 20px;
+          gap: 6px;
+          padding: 18px 16px;
           min-width: 130px;
           min-height: 130px;
-          /* Dark gauge face - matching light mode style */
+          /* Dark gauge face */
           background: 
             radial-gradient(circle at 50% 30%, rgba(60, 55, 50, 0.5) 0%, transparent 60%),
             radial-gradient(circle at 50% 50%, #1a1816 0%, #0d0c0b 70%, #080706 100%);
@@ -996,6 +996,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             inset 0 3px 6px rgba(0, 0, 0, 0.6),
             inset 0 -2px 4px rgba(255, 180, 100, 0.06),
             0 4px 12px rgba(0, 0, 0, 0.5);
+          position: relative;
         }
 
         .import-option:hover {
@@ -1011,29 +1012,57 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             0 0 20px rgba(255, 180, 80, 0.1);
         }
 
-        /* Dark mode: hide icon backgrounds, icons hidden to match light mode */
+        /* DARK MODE - Show icons with glow */
         .import-option .io-icon {
-          display: none;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          background: transparent;
+          order: 2; /* Icon below title */
         }
 
-        /* Dark mode - icons are hidden */
-        .import-option.cyan .io-icon,
-        .import-option.green .io-icon,
+        .import-option .io-icon svg {
+          width: 36px;
+          height: 36px;
+        }
+
+        /* Cyan icon glow */
+        .import-option.cyan .io-icon { 
+          color: #22d3ee;
+          filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.7)) drop-shadow(0 0 16px rgba(34, 211, 238, 0.4));
+        }
+        
+        /* Green icon glow */
+        .import-option.green .io-icon { 
+          color: #22c55e;
+          filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.7)) drop-shadow(0 0 16px rgba(34, 197, 94, 0.4));
+        }
+        
+        /* Purple icon glow */
         .import-option.purple .io-icon { 
-          display: none;
+          color: #a855f7;
+          filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.7)) drop-shadow(0 0 16px rgba(168, 85, 247, 0.4));
         }
 
+        /* Title ON TOP with glow */
         .import-option .io-title {
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
-          color: #FFB850;
+          color: #FFD080;
           text-transform: uppercase;
-          letter-spacing: 0.8px;
+          letter-spacing: 0.6px;
           text-shadow: 
-            0 0 8px rgba(255, 180, 80, 0.6),
-            0 0 16px rgba(255, 160, 60, 0.3);
+            0 0 10px rgba(255, 200, 80, 0.9),
+            0 0 20px rgba(255, 180, 60, 0.6),
+            0 0 30px rgba(255, 160, 40, 0.3);
           text-align: center;
           line-height: 1.2;
+          order: 1; /* Title on top */
+          z-index: 2;
         }
 
         .import-option .io-desc {
