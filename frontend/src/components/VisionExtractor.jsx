@@ -116,7 +116,6 @@ const VisionExtractor = ({ onDataExtracted, onClose }) => {
       }
 
     } catch (error) {
-      console.error('Extraction error:', error);
       toast.error(error.message || 'Failed to extract data');
       setResult({ success: false, error: error.message });
     } finally {
