@@ -284,14 +284,18 @@ export const CommandCenter = ({ isOpen, onClose }) => {
                   title="File Upload"
                   description="Import from CSV or JSON"
                   color="cyan"
-                  onClick={() => { setActiveTab('customers'); toast.info('CSV import coming soon'); }}
+                  onClick={() => {
+                    toggleImport(true);
+                  }}
                 />
                 <ImportOption 
                   icon={UserPlus}
                   title="Manual Entry"
                   description="Add customer manually"
                   color="green"
-                  onClick={() => { setActiveTab('customers'); setShowCustomerForm(true); }}
+                  onClick={() => {
+                    toggleImport(true);
+                  }}
                 />
                 <ImportOption 
                   icon={Image}
