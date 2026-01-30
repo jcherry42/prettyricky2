@@ -230,6 +230,52 @@ if (typeof window !== 'undefined') {
   preloadSounds();
 }
 
+/**
+ * Play Sport Mode activation sound with gradual fade out
+ */
+export const playSportModeSound = async () => {
+  try {
+    const prefs = getSoundPreferences();
+    if (!prefs.enabled) return;
+    
+    const audio = new Audio('/sounds/jdm.wav');
+    audio.volume = prefs.volume * 0.8;
+    
+    // Gradual fade out over 1.5 seconds before sound ends
+    const fadeOutDuration = 1500;
+    const fadeSteps = 30;
+    const fadeInterval = fadeOutDuration / fadeSteps;
+    
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration && !audio._fading) {
+        const timeRemaining = audio.duration - audio.currentTime;
+        if (timeRemaining <= 1.5) {
+          audio._fading = true;
+          const initialVolume = audio.volume;
+          let step = 0;
+          
+          const fadeTimer = setInterval(() => {
+            step++;
+            const newVolume = initialVolume * (1 - (step / fadeSteps));
+            audio.volume = Math.max(0, newVolume);
+            
+            if (step >= fadeSteps) {
+              clearInterval(fadeTimer);
+              audio.pause();
+            }
+          }, fadeInterval);
+        }
+      }
+    });
+    
+    await audio.play();
+    return audio;
+  } catch (error) {
+    console.warn('Failed to play sport mode sound:', error.message);
+    return null;
+  }
+};
+
 export default {
   playNotificationSound,
   getSoundProfiles,
@@ -239,5 +285,6 @@ export default {
   showHotLeadNotification,
   showStatusChangeNotification,
   getSoundPreferences,
-  setSoundPreferences
+  setSoundPreferences,
+  playSportModeSound
 };
