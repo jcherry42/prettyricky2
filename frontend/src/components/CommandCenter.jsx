@@ -981,8 +981,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           justify-content: center;
           gap: 6px;
           padding: 18px 16px;
+          /* UNIFORM SIZE - all three buttons identical */
+          width: 130px;
+          height: 130px;
           min-width: 130px;
           min-height: 130px;
+          max-width: 130px;
+          max-height: 130px;
+          flex: 0 0 130px;
           /* Dark gauge face */
           background: 
             radial-gradient(circle at 50% 30%, rgba(60, 55, 50, 0.5) 0%, transparent 60%),
