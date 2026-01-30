@@ -17,9 +17,9 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 #### Picasso Hand-Painted Patterns
 - **Dark Mode**: Burgundy + teal flowing artistic curves
 - **Light Mode**: Dusty rose + sage green on ivory
-- Applied throughout: modals, customer cards, response cards
+- Applied throughout: modals, customer cards, response cards, **inquiry buttons**
 
-#### 64-Color Ambient Lighting System (NEW)
+#### 64-Color Ambient Lighting System
 - **Background Effect**: Radial gradients cycling through 64 colors on screen edges
 - **Card Glow**: Subtle color-cycling glow behind tesla-cards, customer cards, response cards
 - **30-second cycle**: Medium-speed color cycling through full spectrum
@@ -28,17 +28,17 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - **Persisted**: Preference saved to localStorage
 
 #### Import Data Tab - W140 Instrument Cluster
-- Icon-focused circular gauge buttons
-- **Dark mode**: Icons hidden, just amber-glowing titles on dark gauge faces
-- **Light mode**: Icons hidden, white titles on ivory gauge faces
+- **Three uniform 130px circular gauge buttons**
+- **Icons visible**: Cyan (File Upload), Green (Manual Entry), Purple (Vision Extraction)
+- **Glowing text ON TOP of icons**
 - Walnut wood bezel frame
 
 ### Components Styled
 - ✅ Command Center Modal (Rounded 28px, Picasso swirl, wood bezel)
-- ✅ Import Tab (W140 instrument cluster - icons visible, glowing text on top)
+- ✅ Import Tab (W140 instrument cluster - 3 uniform buttons with icons + glowing text)
 - ✅ IntakeHub (centered position, wood bezel, designo nappa)
 - ✅ Customer Cards (quilted nappa + Picasso + stitching)
-- ✅ Inquiry Buttons (100px uniform, ROUNDED glass effect, Picasso swirl on press)
+- ✅ Inquiry Buttons (100px uniform, ROUNDED glass effect, Picasso swirl always visible)
 - ✅ Response Cards (wood accent bar + nappa texture)
 - ✅ Tower Talk (designo cardinal red accent)
 
@@ -46,7 +46,13 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 - Command Center tabs: 50% larger (15px)
 - Search bar: 20% smaller (11px)
 - Add Customer button: 50% larger (18px)
-- Generated Responses: 75% larger (1.25rem body)
+- Generated Responses: 1.3rem (75% larger from base)
+
+### Translation System
+- **Uses settings language**: Translation respects language selected in Settings (Spanish/French/Korean)
+- **Sport mode only**: Translation button appears only in Sport mode
+- **Auto-translate**: Responses auto-translate in Sport mode
+- **Toggle**: Click translate button to switch between original/translated
 
 ### Sound Design
 - Sport Mode sound: Uses user's selected engine profile (merica/euro/jdm)
@@ -57,17 +63,21 @@ Build an offline-capable, instant-use "sales weapon" application for automotive 
 
 ## What's Been Completed (January 30, 2026)
 
-### Session Updates ✅
+### Latest Session Updates ✅
+1. **Import Buttons Uniform** - All 3 buttons now exactly 130px (fixed)
+2. **Translation Uses Settings Language** - Fixed TowerTalkModal to use settings language instead of hardcoded Spanish
+3. **Code Cleanup** - Removed unused imports (useRef, useCallback, FOLLOW_UP_RULES from ResponseCards.jsx)
+4. **Inquiry Buttons Picasso** - Added Picasso swirl pattern to all 8 buttons
+
+### Previous Session ✅
 1. **Sport Mode Sound Fix** - Now plays selected engine profile with fade-out
 2. **Financing Button Size** - Fixed to match all other inquiry buttons (100px uniform)
-3. **Dark Mode Import Buttons** - Now match light mode (icons hidden, just titles)
-4. **Font Sizes Adjusted** - Tabs +50%, search -20%, add customer +50%
-5. **64-Color Ambient Lighting** - Full implementation with settings toggle
+3. **64-Color Ambient Lighting** - Full implementation with settings toggle
 
 ### Bug Fixes ✅
-1. **Search bar box-in-box** - Fixed in light mode
-2. **CSS syntax errors** - Cleaned orphaned blocks
-3. **Inquiry button sizing** - All 8 buttons now uniform
+1. **Translation API key** - Fixed corrupted EMERGENT_LLM_KEY in backend/.env
+2. **Search bar box-in-box** - Fixed in light mode
+3. **CSS syntax errors** - Cleaned orphaned blocks
 
 ---
 
