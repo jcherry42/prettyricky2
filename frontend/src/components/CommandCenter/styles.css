@@ -1841,33 +1841,7 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 }
 
 /* ===== SETTINGS TAB STYLES ===== */
-.settings-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.settings-section {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,191,0,0.1);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.section-header h4 {
-  flex: 1;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: rgba(255,220,180,0.9);
-}
+/* (Duplicate block removed: unified with primary settings-section / section-header styles above) */
 
 .config-badge {
   font-size: 10px;
