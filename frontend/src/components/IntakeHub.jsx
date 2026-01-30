@@ -254,13 +254,19 @@ const IntakeHub = ({ isOpen, onClose }) => {
             width: 100%;
             max-width: 520px;
             max-height: 95vh;
-            background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.96));
+            background:
+              linear-gradient(180deg,
+                rgba(22, 18, 14, 0.98) 0%,
+                rgba(12, 10, 8, 0.99) 100%
+              );
             border-radius: 24px 24px 0 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(56,189,248,0.35);
-            box-shadow: 0 -20px 40px rgba(0,0,0,0.7);
+            border: 1px solid rgba(139, 90, 43, 0.45);
+            box-shadow:
+              0 -16px 40px rgba(0,0,0,0.7),
+              0 0 0 1px rgba(0,0,0,0.6);
             animation: slideUp 0.25s ease-out;
           }
           @keyframes slideUp {
