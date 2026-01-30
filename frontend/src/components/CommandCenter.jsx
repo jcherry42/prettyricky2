@@ -1007,6 +1007,7 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             0 0 20px rgba(255, 180, 80, 0.1);
         }
 
+        /* Dark mode: hide icon backgrounds, show icons directly with glow - matching light mode structure */
         .import-option .io-icon {
           width: 56px;
           height: 56px;
@@ -1015,26 +1016,23 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
+          /* No background - just icon with glow */
+          background: transparent;
+          border: none;
         }
 
-        /* Colorful icon backgrounds - matching light mode */
+        /* Dark mode icons: colorful with glow effect */
         .import-option.cyan .io-icon { 
-          background: radial-gradient(circle, rgba(34, 211, 238, 0.25) 0%, rgba(20, 100, 120, 0.4) 100%);
-          border: 2px solid rgba(34, 211, 238, 0.5);
           color: #22d3ee;
-          box-shadow: 0 0 15px rgba(34, 211, 238, 0.4), inset 0 0 8px rgba(34, 211, 238, 0.2);
+          filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.6)) drop-shadow(0 0 24px rgba(34, 211, 238, 0.4));
         }
         .import-option.green .io-icon { 
-          background: radial-gradient(circle, rgba(34, 197, 94, 0.25) 0%, rgba(20, 80, 50, 0.4) 100%);
-          border: 2px solid rgba(34, 197, 94, 0.5);
           color: #22c55e;
-          box-shadow: 0 0 15px rgba(34, 197, 94, 0.4), inset 0 0 8px rgba(34, 197, 94, 0.2);
+          filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 24px rgba(34, 197, 94, 0.4));
         }
         .import-option.purple .io-icon { 
-          background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(80, 40, 120, 0.4) 100%);
-          border: 2px solid rgba(168, 85, 247, 0.5);
           color: #a855f7;
-          box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 8px rgba(168, 85, 247, 0.2);
+          filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 24px rgba(168, 85, 247, 0.4));
         }
 
         .import-option .io-title {
