@@ -12,15 +12,29 @@ const CustomerSelector = () => {
   const [showAllCustomers, setShowAllCustomers] = useState(false);
 
   // Filter customers by search query
+  const getCustomerName = (c) => {
+    if (c?.name) return c.name;
+    const fn = c?.firstName || c?.first_name || '';
+    const ln = c?.lastName || c?.last_name || '';
+    return `${fn} ${ln}`.trim();
+  };
+
+  const getCustomerStatus = (c) => c?.lead_status || c?.status || 'new';
+
+  const getCustomerVehicle = (c) => c?.vehicleOfInterest || c?.vehicleInterest || c?.vehicle_of_interest || '';
+
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers;
     
     const query = searchQuery.toLowerCase();
-    return customers.filter(customer => 
-      customer.name?.toLowerCase().includes(query) ||
-      customer.email?.toLowerCase().includes(query) ||
-      customer.phone?.toLowerCase().includes(query)
-    );
+    return customers.filter(customer => {
+      const name = getCustomerName(customer);
+      return (
+        name?.toLowerCase().includes(query) ||
+        customer.email?.toLowerCase().includes(query) ||
+        customer.phone?.toLowerCase().includes(query)
+      );
+    });
   }, [customers, searchQuery]);
 
   // Show only first 5 or all based on toggle
@@ -50,6 +64,9 @@ const CustomerSelector = () => {
       contacted: 'bg-gradient-to-r from-purple-500 to-pink-500',
       qualified: 'bg-gradient-to-r from-green-500 to-emerald-500',
       appointment: 'bg-gradient-to-r from-orange-500 to-red-500',
+      hot: 'bg-gradient-to-r from-fuchsia-500 to-pink-500',
+      warm: 'bg-gradient-to-r from-amber-500 to-orange-500',
+      cold: 'bg-gradient-to-r from-slate-500 to-slate-600',
     };
     return colors[status] || 'bg-gradient-to-r from-gray-500 to-gray-600';
   };
@@ -127,17 +144,17 @@ const CustomerSelector = () => {
                 className="tesla-card cursor-pointer"
                 role="button"
                 tabIndex={0}
-                aria-label={`Select ${customer.name}`}
+                aria-label={`Select ${getCustomerName(customer)}`}
                 data-testid={`customer-card-${customer.id}`}
                 onKeyDown={(e) => e.key === 'Enter' && handleSelectCustomer(customer)}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getStatusColor(customer.lead_status)} text-white font-semibold shadow-lg`}>
-                    {getInitials(customer.name)}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${getStatusColor(getCustomerStatus(customer))} text-white font-semibold shadow-lg`}>
+                    {getInitials(getCustomerName(customer))}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                      {customer.name}
+                      {getCustomerName(customer)}
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                       {customer.phone || customer.email}
@@ -146,7 +163,7 @@ const CustomerSelector = () => {
                   <div className="flex items-center gap-2">
                     {customer.lead_status && (
                       <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 text-gray-700 dark:text-gray-300">
-                        {customer.lead_status}
+                        {getCustomerStatus(customer)}
                       </span>
                     )}
                     <ChevronRight className="w-5 h-5 text-gray-400" />

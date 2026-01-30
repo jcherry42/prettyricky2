@@ -269,7 +269,7 @@ export const buildContext = (customer, dealership, salesperson, preferences) => 
   return {
     name: customer?.firstName || customer?.name?.split(' ')[0] || '',
     full_name: customer?.name || '',
-    vehicle: customer?.vehicleOfInterest || 'the vehicle',
+    vehicle: customer?.vehicleOfInterest || customer?.vehicleInterest || customer?.vehicle_of_interest || 'the vehicle',
     trade_vehicle: customer?.tradeVehicle?.vin || '',
     dealership: dealership?.name || '',
     dealership_address: dealership?.address || '',
