@@ -79,27 +79,79 @@ html:not(.dark) .tesla-card:hover {
 /* ==================== CUSTOMER SELECTION - 2027 STYLE ==================== */
 
 .tesla-customer-selector {
-  background: var(--tesla-surface-dark);
+  position: relative;
+  overflow: hidden;
+  /* designo Night Nappa with subtle Picasso */
+  background: 
+    /* Picasso accent */
+    radial-gradient(ellipse 120% 60% at 0% 50%, rgba(128, 40, 60, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse 100% 80% at 100% 50%, rgba(40, 100, 120, 0.04) 0%, transparent 35%),
+    /* Quilted nappa */
+    repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(200, 160, 100, 0.02) 14px, rgba(200, 160, 100, 0.02) 15px),
+    repeating-linear-gradient(-45deg, transparent, transparent 14px, rgba(200, 160, 100, 0.02) 14px, rgba(200, 160, 100, 0.02) 15px),
+    linear-gradient(180deg, #1f1d1b 0%, #151311 100%);
   border-radius: var(--tesla-radius-xl);
   padding: 24px;
-  box-shadow: var(--tesla-shadow-lg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  /* Wood bezel border */
+  border: 2px solid rgba(120, 90, 50, 0.35);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 200, 140, 0.05),
+    0 4px 16px rgba(0, 0, 0, 0.25);
   transition: var(--tesla-transition);
 }
 
+/* Stitching pattern */
+.tesla-customer-selector::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 14px 14px, rgba(212, 175, 55, 0.05) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  opacity: 0.6;
+  border-radius: var(--tesla-radius-xl);
+}
+
 .tesla-customer-selector:hover {
-  box-shadow: var(--tesla-shadow-xl);
-  border-color: rgba(0, 217, 255, 0.3);
+  border-color: rgba(200, 160, 80, 0.5);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(200, 160, 80, 0.08);
+  transform: translateY(-2px);
 }
 
 html:not(.dark) .tesla-customer-selector {
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: var(--tesla-shadow-light-lg);
+  background: 
+    /* Light Picasso accent */
+    radial-gradient(ellipse 120% 60% at 0% 50%, rgba(180, 100, 120, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse 100% 80% at 100% 50%, rgba(100, 140, 100, 0.04) 0%, transparent 35%),
+    /* Quilted ivory nappa */
+    repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(180, 150, 100, 0.03) 14px, rgba(180, 150, 100, 0.03) 15px),
+    repeating-linear-gradient(-45deg, transparent, transparent 14px, rgba(180, 150, 100, 0.03) 14px, rgba(180, 150, 100, 0.03) 15px),
+    linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  border: 2px solid rgba(200, 170, 120, 0.35);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .tesla-customer-selector::before {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 14px 14px, rgba(139, 90, 43, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.7;
 }
 
 html:not(.dark) .tesla-customer-selector:hover {
-  border-color: rgba(0, 217, 255, 0.5);
+  border-color: rgba(180, 140, 80, 0.5);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 15px rgba(200, 160, 80, 0.1);
 }
 
 .tesla-customer-header {
