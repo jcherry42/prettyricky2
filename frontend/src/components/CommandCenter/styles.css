@@ -1977,42 +1977,7 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
   text-transform: uppercase;
 }
 
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.profile-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 10px 8px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.profile-btn.active {
-  background: rgba(255,191,0,0.15);
-  border-color: rgba(255,191,0,0.4);
-}
-
-.profile-icon {
-  font-size: 20px;
-}
-
-.profile-name {
-  font-size: 10px;
-  color: rgba(255,255,255,0.7);
-}
-
-.profile-btn.active .profile-name {
-  color: #FFBF00;
-}
+/* (Legacy profile-grid/profile-btn styles removed: engine sound now uses .sound-profile-grid / .sound-profile-btn) */
 
 .browser-notif {
   display: flex;
