@@ -809,7 +809,7 @@ html:not(.dark) .settings-section {
 .tesla-inquiry-btn {
   position: relative;
   overflow: hidden;
-  padding: 16px;
+  padding: 14px 12px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -818,8 +818,11 @@ html:not(.dark) .settings-section {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 100px;
+  gap: 6px;
+  /* FIXED SIZE - all buttons identical */
+  height: 110px;
+  min-height: 110px;
+  max-height: 110px;
   min-width: 80px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
