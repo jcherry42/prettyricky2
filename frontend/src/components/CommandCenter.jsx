@@ -1498,11 +1498,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
   );
 };
 
-// Import Option Card - Icon-focused with detailed colorful icons
+// Import Option Card - Icon IS the button with centered title overlay
 const ImportOption = ({ icon: Icon, title, color, onClick }) => (
   <div className={`import-option ${color}`} onClick={onClick}>
-    <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
     <span className="io-title">{title}</span>
+    <Icon className="io-icon-svg" strokeWidth={1.5} />
   </div>
 );
 
