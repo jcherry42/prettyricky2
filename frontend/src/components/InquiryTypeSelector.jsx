@@ -27,8 +27,7 @@ const INQUIRY_TYPES = [
     id: 'availability', 
     label: 'Availability', 
     icon: Calendar,
-    gradient: 'from-purple-500 to-pink-500',
-    description: 'Stock check'
+    gradient: 'from-purple-500 to-pink-500'
   },
   { 
     id: 'trade_in', 
