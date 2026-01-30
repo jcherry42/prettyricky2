@@ -2479,6 +2479,157 @@ const CustomerDetail = ({ customer, onClose, onEdit, onRefresh }) => {
   );
 };
 
+// Ambient Lighting Section Component
+const AmbientLightingSection = () => {
+  const [enabled, setEnabled] = useState(() => {
+    return localStorage.getItem('ambientLightingEnabled') === 'true';
+  });
+  const [intensity, setIntensity] = useState(() => {
+    return localStorage.getItem('ambientLightingIntensity') || 'medium';
+  });
+
+  useEffect(() => {
+    const html = document.documentElement;
+    
+    // Remove all ambient classes first
+    html.classList.remove('ambient-lighting-enabled', 'ambient-lighting-low', 'ambient-lighting-high');
+    
+    if (enabled) {
+      html.classList.add('ambient-lighting-enabled');
+      if (intensity === 'low') html.classList.add('ambient-lighting-low');
+      if (intensity === 'high') html.classList.add('ambient-lighting-high');
+    }
+    
+    localStorage.setItem('ambientLightingEnabled', enabled);
+    localStorage.setItem('ambientLightingIntensity', intensity);
+  }, [enabled, intensity]);
+
+  return (
+    <div className="settings-section ambient-section">
+      <div className="section-header">
+        <Zap className="w-5 h-5" style={{ color: '#FFBF00' }} />
+        <h4>64-Color Ambient Lighting</h4>
+      </div>
+      
+      <div className="ambient-settings">
+        <div className="ambient-toggle">
+          <span>Ambient Effects</span>
+          <button 
+            className={`toggle-btn ${enabled ? 'on' : 'off'}`}
+            onClick={() => setEnabled(!enabled)}
+          >
+            {enabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+            {enabled ? 'On' : 'Off'}
+          </button>
+        </div>
+        
+        {enabled && (
+          <div className="intensity-control">
+            <label>Intensity</label>
+            <div className="intensity-buttons">
+              <button 
+                className={`intensity-btn ${intensity === 'low' ? 'active' : ''}`}
+                onClick={() => setIntensity('low')}
+              >
+                Subtle
+              </button>
+              <button 
+                className={`intensity-btn ${intensity === 'medium' ? 'active' : ''}`}
+                onClick={() => setIntensity('medium')}
+              >
+                Medium
+              </button>
+              <button 
+                className={`intensity-btn ${intensity === 'high' ? 'active' : ''}`}
+                onClick={() => setIntensity('high')}
+              >
+                Vivid
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <p className="ambient-desc">
+          Mercedes-Benz inspired 64-color ambient lighting cycles through the full spectrum behind cards and UI elements.
+        </p>
+      </div>
+      
+      <style>{`
+        .ambient-section {
+          background: linear-gradient(135deg, rgba(255, 100, 50, 0.05) 0%, rgba(100, 50, 255, 0.05) 100%);
+          border: 1px solid rgba(255, 150, 50, 0.2);
+        }
+        
+        .ambient-settings {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        
+        .ambient-toggle {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        
+        .ambient-toggle span {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .intensity-control {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .intensity-control label {
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255, 191, 0, 0.7);
+          text-transform: uppercase;
+        }
+        
+        .intensity-buttons {
+          display: flex;
+          gap: 8px;
+        }
+        
+        .intensity-btn {
+          flex: 1;
+          padding: 10px 12px;
+          border-radius: 8px;
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .intensity-btn:hover {
+          background: rgba(255, 191, 0, 0.1);
+          border-color: rgba(255, 191, 0, 0.3);
+        }
+        
+        .intensity-btn.active {
+          background: linear-gradient(135deg, rgba(255, 100, 50, 0.2) 0%, rgba(200, 50, 255, 0.2) 100%);
+          border-color: rgba(255, 150, 100, 0.5);
+          color: #FFBF00;
+        }
+        
+        .ambient-desc {
+          font-size: 12px;
+          color: rgba(255, 200, 150, 0.5);
+          line-height: 1.5;
+          margin: 0;
+        }
+      `}</style>
+    </div>
+  );
+};
+
 // Settings Tab Component
 const SettingsTab = ({ defaultTargetLanguage, onLanguageChange }) => {
   const { 
