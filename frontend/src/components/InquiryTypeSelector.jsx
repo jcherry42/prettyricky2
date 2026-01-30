@@ -88,7 +88,7 @@ const InquiryTypeSelector = () => {
         </p>
       </div>
 
-      {/* Grid Layout - Tesla Style */}
+      {/* Grid Layout - 2x row with centered lower trio */}
       <div className="tesla-inquiry-grid">
         {INQUIRY_TYPES.map((type) => {
           const Icon = type.icon;
