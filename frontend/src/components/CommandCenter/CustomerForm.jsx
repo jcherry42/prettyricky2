@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const CustomerForm = memo(({ onClose, customer, initialData }) => {
+const CustomerForm = memo(({ onClose, customer, initialData, onSaved }) => {
   const [formData, setFormData] = useState({
     first_name: customer?.first_name || initialData?.first_name || '',
     last_name: customer?.last_name || initialData?.last_name || '',
