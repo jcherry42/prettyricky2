@@ -246,8 +246,7 @@ export const saveToStorage = (key, data) => {
   try {
     localStorage.setItem(key, JSON.stringify(data));
     return true;
-  } catch (e) {
-    console.error('Failed to save to storage:', e);
+  } catch {
     return false;
   }
 };
@@ -257,8 +256,7 @@ export const loadFromStorage = (key, defaultValue = null) => {
   try {
     const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : defaultValue;
-  } catch (e) {
-    console.error('Failed to load from storage:', e);
+  } catch {
     return defaultValue;
   }
 };
