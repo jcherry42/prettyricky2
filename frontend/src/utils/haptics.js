@@ -54,9 +54,8 @@ export const triggerHaptic = (type = HapticType.LIGHT) => {
     if (isIOS && type === HapticType.SELECTION) {
       playClickSound();
     }
-  } catch (e) {
+  } catch {
     // Silently fail - haptics are non-critical
-    console.debug('[Haptics] Failed:', e);
   }
 };
 
