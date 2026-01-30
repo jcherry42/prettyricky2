@@ -1530,21 +1530,21 @@ html:not(.dark) .io-title {
   position: absolute;
   inset: 0;
   background: 
-    /* Primary flowing curve - burgundy */
+    /* Primary flowing curve - burgundy - INCREASED VISIBILITY */
     radial-gradient(ellipse 200% 100% at 0% 50%, 
-      rgba(128, 40, 60, 0.12) 0%, 
-      rgba(100, 30, 50, 0.08) 30%,
+      rgba(128, 40, 60, 0.22) 0%, 
+      rgba(100, 30, 50, 0.15) 30%,
       transparent 60%
     ),
     /* Secondary wave - teal accent */
     radial-gradient(ellipse 150% 80% at 100% 30%, 
-      rgba(40, 100, 120, 0.1) 0%, 
-      rgba(30, 80, 100, 0.06) 40%,
+      rgba(40, 100, 120, 0.18) 0%, 
+      rgba(30, 80, 100, 0.12) 40%,
       transparent 70%
     ),
     /* Tertiary accent - gold highlight */
     radial-gradient(ellipse 80% 120% at 50% 100%, 
-      rgba(180, 140, 60, 0.06) 0%, 
+      rgba(180, 140, 60, 0.12) 0%, 
       transparent 50%
     );
   pointer-events: none;
@@ -1556,27 +1556,27 @@ html:not(.dark) .io-title {
   position: absolute;
   inset: 0;
   background: 
-    /* Flowing brushstroke curves */
+    /* Flowing brushstroke curves - INCREASED VISIBILITY */
     conic-gradient(from 180deg at 20% 60%, 
       transparent 0deg, 
-      rgba(128, 40, 60, 0.08) 45deg, 
-      rgba(140, 50, 70, 0.05) 90deg,
+      rgba(128, 40, 60, 0.15) 45deg, 
+      rgba(140, 50, 70, 0.1) 90deg,
       transparent 135deg
     ),
     conic-gradient(from 45deg at 80% 40%, 
       transparent 0deg, 
-      rgba(40, 100, 120, 0.06) 60deg, 
-      rgba(50, 110, 130, 0.04) 120deg,
+      rgba(40, 100, 120, 0.12) 60deg, 
+      rgba(50, 110, 130, 0.08) 120deg,
       transparent 180deg
     ),
     /* Subtle gold thread */
     conic-gradient(from 270deg at 50% 80%, 
       transparent 0deg, 
-      rgba(200, 160, 80, 0.04) 30deg, 
+      rgba(200, 160, 80, 0.08) 30deg, 
       transparent 60deg
     );
   pointer-events: none;
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* ==================== PICASSO SWIRL - LIGHT MODE ==================== */
