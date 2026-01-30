@@ -378,20 +378,25 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
               </div>
 
               <div className="printer-form">
-                <label>Printer IP Address</label>
+                <label htmlFor="printer-ip">Printer IP Address</label>
                 <div className="printer-input-row">
                   <input 
+                    id="printer-ip"
                     type="text"
                     placeholder="192.168.1.100"
                     value={printerIP}
                     onChange={(e) => setPrinterIP(e.target.value)}
                     className="printer-ip-input"
                     disabled={printerStatus === 'testing'}
+                    aria-label="Printer IP address"
+                    data-testid="printer-ip-input"
                   />
                   {printerStatus === 'connected' ? (
                     <button 
                       onClick={disconnectPrinter}
                       className="printer-btn disconnect"
+                      aria-label="Disconnect printer"
+                      data-testid="printer-disconnect-btn"
                     >
                       Disconnect
                     </button>
@@ -400,6 +405,8 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
                       onClick={testPrinterConnection}
                       disabled={testingPrinter || !printerIP.trim()}
                       className="printer-btn connect"
+                      aria-label="Connect to printer"
+                      data-testid="printer-connect-btn"
                     >
                       {testingPrinter ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Connect'}
                     </button>
