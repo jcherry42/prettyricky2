@@ -1046,6 +1046,10 @@ html:not(.dark) .io-title {
 }
 
 .sound-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
 /* Engine sound profiles: make buttons as large as possible without scroll */
 .engine-sound-profile .profile-grid {
@@ -1058,7 +1062,6 @@ html:not(.dark) .io-title {
   width: 100%;
 }
 
-/* LanguageSelector used as sound profile picker (es/fr/ko) */
 .engine-sound-profile .language-selector {
   width: 100%;
 }
@@ -1101,11 +1104,6 @@ html:not(.dark) .io-title {
 .engine-sound-profile .flag-btn[aria-label*="Spanish"]::after { content: "Spanish"; }
 .engine-sound-profile .flag-btn[aria-label*="French"]::after { content: "French"; }
 .engine-sound-profile .flag-btn[aria-label*="Korean"]::after { content: "Korean"; }
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
 .sound-toggle span {
   font-size: 13px;
