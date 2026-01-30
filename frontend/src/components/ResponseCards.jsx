@@ -114,10 +114,10 @@ const ResponseCard = ({
 
   const getDisplayText = () => {
     if (isCustom) {
-      if (supercharged && showTranslated && translation) return translation;
+      if (showTranslated && translation) return translation;
       return editText;
     }
-    if (supercharged && showTranslated && translation) return translation;
+    if (showTranslated && translation) return translation;
     return response.text;
   };
 
