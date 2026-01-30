@@ -466,6 +466,26 @@
   border-radius: 8px;
 }
 
+
+.printer-info {
+  padding: 14px;
+  margin-top: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+
+/* Eject description: borderless (per request) */
+.eject-info {
+  border: none;
+  background: rgba(255,255,255,0.02);
+}
+
+html:not(.dark) .eject-info {
+  border: none;
+  background: rgba(0,0,0,0.02);
+}
+
 /* ===== LIGHT MODE ===== */
 html:not(.dark) .cc-overlay {
   background: rgba(245,240,230,0.95);
