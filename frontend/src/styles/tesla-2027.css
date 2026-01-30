@@ -1049,14 +1049,18 @@ button[class*="add-customer"]:hover,
   font-size: 1.25rem !important;
 }
 
-/* Tabs */
+/* Tabs - 50% larger font */
 .cc-tabs {
-  font-size: 1.1rem !important;
+  font-size: 1.5rem !important;
 }
 
 .cc-tab {
-  font-size: 1.1rem !important;
+  font-size: 15px !important;
   padding: 12px 18px !important;
+}
+
+.cc-tab span {
+  font-size: 15px !important;
 }
 
 /* Generated responses - 75% larger */
