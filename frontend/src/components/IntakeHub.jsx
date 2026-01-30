@@ -330,9 +330,9 @@ const IntakeHub = ({ isOpen, onClose }) => {
             gap: 6px;
             padding: 10px 12px;
             border-radius: 999px;
-            border: 1px solid rgba(148,163,184,0.4);
-            background: rgba(15,23,42,0.7);
-            color: rgba(226,232,240,0.9);
+            border: 1px solid rgba(139, 90, 43, 0.45);
+            background: rgba(20, 16, 12, 0.9);
+            color: rgba(248, 244, 235, 0.9);
             font-size: 12px;
             font-weight: 600;
             letter-spacing: 0.08em;
