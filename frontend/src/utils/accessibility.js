@@ -122,6 +122,39 @@ export const focusManagement = {
   },
 };
 
+// Create focus trap - exported for components
+export const createFocusTrap = (containerRef) => {
+  if (!containerRef?.current) return () => {};
+  
+  const container = containerRef.current;
+  const focusableElements = container.querySelectorAll(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+  
+  if (focusableElements.length === 0) return () => {};
+  
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  
+  // Focus first element
+  firstElement?.focus();
+  
+  const handleKeyDown = (e) => {
+    if (e.key !== 'Tab') return;
+    
+    if (e.shiftKey && document.activeElement === firstElement) {
+      e.preventDefault();
+      lastElement.focus();
+    } else if (!e.shiftKey && document.activeElement === lastElement) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  };
+  
+  container.addEventListener('keydown', handleKeyDown);
+  return () => container.removeEventListener('keydown', handleKeyDown);
+};
+
 // Keyboard navigation helpers
 export const keyboardNavigation = {
   isEnterOrSpace: (e) => e.key === 'Enter' || e.key === ' ',
