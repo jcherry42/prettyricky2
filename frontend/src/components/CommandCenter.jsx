@@ -273,7 +273,12 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
                     }}
                   />
                 </div>
-                <button onClick={() => setShowCustomerForm(true)} className="cc-add-btn gold-btn">
+                <button 
+                  onClick={() => setShowCustomerForm(true)} 
+                  className="cc-add-btn gold-btn"
+                  aria-label="Add new customer"
+                  data-testid="cc-add-customer-btn"
+                >
                   <Plus className="w-4 h-4" />
                   Add Customer
                 </button>
