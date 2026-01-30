@@ -879,13 +879,16 @@ html:not(.dark) .cc-search-blue-glass {
 }
 
 html:not(.dark) .cc-search-blue-glass input {
-  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   border: none !important;
   color: #FF6600 !important;
   font-weight: 700;
   text-shadow: none !important;
   outline: none !important;
   box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 html:not(.dark) .cc-search-blue-glass input::placeholder {
