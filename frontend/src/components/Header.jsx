@@ -246,8 +246,11 @@ export const Header = () => {
         </button>
       </div>
       
-      {/* License Scanner Modal */}
-      <LicenseScanner isOpen={licenseScannerOpen} onClose={() => setLicenseScannerOpen(false)} />
+      {/* Intake Hub: License & VIN Scanner */}
+      <IntakeHub 
+        isOpen={intakeOpen} 
+        onClose={() => setIntakeOpen(false)} 
+      />
       
       {/* Command Center Modal */}
       <CommandCenter isOpen={commandCenterOpen} onClose={() => setCommandCenterOpen(false)} />
