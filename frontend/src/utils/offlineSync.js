@@ -168,10 +168,12 @@ class OfflineSyncService {
 export const offlineSync = new OfflineSyncService();
 
 // React hook for offline status
+import { useState, useEffect } from 'react';
+
 export function useOfflineStatus() {
-  const [status, setStatus] = React.useState(offlineSync.getStatus());
+  const [status, setStatus] = useState(offlineSync.getStatus());
   
-  React.useEffect(() => {
+  useEffect(() => {
     const handleStatusChange = () => {
       setStatus(offlineSync.getStatus());
     };
