@@ -598,10 +598,10 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         .cc-tabs {
           position: relative;
           z-index: 1;
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 6px;
-          padding: 12px 14px;
+          display: flex;
+          justify-content: space-between;
+          gap: 4px;
+          padding: 10px 12px;
           /* Brushed aluminum rail */
           background: 
             repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
@@ -610,28 +610,29 @@ export const CommandCenter = ({ isOpen, onClose }) => {
         }
 
         .cc-tab {
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 4px;
-          padding: 10px 6px;
-          border-radius: 10px;
+          gap: 3px;
+          padding: 8px 4px;
+          border-radius: 8px;
           background: transparent;
           border: 2px solid transparent;
           color: rgba(255, 200, 150, 0.5);
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 400;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.08em;
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.25s ease;
         }
         
         .cc-tab svg {
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
         }
 
         .cc-tab:hover {
