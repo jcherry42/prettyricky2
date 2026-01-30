@@ -1052,23 +1052,9 @@ button[class*="add-customer"]:hover,
 }
 
 
-/* ==================== COMMAND CENTER FONT SIZE BOOST ==================== */
+/* ==================== COMMAND CENTER TYPOGRAPHY ==================== */
 
-/* ALL Command Center text 75% LARGER - 315% total (180% * 1.75) */
-
-/* Header and tabs */
-.cc-header,
-.cc-header *,
-.cc-tabs,
-.cc-tab {
-  font-size: 315% !important;
-}
-
-.cc-header h2 {
-  font-size: 350% !important;
-}
-
-/* ALL BODY CONTENT - NORMAL SIZE */
+/* Keep modal content at sensible sizes */
 .cc-modal,
 .cc-body,
 .cc-header,
@@ -1083,14 +1069,14 @@ button[class*="add-customer"]:hover,
 .io-title,
 .io-desc,
 .cc-add-btn {
-  font-size: 100% !important;
+  font-size: inherit !important;
 }
 
-/* Section titles even larger */
+/* Section titles */
 .cc-section-title,
 .section-header h3,
 .settings-section h3 {
-  font-size: 350% !important;
+  font-size: 1.25rem !important;
 }
 
 
