@@ -1087,3 +1087,48 @@ html:not(.dark) .tesla-inquiry-btn.selected {
   white-space: nowrap;
   border-width: 0;
 }
+
+
+/* ==================== CRITICAL: SEARCH BAR INPUT FIX (MUST BE LAST) ==================== */
+/* This rule MUST be at the end of the file to override all other input styles */
+html:not(.dark) .cc-search-blue-glass input,
+html:not(.dark) .cc-search-blue-glass input[type="text"],
+html:not(.dark) .cc-search.cc-search-blue-glass input,
+html:not(.dark) .cc-search.cc-search-blue-glass input[type="text"],
+html:not(.dark) .cc-toolbar .cc-search-blue-glass input,
+html:not(.dark) .cc-customers .cc-search-blue-glass input,
+.cc-search-blue-glass input.search-input-transparent {
+  all: unset !important;
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  color: #FF6600 !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+  outline: none !important;
+  outline-width: 0 !important;
+  box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  flex: 1 !important;
+  padding: 0 8px !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+  width: 100% !important;
+}
+
+/* Also ensure the search container itself is styled correctly */
+html:not(.dark) .cc-search.cc-search-blue-glass {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: linear-gradient(135deg, rgba(0, 120, 255, 0.4) 0%, rgba(0, 180, 255, 0.5) 100%) !important;
+  border: 2px solid rgba(0, 150, 255, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  border-radius: 999px !important;
+  padding: 8px 16px !important;
+}
