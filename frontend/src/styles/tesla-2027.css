@@ -506,25 +506,82 @@ html:not(.dark) .printer-info strong {
   font-weight: 700;
 }
 
-/* IMPORT OPTIONS: instrument-cluster tiles on ivory */
+/* IMPORT OPTIONS: designo Instrument Cluster - Light Mode */
+html:not(.dark) .import-options {
+  background: 
+    linear-gradient(180deg, rgba(220, 200, 160, 0.2) 0%, rgba(200, 175, 130, 0.15) 50%, rgba(220, 200, 160, 0.2) 100%);
+  border: 2px solid rgba(180, 140, 80, 0.3);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(139, 105, 20, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
 html:not(.dark) .import-option {
-  background: #FFFFFF;
-  border: 1px solid rgba(139, 90, 43, 0.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.3) 1px,
+      rgba(255, 255, 255, 0.3) 2px
+    ),
+    linear-gradient(180deg, #FDFAF5 0%, #F5EFE5 100%);
+  border: 2px solid rgba(180, 150, 100, 0.35);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(139, 105, 20, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 html:not(.dark) .import-option:hover {
-  background: #FDF8F0;
-  border-color: rgba(139, 90, 43, 0.35);
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.4) 1px,
+      rgba(255, 255, 255, 0.4) 2px
+    ),
+    linear-gradient(180deg, #FFFFFF 0%, #FDF8F0 100%);
+  border-color: rgba(180, 140, 80, 0.5);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 2px rgba(139, 105, 20, 0.1),
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    0 0 12px rgba(200, 160, 80, 0.15);
+}
+
+html:not(.dark) .import-option .io-icon {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(245, 235, 220, 0.95) 100%);
+  border: 2px solid rgba(180, 150, 100, 0.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .import-option.cyan .io-icon {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, rgba(200, 240, 250, 0.4) 100%);
+  border-color: rgba(34, 180, 200, 0.4);
+}
+
+html:not(.dark) .import-option.green .io-icon {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, rgba(200, 250, 220, 0.4) 100%);
+  border-color: rgba(34, 160, 80, 0.4);
+}
+
+html:not(.dark) .import-option.purple .io-icon {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(230, 210, 250, 0.4) 100%);
+  border-color: rgba(140, 70, 200, 0.4);
 }
 
 html:not(.dark) .io-title {
-  color: #2D1F0F !important;
-  font-weight: 600;
+  color: #3D2F1F !important;
+  font-weight: 700;
 }
 
 html:not(.dark) .io-desc {
-  color: #5D4E37 !important;
+  color: #6D5E47 !important;
 }
 
 /* CUSTOMER FORM - BLUE GLASS */
