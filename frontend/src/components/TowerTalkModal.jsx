@@ -92,7 +92,6 @@ export const TowerTalkModal = () => {
     };
 
     recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
       if (event.error === 'not-allowed') {
         toast.error('Microphone access denied', {
           description: 'Please enable microphone permissions'
