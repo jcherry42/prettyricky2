@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { Sun, Moon, AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { LicenseScanner } from './LicenseScanner';
@@ -271,4 +271,4 @@ export const Header = () => {
   );
 };
 
-export default Header;
+export default memo(Header);
