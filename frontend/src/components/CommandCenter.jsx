@@ -26,6 +26,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
  * Replaces the old Check Engine menu
  */
 export const CommandCenter = ({ isOpen, onClose }) => {
+  const { toggleImport } = useSales();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [customers, setCustomers] = useState([]);
