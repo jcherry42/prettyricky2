@@ -161,7 +161,7 @@ const CustomerSelector = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {customer.lead_status && (
+                    {getCustomerStatus(customer) && (
                       <span className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 text-gray-700 dark:text-gray-300">
                         {getCustomerStatus(customer)}
                       </span>
