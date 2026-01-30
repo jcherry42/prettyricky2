@@ -57,8 +57,7 @@ const INQUIRY_TYPES = [
     id: 'objection', 
     label: 'Objection', 
     icon: MessageCircle,
-    gradient: 'from-pink-500 to-rose-500',
-    description: 'Address concerns'
+    gradient: 'from-pink-500 to-rose-500'
   },
 ];
 
