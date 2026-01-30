@@ -99,11 +99,17 @@ class TestCustomerCRUD:
         assert response.status_code in [200, 201]
         data = response.json()
         
-        assert "id" in data
-        assert data.get("first_name") == customer_data["first_name"]
+        # Response can be {"customer": {...}, "success": true} or just the customer object
+        if "customer" in data:
+            customer = data["customer"]
+        else:
+            customer = data
         
-        print(f"✅ Customer created: {data.get('first_name')} {data.get('last_name')}")
-        return data["id"]
+        assert "id" in customer
+        assert customer.get("first_name") == customer_data["first_name"]
+        
+        print(f"✅ Customer created: {customer.get('first_name')} {customer.get('last_name')}")
+        return customer["id"]
     
     def test_customer_search(self):
         """GET /api/customers/list with search - Should filter customers"""
