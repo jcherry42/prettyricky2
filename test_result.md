@@ -548,9 +548,7 @@ metadata:
 
 test_plan:
   current_focus: 
-    - "IntakeHub Dual Menu - INTAKE button opens modal with License Scan and VIN Scanner modes"
-    - "Search Bar Blue Glass Styling - cc-search-blue-glass in Command Center Customers tab"
-    - "Font Uniformity in Command Center - Consistent font sizes across elements"
+    - "Import Data Tab Mode Selector Styling - Three-button cohesive centered layout"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
