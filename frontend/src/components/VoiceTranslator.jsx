@@ -33,11 +33,14 @@ export const VoiceTranslator = () => {
   const timerRef = useRef(null);
 
   // Get target language from localStorage
-  const targetLang = localStorage.getItem('defaultTargetLanguage') || 'es';
-  const sourceLang = targetLang === 'es' ? 'fr' : 'es';
+  // App setting defines the customer's language (es, fr, ko)
+  const customerLang = localStorage.getItem('defaultTargetLanguage') || 'es';
+  // Customer speaks customerLang, rep wants English text
+  const sourceLang = customerLang; // es / fr / ko from Settings
+  const targetLang = 'en';
   
   const sourceConfig = LANG_CONFIG[sourceLang] || LANG_CONFIG.es;
-  const targetConfig = LANG_CONFIG[targetLang] || LANG_CONFIG.es;
+  const targetConfig = { name: 'English', flag: 'EN', code: 'en' };
 
   // Cleanup on unmount
   useEffect(() => {
