@@ -196,6 +196,7 @@ const ResponseCard = ({
     <div 
       onClick={() => !isEditing && onSelect()}
       className={`response-card cursor-pointer transition-all ${isSelected ? 'selected ring-2 ring-primary' : ''}`}
+      data-testid={`response-card-${index}`}
     >
       {/* Card Header */}
       <div className="flex items-center justify-between p-3 border-b border-border/30">
@@ -221,6 +222,8 @@ const ResponseCard = ({
                 ? 'bg-orange-500/20 text-orange-400' 
                 : 'bg-muted/50 text-muted-foreground hover:text-foreground'
             }`}
+            aria-label={showTranslated ? 'Show original text' : `Translate to ${targetConfig.name}`}
+            data-testid={`translate-btn-${index}`}
           >
             {isTranslating ? (
               <Loader2 className="w-3 h-3 animate-spin" />
