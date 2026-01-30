@@ -419,6 +419,7 @@ export function SalesProvider({ children }) {
     sendToMessages,
     toggleTheme,
     toggleSuperchargedMode,
+    setVehicleInventory,
   };
 
   return (
