@@ -56,11 +56,9 @@ const playSound = (soundPath, volume = 0.7) => {
   try {
     const audio = new Audio(soundPath);
     audio.volume = volume;
-    audio.play().catch(err => {
-      console.warn('Sound play failed:', err);
-    });
-  } catch (error) {
-    console.warn('Sound initialization failed:', error);
+    audio.play().catch(() => {});
+  } catch {
+    // Sound initialization failed - silent
   }
 };
 
