@@ -116,6 +116,13 @@ agent_communication:
   - agent: "main"
     message: "Implemented fixes for customer add disappearing (global refresh + legacy /api/customers endpoint) and translation toggle now actually calls API and is reversible; VIN decode verified via curl with provided VINs. Please run UI regression tests for these flows."
   - agent: "testing"
+      - working: false
+        agent: "user"
+        comment: "User reported newly added customers disappear / are not showing in lists." 
+      - working: true
+        agent: "main"
+        comment: "Fixed list merging so /api/customers includes locally-created customers from Mongo; verified by curl that newly created customers appear in /api/customers." 
+
     message: "🔍 P0 UI REGRESSION TESTING COMPLETED: Conducted comprehensive testing of user-reported P0 issues. CRITICAL FINDINGS: 1) Customer creation forms have field filling issues - first name not populating correctly in Command Center form, 2) Translation functionality WORKING PERFECTLY - translates to Spanish, shows correct flags, toggles back to English as expected, 3) VIN decode WORKING PERFECTLY - both provided VINs (JM3KKEHA3T1355103, 7MMVAADW5TN144528) decode successfully to 2026 Mazda vehicles, 4) Quick Add has proper inputMode attributes (tel/email) for mobile optimization, 5) License Scanner loads correctly with expected camera access fallback. Main issues: Customer form field population needs investigation." 
 
 # NOTE (Main agent): User-reported regressions (P0 bug bash)
