@@ -50,7 +50,7 @@ function AppContent() {
     // Preconnect to backend for faster API calls
     const link = document.createElement('link');
     link.rel = 'preconnect';
-    link.href = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8001';
+    link.href = import.meta.env.VITE_BACKEND_URL || window.location.origin;
     document.head.appendChild(link);
     
     return () => {
