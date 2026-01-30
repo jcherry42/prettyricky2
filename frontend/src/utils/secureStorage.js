@@ -35,8 +35,7 @@ async function getEncryptionKey() {
     sessionStorage.setItem(ENCRYPTION_KEY_NAME, JSON.stringify(exportedKey));
     
     return key;
-  } catch (error) {
-    console.error('Encryption key generation failed:', error);
+  } catch {
     throw new Error('Failed to initialize encryption');
   }
 }
@@ -62,8 +61,7 @@ async function encryptData(data) {
     
     // Convert to base64
     return btoa(String.fromCharCode(...combined));
-  } catch (error) {
-    console.error('Encryption failed:', error);
+  } catch {
     throw new Error('Failed to encrypt data');
   }
 }
@@ -90,8 +88,7 @@ async function decryptData(encryptedData) {
     
     const decodedData = new TextDecoder().decode(decrypted);
     return JSON.parse(decodedData);
-  } catch (error) {
-    console.error('Decryption failed:', error);
+  } catch {
     // Return null if decryption fails (corrupted data)
     return null;
   }
@@ -104,8 +101,7 @@ export const secureStorage = {
       const encrypted = await encryptData(value);
       localStorage.setItem(`secure_${key}`, encrypted);
       return true;
-    } catch (error) {
-      console.error('Secure storage set failed:', error);
+    } catch {
       return false;
     }
   },
@@ -116,8 +112,7 @@ export const secureStorage = {
       if (!encrypted) return null;
       
       return await decryptData(encrypted);
-    } catch (error) {
-      console.error('Secure storage get failed:', error);
+    } catch {
       return null;
     }
   },
