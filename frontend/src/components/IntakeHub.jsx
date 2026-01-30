@@ -10,7 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 // Local vehicle inventory limit
 const MAX_VEHICLES = 150;
 
-const IntakeHub = ({ isOpen, onClose }) => {
+const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
   const { vehicleInventory, setVehicleInventory } = useSales() || {};
   const [activeMode, setActiveMode] = useState('license');
   const [vin, setVin] = useState('');
@@ -159,7 +159,20 @@ const IntakeHub = ({ isOpen, onClose }) => {
         {/* Content */}
         <div className="intake-body">
           {activeMode === 'license' && (
-            <LicenseScanner isOpen={true} onClose={onClose} />
+            <div className="intake-license-panel">
+              <p className="intake-copy">Use the License Scanner to capture and decode a driver&apos;s license.</p>
+              <button
+                className="intake-open-license-btn"
+                onClick={() => {
+                  if (onOpenLicenseScanner) {
+                    onOpenLicenseScanner();
+                  }
+                }}
+              >
+                <IdCard className="w-4 h-4" />
+                <span>Open License Scanner</span>
+              </button>
+            </div>
           )}
 
           {activeMode === 'vin' && (

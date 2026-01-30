@@ -80,6 +80,8 @@ export const Header = () => {
   const [startupPhase, setStartupPhase] = useState(hasPlayedStartup ? 5 : 0);
   // Brake light state - activates on screen tap
   const [brakesPressed, setBrakesPressed] = useState(false);
+  // License Scanner modal
+  const [licenseScannerOpen, setLicenseScannerOpen] = useState(false);
   // Intake Hub (License + VIN Scanner)
   const [intakeOpen, setIntakeOpen] = useState(false);
   // Command Center modal state
@@ -251,6 +253,16 @@ export const Header = () => {
       <IntakeHub 
         isOpen={intakeOpen} 
         onClose={() => setIntakeOpen(false)} 
+        onOpenLicenseScanner={() => {
+          setIntakeOpen(false);
+          setLicenseScannerOpen(true);
+        }}
+      />
+
+      {/* License Scanner Modal */}
+      <LicenseScanner 
+        isOpen={licenseScannerOpen} 
+        onClose={() => setLicenseScannerOpen(false)} 
       />
       
       {/* Command Center Modal */}
