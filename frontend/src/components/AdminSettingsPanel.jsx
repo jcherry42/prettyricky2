@@ -110,8 +110,8 @@ export const AdminSettingsPanel = ({ onClose }) => {
           integrations: integrationsData.integrations || [],
         });
       }
-    } catch (err) {
-      console.error('Failed to load config:', err);
+    } catch {
+      // Config load failed - silent
     } finally {
       setLoading(false);
     }
@@ -139,8 +139,8 @@ export const AdminSettingsPanel = ({ onClose }) => {
         const data = await res.json();
         setNotificationHistory(data.notifications || []);
       }
-    } catch (err) {
-      console.error('Failed to load notification history:', err);
+    } catch {
+      // Notification history load failed - silent
     } finally {
       setHistoryLoading(false);
     }
