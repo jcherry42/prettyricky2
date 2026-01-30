@@ -513,15 +513,18 @@ frontend:
 
   - task: "UI - Increase font sizes by ~35% (Quick Add + IntakeHub secondary text)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/QuickAddButton.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Increased Quick Add inputs to 19px and labels to 15px; increased IntakeHub small text sizes to match ~35% boost." 
+        comment: "Increased Quick Add inputs to 19px and labels to 15px; increased IntakeHub small text sizes to match ~35% boost."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Font size increase verified through code analysis. Quick Add inputs set to 'font-size: 19px' (line 675), labels set to 'font-size: 15px' (line 659), representing ~35% increase from typical 14px/11px baseline. IntakeHub helper text increased to 'font-size: 19px' (line 419). Button text also increased to 'font-size: 19px' (line 431, 503, 592, 755). All target elements show appropriate font size increases as requested." 
 
   - task: "UI - Inquiry buttons: icon + title centered; no descriptive text"
     implemented: true
