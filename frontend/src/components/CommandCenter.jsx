@@ -2546,10 +2546,12 @@ const CustomerDetail = memo(({ customer, onClose, onEdit, onRefresh }) => {
       </div>
     </div>
   );
-};
+});
 
-// Ambient Lighting Section Component
-const AmbientLightingSection = () => {
+CustomerDetail.displayName = 'CustomerDetail';
+
+// Ambient Lighting Section Component (memoized)
+const AmbientLightingSection = memo(() => {
   const [enabled, setEnabled] = useState(() => {
     return localStorage.getItem('ambientLightingEnabled') === 'true';
   });
