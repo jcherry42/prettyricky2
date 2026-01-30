@@ -204,7 +204,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
           lastName: 'Scan',
           name: 'License Scan - ' + new Date().toLocaleDateString(),
           license_image: capturedImage,
-          lead_status: 'new',
+          leadStatus: 'new',
           source: 'license_scan'
         })
       });
