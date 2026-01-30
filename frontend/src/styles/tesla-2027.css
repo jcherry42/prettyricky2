@@ -1312,17 +1312,6 @@ html.dark .cc-search-blue-glass:focus-within {
     inset 2px 2px 4px rgba(255, 255, 255, 0.05) !important;
 }
 
-html:not(.dark) .tesla-inquiry-btn:hover {
-  border-color: var(--tesla-electric-blue);
-  color: #111;
-}
-
-html:not(.dark) .tesla-inquiry-btn.selected {
-  background: var(--tesla-gradient-1);
-  color: white;
-  border-color: transparent;
-}
-
 /* ==================== FLOATING ACTION ELEMENTS ==================== */
 
 .tesla-fab {
