@@ -276,6 +276,8 @@ const ResponseCard = ({
               <button
                 onClick={handleCopy}
                 className="ios-btn flex-1 py-2 text-xs gap-1.5"
+                aria-label={copiedMain ? 'Copied' : 'Copy response'}
+                data-testid={`copy-btn-${index}`}
               >
                 {copiedMain ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copiedMain ? 'Copied' : 'Copy'}
@@ -284,6 +286,8 @@ const ResponseCard = ({
               <button
                 onClick={handleSend}
                 className="ios-btn-primary flex-1 py-2 text-xs gap-1.5"
+                aria-label="Send response"
+                data-testid={`send-btn-${index}`}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 Send
