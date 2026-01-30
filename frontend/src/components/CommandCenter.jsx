@@ -483,62 +483,66 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           max-width: 440px;
           max-height: 85vh;
           margin: auto;
-          background: linear-gradient(180deg, 
-            rgba(22, 20, 18, 0.98) 0%, 
-            rgba(14, 12, 10, 0.99) 100%
-          );
+          /* designo Night - Nappa leather with Picasso swirl */
+          background: 
+            /* Picasso swirl - burgundy and teal */
+            radial-gradient(ellipse 180% 90% at 0% 40%, rgba(128, 40, 60, 0.1) 0%, transparent 55%),
+            radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.08) 0%, transparent 55%),
+            conic-gradient(from 170deg at 15% 65%, transparent 0deg, rgba(140, 50, 70, 0.06) 55deg, transparent 110deg),
+            conic-gradient(from 350deg at 85% 35%, transparent 0deg, rgba(50, 110, 130, 0.05) 45deg, transparent 90deg),
+            /* Gold accent at bottom */
+            radial-gradient(ellipse 80% 50% at 50% 100%, rgba(200, 160, 80, 0.06) 0%, transparent 50%),
+            /* Quilted nappa base */
+            repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
+            repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
+            linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           border-radius: 20px;
-          border: 1px solid rgba(255, 140, 0, 0.15);
+          /* Wood bezel border */
+          border: 3px solid;
+          border-image: linear-gradient(135deg, #5C3A1E 0%, #7A4F2A 25%, #6B4324 50%, #8B5A2B 75%, #5C3A1E 100%) 1;
           box-shadow: 
-            0 0 0 1px rgba(0, 0, 0, 0.8),
-            0 30px 60px rgba(0,0,0,0.6), 
-            inset 0 1px 0 rgba(255,255,255,0.04),
-            0 0 60px rgba(255, 120, 0, 0.06);
+            /* Chrome outer ring */
+            0 0 0 1px rgba(60, 50, 40, 0.8),
+            0 0 0 2px rgba(100, 80, 55, 0.4),
+            /* Depth shadow */
+            0 30px 60px rgba(0, 0, 0, 0.6),
+            /* Inner highlight */
+            inset 0 1px 0 rgba(255, 200, 140, 0.05),
+            /* Ambient glow */
+            0 0 80px rgba(255, 140, 60, 0.05);
           display: flex;
           flex-direction: column;
           overflow: hidden;
         }
 
-        /* Quilted leather texture overlay */
+        /* Contrast stitching pattern */
         .cc-modal::before {
           content: '';
           position: absolute;
           inset: 0;
           background: 
-            repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 20px,
-              rgba(255, 180, 120, 0.015) 20px,
-              rgba(255, 180, 120, 0.015) 21px
-            ),
-            repeating-linear-gradient(
-              -45deg,
-              transparent,
-              transparent 20px,
-              rgba(255, 180, 120, 0.015) 20px,
-              rgba(255, 180, 120, 0.015) 21px
-            );
-          background-size: 40px 40px;
+            radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.07) 1.5px, transparent 1.5px),
+            radial-gradient(circle at 22px 22px, rgba(212, 175, 55, 0.07) 1.5px, transparent 1.5px);
+          background-size: 44px 44px;
           pointer-events: none;
           opacity: 0.6;
-          border-radius: 20px;
+          border-radius: 18px;
         }
 
-        /* Stitch points on quilted leather */
+        /* Additional artistic accent */
         .cc-modal::after {
           content: '';
           position: absolute;
           inset: 0;
           background: 
-            radial-gradient(circle at 0 0, rgba(255, 160, 80, 0.06) 1.5px, transparent 1.5px),
-            radial-gradient(circle at 20px 20px, rgba(255, 160, 80, 0.06) 1.5px, transparent 1.5px);
-          background-size: 40px 40px;
+            /* Flowing Picasso brush strokes */
+            conic-gradient(from 200deg at 25% 55%, transparent 0deg, rgba(140, 50, 70, 0.04) 40deg, transparent 80deg),
+            conic-gradient(from 20deg at 75% 45%, transparent 0deg, rgba(50, 110, 130, 0.03) 50deg, transparent 100deg);
           pointer-events: none;
-          opacity: 0.5;
-          border-radius: 20px;
+          opacity: 0.7;
+          border-radius: 18px;
         }
 
         .cc-header {
@@ -548,8 +552,12 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           align-items: center;
           justify-content: space-between;
           padding: 14px 20px;
-          border-bottom: 1px solid rgba(255, 140, 0, 0.12);
-          background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.15) 100%);
+          /* Brushed aluminum header rail */
+          background: 
+            repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.02) 1px, rgba(255, 255, 255, 0.02) 2px),
+            linear-gradient(180deg, rgba(35, 32, 28, 0.95) 0%, rgba(25, 22, 18, 0.98) 100%);
+          border-bottom: 2px solid rgba(120, 90, 50, 0.35);
+          box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.3);
         }
 
         .cc-header-title {
@@ -560,8 +568,11 @@ export const CommandCenter = ({ isOpen, onClose }) => {
           font-size: 18px;
           font-weight: 400;
           letter-spacing: 0.1em;
-          color: #FF9F43;
-          text-shadow: 0 0 15px rgba(255, 159, 67, 0.4);
+          /* Amber illuminated text - authentic W140 gauge */
+          color: #FFB850;
+          text-shadow: 
+            0 0 10px rgba(255, 180, 80, 0.5),
+            0 0 20px rgba(255, 160, 60, 0.3);
         }
 
         .cc-close {
