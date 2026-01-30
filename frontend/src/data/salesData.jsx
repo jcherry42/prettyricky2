@@ -20,21 +20,9 @@ export const APPOINTMENT_PHRASES = [
   { id: 'set_time', label: "let's set a time", full: "let's set a time that works best for you" },
 ];
 
-// Salesperson style options (kept for backward compatibility, but not used in UI)
+// Salesperson style options (kept for backward compatibility)
 export const SALESPERSON_STYLES = [
   { id: 'authority', label: 'Authority', description: 'Trusted expert, direct and calm' },
-];
-
-// Response tones - kept for backward compatibility
-export const RESPONSE_TONES = [
-  { 
-    id: 'authority', 
-    label: 'Authority', 
-    shortLabel: 'Authority',
-    description: 'Direct, calm, controlled - drives to in-person',
-    color: 'primary',
-    icon: 'shield'
-  },
 ];
 
 // Follow-up timing rules
