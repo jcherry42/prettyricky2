@@ -17,6 +17,8 @@ import { initializeNative, updateStatusBarTheme, isNative } from './utils/native
 import ErrorBoundary from './components/ErrorBoundary';
 import performanceManager from './utils/performanceManager';
 import PerformanceMonitor from './components/PerformanceMonitor';
+import { offlineSync } from './utils/offlineSync';
+import './utils/keyboardManager'; // Auto-initializes on import
 
 // Start Performance Manager on app load
 performanceManager.start();
