@@ -59,11 +59,22 @@ const CustomerForm = memo(({ onClose, customer, initialData, onSaved }) => {
         notes: formData.notes,
       };
       
-      await fetch(url, {
+      const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
+      // Ensure the record actually persisted before closing
+      if (!res.ok) {
+        throw new Error('Failed to save');
+      }
+
+      // Refresh parent list immediately
+      if (onSaved) {
+        await onSaved();
+      }
+
       onClose();
     } catch {
       // Customer save failed - silent
