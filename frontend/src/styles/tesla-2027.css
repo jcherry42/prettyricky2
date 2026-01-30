@@ -755,12 +755,20 @@ html:not(.dark) .settings-section {
   box-shadow: 0 2px 8px rgba(0, 150, 255, 0.1);
 }
 
-/* ==================== INQUIRY TYPE BUTTONS - COLORFUL ==================== */
+/* ==================== INQUIRY TYPE BUTTONS - UNIFORM SIZE ==================== */
 
 .tesla-inquiry-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+
+/* All buttons must be exactly the same size */
+.tesla-inquiry-grid button {
+  width: 100%;
+  height: 110px;
+  min-height: 110px;
+  max-height: 110px;
 }
 
 /* Center bottom three inquiry types (Test Drive, Follow Up, Objection) under top row */
