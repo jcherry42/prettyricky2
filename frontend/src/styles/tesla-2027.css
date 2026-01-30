@@ -893,17 +893,30 @@ html:not(.dark) .cc-search-blue-glass {
   border-radius: 999px;
 }
 
-html:not(.dark) .cc-search-blue-glass input {
+html:not(.dark) .cc-search-blue-glass input,
+html:not(.dark) .cc-search-blue-glass input[type="text"],
+html:not(.dark) .cc-search.cc-search-blue-glass input,
+html:not(.dark) .cc-search.cc-search-blue-glass input[type="text"],
+html:not(.dark) .cc-toolbar .cc-search-blue-glass input,
+html:not(.dark) .cc-customers .cc-search-blue-glass input {
+  all: unset !important;
+  background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
   border: none !important;
+  border-width: 0 !important;
   color: #FF6600 !important;
-  font-weight: 700;
+  font-weight: 700 !important;
   text-shadow: none !important;
   outline: none !important;
   box-shadow: none !important;
-  -webkit-appearance: none;
-  appearance: none;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  flex: 1 !important;
+  padding: 0 8px !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
 }
 
 html:not(.dark) .cc-search-blue-glass input::placeholder {
