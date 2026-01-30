@@ -498,15 +498,18 @@ frontend:
 
   - task: "UI - Remove text glow from intake inputs (light/dark)"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/IntakeHub.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Removed text-shadow glow from IntakeHub title/buttons and VIN input fields; light mode already had no glow." 
+        comment: "Removed text-shadow glow from IntakeHub title/buttons and VIN input fields; light mode already had no glow."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Text glow removal verified through code analysis. VIN input and mileage input CSS shows 'text-shadow: none' in both light and dark modes. IntakeHub title also has 'text-shadow: none'. No neon/glow text-shadow effects detected in input styling. Both .vin-input and .vin-mileage-input classes have clean text rendering without shadow effects." 
 
   - task: "UI - Increase font sizes by ~35% (Quick Add + IntakeHub secondary text)"
     implemented: true
