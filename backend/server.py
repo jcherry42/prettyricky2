@@ -1448,24 +1448,79 @@ async def list_customers(
     limit: int = 100,
     skip: int = 0
 ):
-    """List customers with optional filters"""
+    """List customers with optional filters.
+
+    NOTE: This API powers the primary customer selector UI.
+    It must include BOTH:
+    - Integrated CRM customers via customer_repo
+    - Locally created customers stored in Mongo (via /customers/create, /customers/list, license scan)
+    """
+
+    # Fetch a bit more than needed so we can merge + paginate deterministically
+    fetch_n = max(0, limit + skip)
+
+    # ---- Integrated customers ----
     if search:
-        customers = await customer_repo.search(search, limit)
+        customers = await customer_repo.search(search, fetch_n)
     elif status:
         from data_integration.models import LeadStatus
         customers = await customer_repo.find_by_status(
             LeadStatus(status),
-            limit=limit,
-            skip=skip
+            limit=fetch_n,
+            skip=0
         )
     elif source_id:
-        customers = await customer_repo.find_by_source(source_id, limit, skip)
+        customers = await customer_repo.find_by_source(source_id, fetch_n, 0)
     else:
-        customers = await customer_repo.find_many(limit=limit, skip=skip)
-    
+        customers = await customer_repo.find_many(limit=fetch_n, skip=0)
+
+    integrated_frontend = customer_repo.to_frontend_format(customers)
+
+    # ---- Local customers (Mongo) ----
+    local_query: Dict[str, Any] = {}
+    if status:
+        local_query["lead_status"] = status
+
+    if search:
+        local_query["$or"] = [
+            {"first_name": {"$regex": search, "$options": "i"}},
+            {"last_name": {"$regex": search, "$options": "i"}},
+            {"phone": {"$regex": search, "$options": "i"}},
+            {"email": {"$regex": search, "$options": "i"}},
+        ]
+
+    local_docs = await db.customers.find(local_query, {"_id": 0}).sort("created_at", -1).limit(fetch_n).to_list(fetch_n)
+
+    def _local_to_frontend(c: Dict[str, Any]) -> Dict[str, Any]:
+        first = (c.get("first_name") or "").strip()
+        last = (c.get("last_name") or "").strip()
+        name = (f"{first} {last}").strip() or c.get("name") or ""
+        return {
+            "id": c.get("id"),
+            "name": name,
+            "firstName": first,
+            "lastName": last,
+            "phone": c.get("phone") or "",
+            "email": c.get("email") or "",
+            "address": c.get("address"),
+            "vehicleInterest": (c.get("vehicle_of_interest") or c.get("vehicleInterest") or None),
+            "status": c.get("lead_status") or c.get("status") or "new",
+            "notes": c.get("notes"),
+            "currentVehicle": None,
+            "tradeIn": c.get("trade_in_info") or None,
+        }
+
+    local_frontend = [_local_to_frontend(c) for c in local_docs]
+
+    # Merge: local first (most recent manual adds should be immediately visible)
+    local_ids = {c.get("id") for c in local_frontend if c.get("id")}
+    merged = local_frontend + [c for c in integrated_frontend if c.get("id") not in local_ids]
+
+    paged = merged[skip:skip + limit] if limit else merged[skip:]
+
     return {
-        "customers": customer_repo.to_frontend_format(customers),
-        "count": len(customers)
+        "customers": paged,
+        "count": len(merged)
     }
 
 @api_router.get("/customers/stats")
