@@ -446,6 +446,7 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
           <CustomerForm 
             customer={selectedCustomer}
             initialData={prefillCustomerData}
+            onSaved={fetchCustomers}
             onClose={() => {
               setShowCustomerForm(false);
               setPrefillCustomerData(null);
