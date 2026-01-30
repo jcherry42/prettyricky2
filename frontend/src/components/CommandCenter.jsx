@@ -87,12 +87,12 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
   };
 
   // Disconnect printer
-  const disconnectPrinter = () => {
+  const disconnectPrinter = useCallback(() => {
     setPrinterStatus('disconnected');
     localStorage.removeItem('printerIP');
     setPrinterIP('');
     toast.info('Printer disconnected');
-  };
+  }, []);
 
   // Fetch data on tab change
   useEffect(() => {
@@ -102,7 +102,7 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
     if (activeTab === 'customers') fetchCustomers();
   }, [isOpen, activeTab]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/dashboard/stats`);
       const data = await res.json();
@@ -110,9 +110,9 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
     } catch (e) {
       console.error('Failed to fetch stats:', e);
     }
-  };
+  }, []);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/customers/list?limit=50`);
@@ -123,7 +123,31 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Memoized filtered customers for search
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return customers;
+    const q = searchQuery.toLowerCase();
+    return customers.filter(c => 
+      c.first_name?.toLowerCase().includes(q) ||
+      c.last_name?.toLowerCase().includes(q) ||
+      c.phone?.includes(q) ||
+      c.email?.toLowerCase().includes(q)
+    );
+  }, [customers, searchQuery]);
+
+  // Tab change handler
+  const handleTabChange = useCallback((tabId) => {
+    setActiveTab(tabId);
+  }, []);
+
+  // Language change handler
+  const handleLanguageChange = useCallback((lang) => {
+    setDefaultTargetLanguage(lang);
+    localStorage.setItem('defaultTargetLanguage', lang);
+    toast.success(`Translation language set to ${lang.toUpperCase()}`);
+  }, []);
 
   if (!isOpen) return null;
 
