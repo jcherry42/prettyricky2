@@ -37,8 +37,8 @@ export const shareMessage = async (message, customerPhone = null, customerName =
       return { success: true, method: 'share' };
     } catch (err) {
       // User cancelled or share failed - fall through to other methods
-      if (err.name !== 'AbortError') {
-        console.log('[Share] Web Share failed:', err);
+      if (err.name === 'AbortError') {
+        // User cancelled - silent
       }
     }
   }
@@ -83,9 +83,8 @@ export const openMessages = (message, phone = null) => {
     window.location.href = uri;
     
     return { success: true, method: 'sms' };
-  } catch (err) {
-    console.error('[Messages] Failed to open:', err);
-    return { success: false, method: 'sms', error: err.message };
+  } catch {
+    return { success: false, method: 'sms', error: 'Failed to open messages' };
   }
 };
 
