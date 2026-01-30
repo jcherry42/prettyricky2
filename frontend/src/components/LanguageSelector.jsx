@@ -88,9 +88,9 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         }
 
         html:not(.dark) .flag-btn:hover {
-          background: linear-gradient(135deg, rgba(0, 217, 255, 0.15) 0%, rgba(0, 150, 255, 0.2) 100%);
-          border-color: rgba(0, 217, 255, 0.5);
-          box-shadow: 0 4px 16px rgba(0, 217, 255, 0.25);
+          background: linear-gradient(135deg, rgba(184, 134, 11, 0.16) 0%, rgba(160, 120, 60, 0.12) 100%);
+          border-color: rgba(180, 140, 80, 0.35);
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
         }
 
         .flag-btn.active {
