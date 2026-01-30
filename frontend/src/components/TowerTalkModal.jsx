@@ -157,8 +157,7 @@ export const TowerTalkModal = () => {
           toast.success('Listening...', {
             description: supercharged ? 'Speak in Spanish, French, or Korean' : 'Speak now'
           });
-        } catch (e) {
-          console.error('Failed to start recognition:', e);
+        } catch {
           toast.error('Could not start voice input');
         }
       }
