@@ -499,11 +499,14 @@ export const CommandCenter = ({ isOpen, onClose }) => {
             linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-radius: 20px;
-          /* Wood bezel border */
-          border: 3px solid;
-          border-image: linear-gradient(135deg, #5C3A1E 0%, #7A4F2A 25%, #6B4324 50%, #8B5A2B 75%, #5C3A1E 100%) 1;
+          /* ROUNDED EDGES - increased radius */
+          border-radius: 28px;
+          /* Wood bezel border - using solid color to preserve rounded corners */
+          border: 3px solid #6B4324;
           box-shadow: 
+            /* Wood bezel gradient effect via multiple shadows */
+            inset 0 0 0 1px rgba(122, 79, 42, 0.6),
+            inset 0 0 0 2px rgba(92, 58, 30, 0.4),
             /* Chrome outer ring */
             0 0 0 1px rgba(60, 50, 40, 0.8),
             0 0 0 2px rgba(100, 80, 55, 0.4),
