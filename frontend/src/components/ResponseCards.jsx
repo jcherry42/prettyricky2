@@ -160,10 +160,21 @@ const ResponseCard = ({
     onSend(text);
   };
 
-  const toggleTranslation = (e) => {
+  const toggleTranslation = async (e) => {
     e.stopPropagation();
     haptics.select();
-    setShowTranslated(!showTranslated);
+
+    // If we are turning translation ON and don't yet have it, translate first.
+    if (!showTranslated) {
+      if (!translation) {
+        await translateContent();
+      }
+      setShowTranslated(true);
+      return;
+    }
+
+    // Turning OFF
+    setShowTranslated(false);
   };
 
   const saveCustomText = () => {
