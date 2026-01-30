@@ -274,12 +274,15 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 16px;
+            padding-top: env(safe-area-inset-top, 16px);
+            padding-bottom: env(safe-area-inset-bottom, 16px);
           }
           .intake-modal {
             width: 100%;
             max-width: 520px;
-            max-height: 80vh;
-            /* CENTER OF SCREEN */
+            max-height: calc(100vh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+            max-height: 85dvh;
             margin: auto;
             background:
               /* Picasso swirl pattern */
