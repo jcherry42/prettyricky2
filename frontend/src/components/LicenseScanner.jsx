@@ -307,7 +307,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             <span>License Scanner</span>
             <span className="scanner-badge">ENTERPRISE</span>
           </div>
-          <button onClick={handleClose} className="scanner-close" aria-label="Close">
+          <button onClick={handleClose} className="scanner-close" aria-label="Close License Scanner" data-testid="scanner-close-btn">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -381,6 +381,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
                 onClick={toggleTorch} 
                 className={`control-btn ${torchOn ? 'active' : ''}`}
                 aria-label="Toggle flash"
+                data-testid="toggle-flash-btn"
               >
                 <Sun className="w-5 h-5" />
               </button>
@@ -389,7 +390,8 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
                 onClick={captureImage}
                 disabled={!cameraReady || isCapturing}
                 className="capture-btn"
-                aria-label="Capture"
+                aria-label="Capture license"
+                data-testid="capture-btn"
               >
                 {isCapturing ? (
                   <Loader2 className="w-8 h-8 animate-spin" />
@@ -402,6 +404,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
                 onClick={switchCamera}
                 className="control-btn"
                 aria-label="Switch camera"
+                data-testid="switch-camera-btn"
               >
                 <RotateCcw className="w-5 h-5" />
               </button>
@@ -413,6 +416,8 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             <button 
               onClick={() => fileInputRef.current?.click()}
               className="upload-btn"
+              aria-label="Upload from gallery"
+              data-testid="upload-gallery-btn"
             >
               <ImageIcon className="w-4 h-4" />
               Upload from Gallery
@@ -447,7 +452,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
               </div>
 
               <div className="action-buttons">
-                <button onClick={retake} className="action-btn secondary">
+                <button onClick={retake} className="action-btn secondary" aria-label="Retake photo" data-testid="retake-btn">
                   <RotateCcw className="w-5 h-5" />
                   Retake
                 </button>
@@ -456,6 +461,8 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
                   onClick={printLicense}
                   disabled={!getPrinterIP() || isPrinting}
                   className="action-btn eject"
+                  aria-label="Print license"
+                  data-testid="print-license-btn"
                 >
                   {isPrinting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
