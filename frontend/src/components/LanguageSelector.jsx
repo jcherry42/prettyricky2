@@ -69,9 +69,9 @@ const LanguageSelector = ({ value, onChange, label = "Translation" }) => {
         }
 
         html:not(.dark) .flag-btn {
-          background: linear-gradient(135deg, rgba(0, 217, 255, 0.08) 0%, rgba(0, 150, 255, 0.12) 100%);
-          border: 2px solid rgba(0, 150, 255, 0.2);
-          box-shadow: 0 2px 6px rgba(0, 150, 255, 0.1);
+          background: linear-gradient(135deg, rgba(184, 134, 11, 0.10) 0%, rgba(160, 120, 60, 0.08) 100%);
+          border: 2px solid rgba(180, 140, 80, 0.22);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .flag-emoji {
