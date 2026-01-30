@@ -198,7 +198,7 @@ export const Header = () => {
         <button
           onClick={() => setCommandCenterOpen(true)}
           className="header-btn amber"
-          data-testid="open-admin-settings-btn"
+          data-testid="open-command-center"
         >
           <AlertTriangle className="header-btn-icon" />
           <span>CHECK</span>
