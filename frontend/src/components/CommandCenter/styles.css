@@ -1046,6 +1046,59 @@ html:not(.dark) .io-title {
 }
 
 .sound-toggle {
+
+/* Engine sound profiles: make buttons as large as possible without scroll */
+.engine-sound-profile .profile-grid {
+  display: flex;
+  justify-content: center;
+}
+
+.engine-sound-profile .profile-grid > div,
+.engine-sound-profile .profile-grid .language-selector {
+  width: 100%;
+}
+
+/* LanguageSelector used as sound profile picker (es/fr/ko) */
+.engine-sound-profile .language-selector {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.engine-sound-profile .language-option {
+  flex: 1;
+  height: 92px; /* ~2x visual presence without requiring scroll */
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px;
+}
+
+.engine-sound-profile .language-option .flag {
+  font-size: 40px;
+  line-height: 1;
+}
+
+/* Labels centered below in subtle glowing safety orange */
+.engine-sound-profile .language-option::after {
+  content: attr(aria-label);
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-align: center;
+  color: #FF8C00;
+  text-shadow: 0 0 10px rgba(255, 140, 0, 0.28);
+}
+
+/* Reduce the actual aria-label content used for :after */
+.engine-sound-profile .language-option[aria-label*="Spanish"]::after { content: "Spanish"; }
+.engine-sound-profile .language-option[aria-label*="French"]::after { content: "French"; }
+.engine-sound-profile .language-option[aria-label*="Korean"]::after { content: "Korean"; }
+
   display: flex;
   align-items: center;
   justify-content: space-between;
