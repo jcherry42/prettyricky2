@@ -98,8 +98,15 @@ export const Header = () => {
       return;
     }
 
-    // Play startup sound at beginning
-    playStartupSound();
+    // Play startup sound only after an explicit user gesture.
+    // This avoids browser autoplay restrictions and prevents aborted media requests.
+    const handleFirstInteraction = () => {
+      playStartupSound();
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    window.addEventListener('keydown', handleFirstInteraction, { once: true });
 
     // JDM-style startup sequence - outer lights first, then inner, then text
     // Mimics R34 Skyline boot-up sequence
