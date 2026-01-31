@@ -143,6 +143,9 @@ agent_communication:
 
   - agent: "main"
   - agent: "main"
+
+  - agent: "main"
+    message: "Jan 31 2026: Swirl enhancements per user preference A + C: increased prominence on the home surface (prominence=1.25) and added adaptive dampening (prominence=0.7) while ANY modal is open. Modal detection covers SalesContext modals (Import, TowerTalk) and Header-owned modals via DOM overlay selectors (.cc-overlay, .intake-overlay, .inventory-overlay) using a MutationObserver. Regression tested with Playwright: PASS."
     message: "Jan 31 2026: Global Designo/pass-swirl mastery improved: rewrote DesignoSwirlBackground into a multi-layer 'material' system (pass swirls + leather stitch weave + film grain SVG turbulence + slow glass sweep + vignette). Confirmed pointer-events none and no z-index issues. Screenshot + full Playwright regression passed."
   - agent: "main"
   - agent: "main"
