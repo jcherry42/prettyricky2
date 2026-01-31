@@ -1270,9 +1270,6 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
   box-shadow: 0 16px 28px rgba(0,0,0,0.12), 0 0 18px rgba(255, 140, 0, 0.12);
 }
 
-.sound-toggle span {
-  font-size: 13px;
-
 /* Match these section fonts to the Ambient Lighting scale - REMOVED: conflicts with +25% requirement */
 
 .engine-sound-profile label,
