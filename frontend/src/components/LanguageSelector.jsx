@@ -80,7 +80,7 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
         }
 
         .flag-emoji {
-          font-size: 28px;
+          font-size: 40px;
           line-height: 1;
           filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
