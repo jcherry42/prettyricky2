@@ -85,13 +85,13 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
           background:
             conic-gradient(from 190deg at 40% 48%,
               transparent 0deg,
-              rgba(255, 195, 110, 0.07) 35deg,
-              transparent 110deg,
-              rgba(165, 30, 78, 0.06) 200deg,
+              rgba(255, 195, 110, 0.10) 28deg,
+              transparent 105deg,
+              rgba(165, 30, 78, 0.09) 200deg,
               transparent 305deg
             );
-          opacity: 0.42;
-          filter: blur(18px);
+          opacity: calc(0.50 * var(--designo-prominence, 1));
+          filter: blur(16px);
           animation: designo-pass-drift-b 34s ease-in-out infinite;
         }
 
