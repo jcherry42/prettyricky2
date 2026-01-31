@@ -154,9 +154,9 @@
 /* ===== IMPORT OPTIONS ===== */
 .import-options {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: 20px;
+  gap: 28px;
   padding: 24px 28px;
   background: 
     radial-gradient(ellipse 80% 50% at 15% 20%, rgba(140, 85, 35, 0.3) 0%, transparent 50%),
@@ -169,14 +169,19 @@
     0 8px 28px rgba(0, 0, 0, 0.5);
 }
 
-.import-option {
+.import-option-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 10px;
+}
+
+.import-option {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 6px;
-  width: 130px;
-  height: 130px;
+  width: 170px;
+  height: 170px;
   background: 
     radial-gradient(circle at 50% 30%, rgba(60, 55, 50, 0.5) 0%, transparent 60%),
     radial-gradient(circle at 50% 50%, #1a1816 0%, #0d0c0b 70%, #080706 100%);
@@ -195,17 +200,16 @@
 }
 
 .import-option .io-icon {
-  width: 48px;
-  height: 48px;
+  width: 120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
-  order: 2;
 }
 
 .import-option .io-icon svg {
-  width: 36px;
-  height: 36px;
+  width: 108px;
+  height: 108px;
 }
 
 .import-option.cyan .io-icon { 
@@ -223,15 +227,26 @@
   filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.7));
 }
 
-.import-option .io-title {
-  font-size: 10px;
-  font-weight: 700;
-  color: #FFD080;
+.io-title.laser-etched {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 220, 170, 0.72);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  text-shadow: 0 0 10px rgba(255, 200, 80, 0.9);
+  letter-spacing: 1.2px;
   text-align: center;
-  order: 1;
+
+  /* Laser-etched look */
+  text-shadow:
+    0 1px 0 rgba(0,0,0,0.65),
+    0 0 10px rgba(255, 200, 80, 0.14);
+  opacity: 0.95;
+}
+
+html:not(.dark) .io-title.laser-etched {
+  color: rgba(45, 31, 15, 0.70);
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.7),
+    0 0 10px rgba(140, 90, 43, 0.12);
 }
 
 /* ===== CUSTOMER LIST ===== */

@@ -519,17 +519,19 @@ export const CommandCenter = memo(({ isOpen, onClose }) => {
 
 // Import Option Card - Circular gauge with icon and title (memoized)
 const ImportOption = memo(({ icon: Icon, title, color, onClick }) => (
-  <div 
-    className={`import-option ${color}`} 
-    onClick={onClick}
-    role="button"
-    tabIndex={0}
-    onKeyDown={(e) => e.key === 'Enter' && onClick()}
-    aria-label={`Import via ${title}`}
-    data-testid={`import-option-${color}`}
-  >
-    <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
-    <span className="io-title">{title}</span>
+  <div className="import-option-wrap">
+    <div className={`io-title laser-etched ${color}`}>{title}</div>
+    <div 
+      className={`import-option ${color}`} 
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      aria-label={`Import via ${title}`}
+      data-testid={`import-option-${color}`}
+    >
+      <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
+    </div>
   </div>
 ));
 
