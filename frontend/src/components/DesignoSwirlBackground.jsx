@@ -67,8 +67,9 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
         /* Palette derived from the reference: aubergine/magenta + amber + teal/cyan */
         .designo-swirl-pass {
           mix-blend-mode: screen;
-          filter: blur(14px);
-          opacity: calc(0.56 * var(--designo-prominence, 1));
+          /* Slightly sharper ribbon definition */
+          filter: blur(11px);
+          opacity: calc(0.60 * var(--designo-prominence, 1));
         }
 
         .designo-swirl-pass-a {
@@ -85,13 +86,13 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
           background:
             conic-gradient(from 190deg at 40% 48%,
               transparent 0deg,
-              rgba(255, 195, 110, 0.10) 28deg,
-              transparent 105deg,
-              rgba(165, 30, 78, 0.09) 200deg,
+              rgba(255, 195, 110, 0.11) 26deg,
+              transparent 104deg,
+              rgba(165, 30, 78, 0.10) 200deg,
               transparent 305deg
             );
-          opacity: calc(0.50 * var(--designo-prominence, 1));
-          filter: blur(16px);
+          opacity: calc(0.56 * var(--designo-prominence, 1));
+          filter: blur(14px);
           animation: designo-pass-drift-b 34s ease-in-out infinite;
         }
 
