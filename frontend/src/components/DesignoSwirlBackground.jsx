@@ -60,7 +60,7 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
         .designo-swirl-pass {
           mix-blend-mode: screen;
           filter: blur(14px);
-          opacity: 0.56;
+          opacity: calc(0.56 * var(--designo-prominence, 1));
         }
 
         .designo-swirl-pass-a {
