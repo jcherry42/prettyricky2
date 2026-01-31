@@ -58,7 +58,7 @@ function AppContent() {
     };
   }, []);
   
-  // Update status bar when theme changes
+  // Update status bar (dark-only)
   useEffect(() => {
     if (isNative) {
       updateStatusBarTheme(true);
