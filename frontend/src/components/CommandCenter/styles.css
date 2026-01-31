@@ -1243,7 +1243,7 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 }
 
 .ambient-toggle span {
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -2088,7 +2088,7 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 }
 
 .ambient-toggle span {
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
 }
 
