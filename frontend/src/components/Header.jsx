@@ -268,9 +268,6 @@ export const Header = () => {
         onOpenLicenseScanner={() => {
           setIntakeOpen(false);
           setLicenseScannerOpen(true);
-
-      <VehicleInventoryModal isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} />
-
         }}
       />
 
