@@ -77,9 +77,11 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
         }
 
         html:not(.dark) .flag-btn {
-          background: linear-gradient(135deg, rgba(184, 134, 11, 0.10) 0%, rgba(160, 120, 60, 0.08) 100%);
-          border: 2px solid rgba(180, 140, 80, 0.22);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          background:
+            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.14) 0%, transparent 60%),
+            linear-gradient(135deg, rgba(255,191,0,0.22) 0%, rgba(255,140,0,0.16) 100%);
+          border: 2px solid rgba(255,191,0,0.14);
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
         }
 
         .flag-emoji {
@@ -90,11 +92,11 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
 
         .flag-btn:hover {
           background:
-            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.08) 0%, transparent 60%),
-            linear-gradient(135deg, rgba(255,191,0,0.12) 0%, rgba(255,140,0,0.08) 100%);
+            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.12) 0%, transparent 60%),
+            linear-gradient(135deg, rgba(255,191,0,0.24) 0%, rgba(255,140,0,0.18) 100%);
           border-color: rgba(255,191,0,0.18);
           transform: translateY(-2px);
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
         html:not(.dark) .flag-btn:hover {
@@ -107,8 +109,8 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
 
         .flag-btn.active {
           background:
-            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.12) 0%, transparent 60%),
-            linear-gradient(135deg, rgba(255,191,0,0.20) 0%, rgba(255,140,0,0.14) 100%);
+            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.14) 0%, transparent 60%),
+            linear-gradient(135deg, rgba(255,191,0,0.26) 0%, rgba(255,140,0,0.20) 100%);
           border-color: rgba(255,191,0,0.22);
           box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,0.06);
           transform: translateY(-1px);
