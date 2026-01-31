@@ -699,19 +699,6 @@
   box-shadow: none !important;
 }
 
-html:not(.dark) .cc-printer .printer-ip-input {
-  background: rgba(255,255,255,0.7) !important;
-}
-
-html:not(.dark) .cc-printer .printer-status-card,
-html:not(.dark) .cc-printer .printer-form,
-html:not(.dark) .cc-printer .printer-input-row,
-html:not(.dark) .cc-printer .printer-info {
-  border: none !important;
-  box-shadow: none !important;
-}
-
-
 .printer-info {
   padding: 14px;
   margin-top: 14px;
