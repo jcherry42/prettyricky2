@@ -742,9 +742,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
         <div className="settings-form">
           <div className="s-field">
             <label>Default Translation Language</label>
-            <p style={{ fontSize: '13px', opacity: 0.7, marginBottom: '12px' }}>
-              Choose which language AI responses will be translated to when Sport Mode is active
-            </p>
+            <div style={{ height: 6 }} />
             <LanguageSelector
               selectedLanguage={defaultTargetLanguage}
               onLanguageChange={onLanguageChange}
