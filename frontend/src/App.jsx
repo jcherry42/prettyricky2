@@ -63,7 +63,7 @@ function AppContent() {
     if (isNative) {
       updateStatusBarTheme(true);
     }
-  }, [theme]);
+  }, []);
   
   return (
     <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden quilted-leather-amber">
