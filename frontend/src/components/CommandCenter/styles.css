@@ -1250,12 +1250,12 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn {
 .user-profile .section-header h4,
 .engine-sound-profile .section-header h4,
 .ambient-section .section-header h4 {
-  font-size: 18px;
+  font-size: 15px; /* 25% increase from base 12px */
 }
 
 /* Translation section uses generic settings-section; bump its title too */
 .settings-section .section-header h4 {
-  font-size: 18px;
+  font-size: 15px; /* 25% increase from base 12px */
 }
 
 }
