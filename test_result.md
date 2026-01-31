@@ -143,6 +143,8 @@ agent_communication:
 
   - agent: "main"
   - agent: "main"
+    message: "Jan 31 2026: Global Designo/pass-swirl mastery improved: rewrote DesignoSwirlBackground into a multi-layer 'material' system (pass swirls + leather stitch weave + film grain SVG turbulence + slow glass sweep + vignette). Confirmed pointer-events none and no z-index issues. Screenshot + full Playwright regression passed."
+  - agent: "main"
   - agent: "main"
     message: "Jan 31 2026: STRICT dark-only cleanup COMPLETED. Removed ALL remaining `html:not(.dark)` selector blocks from src/index.css, src/styles/luxury-auto.css, src/styles/tesla-2027.css using a brace-safe block remover (kept at-rule blocks intact). Verified `rg 'html:not(.dark)' src` returns no matches. App loads and passes full Playwright regression after cleanup."
 
