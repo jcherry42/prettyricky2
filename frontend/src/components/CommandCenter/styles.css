@@ -1257,10 +1257,6 @@
   text-shadow: 0 0 10px rgba(255, 140, 0, 0.28);
 }
 
-html:not(.dark) .engine-sound-profile .sound-profile-btn {
-  background: rgba(255, 255, 255, 0.86);
-  border-color: rgba(180, 140, 80, 0.16);
-
 /* +25% for section titles (Dealership Profile, Your Profile, Translation, Engine Sound Profile, 64-color Ambient Lighting) */
 .dealership-profile .section-header h4,
 .user-profile .section-header h4,
@@ -1272,18 +1268,6 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn {
 /* Translation section uses generic settings-section; bump its title too */
 .settings-section .section-header h4 {
   font-size: 21px; /* +15% */
-}
-
-}
-
-html:not(.dark) .engine-sound-profile .sound-profile-btn:hover {
-  border-color: rgba(180, 140, 80, 0.30);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.10);
-}
-
-html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
-  border-color: rgba(255,191,0,0.60);
-  box-shadow: 0 16px 28px rgba(0,0,0,0.12), 0 0 18px rgba(255, 140, 0, 0.12);
 }
 
 /* Match these section fonts to the Ambient Lighting scale - REMOVED: conflicts with +25% requirement */
