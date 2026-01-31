@@ -61,7 +61,7 @@ function AppContent() {
   // Update status bar when theme changes
   useEffect(() => {
     if (isNative) {
-      updateStatusBarTheme(theme === 'dark');
+      updateStatusBarTheme(true);
     }
   }, [theme]);
   
