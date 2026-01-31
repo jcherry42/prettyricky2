@@ -82,7 +82,7 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
           .inventory-modal {
             width: 100%;
             max-width: 780px;
-            height: min(86dvh, 720px);
+            max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
             overflow: hidden;
             border-radius: 22px;
             background:
@@ -94,25 +94,12 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
             flex-direction: column;
           }
 
+          /* Mobile: keep CommandCenter-like centered modal, full-width with safe padding */
           @media (max-width: 520px) {
-            .inventory-overlay {
-              align-items: flex-end;
-              padding: 0;
-              padding-bottom: env(safe-area-inset-bottom, 0px);
-            }
-
             .inventory-modal {
               max-width: 100%;
               width: 100%;
-              height: 86dvh;
-              border-radius: 24px 24px 0 0;
-              border-left: none;
-              border-right: none;
-              border-bottom: none;
-            }
-
-            .inventory-header {
-              padding-top: calc(14px + env(safe-area-inset-top, 0px));
+              border-radius: 22px;
             }
           }
 
@@ -122,6 +109,11 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
             justify-content: space-between;
             padding: 14px 14px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            z-index: 2;
           }
 
           .inventory-title {
