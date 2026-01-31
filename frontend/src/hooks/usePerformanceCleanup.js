@@ -18,6 +18,7 @@ export const usePerformanceCleanup = (cleanupCallback, deps = []) => {
     callbackRef.current = cleanupCallback;
   }, [cleanupCallback]);
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const handleDeepCleanup = () => {
       if (callbackRef.current) {
