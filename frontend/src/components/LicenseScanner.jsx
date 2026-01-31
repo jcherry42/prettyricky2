@@ -932,19 +932,6 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             font-weight: 500;
           }
 
-          /* Light mode */
-          html:not(.dark) .license-scanner-modal {
-            background: #f8f8f8;
-          }
-
-          html:not(.dark) .scanner-header {
-            background: linear-gradient(180deg, rgba(0,188,212,0.1) 0%, transparent 100%);
-            border-color: rgba(0,188,212,0.2);
-          }
-
-          html:not(.dark) .preview-image-wrapper {
-            border-color: rgba(0,188,212,0.4);
-          }
         `}</style>
       </div>
     </div>
