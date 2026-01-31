@@ -5,7 +5,7 @@ import React from 'react';
  * Simplified to show only flag emojis
  */
 const LANGUAGES = [
-  { code: 'es', flag: '🇪🇸', name: 'Spanish' },
+  { code: 'es', flag: '🇲🇽', name: 'Spanish' },
   { code: 'fr', flag: '🇫🇷', name: 'French' },
   { code: 'ko', flag: '🇰🇷', name: 'Korean' }
 ];

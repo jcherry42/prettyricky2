@@ -624,7 +624,7 @@ const AmbientLightingSection = memo(() => {
         )}
         
         <p className="ambient-desc">
-          Mercedes-Benz inspired 64-color ambient lighting cycles through the full spectrum behind cards and UI elements.
+          64-color ambient lighting cycles through the full spectrum behind cards and UI elements.
         </p>
       </div>
       

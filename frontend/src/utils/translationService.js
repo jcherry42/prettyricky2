@@ -51,7 +51,7 @@ const translationCache = new TranslationCache();
 
 // Supported languages - Spanish, French, Korean only
 export const SUPPORTED_LANGUAGES = [
-  { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+  { code: 'es', name: 'Spanish', native: 'Español', flag: '🇲🇽' },
   { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
   { code: 'ko', name: 'Korean', native: '한국어', flag: '🇰🇷' },
 ];
