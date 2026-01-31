@@ -526,6 +526,12 @@
   border-color: rgba(255,191,0,0.34);
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+
+/* Customers tab: reduce by 25% */
+.cc-customers {
+  font-size: 0.75em;
+}
+
 }
 
 /* ===== PRINTER SECTION ===== */
