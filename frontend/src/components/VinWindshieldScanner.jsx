@@ -346,7 +346,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
                 {isProcessing ? (
                   <div className="vinws-processing">
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Recognizing</span>
+                    <span>Recognizing</span>
                   </div>
                 ) : recognized.length === 0 ? (
                   <div className="vinws-empty">No VIN detected. Try again.</div>
