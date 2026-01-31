@@ -569,6 +569,20 @@
 html:not(.dark) .eject-info {
   border: none;
   background: rgba(0,0,0,0.02);
+
+/* Printer tab: reduce all text by 40% */
+.cc-printer {
+  font-size: 0.6em;
+}
+
+.cc-printer h3 {
+  font-size: 18px;
+}
+
+.cc-printer .cc-description {
+  font-size: 12px;
+}
+
 }
 
 /* ===== LIGHT MODE ===== */
