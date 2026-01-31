@@ -578,7 +578,7 @@ html:not(.dark) .eject-info {
 
 /* Printer tab: reduce all text by 40% */
 .cc-printer {
-  font-size: 0.6em;
+  font-size: 0.45em; /* additional -25% from current */
 }
 
 .cc-printer h3 {
