@@ -4,6 +4,8 @@ import { useSales } from '../context/SalesContext';
 import { LicenseScanner } from './LicenseScanner';
 import { CommandCenter } from './CommandCenter';
 import IntakeHub from './IntakeHub';
+import VehicleInventoryModal from './VehicleInventoryModal';
+
 import { getSoundPreferences } from '../utils/notificationSound';
 
 // Startup sound with smooth gradual fade-out effect
