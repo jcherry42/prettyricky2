@@ -1170,6 +1170,7 @@ html:not(.dark) .io-title {
   display: flex;
   flex-direction: column;
   gap: 10px; /* reduce blank space */
+  font-size: 1.2em; /* +20% overall Settings tab */
 }
 
 .settings-form {

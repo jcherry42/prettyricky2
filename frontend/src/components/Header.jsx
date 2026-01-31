@@ -245,7 +245,7 @@ export const Header = () => {
         {/* Local Inventory */}
         <button
           onClick={() => setInventoryOpen(true)}
-          className="header-btn inventory"
+          className={`header-btn inventory ${inventoryOpen ? 'in-use' : ''}`}
           data-testid="open-inventory-btn"
           aria-label="Open local inventory"
         >
