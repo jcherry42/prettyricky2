@@ -830,61 +830,6 @@ h1, h2, h3 {
     0 0 30px hsla(40, 100%, 50%, 0.3);
 }
 
-/* Light mode header - designo Ivory */
-html:not(.dark) .header-luxury {
-  background: 
-    /* designo wood grain accent */
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 2px,
-      rgba(180, 140, 60, 0.06) 2px,
-      rgba(180, 140, 60, 0.06) 3px,
-      transparent 3px,
-      transparent 10px
-    ),
-    linear-gradient(180deg, 
-      hsla(38, 35%, 92%, 0.98) 0%,
-      hsla(35, 30%, 86%, 0.99) 100%
-    );
-  background-size: 20px 100%, 100% 100%;
-  background-blend-mode: overlay, normal;
-  border-bottom: 2px solid hsla(28, 35%, 70%, 0.5);
-  box-shadow: 
-    0 4px 20px hsla(0, 0%, 0%, 0.12),
-    inset 0 1px 0 hsla(0, 0%, 100%, 0.6),
-    inset 0 -1px 0 hsla(28, 25%, 60%, 0.2);
-}
-
-html:not(.dark) .header-btn {
-  background: linear-gradient(180deg, 
-    hsla(38, 25%, 88%, 0.95) 0%, 
-    hsla(35, 28%, 82%, 0.98) 100%
-  );
-  border: 1px solid hsla(28, 40%, 65%, 0.4);
-  color: hsla(28, 60%, 30%, 1);
-  box-shadow: 
-    0 2px 8px hsla(28, 30%, 50%, 0.15),
-    inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
-}
-
-html:not(.dark) .header-btn.amber {
-  background: linear-gradient(180deg, 
-    hsla(35, 45%, 85%, 0.95) 0%, 
-    hsla(30, 50%, 78%, 0.98) 100%
-  );
-  border-color: hsla(38, 65%, 50%, 0.5);
-  color: hsla(30, 75%, 28%, 1);
-}
-
-html:not(.dark) .header-btn.electric-green {
-  background: linear-gradient(180deg, 
-    hsla(145, 35%, 85%, 0.95) 0%, 
-    hsla(145, 40%, 78%, 0.98) 100%
-  );
-  border-color: hsla(145, 60%, 42%, 0.5);
-  color: hsla(145, 70%, 25%, 1);
-}
 
 /* ============================================
    SPORT MODE FIRE BUTTON WITH IMPLOSION EFFECT
