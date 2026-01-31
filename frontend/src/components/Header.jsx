@@ -86,6 +86,9 @@ export const Header = () => {
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
 
   useEffect(() => {
+  // Local inventory modal
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
     if (hasPlayed) {
       // Already initialized via useState
