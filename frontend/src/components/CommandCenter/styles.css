@@ -715,15 +715,20 @@
 
 /* Printer tab: reduce all text by 40% */
 .cc-printer {
-  font-size: 0.45em; /* additional -25% from current */
+  font-size: 0.45em; /* baseline */
+}
+
+/* +12.5% per request */
+.cc-printer {
+  font-size: calc(0.45em * 1.125);
 }
 
 .cc-printer h3 {
-  font-size: 16px;
+  font-size: calc(16px * 1.125);
 }
 
 .cc-printer .cc-description {
-  font-size: 10px;
+  font-size: calc(10px * 1.125);
 }
 
 
