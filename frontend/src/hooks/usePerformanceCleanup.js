@@ -38,7 +38,8 @@ export const usePerformanceCleanup = (cleanupCallback, deps = []) => {
       window.removeEventListener('deepCleanup', handleDeepCleanup);
       window.removeEventListener('emergencyCleanup', handleEmergencyCleanup);
     };
-  }, Array.isArray(deps) ? deps : []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 };
 
 /**
