@@ -89,13 +89,6 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
           box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.06);
         }
 
-        html:not(.dark) .flag-btn:hover {
-          background:
-            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.14) 0%, transparent 60%),
-            linear-gradient(135deg, rgba(255,191,0,0.14) 0%, rgba(255,140,0,0.10) 100%);
-          border-color: rgba(180, 140, 80, 0.30);
-          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.10);
-        }
 
         .flag-btn.active {
           background:
