@@ -443,7 +443,19 @@ frontend:
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Removed hardcoded localhost fallback in translationService BACKEND_URL to avoid prod/mobile mismatch." 
+        comment: "Removed hardcoded localhost fallback in translationService BACKEND_URL to avoid prod/mobile mismatch."
+
+  - task: "Local Inventory Modal - Mobile viewport positioning and functionality"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/VehicleInventoryModal.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE: Modal positioning problem on mobile viewport (390x844). Modal appears at y=-33.84375 (above viewport) instead of being properly centered within safe area. Modal extends beyond viewport bounds making it partially inaccessible. ✅ WORKING: Blue wheel button opens modal, wheel spins when open/stops when closed, close button functional, correct title and empty state messaging. NEEDS FIX: Modal positioning CSS must account for fixed header height on mobile." 
 
     status_history:
       - working: true
