@@ -144,6 +144,9 @@ agent_communication:
   - agent: "testing"
 
   - agent: "main"
+
+  - agent: "main"
+    message: "Jan 31 2026: Designo enhancements per user preference (A + C + more prominence): increased home swirl prominence to 1.45, sharpened pass ribbons (reduced blur, increased alpha), strengthened pass layers and clearcoat sweep; adaptive dampening still applies when modals open. Printer tab fonts increased +12.5% via calc() in CommandCenter/styles.css. Full Playwright regression: PASS."
   - agent: "main"
 
   - agent: "main"
