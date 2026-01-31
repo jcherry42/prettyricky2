@@ -533,6 +533,10 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             flex-direction: column;
             animation: fadeIn 0.25s ease-out;
           }
+          html:not(.dark) .license-scanner-modal {
+            border-radius: 36px;
+          }
+
 
           @keyframes fadeIn {
             from { transform: scale(0.97); opacity: 0; }
