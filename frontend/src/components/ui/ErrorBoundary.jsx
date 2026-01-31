@@ -64,15 +64,7 @@ class ErrorBoundary extends React.Component {
               {this.props.message || "We're sorry, but something unexpected happened. Please try again."}
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="error-details">
-                <summary>Error Details</summary>
-                <pre>{this.state.error.toString()}</pre>
-                {this.state.errorInfo && (
-                  <pre>{this.state.errorInfo.componentStack}</pre>
-                )}
-              </details>
-            )}
+            {/* Error details hidden in production builds */}
 
             <div className="error-actions">
               <button onClick={this.handleRetry} className="error-retry-btn">
