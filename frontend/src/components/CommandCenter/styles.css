@@ -713,10 +713,6 @@
   background: rgba(255,255,255,0.02);
 }
 
-html:not(.dark) .eject-info {
-  border: none;
-  background: rgba(0,0,0,0.02);
-
 /* Printer tab: reduce all text by 40% */
 .cc-printer {
   font-size: 0.45em; /* additional -25% from current */
@@ -728,8 +724,6 @@ html:not(.dark) .eject-info {
 
 .cc-printer .cc-description {
   font-size: 10px;
-}
-
 }
 
 /* ===== LIGHT MODE ===== */
