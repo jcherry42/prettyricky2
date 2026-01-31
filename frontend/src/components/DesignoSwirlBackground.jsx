@@ -73,9 +73,10 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
 
         .designo-swirl-pass-a {
           background:
-            radial-gradient(ellipse 58% 44% at 18% 46%, rgba(165, 30, 78, 0.18) 0%, transparent 62%),
-            radial-gradient(ellipse 54% 60% at 78% 62%, rgba(25, 150, 190, 0.14) 0%, transparent 64%),
-            radial-gradient(ellipse 46% 46% at 52% 18%, rgba(255, 195, 110, 0.10) 0%, transparent 62%);
+            radial-gradient(ellipse 58% 44% at 18% 46%, rgba(165, 30, 78, 0.24) 0%, transparent 62%),
+            radial-gradient(ellipse 54% 60% at 78% 62%, rgba(25, 150, 190, 0.19) 0%, transparent 64%),
+            radial-gradient(ellipse 46% 46% at 52% 18%, rgba(255, 195, 110, 0.14) 0%, transparent 62%),
+            radial-gradient(ellipse 42% 40% at 60% 72%, rgba(120, 20, 55, 0.12) 0%, transparent 70%);
           animation: designo-pass-drift-a 22s ease-in-out infinite;
         }
 
