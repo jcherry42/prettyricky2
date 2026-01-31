@@ -94,7 +94,7 @@ export const cleanLocalStorage = () => {
       if (!key) continue;
       
       // Skip critical keys
-      if (key.startsWith('auth_') || key === 'theme' || key === 'superchargd_startup_played') {
+      if (key.startsWith('auth_') || key === 'superchargd_startup_played') {
         continue;
       }
       
@@ -350,7 +350,7 @@ export const emergencyCleanup = async () => {
   log('EMERGENCY CLEANUP - Memory critical!', 'warn');
   
   // Clear all non-essential storage
-  const essentialKeys = ['auth_token', 'auth_user', 'theme', 'superchargd_startup_played'];
+  const essentialKeys = ['auth_token', 'auth_user', 'superchargd_startup_played'];
   
   // Clear localStorage except essentials
   for (let i = localStorage.length - 1; i >= 0; i--) {

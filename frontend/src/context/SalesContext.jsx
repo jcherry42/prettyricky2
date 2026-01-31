@@ -51,8 +51,7 @@ const initialState = {
   showAdminSettings: false,
   isOffline: !navigator.onLine,
   
-  // Theme & Modes
-  theme: 'dark',
+  // Modes
   supercharged: false,
 };
 
@@ -217,7 +216,6 @@ export function SalesProvider({ children }) {
     const vehicleInventory = loadFromStorage(STORAGE_KEYS.VEHICLES, []);
     
     // Theme: light mode is deprecated; force dark mode always
-    localStorage.setItem('closr_theme', 'dark');
     document.documentElement.classList.add('dark');
     
     // Load supercharged mode
@@ -237,7 +235,6 @@ export function SalesProvider({ children }) {
         favorites,
         vehicleInventory,
         isSetupComplete,
-        theme: 'dark',
         supercharged: savedSupercharged,
       },
     });
@@ -349,11 +346,7 @@ export function SalesProvider({ children }) {
     payload: { id, category } 
   });
 
-  // Theme & Supercharg'd actions
-  // Theme toggle removed: app is dark-only
-  // (kept as no-op for backwards compatibility inside the app)
-  const toggleTheme = () => {};
-
+  // Supercharg'd actions
   const toggleSuperchargedMode = () => {
     dispatch({ type: ACTIONS.SET_SUPERCHARGED, payload: !state.supercharged });
   };
@@ -403,8 +396,6 @@ export function SalesProvider({ children }) {
     copyToClipboard,
     shareToMessages,
     sendToMessages,
-    // toggleTheme removed (dark-only)
-
     toggleSuperchargedMode,
     setVehicleInventory,
   };
