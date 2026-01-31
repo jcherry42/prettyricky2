@@ -558,6 +558,17 @@
 }
 
 
+
+/* Printer tab: make all boxes borderless */
+.cc-printer .printer-status-card,
+.cc-printer .printer-form,
+.cc-printer .printer-input-row,
+.cc-printer .printer-ip-input,
+.cc-printer .printer-info {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .printer-info {
   padding: 14px;
   margin-top: 14px;
