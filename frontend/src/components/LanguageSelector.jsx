@@ -47,9 +47,6 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
           letter-spacing: 0.05em;
         }
 
-        html:not(.dark) .lang-label {
-          color: #5C3A1E;
-        }
 
         .lang-flags {
           display: flex;
