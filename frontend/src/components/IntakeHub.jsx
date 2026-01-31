@@ -633,7 +633,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               0 30px 60px rgba(0,0,0,0.15);
           }
           html:not(.dark) .intake-modal {
-            border-radius: 28px;
+            border-radius: 34px;
           }
 
           html:not(.dark) .intake-header {

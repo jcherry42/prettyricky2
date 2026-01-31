@@ -527,7 +527,7 @@ export const LicenseScanner = ({ isOpen, onClose }) => {
             max-width: 500px;
             max-height: calc(100vh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
             background: #0a0a0a;
-            border-radius: 30px;
+            border-radius: 36px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
