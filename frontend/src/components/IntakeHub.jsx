@@ -292,7 +292,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               repeating-linear-gradient(45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
               repeating-linear-gradient(-45deg, transparent, transparent 22px, rgba(180, 140, 80, 0.02) 22px, rgba(180, 140, 80, 0.02) 23px),
               linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
-            border-radius: 34px;
+            border-radius: 40px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -633,7 +633,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               0 30px 60px rgba(0,0,0,0.15);
           }
           html:not(.dark) .intake-modal {
-            border-radius: 34px;
+            border-radius: 40px;
           }
 
           html:not(.dark) .intake-header {
