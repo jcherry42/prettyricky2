@@ -132,7 +132,7 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
         .designo-swirl-glass {
           inset: 0;
           mix-blend-mode: screen;
-          opacity: 0.18;
+          opacity: calc(0.22 * var(--designo-prominence, 1));
           background:
             linear-gradient(115deg,
               transparent 0%,
