@@ -763,7 +763,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
         {/* Sound Settings */}
         <div className="sound-settings">
           <div className="sound-toggle">
-            <span>Sound Effects</span>
+            <span className="sound-effects-label">Sound Effects</span>
             <button 
               className={`toggle-btn ${soundPrefs.enabled ? 'on' : 'off'}`}
               onClick={() => {
