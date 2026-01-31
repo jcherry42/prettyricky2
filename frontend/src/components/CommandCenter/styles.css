@@ -303,7 +303,7 @@
   animation: importRingSweep 7.5s ease-in-out infinite;
 }
 
-.import-option::after {
+.import-option .io-depth {
   content: '';
   position: absolute;
   inset: 0;
