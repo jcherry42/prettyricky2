@@ -53,18 +53,21 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
 
         .lang-flags {
           display: flex;
-          gap: 8px;
+          gap: 12px;
+          justify-content: space-between;
         }
 
+        /* Match Engine Sound button sizing */
         .flag-btn {
-          width: 52px;
-          height: 52px;
+          flex: 1;
+          width: auto;
+          height: 92px;
           display: flex;
           align-items: center;
           justify-content: center;
           background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
           border: 2px solid rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
+          border-radius: 18px;
           cursor: pointer;
           transition: all 0.2s ease;
           padding: 0;
