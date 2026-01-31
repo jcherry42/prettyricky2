@@ -4,6 +4,7 @@ import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 import { validateVIN } from '../utils/enterprise';
 import { LicenseScanner } from './LicenseScanner';
+import BatchVinScanModal from './BatchVinScanModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
@@ -18,6 +19,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
   const [decoding, setDecoding] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [mileage, setMileage] = useState('');
+  const [batchOpen, setBatchOpen] = useState(false);
 
   // Guard if context not yet extended
   const inventory = vehicleInventory || [];
@@ -124,7 +126,8 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
   };
 
   return (
-    <div className="intake-overlay" onClick={onClose}>
+    <>
+      <div className="intake-overlay" onClick={onClose}>
       <div className="intake-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="intake-header">
@@ -208,15 +211,26 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
               {vinStatus.message && (
                 <p className={`vin-status ${vinStatus.valid ? 'valid' : 'error'}`}>{vinStatus.message}</p>
               )}
-              <button
-                className="vin-decode-btn"
-                disabled={!vinStatus.valid || decoding}
-                onClick={handleDecodeVIN}
-                aria-label={decoding ? 'Decoding VIN' : 'Decode VIN and save to inventory'}
-                data-testid="vin-decode-btn"
-              >
-                {decoding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Decode & Save to Inventory'}
-              </button>
+              <div className="vin-actions">
+                <button
+                  className="vin-decode-btn"
+                  disabled={!vinStatus.valid || decoding}
+                  onClick={handleDecodeVIN}
+                  aria-label={decoding ? 'Decoding VIN' : 'Decode VIN and save to inventory'}
+                  data-testid="vin-decode-btn"
+                >
+                  {decoding ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Decode & Save to Inventory'}
+                </button>
+
+                <button
+                  className="vin-batch-btn"
+                  onClick={() => setBatchOpen(true)}
+                  aria-label="Open batch VIN scan"
+                  data-testid="vin-batch-btn"
+                >
+                  Batch Mode
+                </button>
+              </div>
 
               {/* Inventory list */}
               <div className="vin-inventory-header">
@@ -451,6 +465,39 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             flex-direction: column;
             gap: 12px;
           }
+
+          .vin-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+          }
+
+          .vin-batch-btn {
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 170, 255, 0.26);
+            background: rgba(0, 170, 255, 0.10);
+            color: rgba(200, 240, 255, 0.92);
+            font-size: 14px;
+            font-weight: 850;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: all 0.25s;
+            white-space: nowrap;
+          }
+
+          .vin-batch-btn:hover {
+            border-color: rgba(0, 170, 255, 0.34);
+            box-shadow: 0 0 18px rgba(0, 170, 255, 0.14);
+            transform: translateY(-2px);
+          }
+
+          @media (max-width: 520px) {
+            .vin-actions {
+              grid-template-columns: 1fr;
+            }
+          }
           .vin-input-row {
             display: grid;
             grid-template-columns: 2fr 1.4fr;
@@ -494,7 +541,7 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
             color: #f97373;
           }
           .vin-decode-btn {
-            margin-top: 4px;
+            margin-top: 0;
             padding: 12px 16px;
             border-radius: 10px;
             border: 2px solid rgba(74, 222, 128, 0.5);
@@ -622,6 +669,9 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
         `}</style>
       </div>
     </div>
+
+    <BatchVinScanModal isOpen={batchOpen} onClose={() => setBatchOpen(false)} />
+    </>
   );
 };
 
