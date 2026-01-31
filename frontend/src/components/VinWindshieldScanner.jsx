@@ -296,7 +296,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
               {!cameraError && !cameraReady && (
                 <div className="vinws-loading">
                   <Loader2 className="w-6 h-6 animate-spin" />
-                  <span>Starting camera</span>
+                  <span>Starting camera</span>
                 </div>
               )}
 
