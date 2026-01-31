@@ -112,36 +112,6 @@
   transform: translateY(-2px);
 }
 
-html:not(.dark) .tesla-customer-selector {
-  background: 
-    /* Light Picasso accent */
-    radial-gradient(ellipse 120% 60% at 0% 50%, rgba(180, 100, 120, 0.06) 0%, transparent 40%),
-    radial-gradient(ellipse 100% 80% at 100% 50%, rgba(100, 140, 100, 0.04) 0%, transparent 35%),
-    /* Quilted ivory nappa */
-    repeating-linear-gradient(45deg, transparent, transparent 14px, rgba(180, 150, 100, 0.03) 14px, rgba(180, 150, 100, 0.03) 15px),
-    repeating-linear-gradient(-45deg, transparent, transparent 14px, rgba(180, 150, 100, 0.03) 14px, rgba(180, 150, 100, 0.03) 15px),
-    linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
-  border: 2px solid rgba(200, 170, 120, 0.35);
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.6),
-    0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-html:not(.dark) .tesla-customer-selector::before {
-  background: 
-    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.06) 1px, transparent 1px),
-    radial-gradient(circle at 14px 14px, rgba(139, 90, 43, 0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.7;
-}
-
-html:not(.dark) .tesla-customer-selector:hover {
-  border-color: rgba(180, 140, 80, 0.5);
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.8),
-    0 8px 24px rgba(0, 0, 0, 0.1),
-    0 0 15px rgba(200, 160, 80, 0.1);
-}
 
 .tesla-customer-header {
   display: flex;
