@@ -186,14 +186,10 @@ function salesReducer(state, action) {
       return { ...state, isOffline: action.payload };
     
     case ACTIONS.SET_THEME:
-      localStorage.setItem('closr_theme', action.payload);
-      // Apply theme to document
-      if (action.payload === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return { ...state, theme: action.payload };
+      // Light mode deprecated; always force dark
+      localStorage.setItem('closr_theme', 'dark');
+      document.documentElement.classList.add('dark');
+      return { ...state, theme: 'dark' };
     
     case ACTIONS.SET_SUPERCHARGED:
       localStorage.setItem('closr_supercharged', action.payload ? 'true' : 'false');
@@ -224,13 +220,9 @@ export function SalesProvider({ children }) {
     const favorites = loadFromStorage(STORAGE_KEYS.FAVORITES, []);
     const vehicleInventory = loadFromStorage(STORAGE_KEYS.VEHICLES, []);
     
-    // Load theme preference
-    const savedTheme = localStorage.getItem('closr_theme') || 'dark';
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    // Theme: light mode is deprecated; force dark mode always
+    localStorage.setItem('closr_theme', 'dark');
+    document.documentElement.classList.add('dark');
     
     // Load supercharged mode
     const savedSupercharged = localStorage.getItem('closr_supercharged') === 'true';
@@ -249,7 +241,7 @@ export function SalesProvider({ children }) {
         favorites,
         vehicleInventory,
         isSetupComplete,
-        theme: savedTheme,
+        theme: 'dark',
         supercharged: savedSupercharged,
       },
     });
@@ -362,9 +354,9 @@ export function SalesProvider({ children }) {
   });
 
   // Theme & Supercharg'd actions
+  // Theme toggle removed: app is dark-only
   const toggleTheme = () => {
-    const newTheme = state.theme === 'dark' ? 'light' : 'dark';
-    dispatch({ type: ACTIONS.SET_THEME, payload: newTheme });
+    dispatch({ type: ACTIONS.SET_THEME, payload: 'dark' });
   };
 
   const toggleSuperchargedMode = () => {
