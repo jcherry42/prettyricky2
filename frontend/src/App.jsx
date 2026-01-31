@@ -131,7 +131,7 @@ function AppContent() {
       
       {/* Performance Monitor - Dev Mode or triple-tap to show */}
       <PerformanceMonitor 
-        visible={showPerfMonitor || process.env.NODE_ENV === 'development'} 
+        visible={showPerfMonitor} 
         position="bottom-left"
         compact={true}
       />

@@ -25,8 +25,8 @@ const CONFIG = {
   MAX_NOTIFICATION_HISTORY: 20,
   STALE_DATA_THRESHOLD: 60 * 60 * 1000,         // 1 hour
   
-  // Debug mode
-  DEBUG: process.env.NODE_ENV === 'development',
+  // Debug mode (Vite)
+  DEBUG: import.meta.env.DEV,
 };
 
 // Performance metrics storage
