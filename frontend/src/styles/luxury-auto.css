@@ -293,6 +293,41 @@
 }
 
 .quilted-leather-amber::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(255, 160, 60, 0.1) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(255, 160, 60, 0.1) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* LIGHT MODE - Quilted Leather Cream/Tan */
+html:not(.dark) .quilted-leather-amber {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 24px,
+      rgba(180, 140, 80, 0.08) 24px,
+      rgba(180, 140, 80, 0.08) 25px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 24px,
+      rgba(180, 140, 80, 0.08) 24px,
+      rgba(180, 140, 80, 0.08) 25px
+    ),
+    linear-gradient(180deg, rgba(245, 240, 230, 1) 0%, rgba(235, 228, 215, 1) 100%);
+}
+
+html:not(.dark) .quilted-leather-amber::before {
+  background: 
+    radial-gradient(circle at 0 0, rgba(160, 120, 60, 0.15) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(160, 120, 60, 0.15) 1.5px, transparent 1.5px);
+}
 
 /* ==================== CARBON FIBER TEXTURE ==================== */
 
@@ -449,6 +484,37 @@
 }
 
 .infotainment-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 140, 0, 0.2) 20%,
+    rgba(255, 140, 0, 0.2) 80%,
+    transparent 100%
+  );
+}
+
+/* LIGHT MODE - Infotainment Panel - High Contrast */
+html:not(.dark) .infotainment-panel {
+  background: #FFFFFF;
+  border: 1px solid rgba(139, 90, 43, 0.2);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .infotainment-header {
+  background: #FAF7F2;
+  border-bottom: 1px solid rgba(139, 90, 43, 0.12);
+}
+
+html:not(.dark) .infotainment-divider {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(139, 90, 43, 0.2) 20%,
+    rgba(139, 90, 43, 0.2) 80%,
+    transparent 100%
+  );
+}
 
 /* ==================== LUXURY BUTTON STYLES ==================== */
 
@@ -637,6 +703,602 @@
 }
 
 .luxury-transition-slow {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+
+/* ==================== LIGHT MODE OVERRIDES ==================== */
+
+/* Light mode text colors - overrides for amber/gold text */
+html:not(.dark) [style*="color: #FF9F43"],
+html:not(.dark) [style*="color: rgba(255, 159, 67"],
+html:not(.dark) [style*="color: rgba(255, 200, 150"] {
+  color: #B8860B !important; /* Dark goldenrod for light mode */
+}
+
+/* Light mode text visibility */
+html:not(.dark) [style*="color: rgba(255, 240, 220"] {
+  color: #3D2914 !important; /* Dark brown for readability */
+}
+
+/* Light mode ambient overlays */
+html:not(.dark) .fixed.inset-0.pointer-events-none {
+  display: none; /* Hide dark ambient overlays in light mode */
+}
+
+/* Light mode luxury scrollbar */
+html:not(.dark) .luxury-scrollbar::-webkit-scrollbar-track {
+  background: rgba(180, 140, 80, 0.1);
+}
+
+html:not(.dark) .luxury-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+    rgba(180, 140, 80, 0.4) 0%,
+    rgba(160, 120, 60, 0.3) 100%
+  );
+}
+
+html:not(.dark) .luxury-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+    rgba(180, 140, 80, 0.6) 0%,
+    rgba(160, 120, 60, 0.5) 100%
+  );
+}
+
+/* Light mode digital readout */
+html:not(.dark) .digital-readout {
+  color: #B8860B;
+  text-shadow: none;
+}
+
+html:not(.dark) .digital-readout-cyan {
+  color: #0891b2;
+  text-shadow: none;
+}
+
+
+
+/* ==================== LIGHT MODE - MODAL OVERRIDES ==================== */
+/* Optimized for readability with high contrast text and clean white inputs */
+
+/* Intake Scanner Modal */
+html:not(.dark) .intake-overlay {
+  background: rgba(240, 235, 225, 0.95);
+}
+
+html:not(.dark) .intake-modal {
+  background: #FFFFFF;
+  border-color: rgba(139, 90, 43, 0.25);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.2), 0 0 1px rgba(0,0,0,0.1);
+}
+
+html:not(.dark) .intake-modal .close-btn {
+  background: #F5F0E8;
+  border-color: rgba(139, 90, 43, 0.2);
+  color: #5D4E37;
+}
+
+html:not(.dark) .intake-modal .close-btn:hover {
+  background: #EDE5D8;
+  color: #8B5A2B;
+}
+
+html:not(.dark) .intake-modal .back-btn {
+  background: #F5F0E8;
+  border-color: rgba(139, 90, 43, 0.2);
+  color: #5D4E37;
+}
+
+html:not(.dark) .intake-modal .back-btn:hover {
+  background: #EDE5D8;
+  color: #8B5A2B;
+}
+
+html:not(.dark) .intake-header h2 {
+  color: #8B5A2B !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .intake-header p {
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .intake-option {
+  background: #FFFFFF;
+  border: 1px solid rgba(139, 90, 43, 0.2);
+}
+
+html:not(.dark) .intake-option:hover {
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.35);
+}
+
+html:not(.dark) .intake-option.featured {
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
+}
+
+html:not(.dark) .option-title {
+  color: #2D1F0F !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .option-desc {
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .option-chevron {
+  color: #8B5A2B !important;
+}
+
+html:not(.dark) .option-icon.license {
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
+  color: #8B5A2B;
+}
+
+html:not(.dark) .option-icon.vin {
+  background: #F0F9FA;
+  border-color: rgba(8, 145, 178, 0.25);
+  color: #0E7490;
+}
+
+html:not(.dark) .header-icon.license {
+  background: #FDF8F0;
+  border-color: rgba(139, 90, 43, 0.3);
+  color: #8B5A2B;
+}
+
+html:not(.dark) .header-icon.vin {
+  background: #F0F9FA;
+  border-color: rgba(8, 145, 178, 0.25);
+  color: #0E7490;
+}
+
+/* Quick Add Modal - High Contrast Light Mode */
+html:not(.dark) .quick-add-overlay {
+  background: rgba(240, 235, 225, 0.95);
+}
+
+html:not(.dark) .quick-add-modal {
+  background: #FFFFFF !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1) !important;
+}
+
+html:not(.dark) .quick-add-header {
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
+  background: #FAF7F2 !important;
+}
+
+html:not(.dark) .quick-add-header h3 {
+  color: #8B5A2B !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .qa-icon {
+  background: #FDF8F0 !important;
+  border-color: rgba(139, 90, 43, 0.3) !important;
+  color: #8B5A2B !important;
+}
+
+html:not(.dark) .qa-close {
+  background: #F5F0E8 !important;
+  border-color: rgba(139, 90, 43, 0.2) !important;
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .qa-close:hover:not(:disabled) {
+  background: #EDE5D8 !important;
+  color: #8B5A2B !important;
+}
+
+html:not(.dark) .qa-field label {
+  color: #5D4E37 !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .qa-field input,
+html:not(.dark) .qa-field select,
+html:not(.dark) .qa-field textarea {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.25) !important;
+  color: #2D1F0F !important;
+}
+
+html:not(.dark) .qa-field input:focus,
+html:not(.dark) .qa-field select:focus,
+html:not(.dark) .qa-field textarea:focus {
+  border-color: #8B5A2B !important;
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15) !important;
+}
+
+html:not(.dark) .qa-field input::placeholder,
+html:not(.dark) .qa-field textarea::placeholder {
+  color: #8B7355 !important;
+}
+
+html:not(.dark) .qa-save-btn {
+  background: #8B5A2B !important;
+  border-color: #8B5A2B !important;
+  color: #FFFFFF !important;
+}
+
+html:not(.dark) .qa-save-btn:hover:not(:disabled) {
+  background: #6B4423 !important;
+  box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3) !important;
+}
+
+/* Quick Add FAB */
+html:not(.dark) .quick-add-fab {
+  background: linear-gradient(145deg, rgba(184, 134, 11, 0.15) 0%, rgba(160, 120, 60, 0.2) 100%);
+  border-color: rgba(184, 134, 11, 0.4);
+  box-shadow: 0 4px 20px rgba(184, 134, 11, 0.2), 0 0 30px rgba(184, 134, 11, 0.1);
+}
+
+html:not(.dark) .quick-add-fab:hover {
+  border-color: rgba(184, 134, 11, 0.6);
+  box-shadow: 0 6px 30px rgba(184, 134, 11, 0.25), 0 0 40px rgba(184, 134, 11, 0.15);
+}
+
+html:not(.dark) .fab-pulse {
+  border-color: rgba(184, 134, 11, 0.3);
+}
+
+/* Voice Translator Modal */
+html:not(.dark) .ptt-modal-overlay {
+  background: rgba(245, 240, 230, 0.94);
+}
+
+html:not(.dark) .ptt-modal-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%);
+  border-color: rgba(147, 51, 234, 0.15);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.1), 0 0 60px rgba(147, 51, 234, 0.05);
+}
+
+html:not(.dark) .ptt-modal-header {
+  border-bottom-color: rgba(147, 51, 234, 0.1);
+  background: linear-gradient(180deg, rgba(147, 51, 234, 0.04) 0%, transparent 100%);
+}
+
+html:not(.dark) .ptt-modal-header h3 {
+  color: #7c3aed !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .ptt-modal-icon {
+  background: rgba(147, 51, 234, 0.1);
+  border-color: rgba(147, 51, 234, 0.2);
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-modal-close {
+  background: rgba(0, 0, 0, 0.05);
+  color: #7B6347;
+}
+
+html:not(.dark) .ptt-modal-close:hover {
+  background: rgba(147, 51, 234, 0.1);
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-lang-badge {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.95) 100%);
+  border-color: rgba(147, 51, 234, 0.2);
+}
+
+html:not(.dark) .ptt-lang-arrow {
+  color: #7c3aed;
+}
+
+html:not(.dark) .ptt-recording-indicator,
+html:not(.dark) .ptt-processing-indicator {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 248, 245, 0.98) 100%);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Command Center Modal - High Contrast Light Mode */
+html:not(.dark) .cc-overlay {
+  background: rgba(240, 235, 225, 0.95) !important;
+}
+
+html:not(.dark) .cc-modal {
+  background: #FFFFFF !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1) !important;
+}
+
+/* Hide the quilted leather texture in light mode */
+html:not(.dark) .cc-modal::before,
+html:not(.dark) .cc-modal::after {
+  opacity: 0.15 !important;
+}
+
+html:not(.dark) .cc-header {
+  background: #FAF7F2 !important;
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
+}
+
+html:not(.dark) .cc-title,
+html:not(.dark) .cc-header-title {
+  color: #8B5A2B !important;
+  text-shadow: none !important;
+}
+
+html:not(.dark) .cc-subtitle {
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .cc-close {
+  background: #F5F0E8 !important;
+  border-color: rgba(139, 90, 43, 0.2) !important;
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .cc-close:hover {
+  background: #EDE5D8 !important;
+  color: #8B5A2B !important;
+}
+
+html:not(.dark) .cc-tabs {
+  background: #FAF7F2 !important;
+  border-bottom-color: rgba(139, 90, 43, 0.15) !important;
+}
+
+html:not(.dark) .cc-tab {
+  color: #5D4E37 !important;
+  font-weight: 500 !important;
+}
+
+html:not(.dark) .cc-tab:hover:not(.active) {
+  color: #8B5A2B !important;
+  background: rgba(139, 90, 43, 0.08) !important;
+}
+
+html:not(.dark) .cc-tab.active {
+  color: #8B5A2B !important;
+  border-bottom-color: #8B5A2B !important;
+  background: rgba(139, 90, 43, 0.1) !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cc-content {
+  background: #FFFFFF !important;
+}
+
+html:not(.dark) .stat-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.2) !important;
+}
+
+html:not(.dark) .stat-value {
+  color: #2D1F0F !important;
+  font-weight: 700 !important;
+}
+
+html:not(.dark) .stat-label {
+  color: #5D4E37 !important;
+  font-weight: 500 !important;
+}
+
+html:not(.dark) .cc-section-title {
+  color: #8B5A2B !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cc-list-item {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.15) !important;
+}
+
+html:not(.dark) .cc-list-item:hover {
+  background: #FDF8F0 !important;
+  border-color: rgba(139, 90, 43, 0.25) !important;
+}
+
+html:not(.dark) .cc-list-item-title {
+  color: #2D1F0F !important;
+  font-weight: 600 !important;
+}
+
+html:not(.dark) .cc-list-item-subtitle {
+  color: #5D4E37 !important;
+}
+
+html:not(.dark) .cc-input {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(139, 90, 43, 0.25) !important;
+  color: #2D1F0F !important;
+}
+
+html:not(.dark) .cc-input:focus {
+  border-color: #8B5A2B !important;
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15) !important;
+}
+
+html:not(.dark) .cc-input::placeholder {
+  color: #8B7355 !important;
+}
+
+html:not(.dark) .cc-btn-primary {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.2) 0%, rgba(160, 120, 60, 0.15) 100%) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+  color: #B8860B !important;
+}
+
+html:not(.dark) .cc-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(184, 134, 11, 0.3) 0%, rgba(160, 120, 60, 0.25) 100%) !important;
+}
+
+html:not(.dark) .cc-btn-secondary {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+  color: #7B6347 !important;
+}
+
+html:not(.dark) .cc-btn-secondary:hover:not(:disabled) {
+  background: rgba(184, 134, 11, 0.08) !important;
+  color: #B8860B !important;
+}
+
+/* Settings Panel in Command Center */
+html:not(.dark) .settings-section {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(180, 140, 80, 0.12) !important;
+}
+
+html:not(.dark) .settings-section-title {
+  color: #B8860B !important;
+}
+
+html:not(.dark) .settings-item {
+  border-bottom-color: rgba(180, 140, 80, 0.08) !important;
+}
+
+html:not(.dark) .settings-item-label {
+  color: #3D2914 !important;
+}
+
+html:not(.dark) .settings-item-desc {
+  color: #7B6347 !important;
+}
+
+/* Tower Talk Modal */
+html:not(.dark) .tower-talk-overlay {
+  background: rgba(245, 240, 230, 0.94) !important;
+}
+
+html:not(.dark) .tower-talk-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
+  border-color: rgba(220, 38, 38, 0.15) !important;
+}
+
+html:not(.dark) .tower-talk-header {
+  background: linear-gradient(180deg, rgba(220, 38, 38, 0.05) 0%, transparent 100%) !important;
+  border-bottom-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+html:not(.dark) .tower-talk-title {
+  color: #dc2626 !important;
+  text-shadow: none !important;
+}
+
+/* Import Modal */
+html:not(.dark) .import-modal {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 248, 245, 0.99) 100%) !important;
+  border-color: rgba(180, 140, 80, 0.2) !important;
+}
+
+html:not(.dark) .import-dropzone {
+  background: rgba(245, 240, 230, 0.5) !important;
+  border-color: rgba(180, 140, 80, 0.3) !important;
+}
+
+html:not(.dark) .import-dropzone:hover {
+  background: rgba(184, 134, 11, 0.05) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+}
+
+/* ==================== LIGHT MODE - LIQUID GLASS AQUA INPUTS ==================== */
+/* Aqua blue liquid glass with electric green font for all inputs in light mode */
+
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="email"],
+html:not(.dark) input[type="tel"],
+html:not(.dark) input[type="password"],
+html:not(.dark) input[type="number"],
+html:not(.dark) input[type="url"],
+html:not(.dark) input[type="search"],
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 188, 212, 0.12) 0%,
+    rgba(0, 229, 255, 0.08) 50%,
+    rgba(0, 188, 212, 0.15) 100%
+  ) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  color: #00E676 !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 229, 255, 0.1),
+    0 0 20px rgba(0, 229, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+html:not(.dark) input[type="text"]:focus,
+html:not(.dark) input[type="email"]:focus,
+html:not(.dark) input[type="tel"]:focus,
+html:not(.dark) input[type="password"]:focus,
+html:not(.dark) input[type="number"]:focus,
+html:not(.dark) input[type="url"]:focus,
+html:not(.dark) input[type="search"]:focus,
+html:not(.dark) textarea:focus,
+html:not(.dark) select:focus {
+  border-color: rgba(0, 229, 255, 0.6) !important;
+  box-shadow: 
+    inset 0 1px 3px rgba(0, 229, 255, 0.15),
+    0 0 30px rgba(0, 229, 255, 0.15),
+    0 0 0 3px rgba(0, 229, 255, 0.1) !important;
+  outline: none !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: rgba(0, 230, 118, 0.5) !important;
+}
+
+/* Electric green text for input values */
+html:not(.dark) .mclaren-input,
+html:not(.dark) .qa-field input,
+html:not(.dark) .qa-field textarea,
+html:not(.dark) .cc-input {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 188, 212, 0.12) 0%,
+    rgba(0, 229, 255, 0.08) 50%,
+    rgba(0, 188, 212, 0.15) 100%
+  ) !important;
+  border: 1px solid rgba(0, 229, 255, 0.35) !important;
+  color: #00E676 !important;
+}
+
+html:not(.dark) .mclaren-input:focus,
+html:not(.dark) .qa-field input:focus,
+html:not(.dark) .qa-field textarea:focus,
+html:not(.dark) .cc-input:focus {
+  border-color: rgba(0, 229, 255, 0.6) !important;
+  box-shadow: 
+    0 0 30px rgba(0, 229, 255, 0.15),
+    0 0 0 3px rgba(0, 229, 255, 0.1) !important;
+}
+
+/* Liquid glass shimmer effect */
+html:not(.dark) input[type="text"],
+html:not(.dark) input[type="email"],
+html:not(.dark) input[type="tel"],
+html:not(.dark) textarea {
+  position: relative;
+}
+
+html:not(.dark) input[type="text"]::before,
+html:not(.dark) textarea::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 229, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
 
 @keyframes shimmer {
   0% { left: -100%; }
@@ -697,6 +1359,12 @@
 
 /* Apply ambient pulse to wood bezels */
 .designo-bezel {
+  animation: ambientPulse 4s ease-in-out infinite;
+}
+
+html:not(.dark) .designo-bezel {
+  animation: ambientPulseLight 4s ease-in-out infinite;
+}
 
 /* Ambient glow on icons */
 @keyframes iconGlow {
@@ -760,6 +1428,17 @@
       0 0 40px rgba(200, 160, 80, 0.08);
   }
   50% {
+    box-shadow: 
+      0 0 0 2px rgba(220, 185, 130, 0.5),
+      0 24px 80px rgba(0, 0, 0, 0.12),
+      0 0 60px rgba(200, 160, 80, 0.15);
+  }
+}
+
+html:not(.dark) .cc-modal,
+html:not(.dark) .designo-modal {
+  animation: breatheLight 6s ease-in-out infinite;
+}
 
 /* Gauge needle animation on hover for import buttons */
 @keyframes needleWiggle {
@@ -788,6 +1467,12 @@
 }
 
 .io-title {
+  animation: textGlow 3s ease-in-out infinite;
+}
+
+html:not(.dark) .io-title {
+  animation: none;
+}
 
 
 /* ============================================
@@ -947,6 +1632,33 @@
 }
 
 .designo-bezel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Light mode bezel - bird's-eye maple */
+html:not(.dark) .designo-bezel {
+  background: 
+    radial-gradient(circle 4px at 12% 18%, rgba(200, 160, 100, 0.35) 0%, transparent 100%),
+    radial-gradient(circle 3px at 38% 12%, rgba(210, 170, 110, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 4px at 65% 22%, rgba(190, 150, 95, 0.32) 0%, transparent 100%),
+    radial-gradient(circle 3px at 88% 15%, rgba(205, 165, 105, 0.28) 0%, transparent 100%),
+    radial-gradient(circle 3px at 25% 85%, rgba(195, 155, 98, 0.3) 0%, transparent 100%),
+    radial-gradient(circle 4px at 72% 88%, rgba(200, 160, 100, 0.32) 0%, transparent 100%),
+    repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 1px,
+      rgba(160, 120, 60, 0.06) 1px,
+      rgba(160, 120, 60, 0.06) 2px
+    ),
+    linear-gradient(135deg, #D4B86A 0%, #C9A86C 25%, #DFC08A 50%, #CAAD72 75%, #D8BB82 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(139, 90, 30, 0.15),
+    0 6px 24px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(180, 140, 80, 0.3);
+}
 
 /* Chrome trim accent for bezels */
 .designo-bezel-chrome {
@@ -1065,6 +1777,56 @@ html.dark .designo-border-accent {
 
 /* Contrast stitching dots */
 .designo-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 20px 20px, rgba(212, 175, 55, 0.08) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Light mode card */
+html:not(.dark) .designo-card {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 90, 43, 0.04) 20px,
+      rgba(139, 90, 43, 0.04) 21px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 90, 43, 0.04) 20px,
+      rgba(139, 90, 43, 0.04) 21px
+    ),
+    linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%);
+  border-color: rgba(180, 140, 90, 0.35);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(200, 170, 120, 0.3);
+}
+
+html:not(.dark) .designo-card::before {
+  background: 
+    radial-gradient(ellipse 150% 80% at 5% 30%, rgba(180, 100, 120, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 120% 100% at 95% 70%, rgba(100, 140, 100, 0.06) 0%, transparent 50%),
+    conic-gradient(from 180deg at 20% 60%, transparent 0deg, rgba(190, 110, 130, 0.05) 60deg, transparent 120deg);
+  opacity: 0.8;
+}
+
+html:not(.dark) .designo-card::after {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.1) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 20px 20px, rgba(139, 90, 43, 0.1) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+}
 
 /* ==================== CUSTOMER CARD - DESIGNO STYLE ==================== */
 
@@ -1103,6 +1865,48 @@ html.dark .designo-border-accent {
 }
 
 .designo-customer-card:hover {
+  border-color: rgba(200, 160, 80, 0.5);
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.03) 16px, rgba(200, 160, 100, 0.03) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(200, 160, 100, 0.03) 16px, rgba(200, 160, 100, 0.03) 17px),
+    linear-gradient(180deg, #282420 0%, #1a1816 100%);
+  transform: translateY(-2px);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 200, 140, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(200, 160, 80, 0.08);
+}
+
+/* Light mode customer card */
+html:not(.dark) .designo-customer-card {
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.03) 16px, rgba(180, 150, 100, 0.03) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.03) 16px, rgba(180, 150, 100, 0.03) 17px),
+    linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  border-color: rgba(180, 150, 100, 0.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+html:not(.dark) .designo-customer-card::before {
+  background: 
+    radial-gradient(ellipse 100% 60% at 0% 50%, rgba(180, 100, 120, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse 80% 80% at 100% 50%, rgba(100, 140, 100, 0.04) 0%, transparent 35%);
+  opacity: 0.7;
+}
+
+html:not(.dark) .designo-customer-card:hover {
+  border-color: rgba(180, 140, 80, 0.45);
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.04) 16px, rgba(180, 150, 100, 0.04) 17px),
+    repeating-linear-gradient(-45deg, transparent, transparent 16px, rgba(180, 150, 100, 0.04) 16px, rgba(180, 150, 100, 0.04) 17px),
+    linear-gradient(180deg, #FFFFFF 0%, #FDF9F3 100%);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 0 15px rgba(200, 160, 80, 0.1);
+}
 
 /* ==================== MODAL WITH DESIGNO TREATMENT ==================== */
 
@@ -1145,6 +1949,46 @@ html.dark .designo-border-accent {
 
 /* Stitching pattern */
 .designo-modal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 0 0, rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* Light mode modal */
+html:not(.dark) .designo-modal {
+  background: 
+    repeating-linear-gradient(45deg, transparent, transparent 24px, rgba(180, 150, 100, 0.03) 24px, rgba(180, 150, 100, 0.03) 25px),
+    repeating-linear-gradient(-45deg, transparent, transparent 24px, rgba(180, 150, 100, 0.03) 24px, rgba(180, 150, 100, 0.03) 25px),
+    linear-gradient(165deg, #FDFAF5 0%, #F5EFE5 50%, #FAF7F2 100%);
+  border-color: rgba(180, 140, 90, 0.4);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 6px rgba(139, 90, 43, 0.08),
+    0 24px 80px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(200, 170, 120, 0.4);
+}
+
+html:not(.dark) .designo-modal::before {
+  background: 
+    radial-gradient(ellipse 200% 100% at -20% 50%, rgba(180, 100, 120, 0.1) 0%, rgba(160, 90, 110, 0.05) 40%, transparent 70%),
+    radial-gradient(ellipse 180% 120% at 120% 30%, rgba(100, 140, 100, 0.08) 0%, rgba(90, 130, 90, 0.04) 45%, transparent 75%),
+    radial-gradient(ellipse 100% 60% at 50% 110%, rgba(200, 160, 100, 0.08) 0%, transparent 60%),
+    conic-gradient(from 160deg at 10% 70%, transparent 0deg, rgba(190, 110, 130, 0.06) 50deg, transparent 100deg),
+    conic-gradient(from 340deg at 90% 30%, transparent 0deg, rgba(110, 150, 110, 0.05) 60deg, transparent 120deg);
+  opacity: 0.9;
+}
+
+html:not(.dark) .designo-modal::after {
+  background: 
+    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.08) 1.5px, transparent 1.5px),
+    radial-gradient(circle at 24px 24px, rgba(139, 90, 43, 0.08) 1.5px, transparent 1.5px);
+  background-size: 48px 48px;
+}
 
 /* ==================== BUTTON WITH WOOD BEZEL ==================== */
 
@@ -1176,6 +2020,45 @@ html.dark .designo-border-accent {
 }
 
 .designo-btn-bezeled:hover {
+  background: linear-gradient(180deg, #353230 0%, #252220 100%);
+  color: #FFD080;
+  text-shadow: 0 0 12px rgba(255, 200, 100, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 0 4px #7A4F2A,
+    0 0 0 5px rgba(140, 95, 45, 0.8),
+    0 0 0 6px rgba(100, 65, 30, 0.6),
+    inset 0 1px 2px rgba(255, 200, 140, 0.15),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 6px 20px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 180, 80, 0.1);
+}
+
+html:not(.dark) .designo-btn-bezeled {
+  background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+  color: #5C3A1E;
+  text-shadow: none;
+  box-shadow: 
+    0 0 0 4px #C9A86C,
+    0 0 0 5px rgba(210, 175, 115, 0.8),
+    0 0 0 6px rgba(180, 145, 85, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html:not(.dark) .designo-btn-bezeled:hover {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF7F2 100%);
+  color: #4A2E15;
+  box-shadow: 
+    0 0 0 4px #D4B86A,
+    0 0 0 5px rgba(220, 185, 120, 0.8),
+    0 0 0 6px rgba(190, 155, 95, 0.6),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.08),
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    0 0 15px rgba(200, 160, 80, 0.15);
+}
 
 /* ==================== INPUT FIELDS - DESIGNO STYLE ==================== */
 
@@ -1202,6 +2085,37 @@ html.dark .designo-border-accent {
 }
 
 .designo-input:focus {
+  outline: none;
+  border-color: rgba(200, 160, 80, 0.6);
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 2px rgba(255, 200, 140, 0.08),
+    0 0 0 3px rgba(200, 160, 80, 0.15),
+    0 0 15px rgba(255, 180, 80, 0.1);
+}
+
+html:not(.dark) .designo-input {
+  background: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+  border-color: rgba(180, 150, 100, 0.4);
+  color: #5C3A1E;
+  box-shadow: 
+    inset 0 2px 6px rgba(139, 90, 43, 0.1),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+html:not(.dark) .designo-input::placeholder {
+  color: rgba(139, 90, 43, 0.4);
+}
+
+html:not(.dark) .designo-input:focus {
+  border-color: rgba(180, 140, 80, 0.6);
+  box-shadow: 
+    inset 0 2px 6px rgba(139, 90, 43, 0.08),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.6),
+    0 0 0 3px rgba(200, 160, 80, 0.1),
+    0 0 12px rgba(180, 140, 80, 0.1);
+}
 
 /* ==================== TABS WITH CHROME TRIM ==================== */
 
@@ -1239,3 +2153,39 @@ html.dark .designo-border-accent {
 }
 
 .designo-tab.active {
+  background: linear-gradient(180deg, #252220 0%, #1a1816 100%);
+  color: #FFB850;
+  text-shadow: 0 0 8px rgba(255, 180, 80, 0.4);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 200, 140, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+html:not(.dark) .designo-tabs {
+  background: 
+    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255, 255, 255, 0.2) 1px, rgba(255, 255, 255, 0.2) 2px),
+    linear-gradient(180deg, #E8E4DC 0%, #D8D0C4 50%, #E0D8CC 100%);
+  border-color: rgba(180, 150, 100, 0.3);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(139, 90, 43, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+html:not(.dark) .designo-tab {
+  color: rgba(90, 70, 50, 0.6);
+}
+
+html:not(.dark) .designo-tab:hover:not(.active) {
+  color: #6B4324;
+  background: rgba(139, 90, 43, 0.08);
+}
+
+html:not(.dark) .designo-tab.active {
+  background: linear-gradient(180deg, #FAF7F2 0%, #F0EBE2 100%);
+  color: #5C3A1E;
+  text-shadow: none;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
