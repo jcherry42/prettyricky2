@@ -236,14 +236,22 @@ export const Header = () => {
           <span className="sport-label">{supercharged ? 'ESP' : 'SPORT'}</span>
         </button>
 
-        {/* Theme Toggle */}
+        {/* Local Inventory */}
         <button
-          onClick={toggleTheme}
-          className="header-btn"
-          data-testid="toggle-theme-btn"
+          onClick={() => setInventoryOpen(true)}
+          className="header-btn inventory"
+          data-testid="open-inventory-btn"
+          aria-label="Open local inventory"
         >
-          {theme === 'dark' ? <Sun className="header-btn-icon" /> : <Moon className="header-btn-icon" />}
-          <span>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+          <div className="wheel" aria-hidden="true">
+            <div className="wheel-rim" />
+            <div className="wheel-spokes">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className={`spoke spoke-${i + 1}`} />
+              ))}
+            </div>
+            <div className="wheel-hub" />
+          </div>
         </button>
       </div>
       
