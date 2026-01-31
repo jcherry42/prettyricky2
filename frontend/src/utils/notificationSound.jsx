@@ -224,8 +224,11 @@ export const setSoundPreferences = (prefs) => {
 };
 
 // Preload sounds on module load
+// NOTE: Guarded for environments where browser blocks audio initialization
 if (typeof window !== 'undefined') {
-  preloadSounds();
+  setTimeout(() => {
+    preloadSounds();
+  }, 0);
 }
 
 /**
