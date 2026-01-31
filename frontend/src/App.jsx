@@ -24,7 +24,7 @@ import './utils/keyboardManager'; // Auto-initializes on import
 performanceManager.start();
 
 function AppContent() {
-  const { showAdminSettings, toggleAdminSettings, theme } = useSales();
+  const { showAdminSettings, toggleAdminSettings } = useSales();
   const [showPerfMonitor, setShowPerfMonitor] = useState(false);
   
   // Initialize native capabilities on mount
