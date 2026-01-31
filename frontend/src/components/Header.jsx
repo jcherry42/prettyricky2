@@ -87,9 +87,10 @@ export const Header = () => {
   // Command Center modal state
   const [commandCenterOpen, setCommandCenterOpen] = useState(false);
 
-  useEffect(() => {
   // Local inventory modal
   const [inventoryOpen, setInventoryOpen] = useState(false);
+
+  useEffect(() => {
 
     const hasPlayed = sessionStorage.getItem('superchargd_startup_played');
     if (hasPlayed) {
