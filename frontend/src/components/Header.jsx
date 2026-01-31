@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { Sun, Moon, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { LicenseScanner } from './LicenseScanner';
 import { CommandCenter } from './CommandCenter';
@@ -68,9 +68,7 @@ const playStartupSound = () => {
 export const Header = () => {
   const { 
     toggleAdminSettings,
-    theme,
     supercharged,
-    toggleTheme,
     toggleSuperchargedMode,
   } = useSales();
 
