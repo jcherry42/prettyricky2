@@ -140,6 +140,9 @@ agent_communication:
   - agent: "testing"
 
   - agent: "main"
+  - agent: "main"
+    message: "Jan 31 2026: Dark-only cleanup continued. Removed multiple html:not(.dark) blocks from index.css (header light mode), CommandCenter/styles.css (light mode section + broken brace around eject-info), animations.css (light-mode skeleton + language selector light mode + ambient overrides), tesla-2027.css (customer selector light mode blocks + some light mode text colors). Added global DesignoSwirlBackground component and mounted it in App.jsx as a fixed, subtle animated gradient layer. Remaining html:not(.dark) blocks still exist (mostly in index.css, tesla-2027.css, luxury-auto.css) and should be removed to complete strict dark-only cleanup. ESLint passes."
+
     message: "Jan 31 2026: Added Batch VIN Scan mode and began 'real' windshield VIN scanner (offline OCR). New components: BatchVinScanModal.jsx (manual + camera queue, decodes via /api/vin/decode and saves directly into Local Inventory), VinWindshieldScanner.jsx (camera capture + Tesseract.js OCR with ROI crop + simple preprocessing; returns detected VINs to batch queue). IntakeHub updated with Batch Mode button in VIN tab. Added specular sweep animation on CommandCenter Import dial (machined ring). Removed one html:not(.dark) body background block from index.css (dark-only cleanup in progress). ESLint passes.
 
 TODO for testing agent: verify batch mode end-to-end (add VINs, decode+save, verify Local Inventory), open scanner and upload a VIN photo (if available) to validate OCR pipeline."
