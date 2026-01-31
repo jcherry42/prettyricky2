@@ -75,7 +75,7 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
             align-items: center;
             justify-content: center;
             padding: 16px;
-            padding-top: env(safe-area-inset-top, 16px);
+            padding-top: calc(16px + env(safe-area-inset-top, 0px) + 90px);
             padding-bottom: env(safe-area-inset-bottom, 16px);
           }
 
