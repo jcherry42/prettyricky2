@@ -603,6 +603,21 @@ html:not(.dark) .io-title.laser-etched {
 .cc-add-btn:hover {
   background:
     radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.12) 0%, transparent 60%),
+
+/* Printer tab: ensure borderless inputs/boxes in light mode as well */
+html:not(.dark) .cc-printer .printer-ip-input,
+html:not(.dark) .cc-printer .printer-status-card,
+html:not(.dark) .cc-printer .printer-form,
+html:not(.dark) .cc-printer .printer-input-row,
+html:not(.dark) .cc-printer .printer-info {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+html:not(.dark) .cc-printer .printer-ip-input {
+  background: rgba(255,255,255,0.7) !important;
+}
+
     linear-gradient(135deg, rgba(255,191,0,0.24) 0%, rgba(255,140,0,0.18) 100%);
   border-color: rgba(255,191,0,0.34);
   transform: translateY(-1px);
