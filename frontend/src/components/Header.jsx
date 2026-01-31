@@ -260,6 +260,10 @@ export const Header = () => {
           </div>
         </button>
       </div>
+
+
+      <VehicleInventoryModal isOpen={inventoryOpen} onClose={() => setInventoryOpen(false)} />
+
       
       {/* Intake Hub: License & VIN Scanner */}
       <IntakeHub 
