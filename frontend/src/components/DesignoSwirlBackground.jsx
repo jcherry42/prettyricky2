@@ -16,7 +16,15 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
   const opacity = 0.42 * intensity * prominence;
 
   return (
-    <div aria-hidden="true" className="designo-swirl-bg" style={{ opacity }}>
+    <div
+      aria-hidden="true"
+      className="designo-swirl-bg"
+      style={{
+        opacity,
+        // Used inside CSS via var() for tuning without reflow.
+        ['--designo-prominence']: prominence,
+      }}
+    >
       <div className="designo-swirl-vignette" />
 
       {/* “Pass swirls” — soft, hand-painted ribbons */}
