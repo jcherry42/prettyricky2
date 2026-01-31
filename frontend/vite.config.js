@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['vite.svg', 'sounds/*.wav'],
+      includeAssets: ['vite.svg', 'sounds/*.wav', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-512x512.svg'],
       manifest: {
         name: "Supercharg'd",
         short_name: "Supercharg'd",
@@ -16,7 +16,10 @@ export default defineConfig({
         theme_color: "#0d0d0d",
         background_color: "#0d0d0d",
         display: "standalone",
+        display_override: ["standalone", "fullscreen"],
         orientation: "portrait-primary",
+        scope: "/",
+        start_url: "/",
         icons: [
           {
             src: "pwa-192x192.png",
@@ -37,16 +40,23 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,wav}'],
+        cleanupOutdatedCaches: true,
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [
+          /^\/api\//,
+          /\/sounds\//,
+        ],
         runtimeCaching: [
+          // Same-origin API (works for both preview + production) 
           {
-            urlPattern: /^https:\/\/.*\.preview\.emergentagent\.com\/api\//,
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxAgeSeconds: 60 * 60 * 12 // 12 hours
               },
               networkTimeoutSeconds: 10
             }

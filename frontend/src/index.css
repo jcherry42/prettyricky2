@@ -16,6 +16,22 @@
 /* Global Font Size Increase by 20% */
 html {
   font-size: 120% !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color-scheme: dark;
+}
+
+html, body {
+  height: 100%;
+  overscroll-behavior: none; /* reduce pull-to-refresh / rubber banding on supporting browsers */
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  min-height: 100%;
 }
 
 /* Global Font Override */
