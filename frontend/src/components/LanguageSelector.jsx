@@ -65,12 +65,15 @@ const LanguageSelector = ({ value, onChange, selectedLanguage, onLanguageChange,
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-          border: 2px solid rgba(255, 255, 255, 0.1);
+          background:
+            radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.10) 0%, transparent 60%),
+            linear-gradient(135deg, rgba(255,191,0,0.20) 0%, rgba(255,140,0,0.14) 100%);
+          border: 2px solid rgba(255,191,0,0.12);
           border-radius: 18px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
           padding: 0;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
         }
 
         html:not(.dark) .flag-btn {
