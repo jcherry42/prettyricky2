@@ -1658,16 +1658,6 @@ h1, h2, h3 {
 }
 
 .r34-center-text.lit span {
-  background: linear-gradient(180deg, #00d4ff 0%, #0099ff 50%, #00d4ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 8px rgba(0, 180, 255, 0.8));
-}
-
-html:not(.dark) .r34-center-text span {
-  color: #555;
-}
 
 /* ============================================
    SUPERCHARG'D BUTTON
@@ -1897,26 +1887,6 @@ html:not(.dark) .r34-center-text span {
 }
 
 .btn-supercharged:hover {
-  border-color: #ff8800;
-}
-
-html:not(.dark) .btn-supercharged {
-  background: linear-gradient(180deg, #f0f0f5 0%, #e5e5ea 100%);
-  border-color: #c0c0c8;
-}
-
-html:not(.dark) .btn-supercharged .supercharged-label {
-  color: #555;
-}
-
-html:not(.dark) .btn-supercharged.active {
-  border-color: #dd6600;
-  background: linear-gradient(180deg, #fff8f5 0%, #ffefe8 100%);
-}
-
-html:not(.dark) .btn-supercharged.active .supercharged-label {
-  color: #cc6600;
-}
 
 /* ============================================
    CHECK ENGINE BUTTON - Clean Inline Style
@@ -1956,21 +1926,6 @@ html:not(.dark) .btn-supercharged.active .supercharged-label {
 }
 
 .btn-check-engine:active {
-  transform: scale(0.96);
-}
-
-/* Light mode */
-html:not(.dark) .btn-check-engine {
-  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
-  border-color: #c0c0c8;
-  color: #555;
-}
-
-html:not(.dark) .btn-check-engine:hover {
-  border-color: #dd7700;
-  color: #cc6600;
-  box-shadow: 0 0 15px rgba(221, 119, 0, 0.2);
-}
 
 /* ============================================
    CHECK ENGINE BUTTON - Simplified Amber Style
@@ -2041,31 +1996,6 @@ html:not(.dark) .btn-check-engine:hover {
 }
 
 .btn-check-engine-simple:active {
-  transform: scale(0.96) translateY(0);
-}
-
-/* Light mode */
-html:not(.dark) .btn-check-engine-simple {
-  background: linear-gradient(180deg, 
-    hsla(35, 35%, 92%, 0.98) 0%, 
-    hsla(30, 30%, 86%, 1) 100%
-  );
-  border-color: hsla(35, 80%, 50%, 0.4);
-}
-
-html:not(.dark) .btn-check-engine-simple .check-icon-wrapper {
-  color: #CC8800;
-  filter: drop-shadow(0 0 3px rgba(204, 136, 0, 0.5));
-}
-
-html:not(.dark) .btn-check-engine-simple .check-label {
-  color: #996600;
-}
-
-html:not(.dark) .btn-check-engine-simple:hover {
-  border-color: hsla(35, 90%, 45%, 0.6);
-  box-shadow: 0 0 20px rgba(204, 136, 0, 0.2);
-}
 
 /* ============================================
    ONSTAR-STYLE VIN SCANNER BUTTON
@@ -2336,32 +2266,6 @@ html:not(.dark) .btn-check-engine-simple:hover {
 }
 
 .btn-check-zl1:active {
-  transform: scale(0.96);
-}
-
-/* Light mode */
-html:not(.dark) .btn-check-zl1 {
-  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
-  border-color: #c0c0c8;
-}
-
-html:not(.dark) .btn-check-zl1 .zl1-label {
-  color: #555;
-}
-
-html:not(.dark) .btn-check-zl1 .zl1-bg-icon {
-  color: #dd8800;
-  opacity: 0.1;
-}
-
-html:not(.dark) .btn-check-zl1:hover {
-  border-color: #dd7700;
-  box-shadow: 0 0 20px rgba(221, 119, 0, 0.2);
-}
-
-html:not(.dark) .btn-check-zl1:hover .zl1-label {
-  color: #cc6600;
-}
 
 /* ============================================
    SUPERCHARG'D XL - Double Length Exhaust Flames
@@ -2551,25 +2455,6 @@ html:not(.dark) .btn-check-zl1:hover .zl1-label {
 }
 
 .btn-supercharged-xl.active .supercharged-label-xl {
-  color: hsla(45, 100%, 70%, 1);
-  text-shadow: 0 0 15px hsla(45, 100%, 50%, 0.7);
-}
-
-/* Light mode XL */
-html:not(.dark) .btn-supercharged-xl {
-  background: linear-gradient(180deg, 
-    hsla(220, 12%, 94%, 0.98) 0%,
-    hsla(220, 12%, 88%, 1) 100%
-  );
-  border-color: hsla(220, 10%, 78%, 0.6);
-}
-
-html:not(.dark) .btn-supercharged-xl.active {
-  background: linear-gradient(180deg, 
-    hsla(25, 85%, 92%, 1) 0%,
-    hsla(20, 90%, 86%, 1) 100%
-  );
-}
 
 /* ============================================
    CHECK BUTTON V2 - IMPROVED ZL1 CAMARO (SVG)
@@ -2699,25 +2584,6 @@ html:not(.dark) .btn-supercharged-xl.active {
 }
 
 .btn-check-zl1-v2:active {
-  transform: scale(0.96);
-}
-
-/* Light mode ZL1 V2 */
-html:not(.dark) .btn-check-zl1-v2 {
-  background: linear-gradient(180deg, 
-    hsla(220, 12%, 94%, 0.98) 0%,
-    hsla(220, 12%, 88%, 1) 100%
-  );
-  border-color: hsla(220, 10%, 78%, 0.6);
-}
-
-html:not(.dark) .btn-check-zl1-v2 .zl1-v2-label span {
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .btn-check-zl1-v2:hover .zl1-v2-label span {
-  color: hsla(25, 90%, 40%, 1);
-}
 
 /* ============================================
    SUPERCHARG'D V2 - Enhanced Exhaust Flames
@@ -2917,34 +2783,6 @@ html:not(.dark) .btn-check-zl1-v2:hover .zl1-v2-label span {
 }
 
 .btn-supercharged-v2.active:hover {
-  box-shadow: 
-    0 0 30px hsla(25, 100%, 50%, 0.45),
-    0 0 60px hsla(15, 100%, 50%, 0.2);
-}
-
-/* Light mode supercharged */
-html:not(.dark) .btn-supercharged-v2 {
-  background: linear-gradient(180deg, 
-    hsla(220, 10%, 95%, 0.98) 0%,
-    hsla(220, 10%, 90%, 1) 100%
-  );
-  border-color: hsla(220, 10%, 80%, 0.6);
-}
-
-html:not(.dark) .btn-supercharged-v2 .supercharged-label-v2 {
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .btn-supercharged-v2.active {
-  background: linear-gradient(180deg, 
-    hsla(25, 80%, 92%, 1) 0%,
-    hsla(20, 85%, 88%, 1) 100%
-  );
-}
-
-html:not(.dark) .btn-supercharged-v2.active .supercharged-label-v2 {
-  color: hsla(20, 90%, 35%, 1);
-}
 
 /* ============================================
    CHECK BUTTON - Gran Turismo Side View Style
@@ -3157,34 +2995,6 @@ html:not(.dark) .btn-supercharged-v2.active .supercharged-label-v2 {
 }
 
 .btn-check-gt:active {
-  transform: scale(0.96);
-}
-
-/* Light mode */
-html:not(.dark) .btn-check-gt {
-  background: linear-gradient(180deg, 
-    hsla(220, 12%, 95%, 0.98) 0%,
-    hsla(220, 12%, 90%, 1) 100%
-  );
-  border-color: hsla(220, 10%, 80%, 0.6);
-}
-
-html:not(.dark) .btn-check-gt .gt-car-roof,
-html:not(.dark) .btn-check-gt .gt-car-lower,
-html:not(.dark) .btn-check-gt .gt-hood-panel {
-  background: linear-gradient(180deg,
-    hsla(220, 12%, 65%, 0.95) 0%,
-    hsla(220, 10%, 55%, 1) 100%
-  );
-}
-
-html:not(.dark) .btn-check-gt .gt-label {
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .btn-check-gt:hover .gt-label {
-  color: hsla(25, 90%, 40%, 1);
-}
 
 /* Old btn-supercharged kept for backward compatibility but hidden */
 .btn-supercharged {
@@ -3440,46 +3250,6 @@ html:not(.dark) .btn-check-gt:hover .gt-label {
 
 /* Active/pressed state */
 .btn-check-engine-v2:active {
-  transform: scale(0.96);
-}
-
-/* ===== LIGHT MODE ===== */
-html:not(.dark) .btn-check-engine-v2 {
-  background: linear-gradient(180deg, 
-    hsla(220, 12%, 95%, 0.98) 0%,
-    hsla(220, 12%, 90%, 1) 100%
-  );
-  border-color: hsla(220, 10%, 80%, 0.6);
-}
-
-html:not(.dark) .btn-check-engine-v2 .hood-inner {
-  background: linear-gradient(180deg,
-    hsla(220, 15%, 75%, 0.98) 0%,
-    hsla(220, 12%, 65%, 1) 30%,
-    hsla(220, 15%, 58%, 1) 100%
-  );
-  border-color: hsla(220, 18%, 80%, 0.6);
-}
-
-html:not(.dark) .btn-check-engine-v2 .engine-block {
-  background: linear-gradient(180deg,
-    hsla(220, 15%, 25%, 1) 0%,
-    hsla(220, 15%, 18%, 1) 100%
-  );
-}
-
-html:not(.dark) .btn-check-engine-v2 .check-label {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-html:not(.dark) .btn-check-engine-v2:hover .check-label {
-  color: hsla(20, 90%, 40%, 1);
-}
-
-html:not(.dark) .btn-check-engine-v2:hover {
-  border-color: hsla(20, 80%, 50%, 0.4);
-  box-shadow: 0 0 15px hsla(20, 100%, 50%, 0.1);
-}
 
 /* ============================================
    FORM ELEMENTS
@@ -3914,33 +3684,6 @@ html:not(.dark) .btn-check-engine-v2:hover {
 
 /* Tinted glass cards */
 .card-glass {
-  @apply rounded-xl overflow-hidden backdrop-blur-lg;
-  background: hsla(20, 12%, 10%, 0.65);
-  border: 1px solid hsla(40, 30%, 25%, 0.25);
-  box-shadow: 
-    0 8px 32px hsla(0, 0%, 0%, 0.2),
-    inset 0 1px 0 hsla(40, 40%, 50%, 0.05),
-    inset 0 0 60px hsla(40, 30%, 20%, 0.05);
-}
-
-/* Light mode glass adjustments */
-html:not(.dark) .glass,
-html:not(.dark) .glass-dark,
-html:not(.dark) .glass-warm {
-  background: hsla(30, 15%, 95%, 0.7);
-  border-color: hsla(30, 10%, 80%, 0.5);
-  box-shadow: 
-    0 4px 30px hsla(0, 0%, 0%, 0.05),
-    inset 0 1px 0 hsla(0, 0%, 100%, 0.5);
-}
-
-html:not(.dark) .card-glass {
-  background: hsla(35, 20%, 96%, 0.75);
-  border-color: hsla(35, 15%, 85%, 0.5);
-  box-shadow: 
-    0 4px 20px hsla(20, 30%, 30%, 0.08),
-    inset 0 1px 0 hsla(0, 0%, 100%, 0.6);
-}
 
 /* Header glass treatment */
 .header-luxury {
@@ -3948,13 +3691,6 @@ html:not(.dark) .card-glass {
 }
 
 .dark .header-luxury {
-  background: hsla(220, 10%, 8%, 0.92) !important;
-}
-
-html:not(.dark) .header-luxury {
-  background: hsla(35, 25%, 92%, 0.95) !important;
-  border-bottom-color: hsla(30, 12%, 78%, 0.6);
-}
 
 /* Modal glass treatment */
 .modal-luxury {
@@ -4226,31 +3962,6 @@ html:not(.dark) .header-luxury {
 }
 
 .hide-results-btn:hover {
-  color: #999;
-}
-
-/* Light mode */
-html:not(.dark) .voice-result-box {
-  background: hsla(220, 20%, 98%, 0.95);
-  border-color: hsla(220, 20%, 85%, 0.5);
-}
-
-html:not(.dark) .voice-result-box p {
-  color: #333;
-}
-
-html:not(.dark) .push-to-start-btn .pts-outer-ring {
-  background: linear-gradient(145deg, #e0e0e8 0%, #c8c8d0 50%, #b0b0b8 100%);
-}
-
-html:not(.dark) .push-to-start-btn .pts-inner-ring {
-  background: linear-gradient(180deg, #d8d8e0 0%, #c0c0c8 100%);
-}
-
-html:not(.dark) .push-to-start-btn .pts-button-face {
-  background: linear-gradient(180deg, #f0f0f5 0%, #e0e0e8 100%);
-  border-color: #ccccd5;
-}
 
 /* Mobile responsive - move to bottom */
 @media (max-width: 768px) {
@@ -4275,16 +3986,6 @@ html:not(.dark) .push-to-start-btn .pts-button-face {
   }
   
   .voice-results.visible {
-    transform: translateY(0);
-  }
-}
-
-}
-
-html:not(.dark) .modal-luxury {
-  background: hsla(35, 25%, 96%, 0.95) !important;
-  border-top-color: hsla(35, 15%, 80%, 0.5);
-}
 
 /* Response card glass */
 .response-card {
@@ -4292,13 +3993,6 @@ html:not(.dark) .modal-luxury {
 }
 
 .dark .response-card {
-  background: hsla(20, 12%, 11%, 0.75);
-}
-
-html:not(.dark) .response-card {
-  background: hsla(35, 25%, 97%, 0.85);
-  border-color: hsla(30, 15%, 85%, 0.6);
-}
 
 /* Selector button glass */
 .selector-btn {
@@ -4306,13 +4000,6 @@ html:not(.dark) .response-card {
 }
 
 .dark .selector-btn {
-  background: hsla(20, 12%, 12%, 0.8);
-}
-
-html:not(.dark) .selector-btn {
-  background: hsla(35, 20%, 96%, 0.85);
-  border-color: hsla(30, 12%, 82%, 0.5);
-}
 
 /* Status indicator glass */
 .status-indicator {
@@ -4321,109 +4008,9 @@ html:not(.dark) .selector-btn {
 
 /* Input glass styling */
 .dark .input-luxury {
-  background: hsla(20, 12%, 8%, 0.75);
-}
-
-html:not(.dark) .input-luxury {
-  background: hsla(35, 25%, 98%, 0.9);
-  border-color: hsla(30, 12%, 80%, 0.5);
-  color: hsla(20, 20%, 15%, 1);
-}
-
-html:not(.dark) .input-luxury::placeholder {
-  color: hsla(25, 10%, 55%, 1);
-  opacity: 1;
-  transition: opacity 0.2s ease;
-}
-
-html:not(.dark) .input-luxury:focus::placeholder {
-  opacity: 0.5;
-}
-
-html:not(.dark) .input-luxury:not(:placeholder-shown)::placeholder {
-  opacity: 0;
-}
 
 /* Editable response textarea */
 .edit-response-textarea {
-  background: hsla(220, 10%, 12%, 0.8);
-  border: 1px solid hsla(40, 50%, 40%, 0.4);
-  color: hsla(220, 20%, 85%, 1);
-  min-height: 120px;
-}
-
-html:not(.dark) .edit-response-textarea {
-  background: hsla(35, 30%, 96%, 0.95);
-  border: 1px solid hsla(30, 25%, 75%, 0.6);
-  color: hsla(20, 25%, 20%, 1);
-}
-
-html:not(.dark) .edit-response-textarea::placeholder {
-  color: hsla(25, 15%, 50%, 1);
-}
-
-/* Light mode button adjustments */
-html:not(.dark) .btn-icon {
-  background: hsla(220, 10%, 92%, 0.9);
-  border-color: hsla(220, 8%, 80%, 0.5);
-}
-
-html:not(.dark) .btn-icon:hover {
-  background: hsla(220, 10%, 88%, 0.95);
-}
-
-html:not(.dark) .btn-icon .text-muted-foreground {
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .btn-steel {
-  background: linear-gradient(180deg,
-    hsla(220, 8%, 85%, 1) 0%,
-    hsla(220, 8%, 78%, 1) 100%
-  );
-  color: hsla(220, 15%, 25%, 1);
-  border-color: hsla(220, 8%, 70%, 0.5);
-}
-
-html:not(.dark) .btn-supercharged {
-  background: linear-gradient(180deg, 
-    hsla(220, 10%, 90%, 0.95) 0%,
-    hsla(220, 10%, 85%, 0.98) 100%
-  );
-  border-color: hsla(220, 8%, 75%, 0.5);
-}
-
-html:not(.dark) .btn-supercharged .supercharged-label {
-  color: hsla(220, 10%, 40%, 1);
-}
-
-html:not(.dark) .btn-supercharged.active {
-  background: linear-gradient(180deg, 
-    hsla(25, 100%, 85%, 0.95) 0%,
-    hsla(15, 100%, 80%, 0.98) 100%
-  );
-  border-color: hsla(25, 100%, 50%, 0.5);
-}
-
-html:not(.dark) .btn-supercharged.active .supercharged-label {
-  color: hsla(15, 100%, 35%, 1);
-}
-
-/* Tone pill light mode */
-html:not(.dark) .tone-pill {
-  background: hsla(220, 10%, 92%, 0.9);
-  border-color: hsla(220, 8%, 82%, 0.5);
-  color: hsla(220, 10%, 35%, 1);
-}
-
-html:not(.dark) .tone-pill.active {
-  background: linear-gradient(180deg,
-    hsla(35, 60%, 90%, 0.9) 0%,
-    hsla(35, 60%, 85%, 0.85) 100%
-  );
-  border-color: hsla(40, 70%, 50%, 0.5);
-  color: hsla(35, 80%, 30%, 1);
-}
 
 /* Supercharg'd indicator badge */
 .supercharged-badge {
@@ -4537,36 +4124,6 @@ html:not(.dark) .tone-pill.active {
     opacity: 0.5;
   }
   50% {
-    transform: translateY(-4px) translateZ(0);
-    opacity: 1;
-  }
-}
-
-/* Light mode voice button adjustments */
-html:not(.dark) .voice-input-btn {
-  background: linear-gradient(180deg, 
-    hsla(220, 10%, 92%, 0.95) 0%,
-    hsla(220, 10%, 88%, 0.98) 100%
-  );
-  border-color: hsla(220, 8%, 78%, 0.5);
-  color: hsla(220, 10%, 40%, 1);
-}
-
-html:not(.dark) .voice-input-btn:hover {
-  background: linear-gradient(180deg, 
-    hsla(220, 10%, 88%, 0.98) 0%,
-    hsla(220, 10%, 84%, 1) 100%
-  );
-  color: hsla(0, 70%, 45%, 1);
-}
-
-html:not(.dark) .voice-input-btn.active {
-  background: linear-gradient(180deg, 
-    hsla(0, 70%, 55%, 0.9) 0%,
-    hsla(0, 75%, 50%, 0.95) 100%
-  );
-  color: white;
-}
 
 /* ============================================
    VOICE OUTPUT / SPEAKING STYLES
@@ -4649,33 +4206,6 @@ html:not(.dark) .voice-input-btn.active {
 }
 
 .quick-shortcut-btn:hover .shortcut-label {
-  color: hsla(45, 80%, 70%, 1);
-}
-
-/* Light mode quick shortcuts */
-html:not(.dark) .quick-shortcut-btn {
-  background: linear-gradient(135deg, 
-    hsla(35, 20%, 94%, 0.95) 0%,
-    hsla(35, 15%, 90%, 0.98) 100%
-  );
-  border-color: hsla(35, 15%, 82%, 0.6);
-}
-
-html:not(.dark) .quick-shortcut-btn:hover {
-  background: linear-gradient(135deg, 
-    hsla(35, 25%, 96%, 0.98) 0%,
-    hsla(35, 20%, 92%, 1) 100%
-  );
-  border-color: hsla(35, 60%, 55%, 0.5);
-}
-
-html:not(.dark) .quick-shortcut-btn .shortcut-label {
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .quick-shortcut-btn:hover .shortcut-label {
-  color: hsla(35, 80%, 35%, 1);
-}
 
 /* ============================================
    VS BATTLE CARD STYLES
@@ -4771,34 +4301,6 @@ html:not(.dark) .quick-shortcut-btn:hover .shortcut-label {
 }
 
 .btn-vs:active {
-  transform: translateY(0);
-}
-
-/* Light mode VS adjustments */
-html:not(.dark) .vs-segment-btn {
-  background: hsla(220, 10%, 92%, 0.95);
-  border-color: hsla(220, 8%, 82%, 0.5);
-  color: hsla(220, 10%, 40%, 1);
-}
-
-html:not(.dark) .vs-segment-btn.active {
-  background: linear-gradient(135deg, hsla(280, 50%, 90%, 0.9) 0%, hsla(320, 50%, 88%, 0.85) 100%);
-  border-color: hsla(280, 60%, 60%, 0.5);
-  color: hsla(280, 70%, 40%, 1);
-}
-
-html:not(.dark) .vs-card {
-  background: linear-gradient(135deg, hsla(280, 15%, 96%, 0.9) 0%, hsla(320, 10%, 94%, 0.85) 100%);
-  border-color: hsla(280, 20%, 85%, 0.5);
-}
-
-html:not(.dark) .vs-advantage-row {
-  background: hsla(280, 15%, 92%, 0.5);
-}
-
-html:not(.dark) .vs-crusher-row {
-  background: hsla(0, 15%, 95%, 0.5);
-}
 
 
 
@@ -4809,82 +4311,12 @@ html:not(.dark) .vs-crusher-row {
 
 /* Base glass overlay - deeper, more luxurious */
 .mclaren-glass-overlay {
-  background: linear-gradient(
-    135deg,
-    hsla(220, 25%, 8%, 0.97) 0%,
-    hsla(220, 30%, 5%, 0.99) 50%,
-    hsla(220, 25%, 8%, 0.97) 100%
-  );
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-}
-
-html:not(.dark) .mclaren-glass-overlay {
-  background: linear-gradient(
-    135deg,
-    hsla(220, 20%, 98%, 0.97) 0%,
-    hsla(220, 25%, 95%, 0.99) 50%,
-    hsla(220, 20%, 98%, 0.97) 100%
-  );
-}
 
 /* Dashboard container - carbon fiber inspired */
 .mclaren-dashboard {
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 1px,
-      hsla(220, 20%, 15%, 0.03) 1px,
-      hsla(220, 20%, 15%, 0.03) 2px
-    ),
-    linear-gradient(
-      180deg,
-      hsla(220, 25%, 10%, 1) 0%,
-      hsla(220, 30%, 6%, 1) 100%
-    );
-}
-
-html:not(.dark) .mclaren-dashboard {
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 1px,
-      hsla(220, 20%, 85%, 0.05) 1px,
-      hsla(220, 20%, 85%, 0.05) 2px
-    ),
-    linear-gradient(
-      180deg,
-      hsla(220, 15%, 98%, 1) 0%,
-      hsla(220, 20%, 95%, 1) 100%
-    );
-}
 
 /* Premium header bar */
 .mclaren-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 25%, 12%, 0.9) 0%,
-    hsla(220, 25%, 8%, 0.95) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 25%, 0.3);
-  box-shadow: 
-    0 4px 20px hsla(0, 0%, 0%, 0.3),
-    inset 0 1px 0 hsla(220, 30%, 40%, 0.1);
-}
-
-html:not(.dark) .mclaren-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 15%, 100%, 0.95) 0%,
-    hsla(220, 15%, 97%, 0.98) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 85%, 0.5);
-  box-shadow: 
-    0 4px 20px hsla(220, 20%, 0%, 0.05),
-    inset 0 1px 0 hsla(220, 30%, 100%, 0.5);
-}
 
 /* Logo badge - McLaren inspired */
 .mclaren-logo-badge {
@@ -4907,14 +4339,6 @@ html:not(.dark) .mclaren-header {
 
 /* Navigation tabs - Porsche touch controls inspired */
 .mclaren-nav {
-  background: hsla(220, 25%, 8%, 0.5);
-  border-bottom: 1px solid hsla(220, 30%, 20%, 0.3);
-}
-
-html:not(.dark) .mclaren-nav {
-  background: hsla(220, 15%, 96%, 0.8);
-  border-bottom: 1px solid hsla(220, 30%, 88%, 0.5);
-}
 
 .mclaren-tab {
   display: flex;
@@ -4937,35 +4361,6 @@ html:not(.dark) .mclaren-nav {
 }
 
 .mclaren-tab.active {
-  color: hsl(var(--primary));
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.15) 0%,
-    hsla(var(--primary-hue, 25), 90%, 45%, 0.08) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
-  box-shadow: 
-    0 2px 10px hsla(var(--primary-hue, 25), 90%, 50%, 0.2),
-    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 70%, 0.15);
-}
-
-html:not(.dark) .mclaren-tab {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-html:not(.dark) .mclaren-tab:hover {
-  color: hsla(220, 15%, 25%, 1);
-  background: hsla(220, 20%, 92%, 0.8);
-}
-
-html:not(.dark) .mclaren-tab.active {
-  color: hsl(var(--primary));
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 80%, 50%, 0.1) 0%,
-    hsla(var(--primary-hue, 25), 80%, 45%, 0.05) 100%
-  );
-}
 
 /* Card component - premium glass effect */
 .mclaren-card {
@@ -4986,29 +4381,6 @@ html:not(.dark) .mclaren-tab.active {
 }
 
 .mclaren-card:hover {
-  border-color: hsla(220, 30%, 35%, 0.5);
-  box-shadow: 
-    0 12px 40px hsla(0, 0%, 0%, 0.35),
-    inset 0 1px 0 hsla(220, 30%, 45%, 0.15);
-}
-
-html:not(.dark) .mclaren-card {
-  background: linear-gradient(
-    135deg,
-    hsla(220, 15%, 100%, 0.9) 0%,
-    hsla(220, 15%, 98%, 0.95) 100%
-  );
-  border: 1px solid hsla(220, 30%, 88%, 0.6);
-  box-shadow: 
-    0 8px 32px hsla(220, 20%, 0%, 0.08),
-    inset 0 1px 0 hsla(220, 30%, 100%, 0.8);
-}
-
-html:not(.dark) .mclaren-card:hover {
-  border-color: hsla(220, 30%, 80%, 0.8);
-  box-shadow: 
-    0 12px 40px hsla(220, 20%, 0%, 0.12);
-}
 
 /* Metric card - instrument cluster inspired */
 .mclaren-metric-card {
@@ -5062,30 +4434,9 @@ html:not(.dark) .mclaren-card:hover {
 }
 
 .mclaren-btn-icon:active {
-  transform: scale(0.95);
-}
-
-html:not(.dark) .mclaren-btn-icon {
-  color: hsla(220, 15%, 45%, 1);
-  background: hsla(220, 15%, 95%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.6);
-}
-
-html:not(.dark) .mclaren-btn-icon:hover {
-  color: hsla(220, 15%, 25%, 1);
-  background: hsla(220, 15%, 92%, 1);
-}
 
 /* Footer - subtle status bar */
 .mclaren-footer {
-  background: hsla(220, 25%, 8%, 0.8);
-  border-top: 1px solid hsla(220, 30%, 20%, 0.3);
-}
-
-html:not(.dark) .mclaren-footer {
-  background: hsla(220, 15%, 97%, 0.9);
-  border-top: 1px solid hsla(220, 30%, 90%, 0.5);
-}
 
 /* Animation */
 @keyframes fade-in {
@@ -5119,33 +4470,6 @@ html:not(.dark) .mclaren-footer {
 
 /* Modal glass effect - deeper and more premium */
 .glass-modal {
-  background: linear-gradient(
-    160deg,
-    hsla(220, 25%, 12%, 0.95) 0%,
-    hsla(220, 30%, 8%, 0.98) 100%
-  );
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid hsla(220, 30%, 30%, 0.3);
-  box-shadow: 
-    0 25px 80px hsla(0, 0%, 0%, 0.5),
-    0 10px 30px hsla(0, 0%, 0%, 0.3),
-    inset 0 1px 0 hsla(220, 40%, 50%, 0.1),
-    inset 0 -1px 0 hsla(220, 30%, 5%, 0.3);
-}
-
-html:not(.dark) .glass-modal {
-  background: linear-gradient(
-    160deg,
-    hsla(220, 15%, 100%, 0.97) 0%,
-    hsla(220, 20%, 97%, 0.99) 100%
-  );
-  border: 1px solid hsla(220, 30%, 90%, 0.5);
-  box-shadow: 
-    0 25px 80px hsla(220, 30%, 0%, 0.15),
-    0 10px 30px hsla(220, 30%, 0%, 0.1),
-    inset 0 1px 0 hsla(220, 40%, 100%, 0.8);
-}
 
 /* Enhanced card hover with glow */
 .glass-card-glow {
@@ -5193,28 +4517,6 @@ html:not(.dark) .glass-modal {
 }
 
 .mclaren-input::placeholder {
-  color: hsla(220, 10%, 50%, 1);
-}
-
-html:not(.dark) .mclaren-input {
-  background: hsla(220, 15%, 97%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.6);
-}
-
-html:not(.dark) .mclaren-input:focus {
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.5);
-  box-shadow: 
-    0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
-}
-/* Force unified glass search pill in light mode */
-html:not(.dark) .cc-search.cc-search-blue-glass input {
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  outline: none !important;
-  -webkit-appearance: none;
-  appearance: none;
-}
 
 /* Primary button - McLaren orange accent */
 .mclaren-btn-primary {
@@ -5257,20 +4559,6 @@ html:not(.dark) .cc-search.cc-search-blue-glass input {
 }
 
 .mclaren-btn-ghost:hover {
-  color: hsla(220, 10%, 90%, 1);
-  background: hsla(220, 25%, 15%, 0.5);
-  border-color: hsla(220, 30%, 35%, 0.5);
-}
-
-html:not(.dark) .mclaren-btn-ghost {
-  color: hsla(220, 15%, 40%, 1);
-  border: 1px solid hsla(220, 30%, 85%, 0.6);
-}
-
-html:not(.dark) .mclaren-btn-ghost:hover {
-  color: hsla(220, 15%, 20%, 1);
-  background: hsla(220, 15%, 94%, 0.8);
-}
 
 /* Apply glass effect to existing modals */
 .modal-overlay {
@@ -5295,833 +4583,6 @@ html:not(.dark) .mclaren-btn-ghost:hover {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsla(220, 25%, 40%, 0.8);
-}
-
-html:not(.dark) ::-webkit-scrollbar-track {
-  background: hsla(220, 15%, 94%, 0.8);
-}
-
-html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: hsla(220, 15%, 75%, 0.6);
-}
-
-html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: hsla(220, 15%, 65%, 0.8);
-}
-
-
-/* ===================================================================
-   LIGHT MODE READABILITY FIXES
-   Ensuring all text is clearly visible in light mode
-   =================================================================== */
-
-/* Analytics Dashboard - Light Mode Fixes */
-html:not(.dark) .mclaren-metric-card {
-  background: hsla(220, 15%, 100%, 0.95);
-  border-color: hsla(220, 20%, 85%, 0.6);
-  box-shadow: 0 2px 12px hsla(220, 20%, 0%, 0.08);
-}
-
-html:not(.dark) .mclaren-metric-card p {
-  color: hsla(220, 20%, 25%, 1);
-}
-
-html:not(.dark) .mclaren-metric-card .text-2xl {
-  color: hsla(220, 25%, 15%, 1);
-}
-
-html:not(.dark) .mclaren-metric-card .text-xs {
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-metric-card .text-\[10px\] {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-/* Ensure primary color is visible in light mode */
-html:not(.dark) .text-primary {
-  color: hsl(var(--primary)) !important;
-}
-
-html:not(.dark) .text-emerald-400 {
-  color: hsla(152, 65%, 35%, 1) !important;
-}
-
-html:not(.dark) .text-amber-400 {
-  color: hsla(38, 85%, 40%, 1) !important;
-}
-
-html:not(.dark) .text-blue-400 {
-  color: hsla(217, 75%, 45%, 1) !important;
-}
-
-html:not(.dark) .text-purple-400 {
-  color: hsla(270, 65%, 50%, 1) !important;
-}
-
-html:not(.dark) .text-red-400 {
-  color: hsla(0, 70%, 45%, 1) !important;
-}
-
-html:not(.dark) .text-orange-400 {
-  color: hsla(25, 85%, 45%, 1) !important;
-}
-
-/* Muted foreground visibility in light mode */
-html:not(.dark) .text-muted-foreground {
-  color: hsla(220, 15%, 40%, 1) !important;
-}
-
-/* Light mode card content */
-html:not(.dark) .mclaren-card h3,
-html:not(.dark) .mclaren-card h4 {
-  color: hsla(220, 25%, 15%, 1);
-}
-
-html:not(.dark) .mclaren-card p {
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-card span {
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .mclaren-card .font-semibold,
-html:not(.dark) .mclaren-card .font-bold,
-html:not(.dark) .mclaren-card .font-medium {
-  color: hsla(220, 25%, 18%, 1);
-}
-
-/* Health bar labels in light mode */
-html:not(.dark) .bg-green-500\/10,
-html:not(.dark) .bg-emerald-500\/10 {
-  background-color: hsla(152, 65%, 45%, 0.15) !important;
-}
-
-html:not(.dark) .bg-amber-500\/10,
-html:not(.dark) .bg-yellow-500\/10 {
-  background-color: hsla(38, 85%, 50%, 0.15) !important;
-}
-
-html:not(.dark) .bg-red-500\/10 {
-  background-color: hsla(0, 70%, 50%, 0.15) !important;
-}
-
-html:not(.dark) .bg-blue-500\/10 {
-  background-color: hsla(217, 75%, 55%, 0.15) !important;
-}
-
-/* Text in colored backgrounds for light mode */
-html:not(.dark) .bg-green-500\/10 p,
-html:not(.dark) .bg-green-500\/10 span,
-html:not(.dark) .bg-emerald-500\/10 p,
-html:not(.dark) .bg-emerald-500\/10 span {
-  color: hsla(152, 65%, 30%, 1) !important;
-}
-
-html:not(.dark) .bg-amber-500\/10 p,
-html:not(.dark) .bg-amber-500\/10 span,
-html:not(.dark) .bg-yellow-500\/10 p,
-html:not(.dark) .bg-yellow-500\/10 span {
-  color: hsla(38, 85%, 30%, 1) !important;
-}
-
-html:not(.dark) .bg-red-500\/10 p,
-html:not(.dark) .bg-red-500\/10 span {
-  color: hsla(0, 70%, 35%, 1) !important;
-}
-
-html:not(.dark) .bg-blue-500\/10 p,
-html:not(.dark) .bg-blue-500\/10 span {
-  color: hsla(217, 75%, 35%, 1) !important;
-}
-
-/* Import Modal / CRM Panel - Light Mode */
-html:not(.dark) .glass-modal {
-  color: hsla(220, 25%, 15%, 1);
-}
-
-html:not(.dark) .glass-modal h2,
-html:not(.dark) .glass-modal h3,
-html:not(.dark) .glass-modal h4 {
-  color: hsla(220, 25%, 12%, 1);
-}
-
-html:not(.dark) .glass-modal p {
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .glass-modal .text-muted-foreground {
-  color: hsla(220, 15%, 45%, 1) !important;
-}
-
-/* Connection Wizard Light Mode */
-html:not(.dark) [class*="border-border"] {
-  border-color: hsla(220, 20%, 85%, 0.6);
-}
-
-/* Button text visibility in light mode */
-html:not(.dark) .mclaren-btn-ghost {
-  color: hsla(220, 20%, 30%, 1);
-  border-color: hsla(220, 20%, 80%, 0.6);
-}
-
-html:not(.dark) .mclaren-btn-ghost:hover {
-  color: hsla(220, 20%, 15%, 1);
-  background: hsla(220, 15%, 94%, 0.9);
-}
-
-/* Tab text in light mode */
-html:not(.dark) .mclaren-tab {
-  color: hsla(220, 20%, 40%, 1);
-}
-
-html:not(.dark) .mclaren-tab:hover {
-  color: hsla(220, 20%, 20%, 1);
-  background: hsla(220, 15%, 92%, 0.8);
-}
-
-html:not(.dark) .mclaren-tab.active {
-  color: hsl(var(--primary));
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.12);
-}
-
-/* Integration list items in light mode */
-html:not(.dark) .rounded-lg.border {
-  background: hsla(220, 15%, 100%, 0.9);
-}
-
-html:not(.dark) .rounded-lg.border .text-sm.font-medium {
-  color: hsla(220, 25%, 18%, 1);
-}
-
-html:not(.dark) .rounded-lg.border .text-\[10px\] {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-/* Status badges in light mode */
-html:not(.dark) .bg-primary\/10 {
-  background-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.12) !important;
-}
-
-html:not(.dark) .bg-primary\/20 {
-  background-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.18) !important;
-}
-
-/* Ensure opacity classes have proper contrast in light mode */
-html:not(.dark) .opacity-50 {
-  opacity: 0.6;
-}
-
-html:not(.dark) .opacity-60 {
-  opacity: 0.7;
-
-
-/* ===================================================================
-   PREMIUM FORM & MODAL COMPONENTS
-   Setup Modal, Import Modal, and general form styling
-   =================================================================== */
-
-/* Setup Modal Container */
-.mclaren-setup-modal {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 25%, 12%, 0.98) 0%,
-    hsla(220, 30%, 7%, 0.99) 100%
-  );
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 24px;
-  box-shadow: 
-    0 30px 100px hsla(0, 0%, 0%, 0.6),
-    0 15px 40px hsla(0, 0%, 0%, 0.4),
-    inset 0 1px 0 hsla(220, 40%, 50%, 0.1);
-}
-
-html:not(.dark) .mclaren-setup-modal {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 15%, 100%, 0.98) 0%,
-    hsla(220, 20%, 97%, 0.99) 100%
-  );
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  box-shadow: 
-    0 30px 100px hsla(220, 30%, 0%, 0.15),
-    0 15px 40px hsla(220, 30%, 0%, 0.1);
-}
-
-/* Setup Header */
-.mclaren-setup-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 25%, 15%, 0.6) 0%,
-    hsla(220, 25%, 10%, 0.3) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 25%, 0.3);
-}
-
-html:not(.dark) .mclaren-setup-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 15%, 98%, 0.8) 0%,
-    hsla(220, 15%, 96%, 0.6) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 90%, 0.5);
-}
-
-/* Setup Icon */
-.mclaren-setup-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.2) 0%,
-    hsla(var(--primary-hue, 25), 90%, 40%, 0.1) 100%
-  );
-  border: 1px solid hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
-  border-radius: 14px;
-  color: hsl(var(--primary));
-  box-shadow: 
-    0 4px 12px hsla(var(--primary-hue, 25), 90%, 50%, 0.2),
-    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 70%, 0.2);
-}
-
-/* Close Button */
-.mclaren-close-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: hsla(220, 25%, 20%, 0.5);
-  border: 1px solid hsla(220, 30%, 30%, 0.3);
-  border-radius: 10px;
-  color: hsla(220, 10%, 60%, 1);
-  transition: all 0.2s ease;
-}
-
-.mclaren-close-btn:hover {
-  background: hsla(220, 25%, 25%, 0.7);
-  color: hsla(220, 10%, 90%, 1);
-}
-
-html:not(.dark) .mclaren-close-btn {
-  background: hsla(220, 15%, 94%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 45%, 1);
-}
-
-html:not(.dark) .mclaren-close-btn:hover {
-  background: hsla(220, 15%, 90%, 1);
-  color: hsla(220, 15%, 25%, 1);
-}
-
-/* Progress Container */
-.mclaren-progress-container {
-  background: hsla(220, 25%, 10%, 0.3);
-  border-bottom: 1px solid hsla(220, 30%, 20%, 0.2);
-}
-
-html:not(.dark) .mclaren-progress-container {
-  background: hsla(220, 15%, 96%, 0.5);
-  border-bottom: 1px solid hsla(220, 30%, 92%, 0.5);
-}
-
-/* Step Indicator */
-.mclaren-step-indicator {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: hsla(220, 25%, 15%, 0.6);
-  border: 2px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 12px;
-  color: hsla(220, 10%, 50%, 1);
-  transition: all 0.3s ease;
-}
-
-.mclaren-step-indicator.active {
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.25) 0%,
-    hsla(var(--primary-hue, 25), 90%, 40%, 0.15) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.5);
-  color: hsl(var(--primary));
-  box-shadow: 0 0 20px hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
-}
-
-.mclaren-step-indicator.completed {
-  background: hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
-  color: hsl(var(--primary));
-}
-
-html:not(.dark) .mclaren-step-indicator {
-  background: hsla(220, 15%, 95%, 0.8);
-  border-color: hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 50%, 1);
-}
-
-html:not(.dark) .mclaren-step-indicator.active {
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.15);
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.4);
-  color: hsl(var(--primary));
-}
-
-/* Step Line */
-.mclaren-step-line {
-  flex: 1;
-  height: 2px;
-  background: hsla(220, 30%, 25%, 0.4);
-  margin: 0 8px;
-  border-radius: 1px;
-  transition: background 0.3s ease;
-}
-
-.mclaren-step-line.completed {
-  background: linear-gradient(90deg, hsl(var(--primary)), hsla(var(--primary-hue, 25), 90%, 50%, 0.5));
-}
-
-html:not(.dark) .mclaren-step-line {
-  background: hsla(220, 30%, 88%, 0.6);
-}
-
-/* Form Group */
-.mclaren-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Label */
-.mclaren-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: hsla(220, 10%, 85%, 1);
-  letter-spacing: 0.02em;
-}
-
-html:not(.dark) .mclaren-label {
-  color: hsla(220, 20%, 25%, 1);
-}
-
-/* Input Override for Premium Look */
-.mclaren-input {
-  width: 100%;
-  padding: 14px 16px;
-  background: hsla(220, 25%, 12%, 0.7);
-  border: 1px solid hsla(220, 30%, 28%, 0.5);
-  border-radius: 12px;
-  font-size: 15px;
-  color: hsl(var(--foreground));
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.mclaren-input::placeholder {
-  color: hsla(220, 10%, 45%, 1);
-}
-
-.mclaren-input:focus {
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.6);
-  background: hsla(220, 25%, 14%, 0.8);
-  box-shadow: 
-    0 0 0 3px hsla(var(--primary-hue, 25), 90%, 50%, 0.15),
-    0 4px 12px hsla(0, 0%, 0%, 0.2);
-}
-
-html:not(.dark) .mclaren-input {
-  background: hsla(220, 15%, 98%, 0.9);
-  border: 1px solid hsla(220, 30%, 85%, 0.6);
-  color: hsla(220, 20%, 15%, 1);
-}
-
-html:not(.dark) .mclaren-input::placeholder {
-  color: hsla(220, 15%, 55%, 1);
-}
-
-html:not(.dark) .mclaren-input:focus {
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.5);
-  background: hsla(220, 15%, 100%, 1);
-  box-shadow: 0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
-}
-
-/* Option Button (for phrases) */
-.mclaren-option-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 16px;
-  background: hsla(220, 25%, 14%, 0.6);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 12px;
-  color: hsla(220, 10%, 75%, 1);
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.mclaren-option-btn:hover {
-  background: hsla(220, 25%, 18%, 0.7);
-  border-color: hsla(220, 30%, 35%, 0.5);
-}
-
-.mclaren-option-btn.selected {
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.15) 0%,
-    hsla(var(--primary-hue, 25), 90%, 40%, 0.08) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.4);
-  color: hsl(var(--foreground));
-  box-shadow: 0 2px 8px hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
-}
-
-html:not(.dark) .mclaren-option-btn {
-  background: hsla(220, 15%, 97%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-option-btn:hover {
-  background: hsla(220, 15%, 94%, 0.9);
-  border-color: hsla(220, 30%, 80%, 0.6);
-}
-
-html:not(.dark) .mclaren-option-btn.selected {
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.35);
-  color: hsla(220, 20%, 15%, 1);
-}
-
-/* Check Icon */
-.mclaren-check-icon {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: hsl(var(--primary));
-  border-radius: 50%;
-  color: white;
-  flex-shrink: 0;
-}
-
-/* Style Card (for salesperson style) */
-.mclaren-style-card {
-  padding: 16px;
-  background: hsla(220, 25%, 14%, 0.6);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 14px;
-  transition: all 0.2s ease;
-}
-
-.mclaren-style-card:hover {
-  background: hsla(220, 25%, 18%, 0.7);
-  border-color: hsla(220, 30%, 35%, 0.5);
-}
-
-.mclaren-style-card.selected {
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.12) 0%,
-    hsla(var(--primary-hue, 25), 90%, 40%, 0.06) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.4);
-  box-shadow: 0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.15);
-}
-
-html:not(.dark) .mclaren-style-card {
-  background: hsla(220, 15%, 98%, 0.8);
-  border: 1px solid hsla(220, 30%, 90%, 0.5);
-}
-
-html:not(.dark) .mclaren-style-card:hover {
-  background: hsla(220, 15%, 96%, 0.9);
-}
-
-html:not(.dark) .mclaren-style-card.selected {
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.08);
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.3);
-}
-
-/* Tone Button */
-.mclaren-tone-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px 12px;
-  background: hsla(220, 25%, 14%, 0.6);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  color: hsla(220, 10%, 70%, 1);
-}
-
-.mclaren-tone-btn:hover {
-  background: hsla(220, 25%, 18%, 0.7);
-  transform: translateY(-2px);
-}
-
-.mclaren-tone-btn.selected {
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.2) 0%,
-    hsla(var(--primary-hue, 25), 90%, 40%, 0.1) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.5);
-  color: hsl(var(--foreground));
-  box-shadow: 0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.2);
-}
-
-html:not(.dark) .mclaren-tone-btn {
-  background: hsla(220, 15%, 97%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 40%, 1);
-}
-
-html:not(.dark) .mclaren-tone-btn.selected {
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.12);
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.4);
-  color: hsla(220, 20%, 15%, 1);
-}
-
-/* Preview Card */
-.mclaren-preview-card {
-  padding: 16px;
-  background: hsla(220, 25%, 10%, 0.5);
-  border: 1px solid hsla(220, 30%, 22%, 0.4);
-  border-radius: 14px;
-  border-left: 3px solid hsl(var(--primary));
-}
-
-html:not(.dark) .mclaren-preview-card {
-  background: hsla(220, 15%, 96%, 0.6);
-  border: 1px solid hsla(220, 30%, 90%, 0.5);
-  border-left: 3px solid hsl(var(--primary));
-}
-
-/* Setup Footer */
-.mclaren-setup-footer {
-  background: hsla(220, 25%, 10%, 0.5);
-  border-top: 1px solid hsla(220, 30%, 20%, 0.3);
-}
-
-html:not(.dark) .mclaren-setup-footer {
-  background: hsla(220, 15%, 97%, 0.6);
-  border-top: 1px solid hsla(220, 30%, 92%, 0.5);
-}
-
-/* Button Primary (enhanced) */
-.mclaren-btn-primary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 24px;
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 52%, 1) 0%,
-    hsla(var(--primary-hue, 25), 90%, 45%, 1) 100%
-  );
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 4px 15px hsla(var(--primary-hue, 25), 90%, 50%, 0.35),
-    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 70%, 0.25);
-}
-
-.mclaren-btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 25px hsla(var(--primary-hue, 25), 90%, 50%, 0.45),
-    inset 0 1px 0 hsla(var(--primary-hue, 25), 90%, 75%, 0.3);
-}
-
-.mclaren-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.mclaren-btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Button Secondary */
-.mclaren-btn-secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 24px;
-  background: hsla(220, 25%, 18%, 0.6);
-  border: 1px solid hsla(220, 30%, 30%, 0.4);
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
-  color: hsla(220, 10%, 75%, 1);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mclaren-btn-secondary:hover {
-  background: hsla(220, 25%, 22%, 0.7);
-  color: hsla(220, 10%, 90%, 1);
-}
-
-html:not(.dark) .mclaren-btn-secondary {
-  background: hsla(220, 15%, 95%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-btn-secondary:hover {
-  background: hsla(220, 15%, 92%, 0.9);
-  color: hsla(220, 15%, 20%, 1);
-}
-
-/* Apply premium styling to existing ios-input */
-.ios-input {
-  width: 100%;
-  padding: 14px 16px;
-  background: hsla(220, 25%, 12%, 0.7);
-  border: 1px solid hsla(220, 30%, 28%, 0.5);
-  border-radius: 12px;
-  font-size: 15px;
-  color: hsl(var(--foreground));
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-.ios-input::placeholder {
-  color: hsla(220, 10%, 45%, 1);
-}
-
-.ios-input:focus {
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.6);
-  background: hsla(220, 25%, 14%, 0.8);
-  box-shadow: 
-    0 0 0 3px hsla(var(--primary-hue, 25), 90%, 50%, 0.15),
-    0 4px 12px hsla(0, 0%, 0%, 0.2);
-}
-
-html:not(.dark) .ios-input {
-  background: hsla(220, 15%, 98%, 0.9);
-  border: 1px solid hsla(220, 30%, 85%, 0.6);
-  color: hsla(220, 20%, 15%, 1);
-}
-
-html:not(.dark) .ios-input::placeholder {
-  color: hsla(220, 15%, 55%, 1);
-}
-
-html:not(.dark) .ios-input:focus {
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.5);
-  background: hsla(220, 15%, 100%, 1);
-  box-shadow: 0 0 0 3px hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
-}
-
-/* Apply premium styling to ios-modal */
-.ios-modal {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 25%, 12%, 0.98) 0%,
-    hsla(220, 30%, 7%, 0.99) 100%
-  );
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 24px 24px 0 0;
-  box-shadow: 
-    0 -10px 50px hsla(0, 0%, 0%, 0.5);
-}
-
-html:not(.dark) .ios-modal {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 15%, 100%, 0.98) 0%,
-    hsla(220, 20%, 97%, 0.99) 100%
-  );
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  box-shadow: 
-    0 -10px 50px hsla(220, 30%, 0%, 0.1);
-}
-
-/* iOS List Item Premium Styling */
-.ios-list-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: hsla(220, 25%, 14%, 0.6);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  transition: all 0.2s ease;
-}
-
-.ios-list-item:hover {
-  background: hsla(220, 25%, 18%, 0.7);
-}
-
-html:not(.dark) .ios-list-item {
-  background: hsla(220, 15%, 97%, 0.8);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-}
-
-html:not(.dark) .ios-list-item:hover {
-  background: hsla(220, 15%, 94%, 0.9);
-}
-
-}
-
-html:not(.dark) .opacity-70 {
-  opacity: 0.8;
-}
-
-/* Fix select dropdowns in light mode */
-html:not(.dark) select {
-  color: hsla(220, 20%, 20%, 1);
-  background-color: hsla(220, 15%, 98%, 1);
-}
-
-html:not(.dark) select option {
-  color: hsla(220, 20%, 20%, 1);
-  background-color: white;
-}
-
-/* Footer visibility in light mode */
-html:not(.dark) .mclaren-footer span {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-/* Ensure icon colors are visible */
-html:not(.dark) .mclaren-btn-icon {
-  color: hsla(220, 20%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-btn-icon:hover {
-  color: hsla(220, 20%, 15%, 1);
-}
-
-/* Logo badge in light mode */
-html:not(.dark) .mclaren-logo-badge {
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 80%, 50%, 0.15) 0%,
-    hsla(var(--primary-hue, 25), 80%, 45%, 0.08) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 80%, 50%, 0.25);
-}
 
 
 
@@ -6130,55 +4591,10 @@ html:not(.dark) .mclaren-logo-badge {
    =================================================================== */
 
 .mclaren-admin-panel {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 25%, 12%, 0.98) 0%,
-    hsla(220, 30%, 7%, 0.99) 100%
-  );
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid hsla(220, 30%, 25%, 0.4);
-  border-radius: 24px;
-  box-shadow: 
-    0 30px 100px hsla(0, 0%, 0%, 0.6),
-    inset 0 1px 0 hsla(220, 40%, 50%, 0.1);
-}
-
-html:not(.dark) .mclaren-admin-panel {
-  background: linear-gradient(
-    165deg,
-    hsla(220, 15%, 100%, 0.98) 0%,
-    hsla(220, 20%, 97%, 0.99) 100%
-  );
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  box-shadow: 0 30px 100px hsla(220, 30%, 0%, 0.15);
-}
 
 .mclaren-admin-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 25%, 15%, 0.6) 0%,
-    hsla(220, 25%, 10%, 0.3) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 25%, 0.3);
-}
-
-html:not(.dark) .mclaren-admin-header {
-  background: linear-gradient(
-    180deg,
-    hsla(220, 15%, 98%, 0.8) 0%,
-    hsla(220, 15%, 96%, 0.6) 100%
-  );
-  border-bottom: 1px solid hsla(220, 30%, 90%, 0.5);
-}
 
 .mclaren-admin-tabs {
-  background: hsla(220, 25%, 10%, 0.3);
-}
-
-html:not(.dark) .mclaren-admin-tabs {
-  background: hsla(220, 15%, 96%, 0.5);
-}
 
 .mclaren-admin-tab {
   display: flex;
@@ -6200,28 +4616,6 @@ html:not(.dark) .mclaren-admin-tabs {
 }
 
 .mclaren-admin-tab.active {
-  color: hsl(var(--primary));
-  background: linear-gradient(
-    135deg,
-    hsla(var(--primary-hue, 25), 90%, 50%, 0.15) 0%,
-    hsla(var(--primary-hue, 25), 90%, 45%, 0.08) 100%
-  );
-  border-color: hsla(var(--primary-hue, 25), 90%, 50%, 0.3);
-}
-
-html:not(.dark) .mclaren-admin-tab {
-  color: hsla(220, 15%, 45%, 1);
-}
-
-html:not(.dark) .mclaren-admin-tab:hover {
-  color: hsla(220, 15%, 25%, 1);
-  background: hsla(220, 15%, 92%, 0.8);
-}
-
-html:not(.dark) .mclaren-admin-tab.active {
-  color: hsl(var(--primary));
-  background: hsla(var(--primary-hue, 25), 80%, 50%, 0.1);
-}
 
 /* Status Card */
 .mclaren-status-card {
@@ -6236,57 +4630,15 @@ html:not(.dark) .mclaren-admin-tab.active {
 }
 
 .mclaren-status-card.not-configured {
-  background: hsla(38, 85%, 50%, 0.1);
-  border-color: hsla(38, 85%, 50%, 0.3);
-}
-
-html:not(.dark) .mclaren-status-card.configured {
-  background: hsla(152, 65%, 45%, 0.08);
-}
-
-html:not(.dark) .mclaren-status-card.not-configured {
-  background: hsla(38, 85%, 50%, 0.08);
-}
 
 /* Config Section */
 .mclaren-config-section {
-  padding: 20px;
-  background: hsla(220, 25%, 12%, 0.5);
-  border: 1px solid hsla(220, 30%, 22%, 0.4);
-  border-radius: 16px;
-}
-
-html:not(.dark) .mclaren-config-section {
-  background: hsla(220, 15%, 97%, 0.6);
-  border: 1px solid hsla(220, 30%, 90%, 0.5);
-}
 
 /* Info Card */
 .mclaren-info-card {
-  padding: 16px;
-  background: hsla(220, 25%, 15%, 0.4);
-  border: 1px solid hsla(220, 30%, 25%, 0.3);
-  border-radius: 12px;
-}
-
-html:not(.dark) .mclaren-info-card {
-  background: hsla(220, 15%, 96%, 0.5);
-  border: 1px solid hsla(220, 30%, 90%, 0.4);
-}
 
 /* Notice Card */
 .mclaren-notice-card {
-  display: flex;
-  gap: 12px;
-  padding: 14px 16px;
-  background: hsla(38, 85%, 50%, 0.1);
-  border: 1px solid hsla(38, 85%, 50%, 0.25);
-  border-radius: 12px;
-}
-
-html:not(.dark) .mclaren-notice-card {
-  background: hsla(38, 85%, 50%, 0.08);
-}
 
 /* Mini Stats */
 .mclaren-mini-stat {
@@ -6315,25 +4667,6 @@ html:not(.dark) .mclaren-notice-card {
 }
 
 .mclaren-mini-stat.mock {
-  background: hsla(270, 65%, 50%, 0.15);
-  color: hsla(270, 65%, 60%, 1);
-}
-
-html:not(.dark) .mclaren-mini-stat.healthy {
-  color: hsla(152, 65%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-mini-stat.degraded {
-  color: hsla(38, 85%, 35%, 1);
-}
-
-html:not(.dark) .mclaren-mini-stat.unhealthy {
-  color: hsla(0, 70%, 40%, 1);
-}
-
-html:not(.dark) .mclaren-mini-stat.mock {
-  color: hsla(270, 65%, 45%, 1);
-}
 
 /* Integration Row */
 .mclaren-integration-row {
@@ -6349,18 +4682,6 @@ html:not(.dark) .mclaren-mini-stat.mock {
 }
 
 .mclaren-integration-row:hover {
-  background: hsla(220, 25%, 18%, 0.6);
-  border-color: hsla(220, 30%, 30%, 0.4);
-}
-
-html:not(.dark) .mclaren-integration-row {
-  background: hsla(220, 15%, 98%, 0.7);
-  border: 1px solid hsla(220, 30%, 90%, 0.5);
-}
-
-html:not(.dark) .mclaren-integration-row:hover {
-  background: hsla(220, 15%, 96%, 0.9);
-}
 
 /* Small Icon Button */
 .mclaren-btn-icon-sm {
@@ -6377,20 +4698,6 @@ html:not(.dark) .mclaren-integration-row:hover {
 }
 
 .mclaren-btn-icon-sm:hover {
-  background: hsla(220, 25%, 22%, 0.7);
-  color: hsla(220, 10%, 85%, 1);
-}
-
-html:not(.dark) .mclaren-btn-icon-sm {
-  background: hsla(220, 15%, 94%, 0.7);
-  border: 1px solid hsla(220, 30%, 88%, 0.5);
-  color: hsla(220, 15%, 45%, 1);
-}
-
-html:not(.dark) .mclaren-btn-icon-sm:hover {
-  background: hsla(220, 15%, 90%, 0.9);
-  color: hsla(220, 15%, 25%, 1);
-}
 
 
 
