@@ -185,11 +185,7 @@ function salesReducer(state, action) {
     case ACTIONS.SET_OFFLINE:
       return { ...state, isOffline: action.payload };
     
-    case ACTIONS.SET_THEME:
-      // Light mode deprecated; always force dark
-      localStorage.setItem('closr_theme', 'dark');
-      document.documentElement.classList.add('dark');
-      return { ...state, theme: 'dark' };
+    // Theme actions removed (dark-only)
     
     case ACTIONS.SET_SUPERCHARGED:
       localStorage.setItem('closr_supercharged', action.payload ? 'true' : 'false');
