@@ -64,17 +64,6 @@
   transform: translateY(-2px);
 }
 
-/* Light Mode Cards - High Contrast, Readable */
-html:not(.dark) .tesla-card {
-  background: var(--tesla-surface);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: var(--tesla-shadow-light-md);
-}
-
-html:not(.dark) .tesla-card:hover {
-  background: var(--tesla-surface-hover);
-  box-shadow: var(--tesla-shadow-light-lg);
-}
 
 /* ==================== CUSTOMER SELECTION - 2027 STYLE ==================== */
 
