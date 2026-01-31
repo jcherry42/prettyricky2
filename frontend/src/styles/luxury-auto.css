@@ -53,33 +53,6 @@
   pointer-events: none;
 }
 
-/* designo Ivory/Porcelain Nappa - Light Mode */
-html:not(.dark) .designo-nappa {
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 28px,
-      rgba(139, 90, 43, 0.05) 28px,
-      rgba(139, 90, 43, 0.05) 30px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 28px,
-      rgba(139, 90, 43, 0.05) 28px,
-      rgba(139, 90, 43, 0.05) 30px
-    ),
-    linear-gradient(165deg, #FAF6F0 0%, #F0EBE2 50%, #F7F3EC 100%);
-  background-size: 56px 56px, 56px 56px, 100% 100%;
-}
-
-html:not(.dark) .designo-nappa::before {
-  background: 
-    radial-gradient(circle at 0 0, rgba(139, 90, 43, 0.15) 2px, transparent 2px),
-    radial-gradient(circle at 28px 28px, rgba(139, 90, 43, 0.15) 2px, transparent 2px);
-  background-size: 56px 56px;
-}
 
 /* ==================== designo BURR WALNUT TRIM ==================== */
 /* Rich wood grain with depth - W140 style walnut bezels */
