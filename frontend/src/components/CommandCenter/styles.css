@@ -243,6 +243,66 @@
   pointer-events: none;
 }
 
+/* Specular sweep: a tight highlight that travels across the machined ring */
+.import-option::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.00) 36%,
+      rgba(255, 255, 255, 0.22) 46%,
+      rgba(255, 230, 170, 0.18) 50%,
+      rgba(255, 255, 255, 0.18) 54%,
+      rgba(255, 255, 255, 0.00) 64%,
+      transparent 100%
+    );
+
+  /* Restrict to the ring area */
+  -webkit-mask: radial-gradient(circle, transparent 0 60%, #000 62% 100%);
+  mask: radial-gradient(circle, transparent 0 60%, #000 62% 100%);
+
+  opacity: 0;
+  transform: translateX(-45%) rotate(-18deg);
+}
+
+@keyframes importRingSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-55%) rotate(-18deg);
+  }
+  8% {
+    opacity: 0.9;
+  }
+  45% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0.0;
+    transform: translateX(55%) rotate(-18deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(55%) rotate(-18deg);
+  }
+}
+
+/* Subtle on hover (and occasionally at rest for “precision machining” feel) */
+.import-option:hover::after {
+  animation: importRingSweep 1.25s ease-in-out 1;
+  opacity: 1;
+}
+
+/* Occasional sweep when idle (very subtle) */
+.import-option::after {
+  animation: importRingSweep 7.5s ease-in-out infinite;
+}
+
 .import-option::after {
   content: '';
   position: absolute;
