@@ -407,7 +407,8 @@ export function SalesProvider({ children }) {
     copyToClipboard,
     shareToMessages,
     sendToMessages,
-    toggleTheme,
+    // toggleTheme removed (dark-only)
+
     toggleSuperchargedMode,
     setVehicleInventory,
   };
