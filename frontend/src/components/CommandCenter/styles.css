@@ -2050,28 +2050,28 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 
 /* Requested: +200% font size for the 64-color ambient lighting menu */
 .ambient-section .section-header h4 {
-  font-size: 28px;
+  font-size: 14px;
 }
 
 .ambient-section .ambient-toggle span {
-  font-size: 26px;
+  font-size: 13px;
 }
 
 .ambient-section .toggle-btn {
-  font-size: 24px;
+  font-size: 12px;
 }
 
 .ambient-section .intensity-control label {
-  font-size: 26px;
+  font-size: 13px;
 }
 
 .ambient-section .intensity-btn {
-  font-size: 22px;
-  padding: 12px 16px;
+  font-size: 11px;
+  padding: 10px 12px;
 }
 
 .ambient-section .ambient-desc {
-  font-size: 22px;
+  font-size: 11px;
   line-height: 1.35;
 }
 
