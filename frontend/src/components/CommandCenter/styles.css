@@ -1273,11 +1273,7 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 .sound-toggle span {
   font-size: 13px;
 
-/* Match these section fonts to the Ambient Lighting scale */
-.engine-sound-profile .section-header h4,
-.settings-section .section-header h4 {
-  font-size: 14px;
-}
+/* Match these section fonts to the Ambient Lighting scale - REMOVED: conflicts with +25% requirement */
 
 .engine-sound-profile label,
 .settings-section label,
