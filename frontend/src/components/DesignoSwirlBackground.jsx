@@ -51,9 +51,9 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
         .designo-swirl-vignette {
           inset: 0;
           background:
-            radial-gradient(ellipse 120% 90% at 50% 30%, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.22) 72%, rgba(0,0,0,0.44) 100%);
+            radial-gradient(ellipse 120% 90% at 50% 30%, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.24) 72%, rgba(0,0,0,0.52) 100%);
           mix-blend-mode: multiply;
-          opacity: 0.75;
+          opacity: calc(0.75 + (var(--designo-prominence, 1) - 1) * 0.12);
         }
 
         /* Palette derived from the reference: aubergine/magenta + amber + teal/cyan */
