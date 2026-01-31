@@ -355,9 +355,8 @@ export function SalesProvider({ children }) {
 
   // Theme & Supercharg'd actions
   // Theme toggle removed: app is dark-only
-  const toggleTheme = () => {
-    dispatch({ type: ACTIONS.SET_THEME, payload: 'dark' });
-  };
+  // (kept as no-op for backwards compatibility inside the app)
+  const toggleTheme = () => {};
 
   const toggleSuperchargedMode = () => {
     dispatch({ type: ACTIONS.SET_SUPERCHARGED, payload: !state.supercharged });
