@@ -1162,7 +1162,10 @@ html:not(.dark) .io-title {
 
 .engine-sound-profile .sound-profile-btn:hover {
   transform: translateY(-2px);
-  border-color: rgba(255,191,0,0.25);
+  border-color: rgba(255,191,0,0.18);
+  background:
+    radial-gradient(ellipse 120% 90% at 30% 30%, rgba(255, 240, 200, 0.08) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,191,0,0.12) 0%, rgba(255,140,0,0.08) 100%);
   box-shadow: 0 10px 22px rgba(0,0,0,0.28);
 }
 
