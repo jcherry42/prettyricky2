@@ -145,9 +145,6 @@
   margin: 0;
 }
 
-html:not(.dark) .tesla-customer-name {
-  color: #111;
-}
 
 .tesla-customer-meta {
   font-size: 13px;
@@ -155,18 +152,12 @@ html:not(.dark) .tesla-customer-name {
   margin-top: 2px;
 }
 
-html:not(.dark) .tesla-customer-meta {
-  color: rgba(0, 0, 0, 0.5);
-}
 
 .tesla-chevron {
   color: rgba(255, 255, 255, 0.4);
   transition: var(--tesla-transition);
 }
 
-html:not(.dark) .tesla-chevron {
-  color: rgba(0, 0, 0, 0.3);
-}
 
 .tesla-customer-selector:hover .tesla-chevron {
   color: var(--tesla-electric-blue);
