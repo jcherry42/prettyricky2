@@ -56,15 +56,6 @@
   border-radius: 8px;
 }
 
-html:not(.dark) .skeleton {
-  background: linear-gradient(
-    90deg,
-    hsla(220, 10%, 90%, 1) 0%,
-    hsla(220, 10%, 95%, 1) 50%,
-    hsla(220, 10%, 90%, 1) 100%
-  );
-  background-size: 1000px 100%;
-}
 
 /* Micro-interactions */
 .micro-bounce {
