@@ -38,7 +38,7 @@ export const usePerformanceCleanup = (cleanupCallback, deps = []) => {
       window.removeEventListener('deepCleanup', handleDeepCleanup);
       window.removeEventListener('emergencyCleanup', handleEmergencyCleanup);
     };
-  }, deps);
+  }, Array.isArray(deps) ? deps : []);
 };
 
 /**
