@@ -531,6 +531,7 @@ const ImportOption = memo(({ icon: Icon, title, color, onClick }) => (
       data-testid={`import-option-${color}`}
     >
       <div className="io-icon"><Icon className="w-10 h-10" strokeWidth={1.5} /></div>
+      <div className="io-depth" aria-hidden="true" />
     </div>
   </div>
 ));
