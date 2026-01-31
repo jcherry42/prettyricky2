@@ -334,8 +334,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
           ) : (
             <div className="vinws-result">
               <div className="vinws-preview">
-                {/* eslint-disable-next-line jsx-a11y/img-redundant-alt */}
-                <img src={capturedImage} alt="Captured VIN photo" className="vinws-preview-img" />
+                <img src={capturedImage} alt="Captured VIN" className="vinws-preview-img" />
               </div>
 
               <div className="vinws-recognized">
