@@ -98,11 +98,12 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
         /* Cooler ribbon to keep the composition “designo” rather than “neon” */
         .designo-swirl-pass-c {
           background:
-            radial-gradient(ellipse 70% 44% at 50% 58%, rgba(0, 195, 255, 0.07) 0%, transparent 66%),
-            radial-gradient(ellipse 45% 58% at 64% 44%, rgba(0, 255, 168, 0.045) 0%, transparent 70%),
-            radial-gradient(ellipse 38% 38% at 28% 22%, rgba(255, 210, 150, 0.05) 0%, transparent 70%);
-          opacity: 0.35;
-          filter: blur(22px);
+            radial-gradient(ellipse 70% 44% at 50% 58%, rgba(0, 195, 255, 0.10) 0%, transparent 66%),
+            radial-gradient(ellipse 45% 58% at 64% 44%, rgba(0, 255, 168, 0.07) 0%, transparent 70%),
+            radial-gradient(ellipse 38% 38% at 28% 22%, rgba(255, 210, 150, 0.08) 0%, transparent 70%),
+            radial-gradient(ellipse 55% 40% at 20% 78%, rgba(255, 170, 90, 0.06) 0%, transparent 72%);
+          opacity: calc(0.44 * var(--designo-prominence, 1));
+          filter: blur(20px);
           animation: designo-pass-drift-c 40s ease-in-out infinite;
         }
 
