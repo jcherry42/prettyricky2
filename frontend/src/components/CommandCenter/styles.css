@@ -1848,6 +1848,13 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
 
 .note-input textarea {
   flex: 1;
+
+/* Settings: subtext boosts */
+.dealership-profile .s-field input::placeholder,
+.user-profile .s-field input::placeholder {
+  font-size: 14px;
+}
+
   padding: 10px;
   border-radius: 10px;
   background: rgba(0,0,0,0.3);
