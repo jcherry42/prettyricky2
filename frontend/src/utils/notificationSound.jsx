@@ -223,13 +223,9 @@ export const setSoundPreferences = (prefs) => {
   }
 };
 
-// Preload sounds on module load
-// NOTE: Guarded for environments where browser blocks audio initialization
-if (typeof window !== 'undefined') {
-  setTimeout(() => {
-    preloadSounds();
-  }, 0);
-}
+// NOTE: Do not preload audio on module load.
+// Browsers (and automated test runners) can abort media requests before user interaction.
+// Sounds are loaded on-demand when played.
 
 /**
  * Play Sport Mode activation sound with gradual fade out
