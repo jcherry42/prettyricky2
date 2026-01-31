@@ -1279,9 +1279,6 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
   font-size: 13px;
 }
 
-  color: rgba(255,255,255,0.8);
-}
-
 .sound-profiles label {
   font-size: 13px;
   font-weight: 700;
