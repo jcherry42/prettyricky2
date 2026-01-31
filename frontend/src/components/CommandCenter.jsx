@@ -671,7 +671,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
   return (
     <div className="settings-tab">
       {/* Profile Section */}
-      <div className="settings-section">
+      <div className="settings-section dealership-profile">
         <div className="section-header">
           <Building2 className="w-5 h-5" style={{ color: '#FFBF00' }} />
           <h4>Dealership Profile</h4>
@@ -708,7 +708,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
       </div>
       
       {/* Salesperson Section */}
-      <div className="settings-section">
+      <div className="settings-section user-profile">
         <div className="section-header">
           <User className="w-5 h-5" style={{ color: '#FFBF00' }} />
           <h4>Your Profile</h4>
@@ -741,7 +741,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
         <div className="settings-form">
           <div className="s-field">
-            <label>Default Translation Language</label>
+            <label className="sr-only">Translation</label>
             <div style={{ height: 6 }} />
             <LanguageSelector
               selectedLanguage={defaultTargetLanguage}
@@ -779,7 +779,6 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
           </div>
           
           <div className="sound-profiles">
-            <label>Engine Sound Profile</label>
             <div className="sound-profile-grid">
               {[
                 { id: 'merica', label: "'Merica", icon: '🇺🇸' },
