@@ -2024,6 +2024,11 @@ html:not(.dark) .engine-sound-profile .sound-profile-btn.active {
   color: rgba(255,255,255,0.8);
 }
 
+/* Increase Sound Effects by +40% */
+.sound-effects-label {
+  font-size: 18px;
+}
+
 /* (Duplicate toggle-btn block removed: unified with primary toggle-btn styles above) */
 
 .sound-profiles label {
