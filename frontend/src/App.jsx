@@ -29,8 +29,30 @@ function AppContent() {
   const { showAdminSettings, toggleAdminSettings, showImport, showTowerTalk } = useSales();
   const [showPerfMonitor, setShowPerfMonitor] = useState(false);
 
-  // Adaptive swirl intensity: more prominent on the home surface, calmer behind modals.
-  const swirlProminence = showImport || showTowerTalk ? 0.7 : 1.25;
+  // Adaptive swirl intensity: more prominent on the home surface, calmer behind any modal.
+  // NOTE: some modals are owned by Header (Command Center, Intake Hub, Local Inventory),
+  // so we detect them by presence of their overlay elements.
+  const [hasHeaderModalOpen, setHasHeaderModalOpen] = useState(false);
+
+  useEffect(() => {
+    const recompute = () => {
+      const open = Boolean(
+        document.querySelector('.cc-overlay') ||
+          document.querySelector('.intake-overlay') ||
+          document.querySelector('.inventory-overlay')
+      );
+      setHasHeaderModalOpen(open);
+    };
+
+    recompute();
+
+    const mo = new MutationObserver(recompute);
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => mo.disconnect();
+  }, []);
+
+  const swirlProminence = showImport || showTowerTalk || hasHeaderModalOpen ? 0.7 : 1.25;
   
   // Initialize native capabilities on mount
   useEffect(() => {
