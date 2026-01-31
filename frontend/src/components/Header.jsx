@@ -13,6 +13,9 @@ const playStartupSound = () => {
   try {
     const prefs = getSoundPreferences();
     if (!prefs.enabled) return;
+
+    // Avoid attempting audio playback in automated test environments.
+    if (typeof navigator !== 'undefined' && navigator.webdriver) return;
     
     const audio = new Audio('/sounds/startup.wav');
     const targetVolume = prefs.volume || 0.7;
