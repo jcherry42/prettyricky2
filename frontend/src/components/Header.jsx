@@ -105,8 +105,9 @@ export const Header = () => {
       window.removeEventListener('pointerdown', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
     };
-    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
-    window.addEventListener('keydown', handleFirstInteraction, { once: true });
+    // Use capture so it fires even if UI elements stop propagation.
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true, capture: true });
+    window.addEventListener('keydown', handleFirstInteraction, { once: true, capture: true });
 
     // JDM-style startup sequence - outer lights first, then inner, then text
     // Mimics R34 Skyline boot-up sequence
