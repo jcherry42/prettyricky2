@@ -314,6 +314,78 @@ backend:
         agent: "testing"
 
 frontend:
+  - task: "Reduced Effects Mode - useReducedEffects hook detects device capabilities"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/hooks/useReducedEffects.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test useReducedEffects hook heuristics: reduced-motion, deviceMemory<=4, cores<=4, iOS+low cores detection"
+
+  - task: "DesignoSwirlBackground - Reduced mode visual effects and performance"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/DesignoSwirlBackground.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify reduced mode applies .designo-swirl-reduced class with lower blur, reduced opacity, disabled animations"
+
+  - task: "Home Page Load - All interactions work without click blocking"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify home loads and all UI interactions work without overlay blocking issues"
+
+  - task: "Command Center Modal - Open/close and tabs functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test Command Center modal opens/closes correctly and all tabs are accessible"
+
+  - task: "Intake Hub - VIN batch decode and save to inventory workflow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/IntakeHub.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test VIN batch decode workflow and save to inventory functionality"
+
+  - task: "SPORT Mode - Translation functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ResponseCards.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify SPORT mode translation functionality works correctly"
+
   - task: "Command Center - Add Customer via CustomerForm persists and shows in list"
     implemented: true
     working: true
