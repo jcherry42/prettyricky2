@@ -99,7 +99,7 @@ class TestLicenseScanOCR:
         response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
         
         data = response.json()
-        assert data.get('success') == False
+        assert data.get('success') is False
         assert 'error' in data
         print(f"✅ Invalid file type rejected: {data.get('error')}")
     
@@ -109,7 +109,7 @@ class TestLicenseScanOCR:
         response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
         
         data = response.json()
-        assert data.get('success') == False
+        assert data.get('success') is False
         print(f"✅ Empty file handled: {data.get('error')}")
     
     def test_license_scan_response_structure(self, api_client, test_image_bytes):
@@ -193,7 +193,7 @@ class TestCreateCustomerFromLicense:
         assert response.status_code == 200
         result = response.json()
         
-        assert result.get('success') == True
+        assert result.get('success') is True
         assert 'customer' in result
         
         customer = result['customer']
@@ -260,7 +260,7 @@ class TestCreateCustomerFromLicense:
         
         assert response.status_code == 200
         result = response.json()
-        assert result.get('success') == True
+        assert result.get('success') is True
         
         customer = result['customer']
         assert customer['first_name'] == 'TEST_NoAddress'
@@ -311,7 +311,7 @@ class TestLicenseAttach:
         
         assert attach_response.status_code == 200
         result = attach_response.json()
-        assert result.get('success') == True
+        assert result.get('success') is True
         assert result.get('license_image_url') == new_image_url
         print(f"✅ License attached to customer: {result.get('customer_name')}")
     
@@ -350,7 +350,7 @@ class TestLicenseUploadSimple:
         
         assert response.status_code == 200
         data = response.json()
-        assert data.get('success') == True
+        assert data.get('success') is True
         assert 'image_url' in data
         print(f"✅ Simple upload works: {data.get('image_url')}")
     
@@ -378,7 +378,7 @@ class TestLicenseUploadSimple:
         
         assert response.status_code == 200
         result = response.json()
-        assert result.get('success') == True
+        assert result.get('success') is True
         assert result.get('customer_id') == customer_id
         print("✅ Simple upload with customer_id works")
 
