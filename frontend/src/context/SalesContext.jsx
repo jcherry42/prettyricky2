@@ -227,6 +227,7 @@ export function SalesProvider({ children }) {
     
     // Load supercharged mode
     const savedSupercharged = localStorage.getItem('closr_supercharged') === 'true';
+    const savedEcoMode = localStorage.getItem('closr_eco_mode') === 'true';
     
     const isSetupComplete = dealership.name !== DEFAULT_DEALERSHIP.name || 
                             salesperson.name !== DEFAULT_SALESPERSON.name;
@@ -243,6 +244,7 @@ export function SalesProvider({ children }) {
         vehicleInventory,
         isSetupComplete,
         supercharged: savedSupercharged,
+        ecoMode: savedEcoMode,
       },
     });
   }, []);
