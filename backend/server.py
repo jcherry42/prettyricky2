@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from security.auth import get_current_user
 from security.rate_limit import RateLimitMiddleware
 from security.audit import AuditLogger
-from security.validation import sanitize_input, validate_vin, validate_email
+from security.validation import sanitize_input
 
 # LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
