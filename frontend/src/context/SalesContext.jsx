@@ -411,6 +411,7 @@ export function SalesProvider({ children }) {
     shareToMessages,
     sendToMessages,
     toggleSuperchargedMode,
+    toggleEcoMode,
     setVehicleInventory,
   };
 
