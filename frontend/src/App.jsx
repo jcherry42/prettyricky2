@@ -115,7 +115,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-background max-w-[100vw] overflow-x-hidden quilted-leather-amber">
       {/* Prominent on the home surface; adaptively dampened while modals are open */}
-      <DesignoSwirlBackground prominence={swirlProminence} intensity={swirlIntensity} reduced={reducedEffects} />
+      <DesignoSwirlBackground prominence={swirlProminence} intensity={swirlIntensity} reduced={autoReducedEffects} />
 
       {/* Ambient lighting overlay */}
       <div className="fixed inset-0 pointer-events-none z-0">
