@@ -1873,7 +1873,6 @@ async def analyze_sample_record(request: AnalyzeSampleRequest):
 from integrations.field_transforms import (
     FieldTransformEngine, MappingConfig, FieldMapping, Transform, Condition,
     TransformType, ConditionOperator,
-    create_name_composite_mapping, create_phone_mapping, create_price_mapping
 )
 
 class TransformTestRequest(BaseModel):
