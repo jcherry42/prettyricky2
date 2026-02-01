@@ -66,7 +66,7 @@ function AppContent() {
     showImport || showTowerTalk || showSetup || showFavorites || hasHeaderModalOpen ? 0.7 : 1.45;
 
   // Older devices: prioritize smoothness by reducing expensive visual effects.
-  const swirlIntensity = reducedEffects ? 0.75 : 1;
+  const swirlIntensity = autoReducedEffects ? 0.75 : 1;
   
 
   // Bridge reduced-effects into CSS so other components can cheaply react.
