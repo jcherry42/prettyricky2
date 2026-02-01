@@ -334,6 +334,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: useReducedEffects hook working correctly. Tested on high-end device (8GB RAM, 16 cores, non-iOS, no reduced-motion preference) - correctly returned false for reduced effects. Hook properly detects device capabilities: deviceMemory, hardwareConcurrency, iOS detection, and prefers-reduced-motion media query. Heuristic thresholds working as designed (<=4GB memory, <=4 cores, iOS+low cores trigger reduced mode)."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Expanded reduced-effects mode verification completed. useReducedEffects hook properly integrated with App.jsx - document.documentElement.classList.toggle('reduced-effects', Boolean(reducedEffects)) working correctly on line 74. Hook detects device capabilities and applies appropriate performance optimizations for older devices."
 
   - task: "DesignoSwirlBackground - Reduced mode visual effects and performance"
     implemented: true
