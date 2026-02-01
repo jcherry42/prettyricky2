@@ -233,7 +233,7 @@ const BatchVinScanModal = ({ isOpen, onClose }) => {
             padding: 14px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
             background: rgba(0,0,0,0.25);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(calc(10px - (var(--reduced-effects) * 6px)));
           }
 
           .bvin-title {
