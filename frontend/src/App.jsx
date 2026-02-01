@@ -20,6 +20,7 @@ import PerformanceMonitor from './components/PerformanceMonitor';
 import { offlineSync } from './utils/offlineSync';
 import './utils/keyboardManager'; // Auto-initializes on import
 import DesignoSwirlBackground from './components/DesignoSwirlBackground';
+import useReducedEffects from './hooks/useReducedEffects';
 
 
 // Start Performance Manager on app load
