@@ -188,7 +188,7 @@ export const useCachedData = (key, fetcher, maxAge = 5 * 60 * 1000) => {
       cacheRef.current.loading = false;
       window.dispatchEvent(new Event(`cache_done:${key}`));
     }
-  }, [fetcher, isStale]);
+  }, [fetcher, isStale, key]);
   
   const setData = useCallback((data) => {
     cacheRef.current.data = data;
