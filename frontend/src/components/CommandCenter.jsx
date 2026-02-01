@@ -758,6 +758,33 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
       </div>
       
+      {/* Eco Mode (Performance) */}
+      <div className="settings-section eco-section">
+        <div className="section-header">
+          <Leaf className="w-5 h-5" style={{ color: '#22c55e' }} />
+          <h4>Eco Mode</h4>
+        </div>
+        <div className="sound-settings">
+          <div className="sound-toggle">
+            <span className="sound-effects-label">Reduce visual effects for smoother performance</span>
+            <button
+              className={`toggle-btn eco-toggle ${ecoMode ? 'on' : 'off'}`}
+              onClick={() => {
+                toggleEcoMode();
+                toast.success(ecoMode ? 'Eco Mode disabled' : 'Eco Mode enabled');
+              }}
+              aria-label={ecoMode ? 'Disable Eco Mode' : 'Enable Eco Mode'}
+            >
+              {ecoMode ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+              {ecoMode ? 'On' : 'Off'}
+            </button>
+          </div>
+          <p className="ambient-desc" style={{ marginTop: 10 }}>
+            Eco Mode reduces blur, grain, and animation intensity to keep the app feeling native-smooth on older devices.
+          </p>
+        </div>
+      </div>
+
       {/* Engine Sound Profile Section - Blue Glass */}
       <div className="settings-section engine-sound-profile">
         <div className="section-header">
