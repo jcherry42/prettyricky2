@@ -18,7 +18,9 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
     // Log to monitoring service in production
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    if (import.meta.env.DEV) {
+      console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    }
   }
 
   handleRetry = () => {

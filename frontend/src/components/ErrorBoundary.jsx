@@ -25,7 +25,10 @@ class ErrorBoundary extends Component {
     // Log error to monitoring service in production
     if (import.meta.env.PROD) {
       // Could integrate with Sentry, LogRocket, etc.
-      console.error('Error Boundary caught:', error, errorInfo);
+      // Avoid noisy logs in production; the UI will show a recovery screen.
+      if (import.meta.env.DEV) {
+        console.error('Error Boundary caught:', error, errorInfo);
+      }
     }
   }
 
