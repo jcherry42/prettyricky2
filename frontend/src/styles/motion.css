@@ -1,0 +1,57 @@
+/* Motion tokens: AMG-tech (snappy but premium)
+   - Keep transforms on compositor
+   - Respect reduced motion + reduced effects
+*/
+
+:root {
+  --motion-ease-designo: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --motion-ease-out: cubic-bezier(0.2, 0.9, 0.2, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  --motion-fast: 140ms;
+  --motion-med: 220ms;
+  --motion-slow: 360ms;
+
+  --motion-distance-sm: 10px;
+  --motion-distance-md: 18px;
+
+  --motion-scale-in: 0.985;
+}
+
+html.reduced-effects {
+  --motion-fast: 110ms;
+  --motion-med: 160ms;
+  --motion-slow: 240ms;
+
+  --motion-distance-sm: 8px;
+  --motion-distance-md: 12px;
+  --motion-scale-in: 0.995;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-med: 0ms;
+    --motion-slow: 0ms;
+    --motion-distance-sm: 0px;
+    --motion-distance-md: 0px;
+    --motion-scale-in: 1;
+  }
+}
+
+/* Reusable keyframes */
+@keyframes designoModalIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-distance-md), 0) scale(var(--motion-scale-in));
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes designoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
