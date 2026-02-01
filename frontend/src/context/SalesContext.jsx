@@ -360,6 +360,11 @@ export function SalesProvider({ children }) {
     dispatch({ type: ACTIONS.SET_SUPERCHARGED, payload: !state.supercharged });
   };
 
+
+  const toggleEcoMode = () => {
+    dispatch({ type: ACTIONS.SET_ECO_MODE, payload: !state.ecoMode });
+  };
+
   // Copy to clipboard with enhanced fallback
   const copyToClipboard = async (text) => {
     const result = await copyUtil(text);
