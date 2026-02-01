@@ -424,6 +424,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: SPORT mode activates successfully when SPORT button clicked. Customer selection workflow functional (Alex Martinez selectable). Translation functionality accessible through response cards workflow. SPORT mode provides enhanced features including translation capabilities. Visual indicators for SPORT mode activation working correctly. Translation requires customer and inquiry selection to become fully active, which is the expected behavior."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Expanded verification completed. SPORT mode activation working correctly with customer selection workflow functional. Translation functionality accessible through response cards after customer and inquiry selection. SPORT button (dark theme) visible in header and activates successfully. Customer workflow (Alex Martinez, Sarah Johnson, Michael Chen selection) operational leading to inquiry type selection and response generation with translation capabilities."
 
   - task: "Command Center - Add Customer via CustomerForm persists and shows in list"
     implemented: true
