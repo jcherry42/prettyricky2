@@ -525,7 +525,7 @@ export const QuickAddButton = () => {
           position: fixed;
           inset: 0;
           background: rgba(10, 8, 6, 0.94);
-          backdrop-filter: blur(16px);
+          backdrop-filter: blur(calc(16px - (var(--reduced-effects) * 8px)));
           z-index: 9999;
           display: flex;
           align-items: center;
@@ -546,8 +546,8 @@ export const QuickAddButton = () => {
             rgba(25, 20, 15, 0.95) 0%, 
             rgba(15, 12, 8, 0.98) 100%
           );
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          backdrop-filter: blur(calc(24px - (var(--reduced-effects) * 12px))) saturate(calc(180% - (var(--reduced-effects) * 40%)));
+          -webkit-backdrop-filter: blur(calc(24px - (var(--reduced-effects) * 12px))) saturate(calc(180% - (var(--reduced-effects) * 40%)));
           border-radius: 24px;
           border: 1px solid rgba(255, 140, 0, 0.2);
           box-shadow: 

@@ -655,8 +655,8 @@ export const VoiceTranslator = () => {
             rgba(25, 20, 15, 0.95) 0%, 
             rgba(15, 12, 8, 0.98) 100%
           );
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
+          backdrop-filter: blur(calc(24px - (var(--reduced-effects) * 12px))) saturate(calc(180% - (var(--reduced-effects) * 40%)));
+          -webkit-backdrop-filter: blur(calc(24px - (var(--reduced-effects) * 12px))) saturate(calc(180% - (var(--reduced-effects) * 40%)));
           border-radius: 24px;
           border: 1px solid rgba(147, 51, 234, 0.2);
           box-shadow: 

@@ -193,7 +193,7 @@ export const PerformanceMonitor = ({
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
           font-size: 12px;
           overflow: hidden;
-          backdrop-filter: blur(12px);
+          backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
         }
         
         .perf-header {

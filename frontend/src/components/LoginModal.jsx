@@ -237,8 +237,8 @@ const LoginModal = ({ onClose, onSuccess, allowSkip = true }) => {
           align-items: center;
           justify-content: center;
           background: radial-gradient(ellipse at center, rgba(15, 15, 20, 0.97) 0%, rgba(5, 5, 8, 0.99) 100%);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(calc(20px - (var(--reduced-effects) * 10px)));
+          -webkit-backdrop-filter: blur(calc(20px - (var(--reduced-effects) * 10px)));
         }
 
         .infotainment-screen {

@@ -284,7 +284,7 @@ export const FullScreenLoader = ({ message = 'Loading...' }) => (
         position: fixed;
         inset: 0;
         background: rgba(10, 8, 6, 0.95);
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(calc(8px - (var(--reduced-effects) * 4px)));
         display: flex;
         align-items: center;
         justify-content: center;

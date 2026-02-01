@@ -119,7 +119,7 @@ export const ConfirmDialog = ({
           position: fixed;
           inset: 0;
           background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(8px);
+          backdrop-filter: blur(calc(8px - (var(--reduced-effects) * 4px)));
           z-index: 10000;
           display: flex;
           align-items: center;
