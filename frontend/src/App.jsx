@@ -59,7 +59,8 @@ function AppContent() {
     return () => mo.disconnect();
   }, []);
 
-  const swirlProminence = showImport || showTowerTalk || hasHeaderModalOpen ? 0.7 : 1.45;
+  const swirlProminence =
+    showImport || showTowerTalk || showSetup || showFavorites || hasHeaderModalOpen ? 0.7 : 1.45;
   
   // Initialize native capabilities on mount
   useEffect(() => {
