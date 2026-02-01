@@ -34,8 +34,8 @@
     radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.15) 0%, transparent 55%),
     radial-gradient(ellipse 80% 50% at 50% 100%, rgba(200, 160, 80, 0.1) 0%, transparent 50%),
     linear-gradient(165deg, #1a1816 0%, #0f0e0d 50%, #141210 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(calc(20px - (var(--reduced-effects) * 10px)));
+  -webkit-backdrop-filter: blur(calc(20px - (var(--reduced-effects) * 10px)));
   border-radius: 28px;
   border: 3px solid #6B4324;
   box-shadow: 
