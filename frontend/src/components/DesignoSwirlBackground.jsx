@@ -185,6 +185,27 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1, reduced = false
           100% { opacity: 0.0; transform: translate3d(65%, 0, 0) rotate(-10deg); }
         }
 
+        /* Reduced effects mode (older devices): prioritize smoothness */
+        .designo-swirl-reduced .designo-swirl-pass {
+          filter: blur(18px);
+          opacity: 0.28;
+        }
+
+        .designo-swirl-reduced .designo-swirl-stitch {
+          opacity: 0.04;
+          animation: none !important;
+        }
+
+        .designo-swirl-reduced .designo-swirl-noise {
+          opacity: 0.03;
+          animation: none !important;
+        }
+
+        .designo-swirl-reduced .designo-swirl-glass {
+          opacity: 0.06;
+          animation: none !important;
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .designo-swirl-pass,
           .designo-swirl-stitch,
