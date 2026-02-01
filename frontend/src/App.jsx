@@ -73,8 +73,8 @@ function AppContent() {
 
   // Bridge reduced-effects into CSS so other components can cheaply react.
   useEffect(() => {
-    document.documentElement.classList.toggle('reduced-effects', Boolean(autoReducedEffects));
-  }, [autoReducedEffects]);
+    document.documentElement.classList.toggle('reduced-effects', Boolean(reducedEffects));
+  }, [reducedEffects]);
 
   // Initialize native capabilities on mount
   useEffect(() => {
