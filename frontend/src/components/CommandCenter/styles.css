@@ -797,20 +797,20 @@
 @keyframes slideUp {
   from { 
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate3d(0, 18px, 0);
   }
   to { 
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .cc-overlay {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.18s ease-out;
 }
 
 .cc-modal {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.26s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 /* ===== FORM MODAL ===== */
