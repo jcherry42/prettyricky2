@@ -25,6 +25,10 @@
   max-width: 560px;
   max-height: 85vh;
   margin: auto;
+
+  /* Native-feel motion: keep transforms on compositor */
+  transform: translateZ(0);
+  will-change: transform;
   background: 
     radial-gradient(ellipse 180% 90% at 0% 40%, rgba(128, 40, 60, 0.18) 0%, transparent 55%),
     radial-gradient(ellipse 150% 100% at 100% 60%, rgba(40, 100, 120, 0.15) 0%, transparent 55%),
