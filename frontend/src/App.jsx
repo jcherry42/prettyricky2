@@ -64,6 +64,9 @@ function AppContent() {
 
   const swirlProminence =
     showImport || showTowerTalk || showSetup || showFavorites || hasHeaderModalOpen ? 0.7 : 1.45;
+
+  // Older devices: prioritize smoothness by reducing expensive visual effects.
+  const swirlIntensity = reducedEffects ? 0.75 : 1;
   
   // Initialize native capabilities on mount
   useEffect(() => {
