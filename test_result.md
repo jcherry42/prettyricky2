@@ -225,6 +225,17 @@ TODO for testing agent: verify batch mode end-to-end (add VINs, decode+save, ver
 user_problem_statement: "Run targeted regression for the SPORT button behavior change. Change: When Sport mode is active, the SPORT button should show NO text label and the icon should be 3x size. Test: 1) Load home. 2) Verify SPORT button shows label before activation. 3) Click SPORT. 4) Verify label disappears and icon becomes much larger. 5) Click SPORT again to deactivate. 6) Verify label returns and icon returns to normal. 7) Ensure no layout break in header. Capture screenshots for: before, active, after deactivate."
 
 frontend:
+  - task: "Motion System Pass - Standardized motion animations for modals"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/styles/motion.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ MOTION SYSTEM PASS IMPLEMENTATION VERIFIED: Comprehensive testing confirms all motion system changes working correctly. Motion tokens properly implemented in src/styles/motion.css with --motion-fast: 140ms, --motion-med: 220ms, --motion-slow: 360ms, --motion-ease-designo: cubic-bezier(0.2, 0.9, 0.2, 1), respects prefers-reduced-motion and html.reduced-effects. Standardized designoModalIn + designoFadeIn animations applied to all modals: Command Center modal opens/closes with smooth motion animations, Inventory modal functional with motion animations, Batch VIN modal accessible with animations, Windshield VIN scanner modal detected with camera interface. All test requirements met: 1) Home loads successfully with SUPERCHARG'D branding and customer selection, 2) Command Center opens/closes with tab switching working, 3) Intake Hub opens with VIN tab switching, 4) Batch mode modal accessible, 5) Local Inventory modal opens/closes, 6) SPORT mode toggles correctly, 7) Eco Mode accessible in Settings, 8) No console errors detected. Screenshots captured for visual verification. Motion animations are smooth, premium-feeling, and respect accessibility preferences."
   - task: "SPORT Button Behavior Change - Label hiding and icon 3x size when active"
     implemented: true
     working: true
