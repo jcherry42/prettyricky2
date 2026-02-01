@@ -26,7 +26,14 @@ import DesignoSwirlBackground from './components/DesignoSwirlBackground';
 performanceManager.start();
 
 function AppContent() {
-  const { showAdminSettings, toggleAdminSettings, showImport, showTowerTalk } = useSales();
+  const {
+    showAdminSettings,
+    toggleAdminSettings,
+    showImport,
+    showTowerTalk,
+    showSetup,
+    showFavorites,
+  } = useSales();
   const [showPerfMonitor, setShowPerfMonitor] = useState(false);
 
   // Adaptive swirl intensity: more prominent on the home surface, calmer behind any modal.
