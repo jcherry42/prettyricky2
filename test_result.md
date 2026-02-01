@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "SPORT Button Behavior Change - Label hiding and icon 3x size when active"
+    - "Motion System Pass - Standardized motion animations for modals"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
