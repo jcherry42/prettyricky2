@@ -8,6 +8,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
 import { PushNotifications } from '@capacitor/push-notifications';
+import logger from './logger';
 
 // Check if running in native app context
 export const isNative = Capacitor.isNativePlatform();
