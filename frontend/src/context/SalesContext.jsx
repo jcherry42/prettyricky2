@@ -192,6 +192,11 @@ function salesReducer(state, action) {
       localStorage.setItem('closr_supercharged', action.payload ? 'true' : 'false');
       return { ...state, supercharged: action.payload };
       
+
+    case ACTIONS.SET_ECO_MODE:
+      localStorage.setItem('closr_eco_mode', action.payload ? 'true' : 'false');
+      return { ...state, ecoMode: action.payload };
+
     case ACTIONS.LOAD_SAVED_DATA:
       return { ...state, ...action.payload };
       
