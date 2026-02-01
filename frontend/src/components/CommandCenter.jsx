@@ -643,7 +643,9 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
     dealership, 
     salesperson, 
     setDealership, 
-    setSalesperson 
+    setSalesperson,
+    ecoMode,
+    toggleEcoMode,
   } = useSales();
   
   const [dealershipForm, setDealershipForm] = useState({
