@@ -18,7 +18,7 @@ const DesignoSwirlBackground = ({ intensity = 1, prominence = 1, reduced = false
   return (
     <div
       aria-hidden="true"
-      className="designo-swirl-bg"
+      className={`designo-swirl-bg ${reduced ? 'designo-swirl-reduced' : ''}`}
       style={{
         opacity,
         // Used inside CSS via var() for tuning without reflow.
