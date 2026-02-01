@@ -893,6 +893,16 @@ h1, h2, h3 {
   transition: all 0.3s ease;
 }
 
+/* When Sport mode is ACTIVE: no text + 3x icon size */
+.sport-fire-btn.active .sport-label {
+  display: none;
+}
+
+.sport-fire-btn.active .header-btn-icon {
+  width: 60px;
+  height: 60px;
+}
+
 .sport-fire-btn .sport-label {
   position: relative;
   z-index: 2;
