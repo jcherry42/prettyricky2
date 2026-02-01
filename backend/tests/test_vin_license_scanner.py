@@ -214,7 +214,7 @@ class TestVinSaveToInventory:
         data = save_response.json()
         
         if save_response.status_code == 200:
-            assert data["success"] == True
+            assert data["success"] is True
             print(f"✓ Vehicle saved to inventory: {vin}")
         else:
             assert "already exists" in data["detail"]
@@ -267,7 +267,7 @@ class TestLicenseScanOCR:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == False
+        assert data["success"] is False
         assert "error" in data
         print("✓ Invalid file type rejected correctly")
     
@@ -282,7 +282,7 @@ class TestLicenseScanOCR:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == False
+        assert data["success"] is False
         assert "error" in data
         print("✓ Empty file rejected correctly")
 
@@ -326,7 +326,7 @@ class TestLicenseCreateCustomer:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "customer" in data
         assert data["customer"]["first_name"] == "TEST_John"
         assert data["customer"]["last_name"] == "TEST_Doe"
@@ -335,7 +335,7 @@ class TestLicenseCreateCustomer:
         print(f"✓ Customer created: {data['customer']['name']}")
         
         # Cleanup - delete test customer
-        customer_id = data["customer"]["id"]
+        _customer_id = data["customer"]["id"]
         # Note: No delete endpoint exposed, but data is prefixed with TEST_
     
     def test_create_customer_missing_first_name(self):
@@ -390,7 +390,7 @@ class TestLicenseUpload:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "image_url" in data
         assert data["image_url"].startswith("/api/uploads/")
         print(f"✓ JPEG uploaded: {data['image_url']}")
@@ -411,7 +411,7 @@ class TestLicenseUpload:
         
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "image_url" in data
         print(f"✓ PNG uploaded: {data['image_url']}")
     
@@ -449,7 +449,7 @@ class TestLicenseUpload:
             
             assert response.status_code == 200
             result = response.json()
-            assert result["success"] == True
+            assert result["success"] is True
             assert result["customer_id"] == customer_id
             print(f"✓ License uploaded and attached to customer: {customer_id}")
         else:
@@ -504,7 +504,7 @@ class TestLicenseAttach:
             
             assert attach_response.status_code == 200
             result = attach_response.json()
-            assert result["success"] == True
+            assert result["success"] is True
             assert result["customer_id"] == customer_id
             assert result["license_image_url"] == image_url
             print(f"✓ License attached to customer: {customer_id}")
@@ -587,7 +587,7 @@ class TestNameNormalization:
         assert response.status_code == 200
         data = response.json()
         # Note: The backend may or may not normalize - just verify it works
-        assert data["success"] == True
+        assert data["success"] is True
         print(f"✓ Customer created with name: {data['customer']['name']}")
 
 
