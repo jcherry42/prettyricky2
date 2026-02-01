@@ -68,6 +68,12 @@ function AppContent() {
   // Older devices: prioritize smoothness by reducing expensive visual effects.
   const swirlIntensity = reducedEffects ? 0.75 : 1;
   
+
+  // Bridge reduced-effects into CSS so other components can cheaply react.
+  useEffect(() => {
+    document.documentElement.classList.toggle('reduced-effects', Boolean(reducedEffects));
+  }, [reducedEffects]);
+
   // Initialize native capabilities on mount
   useEffect(() => {
     if (isNative) {
