@@ -53,6 +53,7 @@ const initialState = {
   
   // Modes
   supercharged: false,
+  ecoMode: false,
 };
 
 // Action types
