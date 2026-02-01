@@ -388,6 +388,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: Command Center modal opens and closes correctly. CHECK button successfully opens modal with .cc-overlay class applied. Found all 5 Command Center tabs (Dashboard, Customers, Import, Printer, Settings) accessible and functional. Modal displays overview dashboard with statistics (40 total customers, 0 deals, 40 avg years, 0 contacted, 0 appointments). Modal closes properly via overlay click. No console errors during modal operations."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Expanded verification with reduced-effects blur integration. Command Center modal functionality confirmed with backdrop-filter blur adaptation using CSS calc() expressions. Overlay uses blur(calc(12px - (var(--reduced-effects) * 6px))) and header uses blur(calc(20px - (var(--reduced-effects) * 10px))). Modal opens/closes correctly with all 5 tabs accessible. Reduced-effects mode properly reduces blur intensity for performance on older devices."
 
   - task: "Intake Hub - VIN batch decode and save to inventory workflow"
     implemented: true
