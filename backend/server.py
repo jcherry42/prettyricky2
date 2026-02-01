@@ -3,7 +3,7 @@ Closr API Server - FEDERAL-GRADE SECURITY
 Sales automation tool with CRM-agnostic data integration
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Request, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
