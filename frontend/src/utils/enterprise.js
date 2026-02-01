@@ -47,7 +47,7 @@ export const formatPhoneNumber = (value) => {
   // Remove all non-digits
   const digits = value.replace(/\D/g, '');
   
-  // Format as (XXX) XXX-XXXX
+  // Format as (000) 000-0000
   if (digits.length <= 3) {
     return digits;
   } else if (digits.length <= 6) {
