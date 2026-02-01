@@ -39,25 +39,27 @@ let metrics = {
   stateResets: 0,
 };
 
+import logger from './logger';
+
 // Logger
 const log = (message, level = 'info') => {
   if (!CONFIG.DEBUG && level === 'debug') return;
-  
+
   const timestamp = new Date().toISOString();
   const prefix = `[PerfManager ${timestamp}]`;
-  
+
   switch (level) {
     case 'warn':
-      console.warn(prefix, message);
+      logger.warn(prefix, message);
       break;
     case 'error':
-      console.error(prefix, message);
+      logger.error(prefix, message);
       break;
     case 'debug':
-      console.debug(prefix, message);
+      logger.debug(prefix, message);
       break;
     default:
-      console.log(prefix, message);
+      logger.info(prefix, message);
   }
 };
 
