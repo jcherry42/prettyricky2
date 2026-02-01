@@ -352,6 +352,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: DesignoSwirlBackground component working perfectly. On high-end device, normal effects mode active (no .designo-swirl-reduced class applied as expected). Swirl background rendered with opacity 0.294, indicating adaptive prominence working correctly (dampened when modals open). Component properly receives reducedEffects prop from useReducedEffects hook. CSS rules for .designo-swirl-reduced verified in code: lower blur (18px), reduced opacity (0.28 for pass elements), disabled animations for stitch/noise/glass layers."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Expanded reduced-effects integration verified. DesignoSwirlBackground component properly receives reduced prop from App.jsx and applies .designo-swirl-reduced class when needed. CSS implementation includes performance optimizations: blur(18px) instead of default, opacity 0.28 for pass elements, animation: none !important for stitch/noise/glass layers. Component maintains pointer-events: none and z-index: 0 ensuring no UI interference."
 
   - task: "Home Page Load - All interactions work without click blocking"
     implemented: true
