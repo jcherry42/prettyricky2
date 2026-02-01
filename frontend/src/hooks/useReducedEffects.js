@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 // Native-feel strategy:
 // - Prefer smoothness on older devices.
@@ -10,16 +10,15 @@ import { useEffect, useState } from 'react';
 // - hardwareConcurrency
 // - iOS detection (no deviceMemory) + small cores
 export default function useReducedEffects() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
+  return useMemo(() => {
     try {
       const prefersReducedMotion =
         typeof window !== 'undefined' &&
         window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
 
       const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-      const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+      const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
         (ua.includes('Mac') && typeof navigator !== 'undefined' && navigator.maxTouchPoints > 1);
 
       const deviceMemory = typeof navigator !== 'undefined' ? navigator.deviceMemory : undefined;
@@ -28,16 +27,14 @@ export default function useReducedEffects() {
       // Heuristic thresholds:
       // - low memory devices (<= 4GB) => reduce
       // - low core devices (<= 4 cores) => reduce
-      // - iOS + <= 4 cores => reduce (iPhones often report 6 cores, older iPhones lower)
+      // - iOS + <= 4 cores => reduce
       const lowMemory = typeof deviceMemory === 'number' && deviceMemory <= 4;
       const lowCores = typeof cores === 'number' && cores <= 4;
       const iosLowCores = isIOS && typeof cores === 'number' && cores <= 4;
 
-      setReduced(Boolean(prefersReducedMotion || lowMemory || lowCores || iosLowCores));
+      return Boolean(prefersReducedMotion || lowMemory || lowCores || iosLowCores);
     } catch {
-      setReduced(false);
+      return false;
     }
   }, []);
-
-  return reduced;
 }
