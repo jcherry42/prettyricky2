@@ -144,7 +144,7 @@ class TestVINScanner:
         data = response.json()
         
         # Verify decoded data
-        assert data.get('success') == True or 'year' in data
+        assert data.get('success') is True or 'year' in data
         if 'year' in data:
             assert data.get('year') == '2018' or data.get('year') == 2018
             assert 'FORD' in data.get('make', '').upper() or 'Ford' in data.get('make', '')
