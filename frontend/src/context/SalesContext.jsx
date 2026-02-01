@@ -84,6 +84,7 @@ const ACTIONS = {
   LOAD_SAVED_DATA: 'LOAD_SAVED_DATA',
   // SET_THEME removed (dark-only)
   SET_SUPERCHARGED: 'SET_SUPERCHARGED',
+  SET_ECO_MODE: 'SET_ECO_MODE',
 };
 
 // Reducer
