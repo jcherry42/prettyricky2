@@ -658,6 +658,8 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
   });
   
   const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
+  const { ecoMode, toggleEcoMode } = useSales();
+
   const [notificationPermission, setNotificationPermission] = useState(() => {
     if ('Notification' in window) {
       return Notification.permission;
