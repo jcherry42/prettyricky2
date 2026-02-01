@@ -112,7 +112,12 @@
 
 test_plan:
   current_focus:
-    - "Import Data Tab Mode Selector Styling - Three-button cohesive centered layout"
+    - "Reduced Effects Mode - useReducedEffects hook functionality"
+    - "DesignoSwirlBackground - Reduced mode support and performance"
+    - "Home Page Load - All interactions work without click blocking"
+    - "Command Center - Open/close and tabs functionality"
+    - "Intake Hub - VIN batch decode and save workflow"
+    - "SPORT Mode - Translation functionality"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
