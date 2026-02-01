@@ -500,7 +500,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
             border-radius: 14px;
             border: 2px solid rgba(0, 170, 255, 0.55);
             box-shadow: 0 0 22px rgba(0, 170, 255, 0.25);
-            backdrop-filter: blur(1px);
+            backdrop-filter: blur(calc(1px - (var(--reduced-effects) * 1px)));
           }
 
           .vinws-guide-text {
