@@ -112,7 +112,7 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
             position: sticky;
             top: 0;
             background: rgba(0,0,0,0.25);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(calc(10px - (var(--reduced-effects) * 6px)));
             z-index: 2;
           }
 
