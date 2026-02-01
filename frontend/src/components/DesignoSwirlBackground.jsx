@@ -10,7 +10,7 @@ import React, { memo } from 'react';
  * - GPU-friendly (pure CSS gradients)
  * - Works across the app without layout impact
  */
-const DesignoSwirlBackground = ({ intensity = 1, prominence = 1 }) => {
+const DesignoSwirlBackground = ({ intensity = 1, prominence = 1, reduced = false }) => {
   // The swirl should read as “material” not “graphics”, but the user asked for stronger presence.
   // We achieve this by scaling opacity and boosting certain layer alphas (still keeping legibility via vignette).
   const opacity = 0.42 * intensity * prominence;
