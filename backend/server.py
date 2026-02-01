@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime, timezone
 
 # FEDERAL SECURITY IMPORTS
-from security.auth import get_current_user, create_access_token
+from security.auth import get_current_user
 from security.rate_limit import RateLimitMiddleware
 from security.audit import AuditLogger
 from security.validation import sanitize_input, validate_vin, validate_email
