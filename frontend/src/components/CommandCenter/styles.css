@@ -810,11 +810,11 @@
 }
 
 .cc-overlay {
-  animation: fadeIn 0.18s ease-out;
+  animation: designoFadeIn var(--motion-fast) var(--motion-ease-out);
 }
 
 .cc-modal {
-  animation: slideUp 0.26s cubic-bezier(0.2, 0.9, 0.2, 1);
+  animation: designoModalIn var(--motion-med) var(--motion-ease-designo);
 }
 
 /* ===== FORM MODAL ===== */
