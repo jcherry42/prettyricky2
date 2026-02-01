@@ -167,14 +167,13 @@ export const useCachedData = (key, fetcher, maxAge = 5 * 60 * 1000) => {
     }
     
     if (cacheRef.current.loading) {
-      // Wait for existing request
+      // Wait for existing request (avoid polling timers)
       return new Promise((resolve) => {
-        const check = setInterval(() => {
-          if (!cacheRef.current.loading) {
-            clearInterval(check);
-            resolve(cacheRef.current.data);
-          }
-        }, 100);
+        const handleDone = () => {
+          window.removeEventListener(`cache_done:${key}`, handleDone);
+          resolve(cacheRef.current.data);
+        };
+        window.addEventListener(`cache_done:${key}`, handleDone, { once: true });
       });
     }
     
