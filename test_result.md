@@ -123,6 +123,8 @@ test_plan:
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "testing"
+    message: "🎯 STARTING REDUCED-EFFECTS MODE REGRESSION TESTING: Beginning comprehensive testing of reduced-effects mode implementation as requested. Will verify: 1) useReducedEffects hook heuristics (reduced-motion, deviceMemory<=4, cores<=4, iOS+low cores), 2) DesignoSwirlBackground reduced mode (.designo-swirl-reduced class with lower blur, reduced opacity, disabled animations), 3) Home page loads and all interactions work without click blocking, 4) Command Center open/close and tabs functionality, 5) Intake Hub VIN batch decode+save workflow, 6) SPORT mode translation functionality, 7) No console errors throughout testing. Will capture screenshots of home, Command Center open, and Intake open as requested."
   - agent: "main"
     message: "Implemented fixes for customer add disappearing (global refresh + legacy /api/customers endpoint) and translation toggle now actually calls API and is reversible; VIN decode verified via curl with provided VINs. Please run UI regression tests for these flows."
   - agent: "testing"
