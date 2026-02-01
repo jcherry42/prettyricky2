@@ -407,8 +407,8 @@ export const VoiceTranslator = () => {
             rgba(25, 20, 15, 0.85) 0%, 
             rgba(15, 12, 8, 0.92) 100%
           );
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
+          -webkit-backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
           border: 1px solid rgba(255, 140, 0, 0.25);
           border-radius: 20px;
           box-shadow: 
@@ -440,8 +440,8 @@ export const VoiceTranslator = () => {
             rgba(147, 51, 234, 0.15) 0%, 
             rgba(126, 34, 206, 0.25) 100%
           );
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
+          -webkit-backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
           border: 2px solid rgba(147, 51, 234, 0.4);
           box-shadow: 
             0 4px 20px rgba(147, 51, 234, 0.3),
@@ -632,8 +632,8 @@ export const VoiceTranslator = () => {
           position: fixed;
           inset: 0;
           background: rgba(10, 8, 6, 0.92);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
+          -webkit-backdrop-filter: blur(calc(12px - (var(--reduced-effects) * 6px)));
           z-index: 10000;
           display: flex;
           align-items: center;
