@@ -36,7 +36,7 @@ function AppContent() {
     showFavorites,
   } = useSales();
 
-  const reducedEffects = useReducedEffects();
+  const autoReducedEffects = useReducedEffects();
   const [showPerfMonitor, setShowPerfMonitor] = useState(false);
 
   // Adaptive swirl intensity: more prominent on the home surface, calmer behind any modal.
