@@ -72,7 +72,7 @@ class TestCustomersCRUD:
         data = response.json()
         
         # Verify customer was created
-        assert data.get('success') == True
+        assert data.get('success') is True
         assert 'customer' in data
         customer = data.get('customer')
         assert customer.get('first_name') == customer_data['first_name']
@@ -121,7 +121,7 @@ class TestVehiclesCRUD:
         """Test /api/vehicles/stats returns inventory statistics"""
         response = requests.get(f"{BASE_URL}/api/vehicles/stats")
         assert response.status_code == 200
-        data = response.json()
+        _ = response.json()
         print("✓ Vehicle stats retrieved")
     
     def test_filter_vehicles_by_category(self):
@@ -242,7 +242,7 @@ class TestLicenseScanner:
         assert response.status_code == 200
         data = response.json()
         
-        assert data.get('success') == True
+        assert data.get('success') is True
         assert 'customer' in data
         print("✓ License customer creation working")
 
@@ -290,7 +290,7 @@ class TestConversations:
         """Test /api/conversations/categories endpoint"""
         response = requests.get(f"{BASE_URL}/api/conversations/categories")
         assert response.status_code == 200
-        data = response.json()
+        _ = response.json()
         print("✓ Conversation categories retrieved")
 
 
