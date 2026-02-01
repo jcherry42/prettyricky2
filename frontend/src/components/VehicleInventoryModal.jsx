@@ -92,6 +92,10 @@ const VehicleInventoryModal = ({ isOpen, onClose }) => {
             box-shadow: 0 30px 80px rgba(0,0,0,0.55);
             display: flex;
             flex-direction: column;
+
+            animation: designoModalIn var(--motion-med) var(--motion-ease-designo);
+            transform: translateZ(0);
+            will-change: transform;
           }
 
           /* Mobile: keep CommandCenter-like centered modal, full-width with safe padding */
