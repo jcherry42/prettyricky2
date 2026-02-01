@@ -406,6 +406,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ PASS: Intake Hub modal opens successfully with .intake-overlay class. VIN Scanner tab accessible and functional. BATCH MODE button visible and clickable in VIN Scanner interface. VIN input field present for manual entry (placeholder shows example VIN format). Local inventory shows 0/150 vehicles with proper empty state message. Decode & Save to Inventory button available for processing VINs. Batch decode workflow components all present and accessible."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Expanded verification with reduced-effects integration. Intake Hub modal functionality confirmed with proper backdrop-filter blur adaptation. VIN batch decode workflow accessible through VIN Scanner tab and BATCH MODE functionality. Modal opens/closes correctly with .intake-overlay class. BatchVinScanModal and VinWindshieldScanner components both implement backdrop-filter: blur(calc(10px - (var(--reduced-effects) * 6px))) for adaptive performance on older devices."
 
   - task: "SPORT Mode - Translation functionality"
     implemented: true
