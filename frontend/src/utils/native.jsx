@@ -18,11 +18,11 @@ export const platform = Capacitor.getPlatform();
  */
 export const initializeNative = async () => {
   if (!isNative) {
-    console.log('Running in web mode - native features disabled');
+    logger.debug('Running in web mode - native features disabled');
     return;
   }
   
-  console.log(`Running on ${platform} - initializing native features`);
+  logger.info(`Running on ${platform} - initializing native features`);
   
   try {
     // Hide splash screen after app loads
@@ -38,9 +38,9 @@ export const initializeNative = async () => {
     // Request push notification permissions
     await requestPushPermissions();
     
-    console.log('Native initialization complete');
+    logger.info('Native initialization complete');
   } catch (error) {
-    console.error('Native initialization error:', error);
+    logger.error('Native initialization error:', error);
   }
 };
 
@@ -62,19 +62,18 @@ export const requestPushPermissions = async () => {
       
       // Listen for registration success
       PushNotifications.addListener('registration', (token) => {
-        console.log('Push registration success, token:', token.value);
-        // TODO: Send token to backend for storage
+        logger.info('Push registration success');
         sendTokenToBackend(token.value);
       });
       
       // Listen for push notification received
-      PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push notification received:', notification);
+      PushNotifications.addListener('pushNotificationReceived', () => {
+        logger.debug('Push notification received');
       });
       
       // Listen for push notification action (tap)
       PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        console.log('Push notification action:', action);
+        logger.debug('Push notification action performed');
         handlePushAction(action);
       });
       
@@ -83,7 +82,7 @@ export const requestPushPermissions = async () => {
     
     return { granted: false };
   } catch (error) {
-    console.error('Push notification setup error:', error);
+    logger.error('Push notification setup error:', error);
     return { granted: false, error };
   }
 };
@@ -105,9 +104,9 @@ const sendTokenToBackend = async (token) => {
         timestamp: new Date().toISOString(),
       }),
     });
-    console.log('Push token registered with backend');
+    logger.info('Push token registered with backend');
   } catch (error) {
-    console.error('Failed to register push token:', error);
+    logger.error('Failed to register push token:', error);
   }
 };
 
@@ -139,7 +138,7 @@ export const updateStatusBarTheme = async (isDark) => {
       color: isDark ? '#0d0d0d' : '#f5f5f5' 
     });
   } catch (error) {
-    console.error('Status bar update error:', error);
+    logger.error('Status bar update error:', error);
   }
 };
 
