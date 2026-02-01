@@ -1610,6 +1610,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(calc(8px - (var(--reduced-effects) * 4px)));
   z-index: 110;
   display: flex;
   align-items: center;
