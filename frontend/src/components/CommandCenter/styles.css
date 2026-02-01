@@ -578,6 +578,27 @@
   color: #22c55e;
 }
 
+/* Eco Mode toggle styling (green-themed, aligned with existing toggle template) */
+.toggle-btn.eco-toggle {
+  border-color: rgba(34,197,94,0.26);
+  color: rgba(220, 252, 231, 0.92);
+  background: rgba(34,197,94,0.08);
+}
+
+.toggle-btn.eco-toggle.off {
+  border-color: rgba(34,197,94,0.20);
+  color: rgba(187, 247, 208, 0.75);
+  background: rgba(34,197,94,0.05);
+}
+
+.toggle-btn.eco-toggle.on {
+  background: linear-gradient(135deg, rgba(34,197,94,0.22) 0%, rgba(16,185,129,0.14) 100%);
+  border-color: rgba(34,197,94,0.35);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.28), 0 0 18px rgba(34,197,94,0.10);
+  color: rgba(240, 253, 244, 0.95);
+}
+
+
 /* ===== FORM OVERLAY ===== */
 .form-overlay {
   position: fixed;
