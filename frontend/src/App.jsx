@@ -34,6 +34,7 @@ function AppContent() {
     showTowerTalk,
     showSetup,
     showFavorites,
+    ecoMode,
   } = useSales();
 
   const autoReducedEffects = useReducedEffects();
