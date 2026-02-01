@@ -412,6 +412,18 @@ frontend:
         agent: "testing"
         comment: "✅ PASS: Expanded verification with reduced-effects integration. Intake Hub modal functionality confirmed with proper backdrop-filter blur adaptation. VIN batch decode workflow accessible through VIN Scanner tab and BATCH MODE functionality. Modal opens/closes correctly with .intake-overlay class. BatchVinScanModal and VinWindshieldScanner components both implement backdrop-filter: blur(calc(10px - (var(--reduced-effects) * 6px))) for adaptive performance on older devices."
 
+  - task: "Eco Mode Toggle - Command Center Settings integration with localStorage persistence"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/components/CommandCenter.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PASS: Eco Mode toggle fully functional in Command Center Settings tab. Green-themed toggle switches from OFF to ON correctly, displays 'Eco Mode enabled' toast notification, state persists in localStorage (closr_eco_mode) after closing and reopening Command Center. Integration with SalesContext ecoMode state working correctly. CSS variable --reduced-effects properly applied when Eco Mode forces reduced-effects regardless of auto heuristic."
+
   - task: "SPORT Mode - Translation functionality"
     implemented: true
     working: true
