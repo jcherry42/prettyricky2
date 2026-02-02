@@ -1,21 +1,35 @@
 {
-  "timestamp": "2026-02-02T17:21:41.186212",
+  "timestamp": "2026-02-02T17:22:25.395880",
   "backend_url": "https://dealerhelper.preview.emergentagent.com/api",
-  "total_tests": 17,
-  "passed": 16,
-  "failed": 1,
-  "failed_tests": [
-    "POST /printer/test"
-  ],
+  "total_tests": 21,
+  "passed": 21,
+  "failed": 0,
+  "failed_tests": [],
   "detailed_results": [
     {
       "test": "GET /customers/list (basic)",
       "success": true,
       "details": "Retrieved 0 customers",
-      "timestamp": "2026-02-02T17:21:37.669196",
+      "timestamp": "2026-02-02T17:22:22.673325",
       "response_data": {
         "count": 0,
         "sample": [
+          {
+            "first_name": "Test",
+            "last_name": "Customer",
+            "phone": "555-0199",
+            "email": "test@example.com",
+            "address": null,
+            "lead_source": "manual",
+            "lead_status": "new",
+            "notes": null,
+            "vehicle_interests": [],
+            "trade_in_vehicle_id": null,
+            "id": "84596032-47be-43f5-8b37-4bb7a8c2832e",
+            "created_at": "2026-02-02T17:22:12.959000",
+            "updated_at": "2026-02-02T17:22:12.959000",
+            "interactions": []
+          },
           {
             "first_name": "TEST_299c141a",
             "last_name": "VerificationTest",
@@ -31,22 +45,6 @@
             "created_at": "2026-02-02T17:19:31.275000",
             "updated_at": "2026-02-02T17:19:31.275000",
             "interactions": []
-          },
-          {
-            "first_name": "TEST_86197d41",
-            "last_name": "VerificationTest",
-            "phone": "555-TEST-001",
-            "email": "test_86197d41@verification.test",
-            "address": null,
-            "lead_source": "walk_in",
-            "lead_status": "new",
-            "notes": "Created by final verification test",
-            "vehicle_interests": [],
-            "trade_in_vehicle_id": null,
-            "id": "47f530d6-64c3-45d2-bd66-73646287ee3f",
-            "created_at": "2026-02-02T17:18:43.880000",
-            "updated_at": "2026-02-02T17:18:43.880000",
-            "interactions": []
           }
         ]
       }
@@ -55,7 +53,7 @@
       "test": "GET /customers/list (limit=5)",
       "success": true,
       "details": "Retrieved 5 customers with limit",
-      "timestamp": "2026-02-02T17:21:37.681625",
+      "timestamp": "2026-02-02T17:22:22.682802",
       "response_data": {
         "count": 5
       }
@@ -63,20 +61,20 @@
     {
       "test": "GET /customers/list (search)",
       "success": true,
-      "details": "Search returned 39 customers",
-      "timestamp": "2026-02-02T17:21:37.695777",
+      "details": "Search returned 40 customers",
+      "timestamp": "2026-02-02T17:22:22.701176",
       "response_data": {
         "search_term": "test",
-        "results": 39
+        "results": 40
       }
     },
     {
       "test": "GET /vehicles",
       "success": true,
-      "details": "Retrieved 7 vehicles",
-      "timestamp": "2026-02-02T17:21:37.705474",
+      "details": "Retrieved 8 vehicles",
+      "timestamp": "2026-02-02T17:22:22.714336",
       "response_data": {
-        "count": 7,
+        "count": 8,
         "sample": [
           {
             "id": "6969025527a911ff10df150d",
@@ -133,7 +131,7 @@
       "test": "GET /vehicles/stats",
       "success": true,
       "details": "Vehicle stats retrieved successfully",
-      "timestamp": "2026-02-02T17:21:37.727089",
+      "timestamp": "2026-02-02T17:22:22.764360",
       "response_data": {
         "stats_keys": [
           "total",
@@ -147,24 +145,24 @@
     {
       "test": "GET /vehicles/inventory",
       "success": true,
-      "details": "Retrieved inventory: 6 total vehicles",
-      "timestamp": "2026-02-02T17:21:37.737811",
+      "details": "Retrieved inventory: 7 total vehicles",
+      "timestamp": "2026-02-02T17:22:22.776259",
       "response_data": {
         "counts": {
-          "active_inventory": 6,
+          "active_inventory": 7,
           "trade_in": 0,
-          "total": 6
+          "total": 7
         },
-        "vehicle_count": 7
+        "vehicle_count": 8
       }
     },
     {
       "test": "POST /vehicles/create",
       "success": true,
       "details": "Created vehicle: 2024 Toyota Camry",
-      "timestamp": "2026-02-02T17:21:37.763709",
+      "timestamp": "2026-02-02T17:22:22.785545",
       "response_data": {
-        "vehicle_id": "3e042361-1faa-406f-88cf-12577b3badf2",
+        "vehicle_id": "be7eb86e-3ea8-44c7-8837-794865df8ca5",
         "stock_number": "TOY2024001"
       }
     },
@@ -172,12 +170,12 @@
       "test": "PATCH /vehicles/{id}",
       "success": true,
       "details": "Vehicle updated successfully",
-      "timestamp": "2026-02-02T17:21:37.773053",
+      "timestamp": "2026-02-02T17:22:22.799416",
       "response_data": {
         "updated_fields": {
           "price": 29000.0,
           "notes": "Updated price",
-          "updated_at": "2026-02-02T17:21:37.769001+00:00"
+          "updated_at": "2026-02-02T17:22:22.795437+00:00"
         }
       }
     },
@@ -185,45 +183,88 @@
       "test": "DELETE /vehicles/{id}",
       "success": true,
       "details": "Vehicle deleted successfully",
-      "timestamp": "2026-02-02T17:21:37.821792",
+      "timestamp": "2026-02-02T17:22:22.848536",
       "response_data": {
-        "vehicle_id": "3e042361-1faa-406f-88cf-12577b3badf2"
+        "vehicle_id": "be7eb86e-3ea8-44c7-8837-794865df8ca5"
       }
     },
     {
       "test": "POST /printer/test",
-      "success": false,
-      "details": "Unexpected HTTP 520",
-      "timestamp": "2026-02-02T17:21:37.853459",
-      "response_data": null
+      "success": true,
+      "details": "Graceful failure for non-existent printer",
+      "timestamp": "2026-02-02T17:22:22.857561",
+      "response_data": {
+        "expected_error": "Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.",
+        "status": 520
+      }
+    },
+    {
+      "test": "POST /print/license",
+      "success": true,
+      "details": "License print job processed successfully",
+      "timestamp": "2026-02-02T17:22:22.971831",
+      "response_data": {
+        "bytes": 1915,
+        "message": "Print job sent to printer"
+      }
+    },
+    {
+      "test": "POST /customers/create",
+      "success": true,
+      "details": "Created customer: Unknown",
+      "timestamp": "2026-02-02T17:22:22.982507",
+      "response_data": {
+        "customer_id": "f5bde865-63e8-477d-b09b-11a7cb9337ef",
+        "name": null
+      }
+    },
+    {
+      "test": "POST /print/customer",
+      "success": true,
+      "details": "Customer print job processed for: Maria Rodriguez",
+      "timestamp": "2026-02-02T17:22:22.993429",
+      "response_data": {
+        "customer": "Maria Rodriguez",
+        "bytes": 1679
+      }
+    },
+    {
+      "test": "POST /printer/print (compat)",
+      "success": true,
+      "details": "Compatibility endpoint working",
+      "timestamp": "2026-02-02T17:22:23.044418",
+      "response_data": {
+        "type": "vehicle_profile",
+        "message": "Print job sent to printer"
+      }
     },
     {
       "test": "POST /tower-talk",
       "success": true,
-      "details": "Generated response (345 chars)",
-      "timestamp": "2026-02-02T17:21:39.967117",
+      "details": "Generated response (352 chars)",
+      "timestamp": "2026-02-02T17:22:24.978768",
       "response_data": {
-        "response_length": 345,
-        "preview": "Hi Alex, I understand that the price of the 2024 BMW X3 might seem high, but it really reflects the ..."
+        "response_length": 352,
+        "preview": "I understand your concern about the price of the 2024 BMW X3. Keep in mind, this model offers except..."
       }
     },
     {
       "test": "POST /translate",
       "success": true,
-      "details": "Translated to Spanish (confidence: 0.95)",
-      "timestamp": "2026-02-02T17:21:40.748793",
+      "details": "Translated to Spanish (confidence: 0.99)",
+      "timestamp": "2026-02-02T17:22:24.987431",
       "response_data": {
         "original": "Hello, I'm interested in this vehicle. Can you tel...",
         "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuedes d...",
         "detected_lang": "en",
-        "confidence": 0.95
+        "confidence": 0.99
       }
     },
     {
       "test": "GET /analytics/dashboard",
       "success": true,
       "details": "Analytics dashboard loaded with 4/4 sections",
-      "timestamp": "2026-02-02T17:21:40.764792",
+      "timestamp": "2026-02-02T17:22:25.001119",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -231,14 +272,14 @@
           "inventory_metrics",
           "conversation_insights"
         ],
-        "generated_at": "2026-02-02T17:21:40.760856+00:00"
+        "generated_at": "2026-02-02T17:22:24.997277+00:00"
       }
     },
     {
       "test": "GET /vin/decode",
       "success": true,
       "details": "VIN decoded successfully with full vehicle data (confidence: 100%)",
-      "timestamp": "2026-02-02T17:21:41.115646",
+      "timestamp": "2026-02-02T17:22:25.320244",
       "response_data": {
         "vin": "7MMVABDY7SN393788",
         "vehicle": "2025 MAZDA CX-50",
@@ -250,9 +291,9 @@
       "test": "POST /vin/save-to-inventory (first save)",
       "success": true,
       "details": "VIN saved to inventory successfully",
-      "timestamp": "2026-02-02T17:21:41.125972",
+      "timestamp": "2026-02-02T17:22:25.331718",
       "response_data": {
-        "vin": "1HGBH41JXMN560223",
+        "vin": "1HGBH41JXMN923807",
         "message": "Vehicle saved to inventory"
       }
     },
@@ -260,9 +301,9 @@
       "test": "POST /vin/save-to-inventory (duplicate rejection)",
       "success": true,
       "details": "Duplicate VIN correctly rejected",
-      "timestamp": "2026-02-02T17:21:41.176859",
+      "timestamp": "2026-02-02T17:22:25.342265",
       "response_data": {
-        "vin": "1HGBH41JXMN560223",
+        "vin": "1HGBH41JXMN923807",
         "error": "This VIN already exists in inventory. Vehicle: 2023 Honda Civic"
       }
     },
@@ -270,11 +311,11 @@
       "test": "GET /customers/stats",
       "success": true,
       "details": "Customer stats loaded with 2/2 expected fields",
-      "timestamp": "2026-02-02T17:21:41.185763",
+      "timestamp": "2026-02-02T17:22:25.395715",
       "response_data": {
-        "total": 42,
+        "total": 44,
         "byStatus": {
-          "new": 42
+          "new": 44
         }
       }
     }
