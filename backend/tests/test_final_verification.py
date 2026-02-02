@@ -109,7 +109,7 @@ class TestCustomerCRUD:
         assert customer.get("first_name") == customer_data["first_name"]
         
         print(f"✅ Customer created: {customer.get('first_name')} {customer.get('last_name')}")
-        return customer["id"]
+        assert customer["id"]
     
     def test_customer_search(self):
         """GET /api/customers/list with search - Should filter customers"""
