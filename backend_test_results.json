@@ -1,6 +1,6 @@
 {
   "timestamp": "2026-01-17T22:09:20.474992",
-  "backend_url": "https://superchargd-app.preview.emergentagent.com/api",
+  "backend_url": "https://dealerhelper.preview.emergentagent.com/api",
   "total_tests": 11,
   "passed": 11,
   "failed": 0,

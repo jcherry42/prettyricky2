@@ -8,7 +8,7 @@ import os
 import json
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://superchargd-app.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dealerhelper.preview.emergentagent.com')
 
 class TestHealthEndpoint:
     """Health check endpoint tests"""
