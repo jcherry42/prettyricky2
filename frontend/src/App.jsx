@@ -1,4 +1,5 @@
-import React, { useEffect, useState, lazy, Suspense } from 'react';
+import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { toast } from 'sonner';
 import usePwaUpdate from './hooks/usePwaUpdate';
 import useOnlineStatus from './hooks/useOnlineStatus';
 import { SalesProvider } from './context/SalesContext';
