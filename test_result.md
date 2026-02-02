@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "PWA Workbox precache limit fix for sounds/merica.wav (runtime caching for .wav)"
+    - "Backend regression testing for refactored endpoints"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
