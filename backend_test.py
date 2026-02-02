@@ -881,10 +881,17 @@ class BackendTester:
     
     async def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting Backend API Testing Suite")
+        print("🚀 Starting Backend API Testing Suite - Production Gates Regression")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
+        # Production gates regression tests
+        print("\n🔍 PRODUCTION GATES REGRESSION TESTS:")
+        await self.test_license_scan_pipeline()
+        await self.test_license_customer_creation()
+        await self.test_quality_audit_endpoints()
+        
+        print("\n🔧 EXISTING REGRESSION TESTS:")
         # Regression tests for refactored endpoints
         await self.test_customers_list_endpoint()
         await self.test_vehicles_endpoints()
