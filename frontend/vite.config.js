@@ -82,6 +82,19 @@ export default defineConfig({
                 maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               }
             }
+          },
+
+          // Same-origin audio (too large for precache; cache on demand)
+          {
+            urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/sounds/') && url.pathname.endsWith('.wav'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'audio-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
           }
         ]
       },
