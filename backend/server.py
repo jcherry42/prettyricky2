@@ -842,6 +842,15 @@ async def scan_license_with_ocr(
         
         image_url = f"/api/uploads/{filename}"
         logger.info(f"License image saved: {filepath}, size: {len(image_data)} bytes")
+
+        # If image is too small for reliable OCR, return early but keep image_url.
+        if low_quality_image:
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                confidence=0,
+                error="Image appears too small or low quality for OCR. Please take a clearer photo (avoid glare/shadows)."
+            )
         
         # Convert to base64 for Vision API
         base64_image = base64.b64encode(image_data).decode('utf-8')
