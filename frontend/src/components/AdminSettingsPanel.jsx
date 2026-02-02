@@ -790,7 +790,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
                       <div>
                         <p className="text-xs text-muted-foreground mb-3 vice-city-text">Choose Your Engine Sound:</p>
                         <div className="grid grid-cols-1 gap-2">
-                          {getSoundProfiles().map((profile) => (
+                          {soundProfiles.map((profile) => (
                             <button
                               key={profile.id}
                               onClick={() => {
