@@ -1151,16 +1151,13 @@
 
 /* ===== SETTINGS FORM ===== */
 .settings-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* reduce blank space */
-  font-size: 1.2em; /* +20% overall Settings tab */
+  padding: 16px;
 }
 
 .settings-form {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* reduce blank space */
+  gap: 14px;
 }
 
 .s-field {
@@ -1169,23 +1166,11 @@
   gap: 6px;
 }
 
-.s-field label {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,191,0,0.68);
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-}
-
-.s-field input {
-  padding: 10px 14px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
+.s-field input,
+.s-field textarea,
+.s-field select {
+  padding: 12px 14px;
+  border-radius: 14px;
 }
 
 .s-field input:focus {
