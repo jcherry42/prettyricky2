@@ -1,54 +1,60 @@
 {
-  "timestamp": "2026-02-02T17:58:28.394793",
+  "timestamp": "2026-02-02T17:59:23.395824",
   "backend_url": "https://dealerhelper.preview.emergentagent.com/api",
   "total_tests": 30,
-  "passed": 28,
-  "failed": 2,
+  "passed": 29,
+  "failed": 1,
   "failed_tests": [
-    "POST /license/scan (normal image)",
-    "POST /license/create-customer"
+    "POST /license/scan (normal image)"
   ],
   "detailed_results": [
     {
       "test": "POST /license/scan (small image)",
       "success": true,
-      "details": "Small image correctly failed OCR but preserved image_url: /api/uploads/license_0c1b61e83f49.png",
-      "timestamp": "2026-02-02T17:58:17.079820",
+      "details": "Small image correctly failed OCR but preserved image_url: /api/uploads/license_fe536016ee78.png",
+      "timestamp": "2026-02-02T17:59:13.882714",
       "response_data": {
         "success": false,
-        "image_url": "/api/uploads/license_0c1b61e83f49.png",
+        "image_url": "/api/uploads/license_fe536016ee78.png",
         "error": "Image appears too small or low quality for OCR. Please take a clearer photo (avoid glare/shadows)."
       }
     },
     {
       "test": "POST /license/scan (normal image)",
       "success": false,
-      "details": "Expected image_url in response, got: {'success': False, 'image_url': None, 'extracted_data': None, 'confidence': None, 'extraction_notes': None, 'error': 'Scan failed: Failed to generate chat completion: litellm.BadRequestError: OpenAIException - litellm.BadRequestError: OpenAIException - You uploaded an unsupported image. Please make sure your image is valid.. Received Model Group=gpt-4o\\nAvailable Model Group Fallbacks=None. Please try again.'}",
-      "timestamp": "2026-02-02T17:58:22.571241",
-      "response_data": null
+      "details": "Normal image failed OCR and didn't return image_url (production gate fix may be incomplete): Scan failed: Failed to generate chat completion: litellm.BadRequestError: OpenAIException - litellm.BadRequestError: OpenAIException - You uploaded an unsupported image. Please make sure your image is valid.. Received Model Group=gpt-4o\nAvailable Model Group Fallbacks=None. Please try again.",
+      "timestamp": "2026-02-02T17:59:18.912291",
+      "response_data": {
+        "success": false,
+        "error": "Scan failed: Failed to generate chat completion: litellm.BadRequestError: OpenAIException - litellm.BadRequestError: OpenAIException - You uploaded an unsupported image. Please make sure your image is valid.. Received Model Group=gpt-4o\nAvailable Model Group Fallbacks=None. Please try again."
+      }
     },
     {
       "test": "POST /license/create-customer",
-      "success": false,
-      "details": "No image_url available from scan test",
-      "timestamp": "2026-02-02T17:58:22.571289",
-      "response_data": null
+      "success": true,
+      "details": "Customer created successfully: John Doe",
+      "timestamp": "2026-02-02T17:59:18.922495",
+      "response_data": {
+        "customer_id": "770726f0-7b7b-4c6c-a3c8-098f5c11e9f9",
+        "name": "John Doe",
+        "image_url": "/api/uploads/license_fe536016ee78.png"
+      }
     },
     {
       "test": "GET /health (quality audit)",
       "success": true,
       "details": "Health check passed: healthy",
-      "timestamp": "2026-02-02T17:58:22.638815",
+      "timestamp": "2026-02-02T17:59:18.973499",
       "response_data": {
         "status": "healthy",
-        "timestamp": "2026-02-02T17:58:22.619776+00:00"
+        "timestamp": "2026-02-02T17:59:18.928250+00:00"
       }
     },
     {
       "test": "GET /dashboard/stats (quality audit)",
       "success": true,
       "details": "Dashboard stats endpoint responding",
-      "timestamp": "2026-02-02T17:58:22.659870",
+      "timestamp": "2026-02-02T17:59:18.988620",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -62,26 +68,26 @@
     {
       "test": "GET /customers/list (quality audit)",
       "success": true,
-      "details": "Customers list endpoint responding with 34 customers",
-      "timestamp": "2026-02-02T17:58:22.668988",
+      "details": "Customers list endpoint responding with 38 customers",
+      "timestamp": "2026-02-02T17:59:19.000391",
       "response_data": {
-        "count": 34
+        "count": 38
       }
     },
     {
       "test": "GET /vehicles (quality audit)",
       "success": true,
-      "details": "Vehicles endpoint responding with 15 vehicles",
-      "timestamp": "2026-02-02T17:58:22.683195",
+      "details": "Vehicles endpoint responding with 16 vehicles",
+      "timestamp": "2026-02-02T17:59:19.012969",
       "response_data": {
-        "count": 15
+        "count": 16
       }
     },
     {
       "test": "GET /translate (quality audit)",
       "success": true,
       "details": "Translation endpoint responding: Hola mundo",
-      "timestamp": "2026-02-02T17:58:22.766634",
+      "timestamp": "2026-02-02T17:59:19.024477",
       "response_data": {
         "translated": "Hola mundo"
       }
@@ -89,20 +95,36 @@
     {
       "test": "GET /tower-talk (quality audit)",
       "success": true,
-      "details": "Tower Talk endpoint responding with 278 chars",
-      "timestamp": "2026-02-02T17:58:24.259160",
+      "details": "Tower Talk endpoint responding with 307 chars",
+      "timestamp": "2026-02-02T17:59:20.902711",
       "response_data": {
-        "response_length": 278
+        "response_length": 307
       }
     },
     {
       "test": "GET /customers/list (basic)",
       "success": true,
       "details": "Retrieved 0 customers",
-      "timestamp": "2026-02-02T17:58:24.269121",
+      "timestamp": "2026-02-02T17:59:20.915547",
       "response_data": {
         "count": 0,
         "sample": [
+          {
+            "first_name": "Maria",
+            "last_name": "Rodriguez",
+            "phone": "555-0123",
+            "email": "maria.rodriguez@email.com",
+            "address": "123 Main St, Austin, TX 78701",
+            "lead_source": "web",
+            "lead_status": "new",
+            "notes": "Interested in SUVs",
+            "vehicle_interests": [],
+            "trade_in_vehicle_id": null,
+            "id": "65a36678-e5f0-4df4-a6f6-7645e2870dd9",
+            "created_at": "2026-02-02T17:58:24.462000",
+            "updated_at": "2026-02-02T17:58:24.462000",
+            "interactions": []
+          },
           {
             "first_name": "Maria",
             "last_name": "Rodriguez",
@@ -118,22 +140,6 @@
             "created_at": "2026-02-02T17:57:56.882000",
             "updated_at": "2026-02-02T17:57:56.882000",
             "interactions": []
-          },
-          {
-            "first_name": "Maria",
-            "last_name": "Rodriguez",
-            "phone": "555-0123",
-            "email": "maria.rodriguez@email.com",
-            "address": "123 Main St, Austin, TX 78701",
-            "lead_source": "web",
-            "lead_status": "new",
-            "notes": "Interested in SUVs",
-            "vehicle_interests": [],
-            "trade_in_vehicle_id": null,
-            "id": "26af0f2a-9f0c-4f65-9cf3-1b1c33300a8a",
-            "created_at": "2026-02-02T17:56:58.888000",
-            "updated_at": "2026-02-02T17:56:58.888000",
-            "interactions": []
           }
         ]
       }
@@ -142,7 +148,7 @@
       "test": "GET /customers/list (limit=5)",
       "success": true,
       "details": "Retrieved 5 customers with limit",
-      "timestamp": "2026-02-02T17:58:24.278181",
+      "timestamp": "2026-02-02T17:59:20.928209",
       "response_data": {
         "count": 5
       }
@@ -151,7 +157,7 @@
       "test": "GET /customers/list (search)",
       "success": true,
       "details": "Search returned 11 customers",
-      "timestamp": "2026-02-02T17:58:24.287284",
+      "timestamp": "2026-02-02T17:59:20.937726",
       "response_data": {
         "search_term": "test",
         "results": 11
@@ -160,10 +166,10 @@
     {
       "test": "GET /vehicles",
       "success": true,
-      "details": "Retrieved 15 vehicles",
-      "timestamp": "2026-02-02T17:58:24.300203",
+      "details": "Retrieved 16 vehicles",
+      "timestamp": "2026-02-02T17:59:20.948233",
       "response_data": {
-        "count": 15,
+        "count": 16,
         "sample": [
           {
             "id": "6969025527a911ff10df150d",
@@ -220,7 +226,7 @@
       "test": "GET /vehicles/stats",
       "success": true,
       "details": "Vehicle stats retrieved successfully",
-      "timestamp": "2026-02-02T17:58:24.310299",
+      "timestamp": "2026-02-02T17:59:20.997348",
       "response_data": {
         "stats_keys": [
           "total",
@@ -234,24 +240,24 @@
     {
       "test": "GET /vehicles/inventory",
       "success": true,
-      "details": "Retrieved inventory: 14 total vehicles",
-      "timestamp": "2026-02-02T17:58:24.325050",
+      "details": "Retrieved inventory: 15 total vehicles",
+      "timestamp": "2026-02-02T17:59:21.008128",
       "response_data": {
         "counts": {
-          "active_inventory": 14,
+          "active_inventory": 15,
           "trade_in": 0,
-          "total": 14
+          "total": 15
         },
-        "vehicle_count": 15
+        "vehicle_count": 16
       }
     },
     {
       "test": "POST /vehicles/create",
       "success": true,
       "details": "Created vehicle: 2024 Toyota Camry",
-      "timestamp": "2026-02-02T17:58:24.336679",
+      "timestamp": "2026-02-02T17:59:21.017258",
       "response_data": {
-        "vehicle_id": "8ee22a8e-6925-475d-91fe-ac54da40db5f",
+        "vehicle_id": "b80ecbf2-0fbf-491c-b18d-aacd4f503362",
         "stock_number": "TOY2024001"
       }
     },
@@ -259,12 +265,12 @@
       "test": "PATCH /vehicles/{id}",
       "success": true,
       "details": "Vehicle updated successfully",
-      "timestamp": "2026-02-02T17:58:24.388651",
+      "timestamp": "2026-02-02T17:59:21.065464",
       "response_data": {
         "updated_fields": {
           "price": 29000.0,
           "notes": "Updated price",
-          "updated_at": "2026-02-02T17:58:24.342349+00:00"
+          "updated_at": "2026-02-02T17:59:21.021362+00:00"
         }
       }
     },
@@ -272,16 +278,16 @@
       "test": "DELETE /vehicles/{id}",
       "success": true,
       "details": "Vehicle deleted successfully",
-      "timestamp": "2026-02-02T17:58:24.438849",
+      "timestamp": "2026-02-02T17:59:21.073777",
       "response_data": {
-        "vehicle_id": "8ee22a8e-6925-475d-91fe-ac54da40db5f"
+        "vehicle_id": "b80ecbf2-0fbf-491c-b18d-aacd4f503362"
       }
     },
     {
       "test": "POST /printer/test",
       "success": true,
       "details": "Graceful failure for non-existent printer",
-      "timestamp": "2026-02-02T17:58:24.447664",
+      "timestamp": "2026-02-02T17:59:21.082520",
       "response_data": {
         "expected_error": "Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.",
         "status": 520
@@ -291,9 +297,9 @@
       "test": "POST /print/license",
       "success": true,
       "details": "License print job processed successfully",
-      "timestamp": "2026-02-02T17:58:24.457828",
+      "timestamp": "2026-02-02T17:59:21.090962",
       "response_data": {
-        "bytes": 1919,
+        "bytes": 1920,
         "message": "Print job sent to printer"
       }
     },
@@ -301,9 +307,9 @@
       "test": "POST /customers/create",
       "success": true,
       "details": "Created customer: Unknown",
-      "timestamp": "2026-02-02T17:58:24.507723",
+      "timestamp": "2026-02-02T17:59:21.140778",
       "response_data": {
-        "customer_id": "65a36678-e5f0-4df4-a6f6-7645e2870dd9",
+        "customer_id": "910255e3-9fdb-49fb-9f84-51b0574e8fc1",
         "name": null
       }
     },
@@ -311,7 +317,7 @@
       "test": "POST /print/customer",
       "success": true,
       "details": "Customer print job processed for: Maria Rodriguez",
-      "timestamp": "2026-02-02T17:58:24.522175",
+      "timestamp": "2026-02-02T17:59:21.193581",
       "response_data": {
         "customer": "Maria Rodriguez",
         "bytes": 1680
@@ -321,7 +327,7 @@
       "test": "POST /printer/print (compat)",
       "success": true,
       "details": "Compatibility endpoint working",
-      "timestamp": "2026-02-02T17:58:24.572941",
+      "timestamp": "2026-02-02T17:59:21.202749",
       "response_data": {
         "type": "vehicle_profile",
         "message": "Print job sent to printer"
@@ -330,18 +336,18 @@
     {
       "test": "POST /tower-talk",
       "success": true,
-      "details": "Generated response (389 chars)",
-      "timestamp": "2026-02-02T17:58:27.073918",
+      "details": "Generated response (340 chars)",
+      "timestamp": "2026-02-02T17:59:22.879901",
       "response_data": {
-        "response_length": 389,
-        "preview": "I completely understand your concerns about the price of the 2024 BMW X3. It's a fantastic vehicle t..."
+        "response_length": 340,
+        "preview": "Hi Alex, I completely understand your concerns about the price of the 2024 BMW X3. It's a fantastic ..."
       }
     },
     {
       "test": "POST /translate",
       "success": true,
       "details": "Translated to Spanish (confidence: 0.99)",
-      "timestamp": "2026-02-02T17:58:27.107215",
+      "timestamp": "2026-02-02T17:59:22.891445",
       "response_data": {
         "original": "Hello, I'm interested in this vehicle. Can you tel...",
         "translated": "Hola, estoy interesado en este veh\u00edculo. \u00bfPuedes c...",
@@ -353,7 +359,7 @@
       "test": "GET /analytics/dashboard",
       "success": true,
       "details": "Analytics dashboard loaded with 4/4 sections",
-      "timestamp": "2026-02-02T17:58:27.125596",
+      "timestamp": "2026-02-02T17:59:22.902773",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -361,14 +367,14 @@
           "inventory_metrics",
           "conversation_insights"
         ],
-        "generated_at": "2026-02-02T17:58:27.118418+00:00"
+        "generated_at": "2026-02-02T17:59:22.899123+00:00"
       }
     },
     {
       "test": "GET /vin/decode",
       "success": true,
       "details": "VIN decoded successfully with full vehicle data (confidence: 100%)",
-      "timestamp": "2026-02-02T17:58:28.248823",
+      "timestamp": "2026-02-02T17:59:23.355349",
       "response_data": {
         "vin": "7MMVABDY7SN393788",
         "vehicle": "2025 MAZDA CX-50",
@@ -380,9 +386,9 @@
       "test": "POST /vin/save-to-inventory (first save)",
       "success": true,
       "details": "VIN saved to inventory successfully",
-      "timestamp": "2026-02-02T17:58:28.299874",
+      "timestamp": "2026-02-02T17:59:23.373058",
       "response_data": {
-        "vin": "1HGBH41JXMN621607",
+        "vin": "1HGBH41JXMN619300",
         "message": "Vehicle saved to inventory"
       }
     },
@@ -390,9 +396,9 @@
       "test": "POST /vin/save-to-inventory (duplicate rejection)",
       "success": true,
       "details": "Duplicate VIN correctly rejected",
-      "timestamp": "2026-02-02T17:58:28.354086",
+      "timestamp": "2026-02-02T17:59:23.384856",
       "response_data": {
-        "vin": "1HGBH41JXMN621607",
+        "vin": "1HGBH41JXMN619300",
         "error": "This VIN already exists in inventory. Vehicle: 2023 Honda Civic"
       }
     },
@@ -400,11 +406,11 @@
       "test": "GET /customers/stats",
       "success": true,
       "details": "Customer stats loaded with 2/2 expected fields",
-      "timestamp": "2026-02-02T17:58:28.394620",
+      "timestamp": "2026-02-02T17:59:23.395666",
       "response_data": {
-        "total": 18,
+        "total": 20,
         "byStatus": {
-          "new": 18
+          "new": 20
         }
       }
     }
