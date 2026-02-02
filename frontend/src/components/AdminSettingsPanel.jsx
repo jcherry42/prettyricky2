@@ -751,10 +751,14 @@ export const AdminSettingsPanel = ({ onClose }) => {
                         onClick={() => {
                           const newPrefs = { ...soundPrefs, enabled: !soundPrefs.enabled };
                           setSoundPrefs(newPrefs);
-                          setSoundPreferences(newPrefs);
-                          if (newPrefs.enabled) {
-                            playNotificationSound();
-                          }
+                          loadSoundModule()
+                            .then((mod) => {
+                              mod.setSoundPreferences?.(newPrefs);
+                              if (newPrefs.enabled) {
+                                mod.playNotificationSound?.();
+                              }
+                            })
+                            .catch(() => {});
                         }}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                           soundPrefs.enabled 
