@@ -572,28 +572,14 @@ class BackendTester:
                     return False
             
             # Test 2: Normal sized image - should return 200 and include image_url
-            # Create a larger test image (simulate normal license photo)
-            # Generate a proper PNG header with larger dimensions
-            import struct
+            # Use a valid PNG image (create a simple valid PNG)
+            # This is a valid 2x2 PNG image in base64
+            valid_png_base64 = """iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR42mNk+M9QjwEHNDAAACYABgDTodatAAAAAElFTkSuQmCC"""
             
-            # Create a simple 100x100 PNG with proper header
-            width, height = 100, 100
-            png_header = b'\x89PNG\r\n\x1a\n'
-            ihdr_data = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)
-            ihdr_crc = 0x9578cb6b  # Pre-calculated CRC for this IHDR
-            ihdr_chunk = b'IHDR' + ihdr_data
-            ihdr_full = struct.pack('>I', len(ihdr_data)) + ihdr_chunk + struct.pack('>I', ihdr_crc)
-            
-            # Add some image data (simplified)
-            image_data = b'\x00' * (width * height * 3)  # RGB data
-            idat_chunk = b'IDAT' + image_data
-            idat_crc = 0x12345678  # Simplified CRC
-            idat_full = struct.pack('>I', len(image_data)) + idat_chunk + struct.pack('>I', idat_crc)
-            
-            # End chunk
-            iend_full = struct.pack('>I', 0) + b'IEND' + struct.pack('>I', 0xae426082)
-            
-            normal_image_data = png_header + ihdr_full + idat_full + iend_full
+            # Pad it to make it larger (simulate a normal license photo size)
+            normal_image_bytes = base64.b64decode(valid_png_base64)
+            # Duplicate the image data to make it larger
+            normal_image_data = normal_image_bytes * 500  # Make it ~15KB
             
             form_data = aiohttp.FormData()
             form_data.add_field('image', io.BytesIO(normal_image_data), filename='normal_license.png', content_type='image/png')
