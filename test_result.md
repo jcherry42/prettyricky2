@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Frontend regression after performance chunking changes"
+    - "Frontend regression after additional lazy-loading (VoiceTranslator + PerformanceMonitor)"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
