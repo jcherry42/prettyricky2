@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Frontend regression after strict backend cleanup"
+    - "PWA update/offline messaging + VIN scanner improvements regression"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
