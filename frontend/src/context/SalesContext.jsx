@@ -360,6 +360,12 @@ export function SalesProvider({ children }) {
     dispatch({ type: ACTIONS.SET_SUPERCHARGED, payload: !state.supercharged });
   };
 
+  // Reflect SPORT mode in DOM for performance + styling control
+  useEffect(() => {
+    document.body.classList.toggle('sport-mode-active', !!state.supercharged);
+  }, [state.supercharged]);
+
+
 
   const toggleEcoMode = () => {
     dispatch({ type: ACTIONS.SET_ECO_MODE, payload: !state.ecoMode });
