@@ -137,14 +137,20 @@ api_router = APIRouter(prefix="/api")
 from routes.printer_v2 import router as printer_router_v2, init_printer_routes as init_printer_routes_v2
 from routes.vehicles_v2 import router as vehicles_router_v2, init_vehicle_routes as init_vehicle_routes_v2
 from routes.tower_talk_v2 import router as tower_talk_router_v2, init_tower_talk_routes as init_tower_talk_routes_v2
+from routes.customers_v2 import router as customers_router_v2, init_customer_routes as init_customer_routes_v2
+from routes.vin_v2 import router as vin_router_v2, init_vin_routes as init_vin_routes_v2
 
 init_printer_routes_v2(db)
 init_vehicle_routes_v2(db, vehicle_repo)
 init_tower_talk_routes_v2(os.environ.get('EMERGENT_LLM_KEY', ''))
+init_customer_routes_v2(db, customer_repo)
+init_vin_routes_v2(db)
 
 api_router.include_router(printer_router_v2)
 api_router.include_router(vehicles_router_v2)
 api_router.include_router(tower_talk_router_v2)
+api_router.include_router(customers_router_v2)
+api_router.include_router(vin_router_v2)
 
 
 # ============== REQUEST/RESPONSE MODELS ==============
