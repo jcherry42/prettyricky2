@@ -24,8 +24,7 @@ class BackendTester:
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=30),
-            headers={'Content-Type': 'application/json'}
+            timeout=aiohttp.ClientTimeout(total=30)
         )
         return self
         
