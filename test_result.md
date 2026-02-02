@@ -192,6 +192,8 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ VEHICLE ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored vehicle endpoints in routes/vehicles_v2.py as requested. CRITICAL VERIFICATION: 1) GET /api/vehicles: Successfully retrieved 8 vehicles with proper response format and count validation, 2) GET /api/vehicles/stats: Vehicle statistics endpoint working correctly, returned comprehensive stats data with proper structure, 3) GET /api/vehicles/inventory: Inventory endpoint functional, retrieved 7 total vehicles with proper counts breakdown (active_inventory and trade_in categories), 4) POST /api/vehicles/create: Successfully created 2024 Toyota Camry with realistic data (price $28,500, mileage 15, stock number TOY2024001), returned proper vehicle object with generated UUID, 5) PATCH /api/vehicles/{id}: Vehicle update working correctly, successfully updated price to $29,000 and added notes, 6) DELETE /api/vehicles/{id}: Vehicle deletion working properly, successfully removed test vehicle from database. All refactored vehicle endpoints preserve original API contract and functionality without regressions."
+  - agent: "testing"
+    message: "Feb 2 2026: Backend regression PASS after strict cleanup (deleted legacy route files + minimized routes/__init__.py). Verified health, customers (merged/list/create), vin decode, tower-talk/translate, vehicles/inventory, print endpoints, license scan. No regressions."
 
   - task: "Printer endpoints regression testing (routes/printer_v2.py)"
     implemented: true
