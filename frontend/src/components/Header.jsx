@@ -6,7 +6,16 @@ import { CommandCenter } from './CommandCenter';
 import IntakeHub from './IntakeHub';
 import VehicleInventoryModal from './VehicleInventoryModal';
 
-import { getSoundPreferences } from '../utils/notificationSound';
+// NOTE: Keep this file lean and avoid statically importing the full sound module.
+// The sound module is dynamically imported elsewhere so it can be code-split.
+const getSoundPreferences = () => {
+  try {
+    const stored = localStorage.getItem('superchargd_sound_preferences');
+    return stored ? JSON.parse(stored) : { enabled: true, profile: 'merica', volume: 0.7 };
+  } catch {
+    return { enabled: true, profile: 'merica', volume: 0.7 };
+  }
+};
 
 // Startup sound with smooth gradual fade-out effect
 const playStartupSound = () => {
