@@ -216,6 +216,18 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
+  - task: "iPhone/Mobile Regression Testing - SPORT mode, Command Center Settings, Intake Hub mobile layout, Quick Add + Add Customer modal scrollability"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ResponseCards.jsx, /app/frontend/src/components/TowerTalkModal.jsx, /app/frontend/src/components/VoiceTranslator.jsx, /app/frontend/src/components/CommandCenter.jsx, /app/frontend/src/components/IntakeHub.jsx, /app/frontend/src/components/QuickAddButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Starting iPhone/mobile regression testing as requested. Testing: 1) SPORT mode ON - ResponseCards translate button clickable and works, Tower Talk can connect and generate response, VoiceTranslator translate action works, 2) Command Center Settings tab - reduced empty space beneath text boxes with good layout, 3) Intake Hub - mobile viewport secondary menus (License Scan, VIN Scanner) reachable and not pinned too high, 4) Quick Add + Add Customer modals - scrollable on mobile viewport and keyboard doesn't trap inputs."
+
   - task: "PWA update/offline messaging + VIN scanner improvements regression"
     implemented: true
     working: true
