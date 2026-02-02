@@ -54,13 +54,20 @@ function AppContent() {
   usePwaUpdate();
   const isOnline = useOnlineStatus();
 
+  const offlineToastShown = useRef(false);
+
   useEffect(() => {
     if (!isOnline) {
-      // Intentional messaging: offline is a supported state.
-      // We keep it informational and non-blocking.
-      // (Workflows like VIN decode + Tower Talk will surface their own offline messages.)
-      // eslint-disable-next-line no-undef
-      // toast is not imported here; keep AppContent lean.
+      if (offlineToastShown.current) return;
+      offlineToastShown.current = true;
+
+      toast.message('Offline mode', {
+        description:
+          'Core UI stays available. VIN decode, Tower Talk, and cloud features need internet.',
+        duration: 4000,
+      });
+    } else {
+      offlineToastShown.current = false;
     }
   }, [isOnline]);
 
