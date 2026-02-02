@@ -78,7 +78,7 @@ class TestCustomersCRUD:
         assert customer.get('first_name') == customer_data['first_name']
         
         print(f"✓ Created customer: {customer.get('first_name')} {customer.get('last_name')}")
-        return customer.get('id')
+        assert customer.get('id')
     
     def test_get_customer_by_id(self):
         """Test GET /api/customers/{id} returns customer details"""
