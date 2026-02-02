@@ -118,6 +118,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "De-monolith regression testing for customers + vin endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/customers_v2.py, /app/backend/routes/vin_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 DE-MONOLITH REGRESSION TESTING COMPLETED - ALL TESTS PASS: Conducted comprehensive backend regression testing after de-monolith for customers + vin as requested. ✅ CUSTOMERS ENDPOINTS (routes/customers_v2.py): 1) GET /api/customers (merged list): Successfully retrieved 44 customers from merged integrated + local sources, search functionality working with 16 results for 'test' query, 2) GET /api/customers/stats: Customer statistics loaded with total and byStatus fields, 3) GET /api/customers/list: Basic list (0 customers), limit=5 (5 customers), search (11 customers) all working correctly, 4) POST /api/customers/create: Successfully created test customer with proper UUID generation, 5) GET/PATCH/DELETE /api/customers/{id}: Full CRUD operations working - retrieved customer 'John Smith', updated lead_status to 'contacted', deleted successfully, 6) Attach/detach vehicle endpoints: POST /customers/{id}/attach-vehicle and DELETE /customers/{id}/detach-vehicle/{vehicle_id} working correctly. ✅ VIN ENDPOINTS (routes/vin_v2.py): 1) GET /api/vin/decode/{vin}: Both provided VINs (JM3KKEHA3T1355103, 7MMVAADW5TN144528) decoded successfully to 2026 Mazda vehicles with 100% confidence, 2) POST /api/vin/save: VIN saved to inventory successfully, 3) POST /api/vin/save-to-inventory: First save successful, duplicate VIN correctly rejected with 409 conflict status as expected. ✅ PREVIOUS REFACTORS SANITY CHECK: POST /api/tower-talk (275 char responses), POST /api/translate ('Hola mundo'), GET /api/vehicles (24 vehicles), POST /api/printer/test (graceful 520 failure), license scan endpoints (health check passing). ✅ COMPREHENSIVE RESULTS: 22 total tests run with 22 passes and 0 failures. All endpoints moved from monolithic server.py to dedicated routers (customers_v2.py, vin_v2.py) preserve original API contracts and functionality without regressions. De-monolith refactor successful with zero functionality loss."
+
   - task: "Production gates regression testing - License scan pipeline"
     implemented: true
     working: true
