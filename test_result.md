@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "PWA update/offline messaging + VIN scanner improvements regression"
+    - "iPhone/Mobile Regression Testing - SPORT mode, Command Center Settings, Intake Hub mobile layout, Quick Add + Add Customer modal scrollability"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
