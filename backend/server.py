@@ -981,8 +981,13 @@ CRITICAL INSTRUCTIONS:
         else:
             error_msg = f"Scan failed: {error_msg}. Please try again."
         
+        # Production gate: if we managed to save the image, preserve image_url even on OCR failure
+        saved_image_url = locals().get("image_url")
+
         return LicenseScanResponse(
             success=False,
+            image_url=saved_image_url,
+            confidence=0,
             error=error_msg
         )
 
