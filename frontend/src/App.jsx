@@ -10,7 +10,8 @@ import SetupModal from './components/SetupModal';
 import ImportModal from './components/ImportModal';
 
 const AdminSettingsPanel = lazy(() => import('./components/AdminSettingsPanel'));
-import VoiceTranslator from './components/VoiceTranslator';
+// Lazy-loaded below for bundle size
+
 import QuickAddButton from './components/QuickAddButton';
 import { Toaster } from './components/ui/sonner';
 import { useSales } from './context/SalesContext';
