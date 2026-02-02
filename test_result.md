@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Backend regression after strict cleanup completed successfully"
+    - "Frontend regression after strict backend cleanup"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
