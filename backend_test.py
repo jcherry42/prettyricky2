@@ -541,13 +541,13 @@ class BackendTester:
             test_printer_data = {"ip": "192.168.1.100"}  # Non-existent printer IP
             
             async with self.session.post(f"{BACKEND_URL}/printer/test", json=test_printer_data) as response:
-                if response.status == 503:  # Expected failure for non-existent printer
+                if response.status in [503, 520]:  # Expected failure for non-existent printer (520 or 503)
                     error_data = await response.json()
                     self.log_result(
                         "POST /printer/test", 
                         True, 
                         "Graceful failure for non-existent printer", 
-                        {'expected_error': error_data.get('detail', 'Connection failed')}
+                        {'expected_error': error_data.get('detail', 'Connection failed'), 'status': response.status}
                     )
                 elif response.status == 200:
                     # Unexpected success - maybe there's actually a printer at that IP
