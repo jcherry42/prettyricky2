@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Motion System Pass - Standardized motion animations for modals"
+    - "PWA Workbox precache limit fix for sounds/merica.wav (runtime caching for .wav)"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
