@@ -170,6 +170,18 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
+  - task: "Frontend regression after performance chunking changes"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Header.jsx, /app/frontend/src/components/CommandCenter.jsx, /app/frontend/src/components/AdminSettingsPanel.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Starting regression testing after performance chunking changes: removed static imports of notificationSound module, added dynamic loader loadSoundModule() usage, added Vite rollup manualChunks (react + ocr=tesseract.js). Testing: 1) Home loads with customer list visible, no console errors, 2) Command Center opens, Settings tab opens - verify Engine Sound Profile toggle and profile buttons still work (may lazy-load), 3) Admin settings panel loads without crashes (sound settings section should render, profiles list should render), 4) SPORT button toggles, 5) Intake → VIN batch modal opens (quick sanity)."
+
   - task: "PWA Workbox precache limit fix for sounds/merica.wav (runtime caching for .wav)"
   - agent: "testing"
     message: "Feb 2 2026: Production gates regression re-test PASS. Verified /api/license/scan now preserves image_url even when OCR fails for both low-quality and normal images (broad exception path fixed). Verified /api/license/create-customer succeeds using returned image_url. Quality audit endpoints and full backend regression pass."
