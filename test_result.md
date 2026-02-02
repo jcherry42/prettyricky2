@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Backend regression testing for refactored endpoints"
+    - "Production readiness scan: build + tests green, then observability (Sentry), then perf chunking"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
