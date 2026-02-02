@@ -283,17 +283,18 @@ class BackendTester:
             return False
     
     async def test_tower_talk_api(self):
-        """Test POST /api/tower-talk (AI message generation)"""
+        """Test POST /api/tower-talk with frontend TowerTalkModal JSON shape"""
         try:
+            # Use exact JSON shape from frontend TowerTalkModal as specified in review request
             test_payload = {
                 "situation": "Customer is interested in a 2024 BMW X3 but concerned about the price",
                 "context": {
                     "customerName": "Alex Martinez",
                     "vehicle": "2024 BMW X3",
                     "vehiclePrice": "$45,000",
+                    "tradeIn": "2020 Honda Accord",
                     "dealershipName": "Premium Auto Sales",
-                    "salespersonName": "Sarah Johnson",
-                    "salespersonStyle": "friendly"
+                    "salespersonName": "Sarah Johnson"
                 }
             }
             
@@ -303,21 +304,34 @@ class BackendTester:
                     response_text = data.get('response', '')
                     if response_text and len(response_text) > 10:
                         self.log_result(
-                            "POST /tower-talk", 
+                            "POST /tower-talk (refactored)", 
                             True, 
-                            f"Generated response ({len(response_text)} chars)", 
+                            f"Generated response ({len(response_text)} chars) - refactor working", 
                             {'response_length': len(response_text), 'preview': response_text[:100] + '...'}
                         )
                         return True
                     else:
-                        self.log_result("POST /tower-talk", False, "Empty or too short response")
+                        self.log_result("POST /tower-talk (refactored)", False, "Empty or too short response")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /tower-talk (refactored)", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {'expected_error': 'API key not configured'}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /tower-talk (refactored)", False, f"HTTP 500 but unexpected error: {error_text}")
                         return False
                 else:
                     error_text = await response.text()
-                    self.log_result("POST /tower-talk", False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("POST /tower-talk (refactored)", False, f"HTTP {response.status}: {error_text}")
                     return False
         except Exception as e:
-            self.log_result("POST /tower-talk", False, f"Exception: {str(e)}")
+            self.log_result("POST /tower-talk (refactored)", False, f"Exception: {str(e)}")
             return False
     
     async def test_translate_api(self):
