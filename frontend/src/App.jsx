@@ -169,7 +169,7 @@ function AppContent() {
       <main 
         id="main-content" 
         className="relative z-10 px-4 py-4 pb-safe space-y-4" 
-        style={{ paddingTop: '160px' }}
+        style={{ paddingTop: '120px' }}
         role="main"
         aria-label="Sales Command Center"
       >
