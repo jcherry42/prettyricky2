@@ -1,4 +1,6 @@
 import React, { useEffect, useState, lazy, Suspense } from 'react';
+import usePwaUpdate from './hooks/usePwaUpdate';
+import useOnlineStatus from './hooks/useOnlineStatus';
 import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
 import CustomerSelector from './components/CustomerSelector';
