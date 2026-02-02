@@ -868,7 +868,13 @@ export const AdminSettingsPanel = ({ onClose }) => {
                       
                       {/* Test Sound Button */}
                       <button
-                        onClick={() => playNotificationSound()}
+                        onClick={() => {
+                          loadSoundModule()
+                            .then((mod) => {
+                              mod.playNotificationSound?.();
+                            })
+                            .catch(() => {});
+                        }}
                         disabled={!soundPrefs.enabled}
                         className="mclaren-btn-secondary w-full gap-2 mt-2"
                         data-testid="test-sound"
