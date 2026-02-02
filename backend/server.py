@@ -2505,6 +2505,12 @@ async def toggle_experiment(experiment_id: str, is_active: bool = True):
 # ============== ENHANCED CUSTOMER MANAGEMENT ==============
 # (moved to routes/customers_v2.py)
 
+import pandas as pd
+import io
+import re
+
+from models import CRMConfig
+
 # ============== ENHANCED VEHICLE MANAGEMENT ==============
 # (moved to routes/vehicles_v2.py)
 
