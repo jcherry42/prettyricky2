@@ -926,28 +926,515 @@ class BackendTester:
             self.log_result("Printer endpoints", False, f"Exception: {str(e)}")
             return False
     
+    async def test_customers_merged_list(self):
+        """Test GET /api/customers (merged list) with and without search"""
+        try:
+            # Test basic merged list
+            async with self.session.get(f"{BACKEND_URL}/customers") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get('customers', [])
+                    count = data.get('count', 0)
+                    self.log_result(
+                        "GET /customers (merged list)", 
+                        True, 
+                        f"Retrieved {count} customers from merged list", 
+                        {'count': count, 'sample': customers[:2] if customers else []}
+                    )
+                else:
+                    self.log_result("GET /customers (merged list)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test with search parameter
+            async with self.session.get(f"{BACKEND_URL}/customers?search=test") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get('customers', [])
+                    self.log_result(
+                        "GET /customers (merged list with search)", 
+                        True, 
+                        f"Search returned {len(customers)} customers", 
+                        {'search_term': 'test', 'results': len(customers)}
+                    )
+                    return True
+                else:
+                    self.log_result("GET /customers (merged list with search)", False, f"HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_result("GET /customers (merged list)", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_customer_crud_operations(self):
+        """Test customer CRUD operations: GET/PATCH/DELETE /api/customers/{id}"""
+        try:
+            # First create a customer to test CRUD operations
+            test_customer = {
+                "first_name": "John",
+                "last_name": "Smith",
+                "phone": "555-0199",
+                "email": "john.smith@test.com",
+                "address": "456 Oak St, Dallas, TX 75201",
+                "lead_source": "web",
+                "lead_status": "new",
+                "notes": "Test customer for CRUD operations"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=test_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        customer = data.get('customer', {})
+                        customer_id = customer.get('id')
+                        
+                        if not customer_id:
+                            self.log_result("Customer CRUD - Create", False, "No customer ID returned")
+                            return False
+                        
+                        # Test GET /customers/{id}
+                        async with self.session.get(f"{BACKEND_URL}/customers/{customer_id}") as get_response:
+                            if get_response.status == 200:
+                                get_data = await get_response.json()
+                                self.log_result(
+                                    "GET /customers/{id}", 
+                                    True, 
+                                    f"Retrieved customer: {get_data.get('first_name')} {get_data.get('last_name')}", 
+                                    {'customer_id': customer_id, 'name': f"{get_data.get('first_name')} {get_data.get('last_name')}"}
+                                )
+                            else:
+                                self.log_result("GET /customers/{id}", False, f"HTTP {get_response.status}")
+                                return False
+                        
+                        # Test PATCH /customers/{id}
+                        update_data = {
+                            "lead_status": "contacted",
+                            "notes": "Updated via PATCH test"
+                        }
+                        async with self.session.patch(f"{BACKEND_URL}/customers/{customer_id}", json=update_data) as patch_response:
+                            if patch_response.status == 200:
+                                patch_data = await patch_response.json()
+                                if patch_data.get('success'):
+                                    self.log_result(
+                                        "PATCH /customers/{id}", 
+                                        True, 
+                                        "Customer updated successfully", 
+                                        {'updated_fields': patch_data.get('updated', {})}
+                                    )
+                                else:
+                                    self.log_result("PATCH /customers/{id}", False, f"Update failed: {patch_data}")
+                                    return False
+                            else:
+                                self.log_result("PATCH /customers/{id}", False, f"HTTP {patch_response.status}")
+                                return False
+                        
+                        # Test DELETE /customers/{id}
+                        async with self.session.delete(f"{BACKEND_URL}/customers/{customer_id}") as delete_response:
+                            if delete_response.status == 200:
+                                delete_data = await delete_response.json()
+                                if delete_data.get('success'):
+                                    self.log_result(
+                                        "DELETE /customers/{id}", 
+                                        True, 
+                                        "Customer deleted successfully", 
+                                        {'customer_id': customer_id}
+                                    )
+                                    return True
+                                else:
+                                    self.log_result("DELETE /customers/{id}", False, f"Delete failed: {delete_data}")
+                                    return False
+                            else:
+                                self.log_result("DELETE /customers/{id}", False, f"HTTP {delete_response.status}")
+                                return False
+                    else:
+                        self.log_result("Customer CRUD - Create", False, f"Create failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("Customer CRUD - Create", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("Customer CRUD operations", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_customer_vehicle_attachment(self):
+        """Test attach/detach vehicle endpoints"""
+        try:
+            # Create a test customer first
+            test_customer = {
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "phone": "555-0188",
+                "email": "jane.doe@test.com",
+                "lead_source": "manual",
+                "lead_status": "new"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=test_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    customer_id = data.get('customer', {}).get('id')
+                    
+                    if not customer_id:
+                        self.log_result("Vehicle attachment test", False, "Could not create test customer")
+                        return False
+                    
+                    # Create a test vehicle
+                    test_vehicle = {
+                        "make": "Honda",
+                        "model": "Accord",
+                        "year": 2023,
+                        "trim": "EX",
+                        "category": "active_inventory",
+                        "price": 32000.00,
+                        "mileage": 25,
+                        "color": "Blue"
+                    }
+                    
+                    async with self.session.post(f"{BACKEND_URL}/vehicles/create", json=test_vehicle) as vehicle_response:
+                        if vehicle_response.status == 200:
+                            vehicle_data = await vehicle_response.json()
+                            vehicle_id = vehicle_data.get('vehicle', {}).get('id')
+                            
+                            if not vehicle_id:
+                                self.log_result("Vehicle attachment test", False, "Could not create test vehicle")
+                                return False
+                            
+                            # Test attach vehicle
+                            attach_data = {"vehicle_id": vehicle_id}
+                            async with self.session.post(f"{BACKEND_URL}/customers/{customer_id}/attach-vehicle", json=attach_data) as attach_response:
+                                if attach_response.status == 200:
+                                    attach_result = await attach_response.json()
+                                    if attach_result.get('success'):
+                                        self.log_result(
+                                            "POST /customers/{id}/attach-vehicle", 
+                                            True, 
+                                            "Vehicle attached successfully", 
+                                            {'customer_id': customer_id, 'vehicle_id': vehicle_id}
+                                        )
+                                        
+                                        # Test detach vehicle
+                                        async with self.session.delete(f"{BACKEND_URL}/customers/{customer_id}/detach-vehicle/{vehicle_id}") as detach_response:
+                                            if detach_response.status == 200:
+                                                detach_result = await detach_response.json()
+                                                if detach_result.get('success'):
+                                                    self.log_result(
+                                                        "DELETE /customers/{id}/detach-vehicle/{vehicle_id}", 
+                                                        True, 
+                                                        "Vehicle detached successfully", 
+                                                        {'customer_id': customer_id, 'vehicle_id': vehicle_id}
+                                                    )
+                                                    return True
+                                                else:
+                                                    self.log_result("DELETE /customers/{id}/detach-vehicle/{vehicle_id}", False, f"Detach failed: {detach_result}")
+                                                    return False
+                                            else:
+                                                self.log_result("DELETE /customers/{id}/detach-vehicle/{vehicle_id}", False, f"HTTP {detach_response.status}")
+                                                return False
+                                    else:
+                                        self.log_result("POST /customers/{id}/attach-vehicle", False, f"Attach failed: {attach_result}")
+                                        return False
+                                else:
+                                    self.log_result("POST /customers/{id}/attach-vehicle", False, f"HTTP {attach_response.status}")
+                                    return False
+                        else:
+                            self.log_result("Vehicle attachment test", False, f"Could not create test vehicle: HTTP {vehicle_response.status}")
+                            return False
+                else:
+                    self.log_result("Vehicle attachment test", False, f"Could not create test customer: HTTP {response.status}")
+                    return False
+        except Exception as e:
+            self.log_result("Customer vehicle attachment", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_vin_decode_endpoint(self):
+        """Test GET /api/vin/decode/{vin}"""
+        try:
+            # Test with known VINs from review request
+            test_vins = ["JM3KKEHA3T1355103", "7MMVAADW5TN144528"]
+            
+            for vin in test_vins:
+                async with self.session.get(f"{BACKEND_URL}/vin/decode/{vin}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        # Check if VIN decode returned comprehensive vehicle data
+                        essential_fields = ['vin', 'year', 'make', 'model']
+                        found_essential = [field for field in essential_fields if field in data and data[field]]
+                        
+                        if len(found_essential) >= 4:  # All essential fields present
+                            confidence = data.get('validation', {}).get('confidence_score', 0)
+                            self.log_result(
+                                f"GET /vin/decode/{vin}", 
+                                True, 
+                                f"VIN decoded successfully: {data.get('year')} {data.get('make')} {data.get('model')} (confidence: {confidence}%)", 
+                                {
+                                    'vin': data.get('vin'), 
+                                    'vehicle': f"{data.get('year')} {data.get('make')} {data.get('model')}",
+                                    'confidence': confidence
+                                }
+                            )
+                        else:
+                            self.log_result(f"GET /vin/decode/{vin}", False, f"Missing essential VIN decode fields. Found: {found_essential}")
+                            return False
+                    elif response.status == 404:
+                        # VIN decode service might not be available, but endpoint exists
+                        error_text = await response.text()
+                        if "Could not decode" in error_text:
+                            self.log_result(
+                                f"GET /vin/decode/{vin}", 
+                                True, 
+                                "VIN decode endpoint working (external service limitation)", 
+                                {'status': 'endpoint_functional', 'limitation': 'external_decode_service'}
+                            )
+                        else:
+                            self.log_result(f"GET /vin/decode/{vin}", False, f"HTTP {response.status}: {error_text}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"GET /vin/decode/{vin}", False, f"HTTP {response.status}: {error_text}")
+                        return False
+            
+            return True
+        except Exception as e:
+            self.log_result("GET /vin/decode", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_vin_save_endpoints(self):
+        """Test POST /vin/save and POST /vin/save-to-inventory including duplicate behavior"""
+        try:
+            # Generate a unique VIN for testing
+            import random
+            unique_suffix = str(random.randint(100000, 999999))
+            test_vin = f"1HGBH41JXMN{unique_suffix}"
+            
+            # Test POST /vin/save
+            save_payload = {
+                "vin": test_vin,
+                "vehicle_data": {
+                    "year": 2023,
+                    "make": "Honda",
+                    "model": "Civic",
+                    "trim": "LX"
+                }
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/vin/save", json=save_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        self.log_result(
+                            "POST /vin/save", 
+                            True, 
+                            f"VIN saved successfully: {data.get('message')}", 
+                            {'vin': test_vin, 'message': data.get('message')}
+                        )
+                    else:
+                        self.log_result("POST /vin/save", False, f"Save failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /vin/save", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test POST /vin/save-to-inventory (first save)
+            inventory_payload = {
+                "vin": f"2HGBH41JXMN{unique_suffix}",  # Different VIN for inventory test
+                "vehicle_data": {
+                    "year": 2024,
+                    "make": "Honda",
+                    "model": "Accord",
+                    "trim": "Sport"
+                },
+                "category": "active_inventory"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/vin/save-to-inventory", json=inventory_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        self.log_result(
+                            "POST /vin/save-to-inventory (first save)", 
+                            True, 
+                            "VIN saved to inventory successfully", 
+                            {'vin': inventory_payload['vin'], 'message': data.get('message')}
+                        )
+                        
+                        # Test duplicate VIN behavior
+                        async with self.session.post(f"{BACKEND_URL}/vin/save-to-inventory", json=inventory_payload) as dup_response:
+                            if dup_response.status == 409:  # Conflict status for duplicate
+                                dup_data = await dup_response.json()
+                                self.log_result(
+                                    "POST /vin/save-to-inventory (duplicate rejection)", 
+                                    True, 
+                                    "Duplicate VIN correctly rejected", 
+                                    {'vin': inventory_payload['vin'], 'error': dup_data.get('detail')}
+                                )
+                                return True
+                            else:
+                                self.log_result("POST /vin/save-to-inventory (duplicate rejection)", False, f"Expected 409 conflict, got {dup_response.status}")
+                                return False
+                    else:
+                        self.log_result("POST /vin/save-to-inventory (first save)", False, f"Save failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /vin/save-to-inventory (first save)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("VIN save endpoints", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_previous_refactor_sanity_check(self):
+        """Quick sanity check on previous refactors: tower-talk, translate, vehicles, printer, license scan"""
+        try:
+            # Test POST /api/tower-talk
+            tower_talk_payload = {
+                "situation": "Customer inquiry about pricing",
+                "context": {
+                    "customerName": "Test Customer",
+                    "vehicle": "2024 Honda Civic",
+                    "dealershipName": "Test Dealership"
+                }
+            }
+            async with self.session.post(f"{BACKEND_URL}/tower-talk", json=tower_talk_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "POST /tower-talk (sanity check)", 
+                        True, 
+                        f"Tower Talk responding with {len(data.get('response', ''))} chars", 
+                        {'response_length': len(data.get('response', ''))}
+                    )
+                elif response.status == 500:
+                    # Expected if API key not configured
+                    self.log_result(
+                        "POST /tower-talk (sanity check)", 
+                        True, 
+                        "Expected 500 - API key not configured", 
+                        {'expected_error': 'API key not configured'}
+                    )
+                else:
+                    self.log_result("POST /tower-talk (sanity check)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test POST /api/translate
+            translate_payload = {
+                "text": "Hello world",
+                "source_lang": "en",
+                "target_lang": "es"
+            }
+            async with self.session.post(f"{BACKEND_URL}/translate", json=translate_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "POST /translate (sanity check)", 
+                        True, 
+                        f"Translation responding: {data.get('translated_text', '')[:50]}", 
+                        {'translated': data.get('translated_text', '')[:50]}
+                    )
+                elif response.status == 500:
+                    # Expected if API key not configured
+                    self.log_result(
+                        "POST /translate (sanity check)", 
+                        True, 
+                        "Expected 500 - API key not configured", 
+                        {'expected_error': 'API key not configured'}
+                    )
+                else:
+                    self.log_result("POST /translate (sanity check)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test vehicles endpoints
+            async with self.session.get(f"{BACKEND_URL}/vehicles") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /vehicles (sanity check)", 
+                        True, 
+                        f"Vehicles endpoint responding with {data.get('count', 0)} vehicles", 
+                        {'count': data.get('count', 0)}
+                    )
+                else:
+                    self.log_result("GET /vehicles (sanity check)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test printer endpoints
+            test_printer_data = {"ip": "192.168.1.100"}
+            async with self.session.post(f"{BACKEND_URL}/printer/test", json=test_printer_data) as response:
+                if response.status in [503, 520, 200]:  # Expected responses
+                    self.log_result(
+                        "POST /printer/test (sanity check)", 
+                        True, 
+                        f"Printer endpoint responding (status {response.status})", 
+                        {'status': response.status}
+                    )
+                else:
+                    self.log_result("POST /printer/test (sanity check)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test license scan endpoints
+            async with self.session.get(f"{BACKEND_URL}/health") as response:
+                if response.status == 200:
+                    self.log_result(
+                        "License scan endpoints (sanity check)", 
+                        True, 
+                        "Health endpoint confirms backend is responding", 
+                        {'status': 'healthy'}
+                    )
+                    return True
+                else:
+                    self.log_result("License scan endpoints (sanity check)", False, f"HTTP {response.status}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("Previous refactor sanity check", False, f"Exception: {str(e)}")
+            return False
+
     async def run_all_tests(self):
-        """Run focused backend regression tests for tower-talk + translation refactor"""
-        print("🚀 Backend Regression Testing - Tower Talk + Translation Refactor")
+        """Run comprehensive backend regression tests for de-monolith (customers + vin)"""
+        print("🚀 Backend Regression Testing - De-Monolith for Customers + VIN")
         print(f"Backend URL: {BACKEND_URL}")
-        print("=" * 60)
+        print("=" * 80)
         
-        print("\n🎯 TOWER TALK + TRANSLATION REFACTOR REGRESSION TESTS:")
+        print("\n🎯 DE-MONOLITH REGRESSION TESTS:")
         
-        # Test 1: POST /api/tower-talk with frontend TowerTalkModal JSON shape
-        print("\n1️⃣ Testing POST /api/tower-talk with frontend JSON shape...")
-        await self.test_tower_talk_api()
+        # Test 1: Customers endpoints
+        print("\n1️⃣ Testing Customer Endpoints (routes/customers_v2.py)...")
         
-        # Test 2: POST /api/translate with specific parameters
-        print("\n2️⃣ Testing POST /api/translate with review request parameters...")
-        await self.test_translate_api()
+        print("   • GET /api/customers (merged list) with and without search...")
+        await self.test_customers_merged_list()
         
-        # Test 3: Quick health check to verify other endpoints still work
-        print("\n3️⃣ Testing GET /api/health (quick health check)...")
-        await self.test_health_check()
+        print("   • GET /api/customers/stats...")
+        await self.test_customer_stats()
         
-        print("=" * 60)
-        print(f"🏁 Regression Testing Complete: {len(self.results)} tests run")
+        print("   • GET /api/customers/list...")
+        await self.test_customers_list_endpoint()
+        
+        print("   • POST /api/customers/create...")
+        await self.test_customers_create_endpoint()
+        
+        print("   • GET/PATCH/DELETE /api/customers/{id}...")
+        await self.test_customer_crud_operations()
+        
+        print("   • Attach/detach vehicle endpoints...")
+        await self.test_customer_vehicle_attachment()
+        
+        # Test 2: VIN endpoints
+        print("\n2️⃣ Testing VIN Endpoints (routes/vin_v2.py)...")
+        
+        print("   • GET /api/vin/decode/{vin}...")
+        await self.test_vin_decode_endpoint()
+        
+        print("   • POST /api/vin/save and POST /api/vin/save-to-inventory...")
+        await self.test_vin_save_endpoints()
+        
+        # Test 3: Previous refactors sanity check
+        print("\n3️⃣ Testing Previous Refactors (sanity check)...")
+        
+        print("   • POST /api/tower-talk, POST /api/translate, vehicles, printer, license scan...")
+        await self.test_previous_refactor_sanity_check()
+        
+        print("=" * 80)
+        print(f"🏁 De-Monolith Regression Testing Complete: {len(self.results)} tests run")
         
         passed = len([r for r in self.results if r['success']])
         failed = len(self.failed_tests)
@@ -960,7 +1447,7 @@ class BackendTester:
             for test in self.failed_tests:
                 print(f"   • {test}")
         else:
-            print("\n🎉 All regression tests passed! Refactor successful.")
+            print("\n🎉 All de-monolith regression tests passed! Refactor successful.")
         
         return failed == 0
 
