@@ -843,12 +843,17 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
                   onClick={() => {
                     const newPrefs = { ...soundPrefs, profile: p.id };
                     setSoundPrefsState(newPrefs);
-                    setSoundPreferences(newPrefs);
 
-                    // Preview if enabled
-                    if (newPrefs.enabled) {
-                      playNotificationSound(p.id);
-                    }
+                    loadSoundModule()
+                      .then((mod) => {
+                        mod.setSoundPreferences?.(newPrefs);
+
+                        // Preview if enabled
+                        if (newPrefs.enabled) {
+                          mod.playNotificationSound?.(p.id);
+                        }
+                      })
+                      .catch(() => {});
                   }}
                   aria-label={`Engine sound ${p.label}`}
                 >
