@@ -789,8 +789,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
         </div>
       </div>
       
-      {/* Ambient Lighting Section */}
-      <AmbientLightingSection />
+      {/* Ambient Lighting Section - removed for performance */}
       
       
     </div>
