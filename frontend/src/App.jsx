@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { SalesProvider } from './context/SalesContext';
 import { Header } from './components/Header';
 import CustomerSelector from './components/CustomerSelector';
@@ -8,7 +8,6 @@ import TowerTalkButton from './components/TowerTalkButton';
 import TowerTalkModal from './components/TowerTalkModal';
 import SetupModal from './components/SetupModal';
 import ImportModal from './components/ImportModal';
-import React, { useEffect, useState, lazy, Suspense } from 'react';
 
 const AdminSettingsPanel = lazy(() => import('./components/AdminSettingsPanel'));
 import VoiceTranslator from './components/VoiceTranslator';
