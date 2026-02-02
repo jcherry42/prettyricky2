@@ -7,8 +7,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
-import { toast } from 'sonner';
-import { useSales } from '../context/SalesContext';
 
 const loadSoundModule = () => import('../utils/notificationSound');
 
