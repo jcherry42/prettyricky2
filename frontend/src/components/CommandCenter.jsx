@@ -816,8 +816,12 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
               onClick={() => {
                 const newPrefs = { ...soundPrefs, enabled: !soundPrefs.enabled };
                 setSoundPrefsState(newPrefs);
-                setSoundPreferences(newPrefs);
-                if (newPrefs.enabled) playNotificationSound();
+                loadSoundModule()
+                  .then((mod) => {
+                    mod.setSoundPreferences?.(newPrefs);
+                    if (newPrefs.enabled) mod.playNotificationSound?.();
+                  })
+                  .catch(() => {});
               }}
             >
               {soundPrefs.enabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
