@@ -186,7 +186,9 @@ function AppContent() {
       )}
       
       {/* Voice Translator - Right Side Panel */}
-      <VoiceTranslator />
+      <Suspense fallback={null}>
+        <VoiceTranslator />
+      </Suspense>
       
       {/* Quick Add Customer - Floating Bluetooth Button */}
       <QuickAddButton />
