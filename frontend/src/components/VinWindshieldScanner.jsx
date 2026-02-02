@@ -489,6 +489,17 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
           .vinws-camera {
             position: relative;
             width: 100%;
+
+          .vinws-confidence {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.72);
+            padding: 8px 10px;
+            border: 1px solid rgba(0, 170, 255, 0.18);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.35);
+          }
+
             aspect-ratio: 4/3;
             background: #000;
             border-radius: 18px;
