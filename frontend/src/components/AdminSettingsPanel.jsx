@@ -50,6 +50,7 @@ export const AdminSettingsPanel = ({ onClose }) => {
   
   // Sound preferences
   const [soundPrefs, setSoundPrefs] = useState({ enabled: true, profile: 'merica', volume: 0.7 });
+  const [soundProfiles, setSoundProfiles] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState('default');
   
   // Notification history
