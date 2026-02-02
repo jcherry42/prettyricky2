@@ -334,8 +334,20 @@ export const TowerTalkModal = () => {
         }
         setIsTranslating(false);
       }
-    } catch {
-      setError('Unable to connect. Check your internet connection and try again.');
+    } catch (err) {
+      const msg = String(err?.message || '');
+      const offlineHint =
+        !navigator.onLine ||
+        msg.toLowerCase().includes('failed to fetch') ||
+        msg.toLowerCase().includes('networkerror') ||
+        msg.toLowerCase().includes('network') ||
+        msg.toLowerCase().includes('timeout');
+
+      setError(
+        offlineHint
+          ? 'Offline. Tower Talk needs internet. You can still build the message manually and send it.'
+          : 'Unable to connect. Try again.'
+      );
     } finally {
       setIsLoading(false);
     }
