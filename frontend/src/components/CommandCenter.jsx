@@ -654,7 +654,7 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
     preferredPhrase: salesperson?.preferredPhrase || 'Good to hear from you',
   });
   
-  const [soundPrefs, setSoundPrefsState] = useState(getSoundPreferences());
+  const [soundPrefs, setSoundPrefsState] = useState({ enabled: true, profile: 'merica', volume: 0.7 });
 
 
   const [notificationPermission, setNotificationPermission] = useState(() => {
