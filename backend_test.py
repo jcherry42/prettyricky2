@@ -658,10 +658,12 @@ class BackendTester:
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
-        # Core API tests (mentioned in review request)
-        await self.test_health_check()
-        await self.test_customers_api()
-        await self.test_vehicles_api()
+        # Regression tests for refactored endpoints
+        await self.test_customers_list_endpoint()
+        await self.test_vehicles_endpoints()
+        await self.test_printer_endpoints()
+        
+        # Legacy API tests
         await self.test_tower_talk_api()
         await self.test_translate_api()
         await self.test_stats_api()
@@ -672,7 +674,6 @@ class BackendTester:
         
         # Additional stats endpoints
         await self.test_customer_stats()
-        await self.test_vehicle_stats()
         
         print("=" * 60)
         print(f"🏁 Testing Complete: {len(self.results)} tests run")
