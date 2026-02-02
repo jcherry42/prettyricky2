@@ -194,11 +194,13 @@ function AppContent() {
       <QuickAddButton />
       
       {/* Performance Monitor - Dev Mode or triple-tap to show */}
-      <PerformanceMonitor 
-        visible={showPerfMonitor} 
-        position="bottom-left"
-        compact={true}
-      />
+      <Suspense fallback={null}>
+        <PerformanceMonitor 
+          visible={showPerfMonitor} 
+          position="bottom-left"
+          compact={true}
+        />
+      </Suspense>
       
       {/* Toast notifications */}
       <Toaster position="top-center" />
