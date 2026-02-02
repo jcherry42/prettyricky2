@@ -3201,10 +3201,10 @@ async def list_customers_filtered(
         if search:
             search_lower = search.lower()
             customers = [c for c in customers if 
-                search_lower in c.get('first_name', '').lower() or
-                search_lower in c.get('last_name', '').lower() or
-                search_lower in c.get('phone', '').lower() or
-                search_lower in c.get('email', '').lower()
+                search_lower in (c.get('first_name') or '').lower() or
+                search_lower in (c.get('last_name') or '').lower() or
+                search_lower in (c.get('phone') or '').lower() or
+                search_lower in (c.get('email') or '').lower()
             ]
         
         # Get total count
