@@ -198,6 +198,8 @@ backend:
     message: "Feb 2 2026: Frontend regression PASS after strict backend cleanup. Verified app load, customer list/search, quick add entry, intake VIN modal + batch UI, tower talk modal access, command center settings with Eco Mode + Engine Sound Profile buttons."
 
   - task: "Printer endpoints regression testing (routes/printer_v2.py)"
+  - agent: "testing"
+    message: "Feb 2 2026: Frontend regression PASS for PWA update flow hooks + offline UX messaging + VIN scanner confidence scoring. App loads; virtual:pwa-register does not crash; offline toasts/messages behave; Intake VIN + batch VIN error messaging improved; Tower Talk offline error improved; VinWindshieldScanner shows confidence/ordering when VINs detected."
     implemented: true
     working: true
     file: "/app/backend/routes/printer_v2.py"
