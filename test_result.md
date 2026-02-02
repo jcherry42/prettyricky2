@@ -178,6 +178,8 @@ frontend:
     priority: "high"
     needs_retesting: false
     status_history:
+  - agent: "testing"
+    message: "Feb 2 2026: Frontend regression PASS after lazy-loading VoiceTranslator + PerformanceMonitor. Verified home load, VoiceTranslator renders (mic button + language badge), Command Center intact, no console errors. Build main chunk now 479KB (<500KB warning cleared)."
       - working: "NA"
         agent: "testing"
         comment: "Starting regression testing after additional lazy-loading changes: App.jsx now lazy-loads VoiceTranslator and PerformanceMonitor (React.lazy + Suspense). AdminSettingsPanel already lazy-loaded. Testing: 1) Home load and core customer UI, 2) Open Command Center (CHECK), confirm Settings still works, 3) Toggle Performance Monitor (if there is a trigger; otherwise ensure no crash from lazy import), 4) Trigger VoiceTranslator panel (if present by default) and confirm no crash, 5) Ensure no console errors."
