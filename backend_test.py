@@ -1389,6 +1389,62 @@ class BackendTester:
             self.log_result("Previous refactor sanity check", False, f"Exception: {str(e)}")
             return False
 
+    async def run_cleanup_regression_tests(self):
+        """Run focused regression tests after backend cleanup"""
+        print("🎯 BACKEND REGRESSION TESTS AFTER STRICT CLEANUP")
+        print("Testing critical endpoints after deleting unused route files:")
+        print("- Deleted: customers.py, vin.py, tower_talk.py, printer.py, vehicles.py")
+        print("- Minimized: routes/__init__.py")
+        print(f"Backend URL: {BACKEND_URL}")
+        print("=" * 80)
+        
+        # Critical endpoints from review request
+        print("\n🔍 Testing Critical Endpoints:")
+        
+        print("   • /api/health...")
+        await self.test_health_check()
+        
+        print("   • /api/customers (merged list) + /api/customers/list + /api/customers/create...")
+        await self.test_customers_merged_list()
+        await self.test_customers_list_endpoint()
+        await self.test_customers_create_endpoint()
+        
+        print("   • /api/vin/decode/{vin}...")
+        await self.test_vin_decode_endpoint()
+        
+        print("   • /api/tower-talk and /api/translate...")
+        await self.test_tower_talk_api()
+        await self.test_translate_api()
+        
+        print("   • /api/vehicles and /api/vehicles/inventory...")
+        await self.test_vehicles_endpoints()
+        
+        print("   • /api/print/license and /api/print/customer...")
+        await self.test_printer_endpoints()
+        
+        print("   • /api/license/scan...")
+        await self.test_license_scan_pipeline()
+        
+        print("\n" + "=" * 80)
+        print(f"🏁 CLEANUP REGRESSION TESTS COMPLETED")
+        
+        passed = len([r for r in self.results if r['success']])
+        failed = len(self.failed_tests)
+        
+        print(f"✅ Passed: {passed}")
+        print(f"❌ Failed: {failed}")
+        
+        if self.failed_tests:
+            print(f"\n❌ FAILED TESTS:")
+            for test in self.failed_tests:
+                print(f"   - {test}")
+            print(f"\n⚠️  CLEANUP MAY HAVE BROKEN SOME ENDPOINTS!")
+        else:
+            print(f"\n🎉 ALL CRITICAL ENDPOINTS WORKING AFTER CLEANUP!")
+            print(f"✅ Strict cleanup successful - no regressions detected")
+        
+        return len(self.failed_tests) == 0
+
     async def run_all_tests(self):
         """Run comprehensive backend regression tests for de-monolith (customers + vin)"""
         print("🚀 Backend Regression Testing - De-Monolith for Customers + VIN")
