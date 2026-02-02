@@ -11,12 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
-import { 
-  getSoundPreferences, 
-  setSoundPreferences,
-  getSoundProfiles,
-  playNotificationSound
-} from '../utils/notificationSound';
+const loadSoundModule = () => import('../utils/notificationSound');
 import LanguageSelector from './LanguageSelector';
 import VisionExtractor from './VisionExtractor';
 import CustomerForm from './CommandCenter/CustomerForm';
