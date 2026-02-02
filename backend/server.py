@@ -825,11 +825,10 @@ async def scan_license_with_ocr(
             )
         
         # Minimum size check (likely too small/blurry)
-        if len(image_data) < 10 * 1024:  # 10KB minimum
-            return LicenseScanResponse(
-                success=False,
-                error="Image appears too small or low quality. Please take a clearer photo."
-            )
+        # NOTE: In production, we still want to *save the image* so the user can proceed,
+        # even if OCR is likely to fail. We only fail the OCR portion.
+        low_quality_image = len(image_data) < 10 * 1024  # 10KB minimum
+
         
         # Save the image first (so user doesn't lose it even if OCR fails)
         ext = (image.filename or 'image.jpg').split('.')[-1].lower()
