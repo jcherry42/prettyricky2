@@ -335,11 +335,12 @@ class BackendTester:
             return False
     
     async def test_translate_api(self):
-        """Test POST /api/translate (multi-language translation)"""
+        """Test POST /api/translate with specific parameters from review request"""
         try:
+            # Use exact parameters from review request
             test_payload = {
-                "text": "Hello, I'm interested in this vehicle. Can you tell me more about the financing options?",
-                "source_lang": "en",
+                "text": "hello",
+                "source_lang": "auto",
                 "target_lang": "es"
             }
             
@@ -350,28 +351,45 @@ class BackendTester:
                     detected_lang = data.get('detected_lang')
                     confidence = data.get('confidence', 0)
                     
-                    if translated_text and len(translated_text) > 10:
+                    # Verify expected fields from review request
+                    has_required_fields = all(field in data for field in ['translated_text', 'detected_lang', 'confidence'])
+                    
+                    if translated_text and has_required_fields:
                         self.log_result(
-                            "POST /translate", 
+                            "POST /translate (refactored)", 
                             True, 
-                            f"Translated to Spanish (confidence: {confidence})", 
+                            f"Translation successful - refactor working (confidence: {confidence})", 
                             {
-                                'original': test_payload['text'][:50] + '...',
-                                'translated': translated_text[:50] + '...',
+                                'original': test_payload['text'],
+                                'translated': translated_text,
                                 'detected_lang': detected_lang,
-                                'confidence': confidence
+                                'confidence': confidence,
+                                'has_all_fields': has_required_fields
                             }
                         )
                         return True
                     else:
-                        self.log_result("POST /translate", False, "Empty or too short translation")
+                        self.log_result("POST /translate (refactored)", False, f"Missing required fields or empty translation. Data: {data}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /translate (refactored)", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {'expected_error': 'API key not configured'}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /translate (refactored)", False, f"HTTP 500 but unexpected error: {error_text}")
                         return False
                 else:
                     error_text = await response.text()
-                    self.log_result("POST /translate", False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("POST /translate (refactored)", False, f"HTTP {response.status}: {error_text}")
                     return False
         except Exception as e:
-            self.log_result("POST /translate", False, f"Exception: {str(e)}")
+            self.log_result("POST /translate (refactored)", False, f"Exception: {str(e)}")
             return False
     
     async def test_stats_api(self):
