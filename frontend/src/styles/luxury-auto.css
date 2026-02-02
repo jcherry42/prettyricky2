@@ -544,17 +544,9 @@
 
 /* ==================== SPORT MODE ENHANCEMENTS ==================== */
 
+/* SPORT mode keeps styling, but avoids global animations for performance */
 .sport-mode-active {
-  --accent-color: #FF4444;
-  --glow-color: rgba(255, 68, 68, 0.4);
-}
-
-.sport-mode-active .ambient-glow-orange::after {
-  background: radial-gradient(
-    ellipse at 50% 0%,
-    rgba(255, 68, 68, 0.08) 0%,
-    transparent 60%
-  );
+  animation: none;
 }
 
 /* ==================== VENT/GRILLE PATTERN ==================== */
