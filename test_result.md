@@ -170,6 +170,18 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
+  - task: "Frontend regression after additional lazy-loading (VoiceTranslator + PerformanceMonitor)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.jsx, /app/frontend/src/components/VoiceTranslator.jsx, /app/frontend/src/components/PerformanceMonitor.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Starting regression testing after additional lazy-loading changes: App.jsx now lazy-loads VoiceTranslator and PerformanceMonitor (React.lazy + Suspense). AdminSettingsPanel already lazy-loaded. Testing: 1) Home load and core customer UI, 2) Open Command Center (CHECK), confirm Settings still works, 3) Toggle Performance Monitor (if there is a trigger; otherwise ensure no crash from lazy import), 4) Trigger VoiceTranslator panel (if present by default) and confirm no crash, 5) Ensure no console errors."
+
   - task: "Frontend regression after performance chunking changes"
     implemented: true
     working: true
