@@ -352,7 +352,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
                 {recognized.length > 0 && !isProcessing && (
                   <div className="vinws-confidence">
                     Confidence: {Math.min(100, Math.max(0, primaryScore))}%
-                    {primaryScore >= 80 ? '  checksum verified' : ''}
+                    {primaryScore >= 80 ? ' · checksum verified' : ''}
                   </div>
                 )}
 
