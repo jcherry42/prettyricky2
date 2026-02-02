@@ -164,6 +164,9 @@ export const AdminSettingsPanel = ({ onClose }) => {
         if (typeof mod.getSoundPreferences === 'function') {
           setSoundPrefs(mod.getSoundPreferences());
         }
+        if (typeof mod.getSoundProfiles === 'function') {
+          setSoundProfiles(mod.getSoundProfiles());
+        }
       })
       .catch(() => {});
 
