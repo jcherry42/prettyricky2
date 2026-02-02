@@ -174,7 +174,11 @@ function AppContent() {
       <SetupModal />
       <ImportModal />
       <TowerTalkModal />
-      {showAdminSettings && <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />}
+      {showAdminSettings && (
+        <Suspense fallback={null}>
+          <AdminSettingsPanel onClose={() => toggleAdminSettings(false)} />
+        </Suspense>
+      )}
       
       {/* Voice Translator - Right Side Panel */}
       <VoiceTranslator />
