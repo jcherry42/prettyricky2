@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Frontend regression after additional lazy-loading (VoiceTranslator + PerformanceMonitor)"
+    - "Tower Talk + Translation refactor regression testing (routes/tower_talk_v2.py)"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
