@@ -21,7 +21,8 @@ import { useSales } from './context/SalesContext';
 import { initializeNative, updateStatusBarTheme, isNative } from './utils/native';
 import ErrorBoundary from './components/ErrorBoundary';
 import performanceManager from './utils/performanceManager';
-import PerformanceMonitor from './components/PerformanceMonitor';
+// Lazy-loaded below for bundle size
+
 import { offlineSync } from './utils/offlineSync';
 import './utils/keyboardManager'; // Auto-initializes on import
 import DesignoSwirlBackground from './components/DesignoSwirlBackground';
