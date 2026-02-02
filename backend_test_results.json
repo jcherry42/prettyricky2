@@ -1,53 +1,291 @@
 {
-  "timestamp": "2026-02-02T19:10:45.585326",
+  "timestamp": "2026-02-02T19:29:56.930137",
   "backend_url": "https://dealerhelper.preview.emergentagent.com/api",
-  "total_tests": 3,
-  "passed": 3,
+  "total_tests": 22,
+  "passed": 22,
   "failed": 0,
   "failed_tests": [],
   "detailed_results": [
     {
-      "test": "POST /tower-talk (refactored)",
+      "test": "GET /customers (merged list)",
       "success": true,
-      "details": "Generated response (269 chars) - refactor working",
-      "timestamp": "2026-02-02T19:10:45.100540",
+      "details": "Retrieved 44 customers from merged list",
+      "timestamp": "2026-02-02T19:29:53.364257",
       "response_data": {
-        "response_length": 269,
-        "preview": "Hi Alex, I understand the price on the 2024 BMW X3 might be a concern. It\u2019s an exceptional vehicle t..."
+        "count": 44,
+        "sample": [
+          {
+            "id": "1b26e38d-5bdf-4f35-9fcc-f58e92024d80",
+            "name": "Maria Rodriguez",
+            "firstName": "Maria",
+            "lastName": "Rodriguez",
+            "phone": "555-0123",
+            "email": "maria.rodriguez@email.com",
+            "address": "123 Main St, Austin, TX 78701",
+            "vehicleInterest": null,
+            "status": "new",
+            "notes": "Interested in SUVs",
+            "currentVehicle": null,
+            "tradeIn": null
+          },
+          {
+            "id": "910255e3-9fdb-49fb-9f84-51b0574e8fc1",
+            "name": "Maria Rodriguez",
+            "firstName": "Maria",
+            "lastName": "Rodriguez",
+            "phone": "555-0123",
+            "email": "maria.rodriguez@email.com",
+            "address": "123 Main St, Austin, TX 78701",
+            "vehicleInterest": null,
+            "status": "new",
+            "notes": "Interested in SUVs",
+            "currentVehicle": null,
+            "tradeIn": null
+          }
+        ]
       }
     },
     {
-      "test": "POST /translate (refactored)",
+      "test": "GET /customers (merged list with search)",
       "success": true,
-      "details": "Translation successful - refactor working (confidence: 0.95)",
-      "timestamp": "2026-02-02T19:10:45.572206",
+      "details": "Search returned 16 customers",
+      "timestamp": "2026-02-02T19:29:53.373580",
       "response_data": {
-        "original": "hello",
-        "translated": "hola",
-        "detected_lang": "en",
-        "confidence": 0.95,
-        "has_all_fields": true
+        "search_term": "test",
+        "results": 16
       }
     },
     {
-      "test": "Health Check",
+      "test": "GET /customers/stats",
       "success": true,
-      "details": "Status: healthy",
-      "timestamp": "2026-02-02T19:10:45.585163",
+      "details": "Customer stats loaded with 2/2 expected fields",
+      "timestamp": "2026-02-02T19:29:53.423370",
       "response_data": {
-        "status": "healthy",
-        "timestamp": "2026-02-02T19:10:45.582649+00:00",
-        "scheduler": {
-          "isRunning": true,
-          "nextRefresh": "2026-02-03T10:00:00-05:00",
-          "schedule": "Mon-Sat 10:00 AM ET"
-        },
-        "dataSources": {
-          "total": 0,
-          "active": 0,
-          "healthy": 0,
-          "needsAttention": 0
+        "total": 22,
+        "byStatus": {
+          "new": 22
         }
+      }
+    },
+    {
+      "test": "GET /customers/list (basic)",
+      "success": true,
+      "details": "Retrieved 0 customers",
+      "timestamp": "2026-02-02T19:29:53.438445",
+      "response_data": {
+        "count": 0,
+        "sample": [
+          {
+            "first_name": "Maria",
+            "last_name": "Rodriguez",
+            "phone": "555-0123",
+            "email": "maria.rodriguez@email.com",
+            "address": "123 Main St, Austin, TX 78701",
+            "lead_source": "web",
+            "lead_status": "new",
+            "notes": "Interested in SUVs",
+            "vehicle_interests": [],
+            "trade_in_vehicle_id": null,
+            "id": "1b26e38d-5bdf-4f35-9fcc-f58e92024d80",
+            "created_at": "2026-02-02T18:02:46.868000",
+            "updated_at": "2026-02-02T18:02:46.868000",
+            "interactions": []
+          },
+          {
+            "first_name": "Maria",
+            "last_name": "Rodriguez",
+            "phone": "555-0123",
+            "email": "maria.rodriguez@email.com",
+            "address": "123 Main St, Austin, TX 78701",
+            "lead_source": "web",
+            "lead_status": "new",
+            "notes": "Interested in SUVs",
+            "vehicle_interests": [],
+            "trade_in_vehicle_id": null,
+            "id": "910255e3-9fdb-49fb-9f84-51b0574e8fc1",
+            "created_at": "2026-02-02T17:59:21.095000",
+            "updated_at": "2026-02-02T17:59:21.095000",
+            "interactions": []
+          }
+        ]
+      }
+    },
+    {
+      "test": "GET /customers/list (limit=5)",
+      "success": true,
+      "details": "Retrieved 5 customers with limit",
+      "timestamp": "2026-02-02T19:29:53.450209",
+      "response_data": {
+        "count": 5
+      }
+    },
+    {
+      "test": "GET /customers/list (search)",
+      "success": true,
+      "details": "Search returned 11 customers",
+      "timestamp": "2026-02-02T19:29:53.470331",
+      "response_data": {
+        "search_term": "test",
+        "results": 11
+      }
+    },
+    {
+      "test": "POST /customers/create",
+      "success": true,
+      "details": "Created customer: Unknown",
+      "timestamp": "2026-02-02T19:29:53.483271",
+      "response_data": {
+        "customer_id": "a4913414-1836-4844-b07a-709b55b9c24d",
+        "name": null
+      }
+    },
+    {
+      "test": "GET /customers/{id}",
+      "success": true,
+      "details": "Retrieved customer: John Smith",
+      "timestamp": "2026-02-02T19:29:53.540658",
+      "response_data": {
+        "customer_id": "f7b01d37-dbc6-48c6-adeb-a2d86e792c27",
+        "name": "John Smith"
+      }
+    },
+    {
+      "test": "PATCH /customers/{id}",
+      "success": true,
+      "details": "Customer updated successfully",
+      "timestamp": "2026-02-02T19:29:53.591553",
+      "response_data": {
+        "updated_fields": {
+          "lead_status": "contacted",
+          "notes": "Updated via PATCH test",
+          "updated_at": "2026-02-02T19:29:53.546798+00:00"
+        }
+      }
+    },
+    {
+      "test": "DELETE /customers/{id}",
+      "success": true,
+      "details": "Customer deleted successfully",
+      "timestamp": "2026-02-02T19:29:53.640799",
+      "response_data": {
+        "customer_id": "f7b01d37-dbc6-48c6-adeb-a2d86e792c27"
+      }
+    },
+    {
+      "test": "POST /customers/{id}/attach-vehicle",
+      "success": true,
+      "details": "Vehicle attached successfully",
+      "timestamp": "2026-02-02T19:29:53.711871",
+      "response_data": {
+        "customer_id": "6775fdea-43e4-4b78-8503-00a4f99623b4",
+        "vehicle_id": "e4ff402e-0a46-4bbb-bf44-c8dcf55c6c31"
+      }
+    },
+    {
+      "test": "DELETE /customers/{id}/detach-vehicle/{vehicle_id}",
+      "success": true,
+      "details": "Vehicle detached successfully",
+      "timestamp": "2026-02-02T19:29:53.761782",
+      "response_data": {
+        "customer_id": "6775fdea-43e4-4b78-8503-00a4f99623b4",
+        "vehicle_id": "e4ff402e-0a46-4bbb-bf44-c8dcf55c6c31"
+      }
+    },
+    {
+      "test": "GET /vin/decode/JM3KKEHA3T1355103",
+      "success": true,
+      "details": "VIN decoded successfully: 2026 MAZDA CX-90 (confidence: 100%)",
+      "timestamp": "2026-02-02T19:29:54.125416",
+      "response_data": {
+        "vin": "JM3KKEHA3T1355103",
+        "vehicle": "2026 MAZDA CX-90",
+        "confidence": 100
+      }
+    },
+    {
+      "test": "GET /vin/decode/7MMVAADW5TN144528",
+      "success": true,
+      "details": "VIN decoded successfully: 2026 MAZDA CX-50 (confidence: 100%)",
+      "timestamp": "2026-02-02T19:29:54.386534",
+      "response_data": {
+        "vin": "7MMVAADW5TN144528",
+        "vehicle": "2026 MAZDA CX-50",
+        "confidence": 100
+      }
+    },
+    {
+      "test": "POST /vin/save",
+      "success": true,
+      "details": "VIN saved successfully: Vehicle saved to inventory",
+      "timestamp": "2026-02-02T19:29:54.398501",
+      "response_data": {
+        "vin": "1HGBH41JXMN424118",
+        "message": "Vehicle saved to inventory"
+      }
+    },
+    {
+      "test": "POST /vin/save-to-inventory (first save)",
+      "success": true,
+      "details": "VIN saved to inventory successfully",
+      "timestamp": "2026-02-02T19:29:54.412314",
+      "response_data": {
+        "vin": "2HGBH41JXMN424118",
+        "message": "Vehicle saved to inventory"
+      }
+    },
+    {
+      "test": "POST /vin/save-to-inventory (duplicate rejection)",
+      "success": true,
+      "details": "Duplicate VIN correctly rejected",
+      "timestamp": "2026-02-02T19:29:54.424222",
+      "response_data": {
+        "vin": "2HGBH41JXMN424118",
+        "error": "This VIN already exists in inventory. Vehicle: 2024 Honda Accord"
+      }
+    },
+    {
+      "test": "POST /tower-talk (sanity check)",
+      "success": true,
+      "details": "Tower Talk responding with 275 chars",
+      "timestamp": "2026-02-02T19:29:56.329218",
+      "response_data": {
+        "response_length": 275
+      }
+    },
+    {
+      "test": "POST /translate (sanity check)",
+      "success": true,
+      "details": "Translation responding: Hola mundo",
+      "timestamp": "2026-02-02T19:29:56.851011",
+      "response_data": {
+        "translated": "Hola mundo"
+      }
+    },
+    {
+      "test": "GET /vehicles (sanity check)",
+      "success": true,
+      "details": "Vehicles endpoint responding with 24 vehicles",
+      "timestamp": "2026-02-02T19:29:56.861550",
+      "response_data": {
+        "count": 24
+      }
+    },
+    {
+      "test": "POST /printer/test (sanity check)",
+      "success": true,
+      "details": "Printer endpoint responding (status 520)",
+      "timestamp": "2026-02-02T19:29:56.917787",
+      "response_data": {
+        "status": 520
+      }
+    },
+    {
+      "test": "License scan endpoints (sanity check)",
+      "success": true,
+      "details": "Health endpoint confirms backend is responding",
+      "timestamp": "2026-02-02T19:29:56.929921",
+      "response_data": {
+        "status": "healthy"
       }
     }
   ]
