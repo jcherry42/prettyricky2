@@ -664,6 +664,24 @@ const SettingsTab = memo(({ defaultTargetLanguage, onLanguageChange }) => {
     return 'default';
   });
   
+
+  // Load sound prefs on mount (lazy-load sound module for code-splitting)
+  useEffect(() => {
+    let mounted = true;
+    loadSoundModule()
+      .then((mod) => {
+        if (!mounted) return;
+        if (typeof mod.getSoundPreferences === 'function') {
+          setSoundPrefsState(mod.getSoundPreferences());
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleSaveProfile = () => {
     setDealership(dealershipForm);
     setSalesperson(salespersonForm);
