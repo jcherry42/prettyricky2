@@ -171,6 +171,8 @@ backend:
 
 frontend:
   - task: "PWA Workbox precache limit fix for sounds/merica.wav (runtime caching for .wav)"
+  - agent: "testing"
+    message: "Feb 2 2026: Production gates regression re-test PASS. Verified /api/license/scan now preserves image_url even when OCR fails for both low-quality and normal images (broad exception path fixed). Verified /api/license/create-customer succeeds using returned image_url. Quality audit endpoints and full backend regression pass."
     implemented: true
     working: true
     file: "/app/frontend/vite.config.js"
