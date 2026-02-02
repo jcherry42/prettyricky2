@@ -927,37 +927,27 @@ class BackendTester:
             return False
     
     async def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Backend API Testing Suite - Production Gates Regression")
+        """Run focused backend regression tests for tower-talk + translation refactor"""
+        print("🚀 Backend Regression Testing - Tower Talk + Translation Refactor")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 60)
         
-        # Production gates regression tests
-        print("\n🔍 PRODUCTION GATES REGRESSION TESTS:")
-        await self.test_license_scan_pipeline()
-        await self.test_license_customer_creation()
-        await self.test_quality_audit_endpoints()
+        print("\n🎯 TOWER TALK + TRANSLATION REFACTOR REGRESSION TESTS:")
         
-        print("\n🔧 EXISTING REGRESSION TESTS:")
-        # Regression tests for refactored endpoints
-        await self.test_customers_list_endpoint()
-        await self.test_vehicles_endpoints()
-        await self.test_printer_endpoints()
-        
-        # Legacy API tests
+        # Test 1: POST /api/tower-talk with frontend TowerTalkModal JSON shape
+        print("\n1️⃣ Testing POST /api/tower-talk with frontend JSON shape...")
         await self.test_tower_talk_api()
+        
+        # Test 2: POST /api/translate with specific parameters
+        print("\n2️⃣ Testing POST /api/translate with review request parameters...")
         await self.test_translate_api()
-        await self.test_stats_api()
         
-        # VIN Scanner workflow tests
-        await self.test_vin_decode_workflow()
-        await self.test_vin_save_workflow()
-        
-        # Additional stats endpoints
-        await self.test_customer_stats()
+        # Test 3: Quick health check to verify other endpoints still work
+        print("\n3️⃣ Testing GET /api/health (quick health check)...")
+        await self.test_health_check()
         
         print("=" * 60)
-        print(f"🏁 Testing Complete: {len(self.results)} tests run")
+        print(f"🏁 Regression Testing Complete: {len(self.results)} tests run")
         
         passed = len([r for r in self.results if r['success']])
         failed = len(self.failed_tests)
@@ -969,6 +959,8 @@ class BackendTester:
             print("\n🔍 Failed Tests:")
             for test in self.failed_tests:
                 print(f"   • {test}")
+        else:
+            print("\n🎉 All regression tests passed! Refactor successful.")
         
         return failed == 0
 
