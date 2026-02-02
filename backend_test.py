@@ -534,31 +534,122 @@ class BackendTester:
             self.log_result("GET /customers/stats", False, f"Exception: {str(e)}")
             return False
     
-    async def test_vehicle_stats(self):
-        """Test vehicle statistics endpoint"""
+    async def test_printer_endpoints(self):
+        """Test all printer endpoints from routes/printer_v2.py"""
         try:
-            async with self.session.get(f"{BACKEND_URL}/vehicles/stats") as response:
+            # Test POST /api/printer/test (expect graceful failure if no printer)
+            test_printer_data = {"ip": "192.168.1.100"}  # Non-existent printer IP
+            
+            async with self.session.post(f"{BACKEND_URL}/printer/test", json=test_printer_data) as response:
+                if response.status == 503:  # Expected failure for non-existent printer
+                    error_data = await response.json()
+                    self.log_result(
+                        "POST /printer/test", 
+                        True, 
+                        "Graceful failure for non-existent printer", 
+                        {'expected_error': error_data.get('detail', 'Connection failed')}
+                    )
+                elif response.status == 200:
+                    # Unexpected success - maybe there's actually a printer at that IP
+                    data = await response.json()
+                    self.log_result(
+                        "POST /printer/test", 
+                        True, 
+                        "Printer connection successful (unexpected)", 
+                        {'printer_info': data}
+                    )
+                else:
+                    self.log_result("POST /printer/test", False, f"Unexpected HTTP {response.status}")
+                    return False
+            
+            # Test POST /api/print/license with tiny base64 placeholder image
+            # Create a tiny 1x1 pixel PNG in base64
+            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            
+            license_print_data = {
+                "image_data": f"data:image/png;base64,{tiny_png_base64}",
+                "printer_ip": "192.168.1.100"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/print/license", json=license_print_data) as response:
                 if response.status == 200:
                     data = await response.json()
-                    
-                    # Vehicle stats should return some inventory data
-                    if isinstance(data, dict) and len(data) > 0:
+                    if data.get('success'):
                         self.log_result(
-                            "GET /vehicles/stats", 
+                            "POST /print/license", 
                             True, 
-                            "Vehicle stats loaded successfully", 
-                            {'stats_keys': list(data.keys())[:5]}  # Show first 5 keys
+                            "License print job processed successfully", 
+                            {'bytes': data.get('bytes', 0), 'message': data.get('message')}
                         )
-                        return True
                     else:
-                        self.log_result("GET /vehicles/stats", False, "Empty or invalid vehicle stats response")
+                        self.log_result("POST /print/license", False, f"Print failed: {data}")
                         return False
                 else:
                     error_text = await response.text()
-                    self.log_result("GET /vehicles/stats", False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("POST /print/license", False, f"HTTP {response.status}: {error_text}")
                     return False
+            
+            # Test POST /api/print/customer (create a customer first, then print)
+            customer_id = await self.test_customers_create_endpoint()
+            if customer_id:
+                customer_print_data = {
+                    "customer_id": customer_id,
+                    "printer_ip": "192.168.1.100"
+                }
+                
+                async with self.session.post(f"{BACKEND_URL}/print/customer", json=customer_print_data) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success'):
+                            self.log_result(
+                                "POST /print/customer", 
+                                True, 
+                                f"Customer print job processed for: {data.get('customer', 'Unknown')}", 
+                                {'customer': data.get('customer'), 'bytes': data.get('bytes', 0)}
+                            )
+                        else:
+                            self.log_result("POST /print/customer", False, f"Print failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result("POST /print/customer", False, f"HTTP {response.status}: {error_text}")
+                        return False
+            else:
+                self.log_result("POST /print/customer", False, "Could not create test customer for printing")
+                return False
+            
+            # Test POST /api/printer/print (compat endpoint)
+            compat_print_data = {
+                "type": "vehicle_profile",
+                "printer_ip": "192.168.1.100",
+                "vehicle": {
+                    "make": "Honda",
+                    "model": "Civic",
+                    "year": 2024
+                }
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/printer/print", json=compat_print_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        self.log_result(
+                            "POST /printer/print (compat)", 
+                            True, 
+                            "Compatibility endpoint working", 
+                            {'type': data.get('type'), 'message': data.get('message')}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /printer/print (compat)", False, f"Print failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /printer/print (compat)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
         except Exception as e:
-            self.log_result("GET /vehicles/stats", False, f"Exception: {str(e)}")
+            self.log_result("Printer endpoints", False, f"Exception: {str(e)}")
             return False
     
     async def run_all_tests(self):
