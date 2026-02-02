@@ -10,6 +10,9 @@ import SetupModal from './components/SetupModal';
 import ImportModal from './components/ImportModal';
 
 const AdminSettingsPanel = lazy(() => import('./components/AdminSettingsPanel'));
+const VoiceTranslator = lazy(() => import('./components/VoiceTranslator'));
+const PerformanceMonitor = lazy(() => import('./components/PerformanceMonitor'));
+
 // Lazy-loaded below for bundle size
 
 import QuickAddButton from './components/QuickAddButton';
