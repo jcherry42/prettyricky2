@@ -99,7 +99,23 @@ const BatchVinScanModal = ({ isOpen, onClose }) => {
             prev.map((q) => (q.vin === item.vin ? { ...q, status: 'done', vehicle } : q))
           );
         } catch (e) {
-          setQueue((prev) => prev.map((q) => (q.vin === item.vin ? { ...q, status: 'error', error: e.message } : q)));
+          const msg = String(e?.message || '');
+          const offlineHint =
+            !navigator.onLine ||
+            msg.toLowerCase().includes('failed to fetch') ||
+            msg.toLowerCase().includes('network');
+
+          setQueue((prev) =>
+            prev.map((q) =>
+              q.vin === item.vin
+                ? {
+                    ...q,
+                    status: 'error',
+                    error: offlineHint ? 'Offline: VIN decode needs internet' : msg,
+                  }
+                : q
+            )
+          );
         }
       }
 
