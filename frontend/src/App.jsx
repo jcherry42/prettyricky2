@@ -48,6 +48,21 @@ function AppContent() {
   const autoReducedEffects = useReducedEffects();
   const [showPerfMonitor, setShowPerfMonitor] = useState(false);
 
+
+  // PWA update + online/offline state
+  usePwaUpdate();
+  const isOnline = useOnlineStatus();
+
+  useEffect(() => {
+    if (!isOnline) {
+      // Intentional messaging: offline is a supported state.
+      // We keep it informational and non-blocking.
+      // (Workflows like VIN decode + Tower Talk will surface their own offline messages.)
+      // eslint-disable-next-line no-undef
+      // toast is not imported here; keep AppContent lean.
+    }
+  }, [isOnline]);
+
   // Adaptive swirl intensity: more prominent on the home surface, calmer behind any modal.
   // NOTE: some modals are owned by Header (Command Center, Intake Hub, Local Inventory),
   // so we detect them by presence of their overlay elements.
