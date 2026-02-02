@@ -154,6 +154,24 @@ export const AdminSettingsPanel = ({ onClose }) => {
     }
   }, []);
 
+  // Load sound prefs on mount (lazy-load sound module for code-splitting)
+  useEffect(() => {
+    let mounted = true;
+    loadSoundModule()
+      .then((mod) => {
+        if (!mounted) return;
+        if (typeof mod.getSoundPreferences === 'function') {
+          setSoundPrefs(mod.getSoundPreferences());
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+
   const handleDealershipSave = () => {
     setDealership(dealershipForm);
     setSalesperson(salespersonForm);
