@@ -179,14 +179,19 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
 
         const vins = extractVins(data?.text || '');
 
-        setRecognized(vins);
+        const best = pickBestVin(vins);
+        const ordered = best ? [best.vin, ...vins.filter((v) => v !== best.vin)] : vins;
 
-        if (vins.length === 0) {
+        setRecognized(ordered);
+
+        if (ordered.length === 0) {
           toast.error('No VIN detected', {
             description: 'Try moving closer, reducing glare, and keeping the VIN plate centered in the guide box.',
           });
         } else {
-          toast.success('VIN detected', { description: vins[0] });
+          toast.success('VIN detected', {
+            description: `${ordered[0]}${best?.score ? ` (confidence ${best.score}%)` : ''}`,
+          });
         }
       } catch (err) {
         toast.error('VIN recognition failed', { description: err?.message || 'Unknown error' });
