@@ -150,12 +150,7 @@ function AppContent() {
       {/* Prominent on the home surface; adaptively dampened while modals are open */}
       <DesignoSwirlBackground prominence={swirlProminence} intensity={swirlIntensity} reduced={reducedEffects} />
 
-      {/* Ambient lighting overlay */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-orange-500/[0.03] to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-cyan-500/[0.02] to-transparent" />
-      </div>
+      {/* Ambient lighting overlay removed (performance) */}
       
       {/* Skip Link for Accessibility */}
       <a href="#main-content" className="skip-link">
