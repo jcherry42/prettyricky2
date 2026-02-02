@@ -263,6 +263,7 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
   }, [cleanupStream, destroyWorker, initCamera, isOpen]);
 
   const primaryVin = recognized[0] || null;
+  const primaryScore = useMemo(() => (primaryVin ? pickBestVin([primaryVin])?.score || 0 : 0), [primaryVin]);
 
   const canUseDetected = useMemo(() => {
     return Boolean(primaryVin) && !isProcessing;
