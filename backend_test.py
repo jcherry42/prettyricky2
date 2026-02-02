@@ -20,6 +20,7 @@ class BackendTester:
         self.session = None
         self.results = []
         self.failed_tests = []
+        self.test_image_url = None  # Store image_url from license scan for customer creation test
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
