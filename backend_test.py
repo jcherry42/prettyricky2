@@ -534,6 +534,233 @@ class BackendTester:
             self.log_result("GET /customers/stats", False, f"Exception: {str(e)}")
             return False
     
+    async def test_license_scan_pipeline(self):
+        """Test license scan pipeline with small and normal images"""
+        try:
+            # Test 1: Very small image payload - should return success=false BUT include image_url
+            # Create a very small 1x1 pixel PNG (under 10KB threshold)
+            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            
+            # Convert base64 to bytes for file upload
+            import base64
+            import io
+            tiny_image_bytes = base64.b64decode(tiny_png_base64)
+            
+            # Create multipart form data for small image
+            form_data = aiohttp.FormData()
+            form_data.add_field('image', io.BytesIO(tiny_image_bytes), filename='tiny_license.png', content_type='image/png')
+            
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    # Should return success=false but MUST include image_url
+                    if not data.get('success') and data.get('image_url'):
+                        self.log_result(
+                            "POST /license/scan (small image)", 
+                            True, 
+                            f"Small image correctly failed OCR but preserved image_url: {data.get('image_url')}", 
+                            {'success': data.get('success'), 'image_url': data.get('image_url'), 'error': data.get('error')}
+                        )
+                    else:
+                        self.log_result("POST /license/scan (small image)", False, f"Expected success=false with image_url, got: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/scan (small image)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test 2: Normal sized image - should return 200 and include image_url
+            # Create a larger test image (simulate normal license photo)
+            normal_image_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde' + b'\x00' * 15000  # ~15KB image
+            
+            form_data = aiohttp.FormData()
+            form_data.add_field('image', io.BytesIO(normal_image_data), filename='normal_license.png', content_type='image/png')
+            
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    # Should include image_url regardless of OCR success
+                    if data.get('image_url'):
+                        self.log_result(
+                            "POST /license/scan (normal image)", 
+                            True, 
+                            f"Normal image processed and returned image_url: {data.get('image_url')}", 
+                            {'success': data.get('success'), 'image_url': data.get('image_url'), 'confidence': data.get('confidence')}
+                        )
+                        
+                        # Store image_url for customer creation test
+                        self.test_image_url = data.get('image_url')
+                        return True
+                    else:
+                        self.log_result("POST /license/scan (normal image)", False, f"Expected image_url in response, got: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/scan (normal image)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("License scan pipeline", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_license_customer_creation(self):
+        """Test customer creation from license using image_url from scan"""
+        try:
+            # Use image_url from previous scan test
+            if not hasattr(self, 'test_image_url') or not self.test_image_url:
+                self.log_result("POST /license/create-customer", False, "No image_url available from scan test")
+                return False
+            
+            # Create multipart form data for customer creation
+            form_data = aiohttp.FormData()
+            form_data.add_field('first_name', 'John')
+            form_data.add_field('last_name', 'Doe')
+            form_data.add_field('address', '123 Main St')
+            form_data.add_field('city', 'Austin')
+            form_data.add_field('state', 'TX')
+            form_data.add_field('zip_code', '78701')
+            form_data.add_field('image_url', self.test_image_url)
+            
+            async with self.session.post(f"{BACKEND_URL}/license/create-customer", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success') and data.get('customer'):
+                        customer = data.get('customer', {})
+                        self.log_result(
+                            "POST /license/create-customer", 
+                            True, 
+                            f"Customer created successfully: {customer.get('name')}", 
+                            {'customer_id': customer.get('id'), 'name': customer.get('name'), 'image_url': customer.get('license_image_url')}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /license/create-customer", False, f"Customer creation failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/create-customer", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("POST /license/create-customer", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_quality_audit_endpoints(self):
+        """Test quality audit endpoints for production readiness"""
+        try:
+            # Test GET /api/health
+            async with self.session.get(f"{BACKEND_URL}/health") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /health (quality audit)", 
+                        True, 
+                        f"Health check passed: {data.get('status')}", 
+                        {'status': data.get('status'), 'timestamp': data.get('timestamp')}
+                    )
+                else:
+                    self.log_result("GET /health (quality audit)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test GET /api/dashboard/stats (analytics dashboard)
+            async with self.session.get(f"{BACKEND_URL}/analytics/dashboard") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /dashboard/stats (quality audit)", 
+                        True, 
+                        "Dashboard stats endpoint responding", 
+                        {'sections': list(data.keys())[:5] if isinstance(data, dict) else []}
+                    )
+                else:
+                    # Try alternative endpoint
+                    async with self.session.get(f"{BACKEND_URL}/customers/stats") as alt_response:
+                        if alt_response.status == 200:
+                            alt_data = await alt_response.json()
+                            self.log_result(
+                                "GET /dashboard/stats (quality audit)", 
+                                True, 
+                                "Dashboard stats available via /customers/stats", 
+                                {'total': alt_data.get('total'), 'byStatus': alt_data.get('byStatus')}
+                            )
+                        else:
+                            self.log_result("GET /dashboard/stats (quality audit)", False, f"HTTP {response.status}")
+                            return False
+            
+            # Test GET /api/customers/list
+            async with self.session.get(f"{BACKEND_URL}/customers") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /customers/list (quality audit)", 
+                        True, 
+                        f"Customers list endpoint responding with {data.get('count', 0)} customers", 
+                        {'count': data.get('count', 0)}
+                    )
+                else:
+                    self.log_result("GET /customers/list (quality audit)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test GET /api/vehicles
+            async with self.session.get(f"{BACKEND_URL}/vehicles") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /vehicles (quality audit)", 
+                        True, 
+                        f"Vehicles endpoint responding with {data.get('count', 0)} vehicles", 
+                        {'count': data.get('count', 0)}
+                    )
+                else:
+                    self.log_result("GET /vehicles (quality audit)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test GET /api/translate
+            translate_payload = {
+                "text": "Hello world",
+                "source_lang": "en",
+                "target_lang": "es"
+            }
+            async with self.session.post(f"{BACKEND_URL}/translate", json=translate_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /translate (quality audit)", 
+                        True, 
+                        f"Translation endpoint responding: {data.get('translated_text', '')[:50]}", 
+                        {'translated': data.get('translated_text', '')[:50]}
+                    )
+                else:
+                    self.log_result("GET /translate (quality audit)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test GET /api/tower-talk
+            tower_talk_payload = {
+                "situation": "Customer inquiry about pricing",
+                "context": {
+                    "customerName": "Test Customer",
+                    "vehicle": "2024 Honda Civic",
+                    "dealershipName": "Test Dealership"
+                }
+            }
+            async with self.session.post(f"{BACKEND_URL}/tower-talk", json=tower_talk_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /tower-talk (quality audit)", 
+                        True, 
+                        f"Tower Talk endpoint responding with {len(data.get('response', ''))} chars", 
+                        {'response_length': len(data.get('response', ''))}
+                    )
+                    return True
+                else:
+                    self.log_result("GET /tower-talk (quality audit)", False, f"HTTP {response.status}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("Quality audit endpoints", False, f"Exception: {str(e)}")
+            return False
+
     async def test_printer_endpoints(self):
         """Test all printer endpoints from routes/printer_v2.py"""
         try:
