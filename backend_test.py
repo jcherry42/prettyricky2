@@ -1510,11 +1510,13 @@ class BackendTester:
 async def main():
     """Main test runner"""
     async with BackendTester() as tester:
-        success = await tester.run_all_tests()
+        # Run cleanup regression tests as requested in review
+        success = await tester.run_cleanup_regression_tests()
         
         # Save detailed results
         with open('/app/backend_test_results.json', 'w') as f:
             json.dump({
+                'test_type': 'cleanup_regression',
                 'timestamp': datetime.now().isoformat(),
                 'backend_url': BACKEND_URL,
                 'total_tests': len(tester.results),
