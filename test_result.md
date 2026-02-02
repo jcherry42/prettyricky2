@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Tower Talk + Translation refactor regression testing (routes/tower_talk_v2.py)"
+    - "De-monolith regression testing for customers + vin endpoints"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
