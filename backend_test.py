@@ -156,9 +156,10 @@ class BackendTester:
             self.log_result("POST /customers/create", False, f"Exception: {str(e)}")
             return None
     
-    async def test_vehicles_api(self):
-        """Test GET /api/vehicles endpoint"""
+    async def test_vehicles_endpoints(self):
+        """Test all vehicle endpoints from routes/vehicles_v2.py"""
         try:
+            # Test GET /api/vehicles
             async with self.session.get(f"{BACKEND_URL}/vehicles") as response:
                 if response.status == 200:
                     data = await response.json()
@@ -170,12 +171,115 @@ class BackendTester:
                         f"Retrieved {count} vehicles", 
                         {'count': count, 'sample': vehicles[:2] if vehicles else []}
                     )
-                    return True
                 else:
                     self.log_result("GET /vehicles", False, f"HTTP {response.status}")
                     return False
+            
+            # Test GET /api/vehicles/stats
+            async with self.session.get(f"{BACKEND_URL}/vehicles/stats") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /vehicles/stats", 
+                        True, 
+                        "Vehicle stats retrieved successfully", 
+                        {'stats_keys': list(data.keys())[:5] if isinstance(data, dict) else []}
+                    )
+                else:
+                    self.log_result("GET /vehicles/stats", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test GET /api/vehicles/inventory
+            async with self.session.get(f"{BACKEND_URL}/vehicles/inventory") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    vehicles = data.get('vehicles', [])
+                    counts = data.get('counts', {})
+                    self.log_result(
+                        "GET /vehicles/inventory", 
+                        True, 
+                        f"Retrieved inventory: {counts.get('total', 0)} total vehicles", 
+                        {'counts': counts, 'vehicle_count': len(vehicles)}
+                    )
+                else:
+                    self.log_result("GET /vehicles/inventory", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test POST /api/vehicles/create
+            test_vehicle = {
+                "make": "Toyota",
+                "model": "Camry",
+                "year": 2024,
+                "trim": "LE",
+                "category": "active_inventory",
+                "price": 28500.00,
+                "mileage": 15,
+                "color": "Silver",
+                "stock_number": "TOY2024001"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/vehicles/create", json=test_vehicle) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        vehicle = data.get('vehicle', {})
+                        vehicle_id = vehicle.get('id')
+                        self.log_result(
+                            "POST /vehicles/create", 
+                            True, 
+                            f"Created vehicle: {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')}", 
+                            {'vehicle_id': vehicle_id, 'stock_number': vehicle.get('stock_number')}
+                        )
+                        
+                        # Test PATCH /api/vehicles/{id}
+                        if vehicle_id:
+                            update_data = {"price": 29000.00, "notes": "Updated price"}
+                            async with self.session.patch(f"{BACKEND_URL}/vehicles/{vehicle_id}", json=update_data) as patch_response:
+                                if patch_response.status == 200:
+                                    patch_data = await patch_response.json()
+                                    if patch_data.get('success'):
+                                        self.log_result(
+                                            "PATCH /vehicles/{id}", 
+                                            True, 
+                                            "Vehicle updated successfully", 
+                                            {'updated_fields': patch_data.get('updated', {})}
+                                        )
+                                    else:
+                                        self.log_result("PATCH /vehicles/{id}", False, f"Update failed: {patch_data}")
+                                        return False
+                                else:
+                                    self.log_result("PATCH /vehicles/{id}", False, f"HTTP {patch_response.status}")
+                                    return False
+                            
+                            # Test DELETE /api/vehicles/{id}
+                            async with self.session.delete(f"{BACKEND_URL}/vehicles/{vehicle_id}") as delete_response:
+                                if delete_response.status == 200:
+                                    delete_data = await delete_response.json()
+                                    if delete_data.get('success'):
+                                        self.log_result(
+                                            "DELETE /vehicles/{id}", 
+                                            True, 
+                                            "Vehicle deleted successfully", 
+                                            {'vehicle_id': vehicle_id}
+                                        )
+                                    else:
+                                        self.log_result("DELETE /vehicles/{id}", False, f"Delete failed: {delete_data}")
+                                        return False
+                                else:
+                                    self.log_result("DELETE /vehicles/{id}", False, f"HTTP {delete_response.status}")
+                                    return False
+                        
+                        return True
+                    else:
+                        self.log_result("POST /vehicles/create", False, f"Create failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /vehicles/create", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
         except Exception as e:
-            self.log_result("GET /vehicles", False, f"Exception: {str(e)}")
+            self.log_result("Vehicle endpoints", False, f"Exception: {str(e)}")
             return False
     
     async def test_tower_talk_api(self):
