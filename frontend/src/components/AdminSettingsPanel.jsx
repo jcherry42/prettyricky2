@@ -847,7 +847,11 @@ export const AdminSettingsPanel = ({ onClose }) => {
                             setNotificationPermission(perm);
                             if (perm === 'granted') {
                               toast.success('Browser notifications enabled!');
-                              playNotificationSound();
+                              loadSoundModule()
+                                .then((mod) => {
+                                  mod.playNotificationSound?.();
+                                })
+                                .catch(() => {});
                             }
                           }}
                           disabled={notificationPermission === 'granted'}
