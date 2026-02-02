@@ -65,27 +65,96 @@ class BackendTester:
             self.log_result("Health Check", False, f"Exception: {str(e)}")
             return False
     
-    async def test_customers_api(self):
-        """Test GET /api/customers endpoint"""
+    async def test_customers_list_endpoint(self):
+        """Test GET /api/customers/list endpoint with limit and search"""
         try:
-            async with self.session.get(f"{BACKEND_URL}/customers") as response:
+            # Test basic list
+            async with self.session.get(f"{BACKEND_URL}/customers/list") as response:
                 if response.status == 200:
                     data = await response.json()
                     customers = data.get('customers', [])
                     count = data.get('count', 0)
                     self.log_result(
-                        "GET /customers", 
+                        "GET /customers/list (basic)", 
                         True, 
                         f"Retrieved {count} customers", 
                         {'count': count, 'sample': customers[:2] if customers else []}
                     )
+                else:
+                    self.log_result("GET /customers/list (basic)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test with limit parameter
+            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=5") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get('customers', [])
+                    self.log_result(
+                        "GET /customers/list (limit=5)", 
+                        True, 
+                        f"Retrieved {len(customers)} customers with limit", 
+                        {'count': len(customers)}
+                    )
+                else:
+                    self.log_result("GET /customers/list (limit=5)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test search functionality (should not 500 even with null fields)
+            async with self.session.get(f"{BACKEND_URL}/customers/list?search=test") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get('customers', [])
+                    self.log_result(
+                        "GET /customers/list (search)", 
+                        True, 
+                        f"Search returned {len(customers)} customers", 
+                        {'search_term': 'test', 'results': len(customers)}
+                    )
                     return True
                 else:
-                    self.log_result("GET /customers", False, f"HTTP {response.status}")
+                    self.log_result("GET /customers/list (search)", False, f"HTTP {response.status}")
                     return False
         except Exception as e:
-            self.log_result("GET /customers", False, f"Exception: {str(e)}")
+            self.log_result("GET /customers/list", False, f"Exception: {str(e)}")
             return False
+
+    async def test_customers_create_endpoint(self):
+        """Test POST /api/customers/create endpoint"""
+        try:
+            # Create a test customer with realistic data
+            test_customer = {
+                "first_name": "Maria",
+                "last_name": "Rodriguez",
+                "phone": "555-0123",
+                "email": "maria.rodriguez@email.com",
+                "address": "123 Main St, Austin, TX 78701",
+                "lead_source": "web",
+                "lead_status": "new",
+                "notes": "Interested in SUVs"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=test_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        customer = data.get('customer', {})
+                        self.log_result(
+                            "POST /customers/create", 
+                            True, 
+                            f"Created customer: {customer.get('name', 'Unknown')}", 
+                            {'customer_id': customer.get('id'), 'name': customer.get('name')}
+                        )
+                        return customer.get('id')  # Return ID for use in other tests
+                    else:
+                        self.log_result("POST /customers/create", False, f"Create failed: {data}")
+                        return None
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /customers/create", False, f"HTTP {response.status}: {error_text}")
+                    return None
+        except Exception as e:
+            self.log_result("POST /customers/create", False, f"Exception: {str(e)}")
+            return None
     
     async def test_vehicles_api(self):
         """Test GET /api/vehicles endpoint"""
