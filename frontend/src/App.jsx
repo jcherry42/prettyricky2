@@ -8,7 +8,9 @@ import TowerTalkButton from './components/TowerTalkButton';
 import TowerTalkModal from './components/TowerTalkModal';
 import SetupModal from './components/SetupModal';
 import ImportModal from './components/ImportModal';
-import AdminSettingsPanel from './components/AdminSettingsPanel';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
+
+const AdminSettingsPanel = lazy(() => import('./components/AdminSettingsPanel'));
 import VoiceTranslator from './components/VoiceTranslator';
 import QuickAddButton from './components/QuickAddButton';
 import { Toaster } from './components/ui/sonner';
