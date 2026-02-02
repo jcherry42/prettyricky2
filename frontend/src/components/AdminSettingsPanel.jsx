@@ -7,13 +7,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSales } from '../context/SalesContext';
-import { 
-  playNotificationSound, 
-  requestNotificationPermission,
-  getSoundPreferences, 
-  setSoundPreferences,
-  getSoundProfiles
-} from '../utils/notificationSound';
+import { toast } from 'sonner';
+import { useSales } from '../context/SalesContext';
+
+const loadSoundModule = () => import('../utils/notificationSound');
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
