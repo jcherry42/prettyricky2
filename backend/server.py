@@ -2380,6 +2380,8 @@ async def get_event_types():
 # ============== VIN DECODER (Multi-Source Cross Reference) ==============
 # (moved to routes/vin_v2.py)
 
+import httpx
+
 
 # ============== FAVORITES CATEGORIES ==============
 
