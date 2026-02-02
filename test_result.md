@@ -118,6 +118,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Production gates regression testing - License scan pipeline"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🔍 PRODUCTION GATES REGRESSION TEST COMPLETED - CRITICAL ISSUE FOUND: Conducted comprehensive testing of production gates as requested. ✅ SMALL IMAGE SCAN: POST /api/license/scan with very small image correctly returns success=false BUT includes image_url (/api/uploads/license_*.png) - production gate fix working for low-quality images. ❌ NORMAL IMAGE SCAN: POST /api/license/scan with normal-sized image fails OCR due to Vision API rejection and does NOT return image_url - production gate fix incomplete. The exception handler in server.py lines 972-987 catches Vision API errors but doesn't preserve the image_url that was already saved. ✅ CUSTOMER CREATION: POST /api/license/create-customer successfully creates customer using image_url from scan (tested with small image URL). ✅ QUALITY AUDIT ENDPOINTS: All endpoints responding correctly - GET /api/health (healthy status), GET /api/dashboard/stats (analytics working), GET /api/customers (38 customers), GET /api/vehicles (16 vehicles), POST /api/translate (Spanish translation working), POST /api/tower-talk (AI responses generating). RECOMMENDATION: Update exception handler in /api/license/scan to preserve image_url even when OCR fails for normal-sized images."
+
   - task: "Customer endpoints regression testing"
     implemented: true
     working: true
