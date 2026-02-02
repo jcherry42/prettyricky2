@@ -202,6 +202,8 @@ backend:
     message: "Feb 2 2026: Frontend regression PASS for PWA update flow hooks + offline UX messaging + VIN scanner confidence scoring. App loads; virtual:pwa-register does not crash; offline toasts/messages behave; Intake VIN + batch VIN error messaging improved; Tower Talk offline error improved; VinWindshieldScanner shows confidence/ordering when VINs detected."
     implemented: true
     working: true
+  - agent: "testing"
+    message: "Feb 2 2026: iPhone/mobile regression PASS. SPORT mode: translate buttons clickable, Tower Talk generates, VoiceTranslator translate accessible. Command Center Settings spacing improved. Intake Hub secondary menus reachable on mobile. Quick Add/Add Customer modals scroll correctly with keyboard."
     file: "/app/backend/routes/printer_v2.py"
     stuck_count: 0
   - agent: "testing"
