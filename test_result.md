@@ -174,6 +174,8 @@ frontend:
     implemented: true
     working: true
     file: "/app/frontend/src/components/Header.jsx, /app/frontend/src/components/CommandCenter.jsx, /app/frontend/src/components/AdminSettingsPanel.jsx"
+  - agent: "testing"
+    message: "Feb 2 2026: Frontend regression after performance chunking PASS. Verified home load, Command Center Settings renders, Engine Sound Profile toggle/buttons work with lazy-loaded notificationSound module, SPORT toggle works, Intake VIN workflow opens. No console errors. Vite build now emits notificationSound chunk + react/ocr manual chunks; main chunk reduced but still >500KB warning."
     stuck_count: 0
     priority: "high"
     needs_retesting: false
