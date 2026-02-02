@@ -792,8 +792,12 @@ export const AdminSettingsPanel = ({ onClose }) => {
                               onClick={() => {
                                 const newPrefs = { ...soundPrefs, profile: profile.id };
                                 setSoundPrefs(newPrefs);
-                                setSoundPreferences(newPrefs);
-                                playNotificationSound(profile.id);
+                                loadSoundModule()
+                                  .then((mod) => {
+                                    mod.setSoundPreferences?.(newPrefs);
+                                    mod.playNotificationSound?.(profile.id);
+                                  })
+                                  .catch(() => {});
                               }}
                               className={`flex items-center gap-3 p-3 rounded-lg text-left transition-all ${
                                 soundPrefs.profile === profile.id
