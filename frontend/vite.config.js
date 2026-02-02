@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['vite.svg', 'sounds/*.wav', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-512x512.svg'],
+      includeAssets: ['vite.svg', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-512x512.svg'],
       manifest: {
         name: "Supercharg'd",
         short_name: "Supercharg'd",
