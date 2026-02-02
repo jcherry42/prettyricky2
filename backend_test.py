@@ -551,7 +551,9 @@ class BackendTester:
             form_data = aiohttp.FormData()
             form_data.add_field('image', io.BytesIO(tiny_image_bytes), filename='tiny_license.png', content_type='image/png')
             
-            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data) as response:
+            # Remove Content-Type header for multipart upload
+            headers = {}
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers=headers) as response:
                 if response.status == 200:
                     data = await response.json()
                     # Should return success=false but MUST include image_url
@@ -572,12 +574,32 @@ class BackendTester:
             
             # Test 2: Normal sized image - should return 200 and include image_url
             # Create a larger test image (simulate normal license photo)
-            normal_image_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x08\x02\x00\x00\x00\x90wS\xde' + b'\x00' * 15000  # ~15KB image
+            # Generate a proper PNG header with larger dimensions
+            import struct
+            
+            # Create a simple 100x100 PNG with proper header
+            width, height = 100, 100
+            png_header = b'\x89PNG\r\n\x1a\n'
+            ihdr_data = struct.pack('>IIBBBBB', width, height, 8, 2, 0, 0, 0)
+            ihdr_crc = 0x9578cb6b  # Pre-calculated CRC for this IHDR
+            ihdr_chunk = b'IHDR' + ihdr_data
+            ihdr_full = struct.pack('>I', len(ihdr_data)) + ihdr_chunk + struct.pack('>I', ihdr_crc)
+            
+            # Add some image data (simplified)
+            image_data = b'\x00' * (width * height * 3)  # RGB data
+            idat_chunk = b'IDAT' + image_data
+            idat_crc = 0x12345678  # Simplified CRC
+            idat_full = struct.pack('>I', len(image_data)) + idat_chunk + struct.pack('>I', idat_crc)
+            
+            # End chunk
+            iend_full = struct.pack('>I', 0) + b'IEND' + struct.pack('>I', 0xae426082)
+            
+            normal_image_data = png_header + ihdr_full + idat_full + iend_full
             
             form_data = aiohttp.FormData()
             form_data.add_field('image', io.BytesIO(normal_image_data), filename='normal_license.png', content_type='image/png')
             
-            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data) as response:
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers={}) as response:
                 if response.status == 200:
                     data = await response.json()
                     # Should include image_url regardless of OCR success
