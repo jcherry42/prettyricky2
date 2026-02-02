@@ -843,16 +843,16 @@ export const AdminSettingsPanel = ({ onClose }) => {
                         </div>
                         <button
                           onClick={async () => {
-                            const perm = await requestNotificationPermission();
-                            setNotificationPermission(perm);
-                            if (perm === 'granted') {
-                              toast.success('Browser notifications enabled!');
-                              loadSoundModule()
-                                .then((mod) => {
+                            loadSoundModule()
+                              .then(async (mod) => {
+                                const perm = await (mod.requestNotificationPermission?.() || Promise.resolve('default'));
+                                setNotificationPermission(perm);
+                                if (perm === 'granted') {
+                                  toast.success('Browser notifications enabled!');
                                   mod.playNotificationSound?.();
-                                })
-                                .catch(() => {});
-                            }
+                                }
+                              })
+                              .catch(() => {});
                           }}
                           disabled={notificationPermission === 'granted'}
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
