@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { X, Camera, Image as ImageIcon, Loader2, RotateCcw, Zap } from 'lucide-react';
 import { createWorker } from 'tesseract.js';
 import { toast } from 'sonner';
+import { pickBestVin } from '../utils/vinOcrScoring';
 
 // Strict VIN constraints
 const VIN_REGEX = /[A-HJ-NPR-Z0-9]{17}/g;
