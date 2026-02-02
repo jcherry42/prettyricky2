@@ -186,6 +186,8 @@ backend:
     working: true
     file: "/app/backend/routes/printer_v2.py"
     stuck_count: 0
+  - agent: "testing"
+    message: "Feb 2 2026: Full backend regression PASS after finishing de-monolith for customers + vin. Verified customers merged list/search/stats/list CRUD + attach/detach; VIN decode/save/save-to-inventory with duplicate 409; tower-talk + translate OK; vehicles endpoints OK; printer test graceful fail; license scan endpoints OK."
     priority: "high"
     needs_retesting: false
     status_history:
