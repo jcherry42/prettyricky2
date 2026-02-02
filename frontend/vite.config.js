@@ -115,6 +115,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Keep vendor stable and cacheable
+          react: ['react', 'react-dom'],
+
+          // Heavy/optional subsystems
+          ocr: ['tesseract.js'],
+        },
+      },
+    },
   },
   css: {
     postcss: './postcss.config.js',
