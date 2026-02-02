@@ -92,7 +92,15 @@ const IntakeHub = ({ isOpen, onClose, onOpenLicenseScanner }) => {
         description: `${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''}`.trim()
       });
     } catch (err) {
-      toast.error('VIN decode failed', { description: err.message });
+      const msg = String(err?.message || '');
+      const offlineHint =
+        !navigator.onLine ||
+        msg.toLowerCase().includes('failed to fetch') ||
+        msg.toLowerCase().includes('network');
+
+      toast.error(offlineHint ? 'Offline: VIN decode needs internet' : 'VIN decode failed', {
+        description: offlineHint ? 'Try again when you have signal.' : msg,
+      });
     } finally {
       setDecoding(false);
     }
