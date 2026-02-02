@@ -349,6 +349,13 @@ const VinWindshieldScanner = ({ isOpen, onClose, onVinDetected }) => {
                   <Zap className="w-4 h-4" />
                   Detected VINs
                 </div>
+                {recognized.length > 0 && !isProcessing && (
+                  <div className="vinws-confidence">
+                    Confidence: {Math.min(100, Math.max(0, primaryScore))}%
+                    {primaryScore >= 80 ? '  checksum verified' : ''}
+                  </div>
+                )}
+
 
                 {isProcessing ? (
                   <div className="vinws-processing">
