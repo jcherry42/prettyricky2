@@ -4,6 +4,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
+  // Force environment variable replacement for Capacitor builds
+  define: {
+    'import.meta.env.VITE_BACKEND_URL': JSON.stringify(
+      process.env.VITE_BACKEND_URL || 'https://superchargd.preview.emergentagent.com'
+    )
+  },
   plugins: [
     react(),
     VitePWA({

@@ -16,24 +16,30 @@ export function normalizeBackendUrl(url) {
 
 export function getBackendUrl() {
   // 1. Build-time injected Vite env variable (CRITICAL for Capacitor builds)
-  // This MUST be set in .env or .env.production files
-  const envUrl = normalizeBackendUrl(import.meta.env.VITE_BACKEND_URL);
+  // Multiple fallback mechanisms for Capacitor 6 + Vite 7 compatibility
+  const rawEnvUrl = import.meta.env.VITE_BACKEND_URL;
   
-  // Log for debugging in development
-  if (import.meta.env.DEV) {
+  // Fallback for iOS Capacitor runtime where import.meta.env may not work
+  const hardcodedFallback = 'https://superchargd.preview.emergentagent.com';
+  
+  const envUrl = normalizeBackendUrl(rawEnvUrl || hardcodedFallback);
+  
+  // Log for debugging - ALWAYS log in Capacitor builds
+  if (import.meta.env.DEV || isCapacitorOrigin()) {
     console.log('[BackendURL Debug]', {
-      rawEnv: import.meta.env.VITE_BACKEND_URL,
+      rawEnv: rawEnvUrl,
       normalized: envUrl,
+      usedFallback: !rawEnvUrl,
       isCapacitor: isCapacitorOrigin(),
       mode: import.meta.env.MODE,
-      allEnvVars: import.meta.env
+      protocol: typeof window !== 'undefined' ? window.location.protocol : 'N/A'
     });
   }
   
   if (envUrl) {
     // In Capacitor builds, always log the backend URL for verification
     if (isCapacitorOrigin()) {
-      console.log('[BackendURL] Using build-time URL in Capacitor:', envUrl);
+      console.log('[BackendURL] Using backend URL in Capacitor:', envUrl, rawEnvUrl ? '(from env)' : '(from fallback)');
     }
     return envUrl;
   }
