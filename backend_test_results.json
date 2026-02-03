@@ -1,28 +1,61 @@
 {
   "test_type": "cors_connectivity",
-  "timestamp": "2026-02-03T11:55:31.726156",
+  "timestamp": "2026-02-03T11:56:23.850745",
   "backend_url": "https://dealerhelper.preview.emergentagent.com/api",
-  "total_tests": 2,
-  "passed": 0,
-  "failed": 2,
-  "failed_tests": [
-    "OPTIONS /tower-talk (Origin: null)",
-    "OPTIONS /translate (Origin: null)"
-  ],
+  "total_tests": 4,
+  "passed": 4,
+  "failed": 0,
+  "failed_tests": [],
   "detailed_results": [
     {
-      "test": "OPTIONS /tower-talk (Origin: null)",
-      "success": false,
-      "details": "Preflight failed - Status: 405, CORS header: null",
-      "timestamp": "2026-02-03T11:55:31.715146",
-      "response_data": null
+      "test": "POST /tower-talk (Origin: null)",
+      "success": true,
+      "details": "Tower Talk successful with null origin (353 chars) - CORS: null",
+      "timestamp": "2026-02-03T11:56:20.632791",
+      "response_data": {
+        "status": 200,
+        "response_length": 353,
+        "cors_header": "null"
+      }
     },
     {
-      "test": "OPTIONS /translate (Origin: null)",
-      "success": false,
-      "details": "Preflight failed - Status: 405, CORS header: null",
-      "timestamp": "2026-02-03T11:55:31.725996",
-      "response_data": null
+      "test": "POST /tower-talk (Origin: emergentagent.com)",
+      "success": true,
+      "details": "Tower Talk successful with emergentagent.com origin - CORS: None",
+      "timestamp": "2026-02-03T11:56:23.363170",
+      "response_data": {
+        "status": 200,
+        "response_length": 276,
+        "cors_header": null
+      }
+    },
+    {
+      "test": "POST /translate (Origin: null)",
+      "success": true,
+      "details": "Translation successful with null origin (confidence: 0.95) - CORS: null",
+      "timestamp": "2026-02-03T11:56:23.840468",
+      "response_data": {
+        "status": 200,
+        "original": "hello",
+        "translated": "hola",
+        "detected_lang": "en",
+        "confidence": 0.95,
+        "cors_header": "null"
+      }
+    },
+    {
+      "test": "POST /translate (Origin: emergentagent.com)",
+      "success": true,
+      "details": "Translation successful with emergentagent.com origin - CORS: None",
+      "timestamp": "2026-02-03T11:56:23.850609",
+      "response_data": {
+        "status": 200,
+        "original": "hello",
+        "translated": "hola",
+        "detected_lang": "en",
+        "confidence": 0.99,
+        "cors_header": null
+      }
     }
   ]
 }
