@@ -587,6 +587,26 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             align-items: center;
             justify-content: center;
             background: rgba(255,255,255,0.05);
+
+          .scanner-nav {
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(255, 140, 0, 0.14);
+            background: rgba(0, 0, 0, 0.55);
+          }
+
+          .scanner-back {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.75);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+          }
+
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             color: rgba(255,255,255,0.6);
