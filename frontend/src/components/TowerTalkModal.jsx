@@ -316,7 +316,7 @@ export const TowerTalkModal = () => {
         salespersonStyle: salesperson.style,
       };
 
-      const res = await fetch(`${BACKEND_URL}/api/tower-talk`, {
+      const res = await fetchWithTimeout(`${BACKEND_URL}/api/tower-talk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ situation: situationToSend, context }),
