@@ -562,6 +562,28 @@ export const QuickAddButton = () => {
           animation: slideUp 0.25s ease;
         }
 
+
+        @media (max-width: 480px) {
+          .quick-add-overlay {
+            align-items: flex-end;
+            padding: 0;
+          }
+
+          .quick-add-modal {
+            max-width: 100%;
+            border-radius: 22px 22px 0 0;
+            max-height: calc(100dvh - env(safe-area-inset-top));
+          }
+
+          .quick-add-form {
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+          }
+
+          .qa-row {
+            grid-template-columns: 1fr;
+          }
+        }
+
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
