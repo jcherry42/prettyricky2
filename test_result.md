@@ -240,11 +240,11 @@ backend:
 frontend:
   - task: "PWA + Tower Talk connectivity failure reproduction"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/vite.config.js, /app/frontend/src/components/TowerTalkModal.jsx, /app/frontend/src/components/VoiceTranslator.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "testing"
