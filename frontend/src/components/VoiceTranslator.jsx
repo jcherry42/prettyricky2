@@ -100,8 +100,24 @@ export const VoiceTranslator = () => {
       setShowResult(true);
       
     } catch (err) {
+      const diag = {
+        online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+        displayMode:
+          (typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches)
+            ? 'standalone'
+            : 'browser',
+        origin: typeof window !== 'undefined' ? window.location.origin : '',
+        backendUrl: BACKEND_URL,
+      };
+
       setError(err.message || 'Failed to process audio');
       setShowResult(true);
+
+      // High-signal diagnostics
+      toast.error('Voice translate failed', {
+        description: `${err.message || 'Unable to connect'} · ${diag.displayMode} · origin=${diag.origin} · backend=${diag.backendUrl}`,
+        duration: 6000,
+      });
     } finally {
       setIsProcessing(false);
     }
