@@ -4,6 +4,7 @@ import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 import { validateVIN } from '../utils/enterprise';
 import { LicenseScanner } from './LicenseScanner';
+
 import BatchVinScanModal from './BatchVinScanModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
