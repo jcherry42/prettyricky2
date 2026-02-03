@@ -221,6 +221,8 @@ backend:
   - agent: "testing"
     message: "Feb 3 2026: Tower Talk regression PASS after adding fetchWithTimeout + AbortError handling + diagnostics. Success path generates response; failure path shows diagnostic toast (origin/backend) and timeout messaging if request aborts."
   - agent: "testing"
+    message: "Feb 3 2026: Web regression PASS after backend URL refactor (getBackendUrl). Tower Talk generates successfully; VoiceTranslator renders; no runtime errors. Confirms fix is isolated to native (capacitor://localhost) needing configured backend."
+  - agent: "testing"
   - agent: "testing"
     message: "Feb 3 2026: Network instrumentation regression PASS. App loads; Tower Talk generates; no console errors. fetch override is transparent and logs failures/slowness; window.__netlast populated."
   - agent: "testing"
