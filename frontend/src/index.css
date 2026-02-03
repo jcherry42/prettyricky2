@@ -926,15 +926,15 @@ h1, h2, h3 {
   border-color: hsla(0, 100%, 40%, 0.8);
   color: hsla(50, 100%, 90%, 1);
   box-shadow: 
-    0 0 30px hsla(0, 100%, 50%, 0.5),
-    0 0 60px hsla(25, 100%, 50%, 0.3),
-    inset 0 0 20px hsla(0, 100%, 20%, 0.8);
-  animation: button-implode 0.8s ease-in-out infinite alternate;
+    0 0 22px hsla(0, 100%, 50%, 0.35),
+    0 0 40px hsla(25, 100%, 50%, 0.18),
+    inset 0 0 14px hsla(0, 100%, 20%, 0.55);
+  animation: none;
 }
 
 .sport-fire-btn.active .header-btn-icon {
-  filter: drop-shadow(0 0 8px hsla(50, 100%, 70%, 1));
-  animation: icon-shake 0.1s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px hsla(50, 100%, 70%, 0.75));
+  animation: none;
 }
 
 @keyframes button-implode {
