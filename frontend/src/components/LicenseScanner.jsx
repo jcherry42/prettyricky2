@@ -581,8 +581,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
           }
 
           .scanner-header {
-            position: sticky;
-            top: 0;
+            position: relative;
             z-index: 5;
           }
 
