@@ -976,7 +976,8 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
 
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
