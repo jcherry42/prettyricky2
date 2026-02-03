@@ -31,7 +31,10 @@ export const initializeNative = async () => {
     
     // Configure status bar
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: '#0d0d0d' });
+    // setBackgroundColor is only available on Android
+    if (platform === 'android') {
+      await StatusBar.setBackgroundColor({ color: '#0d0d0d' });
+    }
     
     // Configure keyboard behavior
     await Keyboard.setResizeMode({ mode: KeyboardResize.Body });
@@ -135,9 +138,12 @@ export const updateStatusBarTheme = async (isDark) => {
   
   try {
     await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
-    await StatusBar.setBackgroundColor({ 
-      color: isDark ? '#0d0d0d' : '#f5f5f5' 
-    });
+    // setBackgroundColor is only available on Android
+    if (platform === 'android') {
+      await StatusBar.setBackgroundColor({ 
+        color: isDark ? '#0d0d0d' : '#f5f5f5' 
+      });
+    }
   } catch (error) {
     logger.error('Status bar update error:', error);
   }
