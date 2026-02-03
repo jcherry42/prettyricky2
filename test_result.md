@@ -114,7 +114,7 @@
 
 test_plan:
   current_focus:
-    - "PWA + Tower Talk connectivity failure reproduction"
+    - "Tower Talk modal connectivity and diagnostics regression"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
