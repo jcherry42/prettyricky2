@@ -375,6 +375,15 @@ export const TowerTalkModal = () => {
         capacitorOrigin: isCapacitorOrigin(),
       };
 
+      if (!BACKEND_URL && diag.capacitorOrigin) {
+        setError('Tower Talk is not configured for native yet. Set your backend URL in Admin Settings.');
+        toast.error('Native backend not configured', {
+          description: 'In Capacitor builds, you must set a real https backend URL (not capacitor://localhost).',
+          duration: 8000,
+        });
+        return;
+      }
+
       setError(
         offlineHint
           ? `Offline. Tower Talk needs internet. (${diag.displayMode})`
