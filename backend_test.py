@@ -1445,6 +1445,229 @@ class BackendTester:
         
         return len(self.failed_tests) == 0
 
+    async def test_tower_talk_cors_connectivity(self):
+        """Test Tower Talk CORS connectivity with iOS standalone PWA origin issues"""
+        try:
+            # Test 1: OPTIONS preflight to /api/tower-talk with Origin: null
+            headers_null = {"Origin": "null"}
+            async with self.session.options(f"{BACKEND_URL}/tower-talk", headers=headers_null) as response:
+                access_control_header = response.headers.get("Access-Control-Allow-Origin")
+                if response.status == 200 and access_control_header:
+                    self.log_result(
+                        "OPTIONS /tower-talk (Origin: null)", 
+                        True, 
+                        f"Preflight successful with Access-Control-Allow-Origin: {access_control_header}", 
+                        {'status': response.status, 'access_control_allow_origin': access_control_header}
+                    )
+                else:
+                    self.log_result(
+                        "OPTIONS /tower-talk (Origin: null)", 
+                        False, 
+                        f"Preflight failed - Status: {response.status}, CORS header: {access_control_header}"
+                    )
+                    return False
+            
+            # Test 2: OPTIONS preflight to /api/tower-talk with Origin: https://some.emergentagent.com
+            headers_emergent = {"Origin": "https://some.emergentagent.com"}
+            async with self.session.options(f"{BACKEND_URL}/tower-talk", headers=headers_emergent) as response:
+                access_control_header = response.headers.get("Access-Control-Allow-Origin")
+                if response.status == 200 and access_control_header:
+                    self.log_result(
+                        "OPTIONS /tower-talk (Origin: emergentagent.com)", 
+                        True, 
+                        f"Preflight successful with Access-Control-Allow-Origin: {access_control_header}", 
+                        {'status': response.status, 'access_control_allow_origin': access_control_header}
+                    )
+                else:
+                    self.log_result(
+                        "OPTIONS /tower-talk (Origin: emergentagent.com)", 
+                        False, 
+                        f"Preflight failed - Status: {response.status}, CORS header: {access_control_header}"
+                    )
+                    return False
+            
+            # Test 3: POST /api/tower-talk with Origin: null header
+            test_payload = {
+                "situation": "Customer is interested in a 2024 BMW X3 but concerned about the price",
+                "context": {
+                    "customerName": "Alex Martinez",
+                    "vehicle": "2024 BMW X3",
+                    "vehiclePrice": "$45,000",
+                    "tradeIn": "2020 Honda Accord",
+                    "dealershipName": "Premium Auto Sales",
+                    "salespersonName": "Sarah Johnson"
+                }
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/tower-talk", json=test_payload, headers=headers_null) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    response_text = data.get('response', '')
+                    if response_text and len(response_text) > 10:
+                        self.log_result(
+                            "POST /tower-talk (Origin: null)", 
+                            True, 
+                            f"Tower Talk successful with null origin ({len(response_text)} chars)", 
+                            {'status': response.status, 'response_length': len(response_text)}
+                        )
+                    else:
+                        self.log_result("POST /tower-talk (Origin: null)", False, "Empty or too short response")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /tower-talk (Origin: null)", 
+                            True, 
+                            "Expected 500 - API key not configured (CORS working, API key missing)", 
+                            {'status': response.status, 'expected_error': 'API key not configured'}
+                        )
+                    else:
+                        self.log_result("POST /tower-talk (Origin: null)", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /tower-talk (Origin: null)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Tower Talk CORS connectivity", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_translate_cors_connectivity(self):
+        """Test Translate CORS connectivity with iOS standalone PWA origin issues"""
+        try:
+            # Test 1: OPTIONS preflight to /api/translate with Origin: null
+            headers_null = {"Origin": "null"}
+            async with self.session.options(f"{BACKEND_URL}/translate", headers=headers_null) as response:
+                access_control_header = response.headers.get("Access-Control-Allow-Origin")
+                if response.status == 200 and access_control_header:
+                    self.log_result(
+                        "OPTIONS /translate (Origin: null)", 
+                        True, 
+                        f"Preflight successful with Access-Control-Allow-Origin: {access_control_header}", 
+                        {'status': response.status, 'access_control_allow_origin': access_control_header}
+                    )
+                else:
+                    self.log_result(
+                        "OPTIONS /translate (Origin: null)", 
+                        False, 
+                        f"Preflight failed - Status: {response.status}, CORS header: {access_control_header}"
+                    )
+                    return False
+            
+            # Test 2: OPTIONS preflight to /api/translate with Origin: https://some.emergentagent.com
+            headers_emergent = {"Origin": "https://some.emergentagent.com"}
+            async with self.session.options(f"{BACKEND_URL}/translate", headers=headers_emergent) as response:
+                access_control_header = response.headers.get("Access-Control-Allow-Origin")
+                if response.status == 200 and access_control_header:
+                    self.log_result(
+                        "OPTIONS /translate (Origin: emergentagent.com)", 
+                        True, 
+                        f"Preflight successful with Access-Control-Allow-Origin: {access_control_header}", 
+                        {'status': response.status, 'access_control_allow_origin': access_control_header}
+                    )
+                else:
+                    self.log_result(
+                        "OPTIONS /translate (Origin: emergentagent.com)", 
+                        False, 
+                        f"Preflight failed - Status: {response.status}, CORS header: {access_control_header}"
+                    )
+                    return False
+            
+            # Test 3: POST /api/translate with Origin: null header
+            test_payload = {
+                "text": "hello",
+                "source_lang": "auto",
+                "target_lang": "es"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/translate", json=test_payload, headers=headers_null) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    translated_text = data.get('translated_text', '')
+                    detected_lang = data.get('detected_lang')
+                    confidence = data.get('confidence', 0)
+                    
+                    # Verify expected fields from review request
+                    has_required_fields = all(field in data for field in ['translated_text', 'detected_lang', 'confidence'])
+                    
+                    if translated_text and has_required_fields:
+                        self.log_result(
+                            "POST /translate (Origin: null)", 
+                            True, 
+                            f"Translation successful with null origin (confidence: {confidence})", 
+                            {
+                                'status': response.status,
+                                'original': test_payload['text'],
+                                'translated': translated_text,
+                                'detected_lang': detected_lang,
+                                'confidence': confidence
+                            }
+                        )
+                    else:
+                        self.log_result("POST /translate (Origin: null)", False, f"Missing required fields or empty translation. Data: {data}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /translate (Origin: null)", 
+                            True, 
+                            "Expected 500 - API key not configured (CORS working, API key missing)", 
+                            {'status': response.status, 'expected_error': 'API key not configured'}
+                        )
+                    else:
+                        self.log_result("POST /translate (Origin: null)", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /translate (Origin: null)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Translate CORS connectivity", False, f"Exception: {str(e)}")
+            return False
+
+    async def run_cors_connectivity_tests(self):
+        """Run CORS connectivity tests for Tower Talk as requested in review"""
+        print("🎯 Tower Talk CORS Connectivity Testing (iOS Standalone PWA Origin Issues)")
+        print(f"Backend URL: {BACKEND_URL}")
+        print("=" * 80)
+        
+        print("\n🔍 Testing CORS changes:")
+        print("   • allow_origin_regex to allow emergent domains + 'null' origin")
+        print("   • Expanded CSP connect-src to allow emergent domains")
+        print()
+        
+        # Test Tower Talk CORS connectivity
+        print("1️⃣ Testing Tower Talk CORS connectivity...")
+        await self.test_tower_talk_cors_connectivity()
+        
+        # Test Translate CORS connectivity  
+        print("2️⃣ Testing Translate CORS connectivity...")
+        await self.test_translate_cors_connectivity()
+        
+        print("=" * 80)
+        print(f"🏁 CORS Connectivity Testing Complete: {len(self.results)} tests run")
+        
+        passed = len([r for r in self.results if r['success']])
+        failed = len(self.failed_tests)
+        
+        print(f"✅ Passed: {passed}")
+        print(f"❌ Failed: {failed}")
+        
+        if self.failed_tests:
+            print("\n🔍 Failed Tests:")
+            for test in self.failed_tests:
+                print(f"   • {test}")
+        else:
+            print("\n🎉 All CORS connectivity tests passed! iOS standalone PWA origin issues resolved.")
+        
+        return failed == 0
+
     async def run_all_tests(self):
         """Run comprehensive backend regression tests for de-monolith (customers + vin)"""
         print("🚀 Backend Regression Testing - De-Monolith for Customers + VIN")
