@@ -7,9 +7,12 @@
     "start": "vite --host 0.0.0.0 --port 3000",
     "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "vite build",
+    "build:prod": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "cap:sync": "cap sync",
+    "cap:sync:ios": "yarn build:prod && cap sync ios",
+    "cap:sync:android": "yarn build:prod && cap sync android",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android"
   },
