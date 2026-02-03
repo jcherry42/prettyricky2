@@ -6,6 +6,17 @@ import { translateText } from '../utils/translationService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+
 // Get target language from settings
 const getTargetLanguage = () => {
   return localStorage.getItem('defaultTargetLanguage') || 'es';
