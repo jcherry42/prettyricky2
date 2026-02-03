@@ -118,6 +118,7 @@
 
 test_plan:
   current_focus:
+    - "Backend URL refactor regression - Tower Talk and VoiceTranslator"
     - "Mobile regression - Quick Add modal scrolling + keyboard"
     - "ImportModal manual entry tab scroll testing"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
