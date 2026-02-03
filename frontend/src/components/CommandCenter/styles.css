@@ -765,30 +765,107 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 480px) {
+  /* Full-screen sheet (mobile) */
+  .cc-overlay {
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+
   .cc-modal {
+    width: 100%;
     max-width: 100%;
-    max-height: 90vh;
-    border-radius: 20px;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    border-radius: 22px 22px 0 0;
+    margin: 0;
   }
-  
+
+  .cc-header {
+    padding: 12px 14px;
+  }
+
+  .cc-title {
+    font-size: 14px;
+    letter-spacing: 1.2px;
+  }
+
   .cc-tabs {
-    padding: 6px 8px;
-  }
-  
-  .cc-tab {
     padding: 8px 10px;
+  }
+
+  .cc-tab {
+    padding: 10px 12px;
     font-size: 13px;
   }
-  
+
+  .cc-content {
+    padding: 14px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  /* Import mode selector: keep it readable on mobile */
   .import-options {
     flex-direction: column;
     gap: 16px;
-    padding: 20px;
+    padding: 16px;
   }
-  
+
   .import-option {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
+  }
+
+  /* Stop shrinking customers tab text on mobile (causes compression) */
+  .cc-customers {
+    font-size: 1em;
+  }
+
+  /* Forms */
+  .form-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .form-container,
+  .form-modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+    border-radius: 22px 22px 0 0;
+  }
+
+  .form-content {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Customer detail */
+  .customer-detail-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .customer-detail-modal {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 22px 22px 0 0;
+    max-height: calc(100dvh - env(safe-area-inset-top));
+  }
+
+  .cd-content {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .cd-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Notes list should scroll smoothly */
+  .notes-list {
+    max-height: 160px;
   }
 }
 
