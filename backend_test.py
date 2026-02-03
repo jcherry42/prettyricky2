@@ -1733,13 +1733,13 @@ class BackendTester:
 async def main():
     """Main test runner"""
     async with BackendTester() as tester:
-        # Run cleanup regression tests as requested in review
-        success = await tester.run_cleanup_regression_tests()
+        # Run CORS connectivity tests as requested in review
+        success = await tester.run_cors_connectivity_tests()
         
         # Save detailed results
         with open('/app/backend_test_results.json', 'w') as f:
             json.dump({
-                'test_type': 'cleanup_regression',
+                'test_type': 'cors_connectivity',
                 'timestamp': datetime.now().isoformat(),
                 'backend_url': BACKEND_URL,
                 'total_tests': len(tester.results),
