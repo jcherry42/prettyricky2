@@ -645,7 +645,7 @@ button[class*="add-customer"]:hover,
   .customer-form,
   .settings-section,
   .printer-config {
-    padding-bottom: 300px !important;
+    padding-bottom: 120px !important;
   }
 
   /* Quick Add Modal optimization */
