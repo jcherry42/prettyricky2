@@ -112,7 +112,7 @@
 
 test_plan:
   current_focus:
-    - "Command Center Mobile Layout Regression - iPhone 12 Pro Max bottom sheet layout"
+    - "PWA + Tower Talk connectivity failure reproduction"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
