@@ -628,6 +628,8 @@ export const QuickAddButton = () => {
           display: flex;
           flex-direction: column;
           gap: 14px;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .qa-error-banner {
