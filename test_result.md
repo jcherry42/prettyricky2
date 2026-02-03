@@ -244,7 +244,7 @@ frontend:
     file: "/app/frontend/vite.config.js, /app/frontend/src/components/TowerTalkModal.jsx, /app/frontend/src/components/VoiceTranslator.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
