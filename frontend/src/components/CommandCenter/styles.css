@@ -690,9 +690,31 @@
   box-shadow: 0 10px 22px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-/* Customers tab: reduce (additional -15%) */
+/* Customers tab: keep readable by default */
 .cc-customers {
-  font-size: 0.64em;
+  font-size: 1em;
+}
+
+/* Stats grid (dashboard) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 30px;
+  }
 }
 
 /* ===== PRINTER SECTION ===== */
