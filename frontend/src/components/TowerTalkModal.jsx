@@ -371,7 +371,8 @@ export const TowerTalkModal = () => {
             ? 'standalone'
             : 'browser',
         origin: typeof window !== 'undefined' ? window.location.origin : '',
-        backendUrl: BACKEND_URL,
+        backendUrl: BACKEND_URL || '(missing)',
+        capacitorOrigin: isCapacitorOrigin(),
       };
 
       setError(
