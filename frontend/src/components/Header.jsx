@@ -311,6 +311,10 @@ export const Header = () => {
       <LicenseScanner 
         isOpen={licenseScannerOpen} 
         onClose={() => setLicenseScannerOpen(false)} 
+        onBack={() => {
+          setLicenseScannerOpen(false);
+          setIntakeOpen(true);
+        }}
       />
       
       {/* Command Center Modal */}
