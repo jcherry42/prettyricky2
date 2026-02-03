@@ -766,14 +766,9 @@
   background: rgba(255,255,255,0.02);
 }
 
-/* Printer tab: reduce all text by 40% */
+/* Printer tab: keep readable (mobile-first) */
 .cc-printer {
-  font-size: 0.45em; /* baseline */
-}
-
-/* +12.5% per request */
-.cc-printer {
-  font-size: calc(0.45em * 1.125);
+  font-size: 1em;
 }
 
 .cc-printer h3 {
