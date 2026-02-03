@@ -542,6 +542,9 @@ export const QuickAddButton = () => {
         .quick-add-modal {
           width: 100%;
           max-width: 360px;
+          max-height: calc(100dvh - 24px);
+          display: flex;
+          flex-direction: column;
           background: linear-gradient(180deg, 
             rgba(25, 20, 15, 0.95) 0%, 
             rgba(15, 12, 8, 0.98) 100%
