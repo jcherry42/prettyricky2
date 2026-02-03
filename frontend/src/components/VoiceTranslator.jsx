@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { createPortal } from 'react-dom';
 import { Mic, Square, Loader2, Volume2, X, Globe, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { speakText, stopSpeech } from '../utils/ttsService';
