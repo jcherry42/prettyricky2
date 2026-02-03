@@ -219,6 +219,8 @@ backend:
     message: "Feb 3 2026: Tower Talk regression PASS after adding fetchWithTimeout + AbortError handling + diagnostics. Success path generates response; failure path shows diagnostic toast (origin/backend) and timeout messaging if request aborts."
   - agent: "testing"
   - agent: "testing"
+    message: "Feb 3 2026: Network instrumentation regression PASS. App loads; Tower Talk generates; no console errors. fetch override is transparent and logs failures/slowness; window.__netlast populated."
+  - agent: "testing"
     message: "Feb 3 2026: Mobile Quick Add modal scroll/keyboard PASS after making modal a flex column with max-height and enabling overflow-y auto on .quick-add-form plus mobile sheet breakpoint. All fields reachable and submit reachable with keyboard. Note: Import manual entry UI path unclear in current app; may not map to ImportModal.jsx."
     message: "Feb 3 2026: Frontend regression PASS after restoring tesla-2027.css and reducing its mobile keyboard padding 300px→120px. App load OK, Command Center mobile sheet OK, Quick Add scroll + keyboard OK. No major regressions observed; inquiry type buttons + tower talk should be verified in-flow after selecting a customer."
 
