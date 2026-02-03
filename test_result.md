@@ -311,15 +311,18 @@ frontend:
 
   - task: "Frontend regression for latest changes - SPORT mode button and License scanner navigation on mobile"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/Header.jsx, /app/frontend/src/components/LicenseScanner.jsx, /app/frontend/src/index.css"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "🎯 FRONTEND REGRESSION FOR LATEST CHANGES COMPLETED - MIXED RESULTS: Conducted comprehensive regression testing of the 2 specific changes requested in review. ✅ SPORT MODE BUTTON REGRESSION: 1) SPORT mode activation working correctly - button toggles active class properly, 2) Label behavior CORRECT - label hides when SPORT mode is active (conditional rendering {!supercharged && <span className='sport-label'>SPORT</span>} working), 3) Icon size behavior CORRECT - icon remains normal 20px x 20px size when active (NOT scaling to 60px as requested), CSS shows .sport-fire-btn.active .header-btn-icon {width: 20px; height: 20px;}, 4) Button remains clickable - successfully tested activation/deactivation cycle. ⚠️ LICENSE SCANNER NAVIGATION ON MOBILE: 1) Back button IS VISIBLE inside License Scanner (.scanner-back element present), 2) Close (X) button IS VISIBLE inside License Scanner ([data-testid='scanner-close-btn'] present), 3) Navigation functionality PARTIALLY WORKING - both buttons are present and visible but have viewport positioning issues on mobile (390x844) causing 'element is outside of the viewport' click failures, buttons are rendered but positioned outside clickable area. ✅ NO CONSOLE ERRORS: Zero JavaScript errors detected throughout testing, app loads and renders correctly. ✅ SCREENSHOTS CAPTURED: regression_test_start.png, sport_button_test.png, license_scanner_opened.png, license_scanner_navigation_test.png for visual verification. SUMMARY: SPORT mode regression PASSES all requirements (label hides, icon stays normal size, remains clickable). License Scanner navigation elements are PRESENT but have mobile viewport positioning issues preventing interaction."
+      - working: false
+        agent: "testing"
+        comment: "❌ LICENSE SCANNER MOBILE NAVIGATION TEST FAILED: Re-tested License Scanner navigation on mobile viewport (390x844) as requested. CRITICAL ISSUE FOUND: 1) INTAKE HUB OPENS SUCCESSFULLY: Intake Hub modal opens correctly on mobile viewport, 2) LICENSE SCANNER FAILS TO OPEN: When clicking 'Open License Scanner' button in Intake Hub, the License Scanner modal does not open - remains in Intake Hub interface, 3) BUTTON POSITIONING ISSUES: When License Scanner elements are detected, both Close (X) button (position: x=314, y=-128.75) and Back button (position: x=36, y=-61.75) have negative Y coordinates, indicating they are positioned outside the mobile viewport, 4) CSS FIXES PRESENT BUT INEFFECTIVE: The sticky positioning CSS (.scanner-header: position: sticky; top: 0; .scanner-nav: position: sticky; top: 60px;) is present in LicenseScanner.jsx but the modal itself is not opening properly on mobile. ROOT CAUSE: The License Scanner modal is not opening on mobile viewport, preventing testing of navigation button clickability. The CSS fixes for sticky positioning are in place but cannot be verified since the modal doesn't open. RECOMMENDATION: Investigate why License Scanner modal fails to open on mobile viewport - this is a blocking issue that prevents users from accessing the License Scanner functionality on mobile devices."
 
 agent_communication:
   - agent: "testing"
