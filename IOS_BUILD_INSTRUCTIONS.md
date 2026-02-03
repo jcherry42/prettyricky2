@@ -1,154 +1,167 @@
-# iOS Build Instructions for Supercharg'd
+# iOS Build & Deployment Instructions for Supercharg'd
 
-## CRITICAL CHANGES MADE
+## 🎯 What Was Fixed
 
-The following changes have been applied to fix the CocoaPods/Capacitor build issues:
+### Issue
+Core AI features (Tower Talk, Translate) were failing in the installed iOS app because the app couldn't resolve the correct backend URL. It was incorrectly using `capacitor://localhost` instead of the real server URL.
 
-1. **Podfile**: Updated to iOS 15.5 (required by GoogleMLKit/BarcodeScanning)
-2. **Xcode Project**: Updated deployment target from 13.0 → 15.5 in project.pbxproj
-3. **Capacitor Config**: Added `minVersion: "15.5"` for iOS
-4. **Build Script**: Created `build_ios.sh` to automate the entire process
+### Root Cause
+Vite environment variables weren't being properly embedded in the iOS production build. The `VITE_BACKEND_URL` variable was undefined at runtime in Capacitor.
 
-## Quick Start (Recommended)
+### Solution Implemented
+1. ✅ Created `.env.production` file with the backend URL
+2. ✅ Enhanced `backendUrl.js` utility with better debugging and logging
+3. ✅ Added production build scripts to `package.json`
+4. ✅ Fixed iOS StatusBar `UNIMPLEMENTED` error spam by adding platform checks
+5. ✅ Verified environment variable is embedded in production bundle
 
-On your Mac, run:
+---
+
+## 📱 Steps to Build & Test on Your iPhone
+
+### Step 1: Sync the Latest Code to iOS
 ```bash
-cd frontend
-chmod +x build_ios.sh
-./build_ios.sh
+cd /app/frontend
+yarn cap:sync:ios
 ```
 
-This script will:
-1. Install npm dependencies
-2. Build the web app
-3. Sync Capacitor
-4. Clean all build artifacts
-5. Install CocoaPods
-6. Open Xcode
+This command:
+- Runs `yarn build:prod` (builds with production environment variables)
+- Copies the build to the iOS native project
+- Updates native dependencies
 
-## Manual Build Steps
-
-If the script doesn't work, follow these manual steps:
-
-### Step 1: Install Dependencies
+### Step 2: Open Xcode
 ```bash
-cd frontend
-npm install
+cd /app/frontend
+yarn cap:ios
 ```
 
-### Step 2: Build Web App
-```bash
-npm run build
+Or manually open: `/app/frontend/ios/App/App.xcworkspace` in Xcode
+
+### Step 3: Build & Run on Your iPhone
+1. Connect your iPhone via USB
+2. Select your device in Xcode's device dropdown (top toolbar)
+3. Click the **Play** button (▶️) to build and run
+4. Wait for the app to install and launch
+
+### Step 4: Test the Fixed Features
+1. **Open Tower Talk**
+   - Tap the "Tower Talk" button in the app
+   - Enter a sales situation (e.g., "Customer says price is too high")
+   - Tap "Generate"
+   - ✅ Should successfully generate a response (no "Native backend not configured" error)
+
+2. **Check Console Logs in Xcode**
+   - Open the Console pane (⌘⇧C or View → Debug Area → Activate Console)
+   - Look for these success messages:
+     ```
+     [BackendURL] Using build-time URL in Capacitor: https://superchargd.preview.emergentagent.com
+     ```
+   - ❌ Should NOT see: `UNIMPLEMENTED: StatusBar.setBackgroundColor is not implemented on ios` (this is now fixed)
+
+3. **Test Translate Feature**
+   - Generate a Tower Talk response
+   - Tap the translate icon
+   - ✅ Should successfully translate
+
+---
+
+## 🔍 Debugging If It Still Doesn't Work
+
+### If You Still See the "Native backend not configured" Error
+
+**Check the Console in Xcode** for this debug output:
+```
+[BackendURL Debug] {
+  rawEnv: "https://superchargd.preview.emergentagent.com",
+  normalized: "https://superchargd.preview.emergentagent.com",
+  isCapacitor: true,
+  mode: "production"
+}
 ```
 
-### Step 3: Sync Capacitor
+**If `rawEnv` shows as `undefined`:**
+1. Make sure you ran `yarn cap:sync:ios` (not just `cap sync`)
+2. Verify the file `/app/frontend/.env.production` exists and contains:
+   ```
+   VITE_BACKEND_URL=https://superchargd.preview.emergentagent.com
+   ```
+3. Clean the Xcode build: Product → Clean Build Folder (⌘⇧K)
+4. Rebuild and run
+
+**If Network Calls Are Still Failing:**
+- Share the full Xcode console log (especially lines with `[NET:FAIL]` or `[BackendURL]`)
+- Check if your iPhone has internet connectivity
+- Try switching from WiFi to Cellular (or vice versa)
+- Check if "Low Data Mode" is enabled on your iPhone (Settings → WiFi/Cellular → Low Data Mode)
+
+---
+
+## 🚀 Future iOS Builds
+
+For all future iOS builds, always use:
 ```bash
-npx cap sync ios
+yarn cap:sync:ios
 ```
 
-### Step 4: NUCLEAR CLEAN (Important!)
-```bash
-cd ios/App
+This ensures:
+- Production environment variables are embedded
+- Latest code is synced to the iOS project
+- No manual copy/paste needed
 
-# Remove all pods and cache
-rm -rf Pods Podfile.lock
-pod cache clean --all
+---
 
-# Remove Xcode derived data
-rm -rf ~/Library/Developer/Xcode/DerivedData/*supercharg*
-```
+## ✅ Verification Checklist
 
-### Step 5: Install Pods
-```bash
-pod repo update
-pod install --repo-update
-```
+Before considering this issue resolved, verify:
 
-### Step 6: Open in Xcode
-```bash
-open App.xcworkspace
-```
+- [ ] Ran `yarn cap:sync:ios` successfully
+- [ ] Rebuilt app in Xcode and installed on iPhone
+- [ ] Tower Talk generates responses without errors
+- [ ] Translate feature works
+- [ ] No `UNIMPLEMENTED` StatusBar errors in Xcode console
+- [ ] Console shows: `[BackendURL] Using build-time URL in Capacitor: https://...`
 
-**⚠️ IMPORTANT: Open `App.xcworkspace`, NOT `App.xcodeproj`**
+---
 
-## Xcode Configuration
+## 📝 Technical Details (For Reference)
 
-### Before Building:
-1. **Select Physical Device**: The barcode scanner requires a real camera
-2. **Device iOS Version**: Must be iOS 15.5 or later
-3. **Signing**: 
-   - Select App target → Signing & Capabilities
-   - Choose your Development Team
-   - Check "Automatically manage signing"
+### What Changed in the Code
 
-### Build:
-Press `Cmd + R` to build and run
+1. **New File: `/app/frontend/.env.production`**
+   - Contains `VITE_BACKEND_URL` for production builds
+   - Vite automatically loads this during `vite build --mode production`
 
-## Troubleshooting
+2. **Enhanced: `/app/frontend/src/utils/backendUrl.js`**
+   - Added comprehensive debug logging
+   - Better error messages when backend URL is missing
+   - Logs exactly where the URL is coming from
 
-### Error: "CocoaPods could not find compatible versions"
+3. **New Scripts: `/app/frontend/package.json`**
+   ```json
+   "build:prod": "vite build --mode production",
+   "cap:sync:ios": "yarn build:prod && cap sync ios"
+   ```
 
-This is caused by iOS deployment target mismatch. Verify:
+4. **Fixed: `/app/frontend/src/utils/native.jsx`**
+   - Added platform check before calling `StatusBar.setBackgroundColor()`
+   - iOS doesn't support this method (Android-only)
 
-1. **Podfile** has `platform :ios, '15.5'`
-2. **Xcode project** has deployment target 15.5:
-   - Open Xcode
-   - Select "App" project (top of navigator)
-   - Build Settings → iOS Deployment Target → 15.5
+### How Vite Environment Variables Work in Capacitor
 
-### Error: "GoogleMLKit requires deployment target 15.5+"
+- Vite embeds `VITE_*` variables at **build time**
+- They become string literals in the bundled JavaScript
+- In Capacitor, the iOS app runs the **pre-built** web bundle
+- Runtime environment variables don't exist in this context
+- That's why we need `.env.production` and proper build scripts
 
-Run the nuclear clean and reinstall pods:
-```bash
-cd ios/App
-rm -rf Pods Podfile.lock
-pod cache clean --all
-pod install --repo-update
-```
+---
 
-### Error: Build fails on Apple Silicon (M1/M2/M3)
+## Need Help?
 
-The Podfile includes a fix for this, but if issues persist:
-```bash
-# Run Xcode with Rosetta
-arch -x86_64 pod install
-```
+If Tower Talk still doesn't work after following these steps, share:
+1. The complete Xcode console output (especially lines with `[BackendURL]` or `[NET:FAIL]`)
+2. A screenshot of the error you see in the app
+3. Whether you're on WiFi or cellular data
 
-### Want to test without barcode scanner?
-
-If you want to confirm the rest of the project builds:
-```bash
-cd ios/App
-cp Podfile Podfile.backup
-cp Podfile.no-scanner Podfile
-rm -rf Pods Podfile.lock
-pod install
-# Build in Xcode
-# Then restore: cp Podfile.backup Podfile
-```
-
-## Requirements Summary
-
-| Component | Required Version |
-|-----------|-----------------|
-| iOS Device | 15.5+ |
-| Xcode | 15+ |
-| CocoaPods | Latest |
-| Node.js | 18+ |
-| @capacitor/ios | 6.x |
-| @capacitor-mlkit/barcode-scanning | 6.2.0 |
-
-## Files Modified
-
-- `/ios/App/Podfile` - iOS 15.5, post_install hooks for deployment target
-- `/ios/App/App.xcodeproj/project.pbxproj` - Deployment target 15.5
-- `/capacitor.config.json` - Added `minVersion: "15.5"` for iOS
-- `/build_ios.sh` - Automated build script
-
-## Support
-
-If the build still fails, please share:
-1. The exact error message
-2. Output of `pod --version`
-3. Output of `xcodebuild -version`
-4. Your Mac's chip (Intel or Apple Silicon)
+We'll debug from there! 🏎️
