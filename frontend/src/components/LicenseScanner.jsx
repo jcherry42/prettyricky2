@@ -296,7 +296,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="license-scanner-overlay" onClick={handleClose}>
       <div className="license-scanner-modal" onClick={e => e.stopPropagation()}>
         {/* Hidden canvas for image processing */}
