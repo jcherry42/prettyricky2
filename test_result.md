@@ -211,6 +211,8 @@ backend:
 
   - task: "Printer endpoints regression testing (routes/printer_v2.py)"
   - agent: "testing"
+    message: "Feb 3 2026: Tower Talk iOS-standalone connectivity fix validated. Backend now allows Origin: null (iOS PWA) + emergent domain origins via allow_origin_regex, and CSP connect-src expanded. Preflight + POST tests for /api/tower-talk and /api/translate with Origin:null and emergent origins all PASS."
+  - agent: "testing"
     message: "Feb 2 2026: Frontend regression PASS for PWA update flow hooks + offline UX messaging + VIN scanner confidence scoring. App loads; virtual:pwa-register does not crash; offline toasts/messages behave; Intake VIN + batch VIN error messaging improved; Tower Talk offline error improved; VinWindshieldScanner shows confidence/ordering when VINs detected."
     implemented: true
     working: true
