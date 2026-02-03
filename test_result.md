@@ -245,6 +245,30 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
+  - task: "Mobile regression - Quick Add modal scrolling + keyboard"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/QuickAddButton.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Starting mobile regression testing for Quick Add modal scrolling and keyboard interaction on mobile viewport 428x926. Testing: 1) Open app, 2) Open Quick Add modal, 3) Verify scrolling through all fields including bottom fields, 4) Focus bottom input with keyboard open to ensure no trapped content, 5) Verify submit button is reachable."
+
+  - task: "ImportModal manual entry tab scroll testing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/ImportModal.jsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Testing ImportModal manual entry tab scroll functionality for Add Customer workflow on mobile viewport."
+
   - task: "PWA + Tower Talk connectivity failure reproduction"
     implemented: true
     working: true
