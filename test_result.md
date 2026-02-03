@@ -197,6 +197,18 @@ backend:
   - agent: "testing"
     message: "Feb 2 2026: Frontend regression PASS after strict backend cleanup. Verified app load, customer list/search, quick add entry, intake VIN modal + batch UI, tower talk modal access, command center settings with Eco Mode + Engine Sound Profile buttons."
 
+  - task: "Tower Talk CORS connectivity testing - iOS standalone PWA origin issues"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py, /app/backend/routes/tower_talk_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 TOWER TALK CORS CONNECTIVITY TESTING COMPLETED - ALL TESTS PASS: Conducted comprehensive CORS connectivity testing for Tower Talk after backend security/CORS changes to resolve iOS standalone PWA origin issues as requested. ✅ CORS CONFIGURATION VERIFIED: 1) allow_origin_regex updated to allow emergent domains + 'null' origin (iOS standalone sometimes sends Origin: null), 2) Expanded CSP connect-src to allow emergent domains in Content-Security-Policy header. ✅ TOWER TALK CORS TESTS: 1) POST /api/tower-talk with Origin: null header: Successfully generated 353-character AI response, CORS working correctly for null origin (iOS standalone PWA compatibility), 2) POST /api/tower-talk with Origin: https://some.emergentagent.com: Successfully generated AI response, CORS working correctly for emergent domains. ✅ TRANSLATE CORS TESTS: 1) POST /api/translate with Origin: null header: Successfully translated 'hello' to Spanish with confidence 0.95, CORS working correctly for null origin, 2) POST /api/translate with Origin: https://some.emergentagent.com: Successfully translated text, CORS working correctly for emergent domains. ✅ COMPREHENSIVE RESULTS: 4 total CORS connectivity tests run with 4 passes and 0 failures. Both Tower Talk and Translation endpoints now properly handle iOS standalone PWA origin scenarios including null origin and emergent domain origins. Backend security/CORS changes successfully resolve iOS standalone PWA connectivity issues without breaking existing functionality."
+
   - task: "Printer endpoints regression testing (routes/printer_v2.py)"
   - agent: "testing"
     message: "Feb 2 2026: Frontend regression PASS for PWA update flow hooks + offline UX messaging + VIN scanner confidence scoring. App loads; virtual:pwa-register does not crash; offline toasts/messages behave; Intake VIN + batch VIN error messaging improved; Tower Talk offline error improved; VinWindshieldScanner shows confidence/ordering when VINs detected."
