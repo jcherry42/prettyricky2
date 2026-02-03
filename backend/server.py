@@ -2963,7 +2963,7 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://dealerhelper.preview.emergentagent.com"
+        "connect-src 'self' https://*.emergentagent.com https://*.emergent.run https://*.emergent.com https://dealerhelper.preview.emergentagent.com"
     )
     # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
@@ -2982,6 +2982,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=ALLOWED_ORIGINS,  # FEDERAL-LEVEL: NO WILDCARDS
+    allow_origin_regex=r"^(https?:\\/\\/(localhost(:\\d+)?|.*\\.emergentagent\\.com|.*\\.emergent\\.run|.*\\.emergent\\.com)|null)$",
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
