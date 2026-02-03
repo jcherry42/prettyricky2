@@ -302,7 +302,7 @@ export const Header = () => {
         isOpen={intakeOpen} 
         onClose={() => setIntakeOpen(false)} 
         onOpenLicenseScanner={() => {
-          setIntakeOpen(false);
+          // Keep Intake open so License Scanner can return back on mobile
           setLicenseScannerOpen(true);
         }}
       />
