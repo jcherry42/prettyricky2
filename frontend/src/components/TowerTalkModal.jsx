@@ -346,6 +346,14 @@ export const TowerTalkModal = () => {
         setIsTranslating(false);
       }
     } catch (err) {
+      if (err?.name === 'AbortError') {
+        setError('Request timed out. In iOS PWA, try switching networks or disabling Low Data Mode.');
+        toast.error('Tower Talk timed out', {
+          description: 'Network request did not complete in time.',
+          duration: 6000,
+        });
+        return;
+      }
       const msg = String(err?.message || '');
       const offlineHint =
         !navigator.onLine ||
