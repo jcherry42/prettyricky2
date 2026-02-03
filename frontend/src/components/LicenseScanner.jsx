@@ -525,7 +525,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.95);
-            z-index: 100;
+            z-index: 2200;
             display: flex;
             align-items: center;
             justify-content: center;
