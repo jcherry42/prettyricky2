@@ -2,7 +2,7 @@
 @import './styles/tokens.css';
 @import './styles/animations.css';
 @import './styles/luxury-auto.css';
-/* Removed tesla-2027 overrides for Command Center mobile readability */
+@import './styles/tesla-2027.css'; /* 2027 Tesla-inspired design */
 
 @tailwind base;
 @tailwind components;
