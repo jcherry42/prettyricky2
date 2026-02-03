@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 
-export const LicenseScanner = ({ isOpen, onClose }) => {
+export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const { customers, setCustomers } = useSales();
   
   // Capture states
