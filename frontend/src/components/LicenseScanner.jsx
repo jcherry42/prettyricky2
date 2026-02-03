@@ -580,6 +580,12 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             letter-spacing: 0.15em;
           }
 
+          .scanner-header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+          }
+
           .scanner-close {
             width: 40px;
             height: 40px;
@@ -587,11 +593,26 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             align-items: center;
             justify-content: center;
             background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 0 0 auto;
+          }
+
+          .scanner-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+          }
 
           .scanner-nav {
+            position: sticky;
+            top: 60px;
+            z-index: 4;
             padding: 10px 20px;
             border-bottom: 1px solid rgba(255, 140, 0, 0.14);
-            background: rgba(0, 0, 0, 0.55);
+            background: rgba(0, 0, 0, 0.75);
           }
 
           .scanner-back {
@@ -607,23 +628,12 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             text-transform: uppercase;
           }
 
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            color: rgba(255,255,255,0.6);
-            cursor: pointer;
-            transition: all 0.2s;
-          }
-
-          .scanner-close:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-          }
-
           .scanner-body {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
           }
 
           .camera-container {
