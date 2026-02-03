@@ -343,11 +343,27 @@ export const TowerTalkModal = () => {
         msg.toLowerCase().includes('network') ||
         msg.toLowerCase().includes('timeout');
 
+      const diag = {
+        online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+        displayMode:
+          (typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches)
+            ? 'standalone'
+            : 'browser',
+        origin: typeof window !== 'undefined' ? window.location.origin : '',
+        backendUrl: BACKEND_URL,
+      };
+
       setError(
         offlineHint
-          ? 'Offline. Tower Talk needs internet. You can still build the message manually and send it.'
-          : 'Unable to connect. Try again.'
+          ? `Offline. Tower Talk needs internet. (${diag.displayMode})`
+          : `Unable to connect. (${diag.displayMode})`
       );
+
+      // High-signal diagnostics for real-world iOS PWA debugging
+      toast.error('Tower Talk connection failed', {
+        description: `${offlineHint ? 'Offline/Network' : 'Network'} · origin=${diag.origin} · backend=${diag.backendUrl}`,
+        duration: 6000,
+      });
     } finally {
       setIsLoading(false);
     }

@@ -48,17 +48,14 @@ export default defineConfig({
           /\/sounds\//,
         ],
         runtimeCaching: [
-          // Same-origin API (works for both preview + production) 
+          // Same-origin API: always hit the network.
+          // iOS standalone PWAs can behave poorly with cached API responses.
+          // We keep the app shell offline-capable, but API calls are network-only.
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-            handler: 'NetworkFirst',
+            handler: 'NetworkOnly',
             options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 12 // 12 hours
-              },
-              networkTimeoutSeconds: 10
+              cacheName: 'api-bypass'
             }
           },
           {
