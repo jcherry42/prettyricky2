@@ -209,6 +209,8 @@ backend:
   - agent: "testing"
     message: "Feb 2 2026: License Scanner mobile navigation PASS after rendering LicenseScanner via createPortal(document.body). Confirmed Close and Back buttons are within viewport and clickable on 390x844. Back returns to Intake Hub; Close dismisses modal."
   - agent: "testing"
+    message: "Feb 3 2026: Command Center mobile optimization PASS (iPhone 12 Pro Max 428x926). Full-screen bottom sheet layout triggers on <=480px, padding/typography readable, tabs switch, content scroll works. Removal of tesla-2027.css import resolved mobile compression."
+  - agent: "testing"
     message: "Feb 2 2026: Full backend regression PASS after finishing de-monolith for customers + vin. Verified customers merged list/search/stats/list CRUD + attach/detach; VIN decode/save/save-to-inventory with duplicate 409; tower-talk + translate OK; vehicles endpoints OK; printer test graceful fail; license scan endpoints OK."
   - agent: "testing"
     message: "Feb 2 2026: One-pass full frontend regression PASS after backend de-monolith completion. Verified app load, customer list/search, intake hub VIN access, Tower Talk accessible, Command Center Settings (Eco Mode + Engine Sound Profile), SPORT toggle, inventory modal, license scan UI entry. No console errors."
