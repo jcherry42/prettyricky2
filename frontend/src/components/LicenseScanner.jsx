@@ -311,6 +311,18 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             <X className="w-5 h-5" />
           </button>
         </div>
+          <div className="scanner-nav">
+            <button
+              type="button"
+              className="scanner-back"
+              onClick={() => {
+                if (onBack) onBack();
+              }}
+            >
+              Back
+            </button>
+          </div>
+
 
         {/* Main Content */}
         <div className="scanner-body">
