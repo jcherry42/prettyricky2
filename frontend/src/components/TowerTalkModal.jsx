@@ -4,7 +4,9 @@ import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
 import { translateText } from '../utils/translationService';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+import { getBackendUrl, isCapacitorOrigin } from '../utils/backendUrl';
+
+const BACKEND_URL = getBackendUrl();
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
   const controller = new AbortController();

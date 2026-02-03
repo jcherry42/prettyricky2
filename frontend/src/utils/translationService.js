@@ -3,7 +3,9 @@
  * Implements caching, quality indicators, fallback mechanisms, and language detection
  */
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+import { getBackendUrl } from './backendUrl';
+
+const BACKEND_URL = getBackendUrl();
 
 // Translation cache for performance
 class TranslationCache {

@@ -4,7 +4,9 @@ import { createPortal } from 'react-dom';
 import { Mic, Square, Loader2, Volume2, X, Globe, ChevronRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { speakText, stopSpeech } from '../utils/ttsService';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+import { getBackendUrl, isCapacitorOrigin } from '../utils/backendUrl';
+
+const BACKEND_URL = getBackendUrl();
 
 // Language config - Spanish, French, Korean only
 const LANG_CONFIG = {
