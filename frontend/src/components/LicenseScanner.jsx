@@ -606,8 +606,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
           }
 
           .scanner-nav {
-            position: sticky;
-            top: 60px;
+            position: relative;
             z-index: 4;
             padding: 10px 20px;
             border-bottom: 1px solid rgba(255, 140, 0, 0.14);
