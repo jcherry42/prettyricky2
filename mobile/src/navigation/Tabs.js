@@ -94,8 +94,7 @@ export function Tabs() {
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
 
-      <FloatingOnStarButton onPress={() => setTalkOpen(true)} />
-      <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
+      {/* Tower Talk moved to RootNavigator */}
 
       {settings.sportMode ? (
         <>
