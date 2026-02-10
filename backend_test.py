@@ -1765,6 +1765,269 @@ class BackendTester:
         
         return failed == 0
 
+    async def test_mobile_print_center_endpoints(self):
+        """Test specific mobile Print Center endpoints as requested in review"""
+        print("\n🎯 MOBILE PRINT CENTER SANITY TESTS")
+        print("=" * 50)
+        
+        # Test 1: GET /api/customers/list?limit=5&skip=0 (should return {customers,total})
+        try:
+            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=5&skip=0") as response:
+                status_code = response.status
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get('customers', [])
+                    total = data.get('total', 0)
+                    
+                    # Verify response structure
+                    has_customers_field = 'customers' in data
+                    has_total_field = 'total' in data
+                    
+                    if has_customers_field and has_total_field:
+                        self.log_result(
+                            "GET /customers/list?limit=5&skip=0", 
+                            True, 
+                            f"✅ Status: {status_code}, customers: {len(customers)}, total: {total}", 
+                            {'status_code': status_code, 'customers_count': len(customers), 'total': total, 'structure_valid': True}
+                        )
+                        
+                        # Store a real customer_id for later tests
+                        if customers and len(customers) > 0:
+                            self.real_customer_id = customers[0].get('id')
+                        
+                    else:
+                        self.log_result(
+                            "GET /customers/list?limit=5&skip=0", 
+                            False, 
+                            f"❌ Status: {status_code}, missing required fields. Has customers: {has_customers_field}, has total: {has_total_field}", 
+                            {'status_code': status_code, 'response_keys': list(data.keys())}
+                        )
+                else:
+                    error_text = await response.text()
+                    self.log_result(
+                        "GET /customers/list?limit=5&skip=0", 
+                        False, 
+                        f"❌ Status: {status_code}, Error: {error_text[:200]}", 
+                        {'status_code': status_code, 'error': error_text[:200]}
+                    )
+        except Exception as e:
+            self.log_result("GET /customers/list?limit=5&skip=0", False, f"❌ Exception: {str(e)}")
+        
+        # Test 2: POST /api/printer/test with body {ip:"127.0.0.1"}
+        try:
+            test_payload = {"ip": "127.0.0.1"}
+            async with self.session.post(f"{BACKEND_URL}/printer/test", json=test_payload) as response:
+                status_code = response.status
+                response_text = await response.text()
+                
+                # Expected: may fail with 503/400 but should respond with clear error, not 500 stack trace
+                if status_code in [200, 400, 503, 520]:
+                    # Check if it's a clear error message (not a stack trace)
+                    is_stack_trace = "Traceback" in response_text or "File \"" in response_text
+                    
+                    if not is_stack_trace:
+                        try:
+                            data = await response.json() if response.content_type == 'application/json' else {}
+                            self.log_result(
+                                "POST /printer/test {ip:127.0.0.1}", 
+                                True, 
+                                f"✅ Status: {status_code}, Clear error response (no stack trace)", 
+                                {'status_code': status_code, 'has_stack_trace': False, 'response_preview': response_text[:100]}
+                            )
+                        except:
+                            self.log_result(
+                                "POST /printer/test {ip:127.0.0.1}", 
+                                True, 
+                                f"✅ Status: {status_code}, Clear error response (no stack trace)", 
+                                {'status_code': status_code, 'has_stack_trace': False, 'response_preview': response_text[:100]}
+                            )
+                    else:
+                        self.log_result(
+                            "POST /printer/test {ip:127.0.0.1}", 
+                            False, 
+                            f"❌ Status: {status_code}, Stack trace detected in response", 
+                            {'status_code': status_code, 'has_stack_trace': True, 'response_preview': response_text[:200]}
+                        )
+                elif status_code == 500:
+                    # Check if it's a stack trace (bad) or clean error (acceptable)
+                    is_stack_trace = "Traceback" in response_text or "File \"" in response_text
+                    
+                    if is_stack_trace:
+                        self.log_result(
+                            "POST /printer/test {ip:127.0.0.1}", 
+                            False, 
+                            f"❌ Status: 500 with stack trace (should be clean error)", 
+                            {'status_code': status_code, 'has_stack_trace': True, 'response_preview': response_text[:200]}
+                        )
+                    else:
+                        self.log_result(
+                            "POST /printer/test {ip:127.0.0.1}", 
+                            True, 
+                            f"✅ Status: 500 but clean error message (acceptable)", 
+                            {'status_code': status_code, 'has_stack_trace': False, 'response_preview': response_text[:100]}
+                        )
+                else:
+                    self.log_result(
+                        "POST /printer/test {ip:127.0.0.1}", 
+                        False, 
+                        f"❌ Unexpected status: {status_code}", 
+                        {'status_code': status_code, 'response_preview': response_text[:100]}
+                    )
+        except Exception as e:
+            self.log_result("POST /printer/test {ip:127.0.0.1}", False, f"❌ Exception: {str(e)}")
+        
+        # Test 3: POST /api/print/customer with real customer_id and printer_ip "127.0.0.1"
+        try:
+            if hasattr(self, 'real_customer_id') and self.real_customer_id:
+                customer_print_payload = {
+                    "customer_id": self.real_customer_id,
+                    "printer_ip": "127.0.0.1"
+                }
+                
+                async with self.session.post(f"{BACKEND_URL}/print/customer", json=customer_print_payload) as response:
+                    status_code = response.status
+                    response_text = await response.text()
+                    
+                    # Expected: may fail at printer connectivity or succeed generating PDF; should not 500 due to missing customer fetch
+                    if status_code in [200, 400, 503, 520]:
+                        # Check if it's not a "customer not found" error
+                        is_customer_missing_error = "not found" in response_text.lower() and "customer" in response_text.lower()
+                        is_stack_trace = "Traceback" in response_text or "File \"" in response_text
+                        
+                        if not is_customer_missing_error and not is_stack_trace:
+                            try:
+                                data = await response.json() if response.content_type == 'application/json' else {}
+                                self.log_result(
+                                    "POST /print/customer (real customer_id)", 
+                                    True, 
+                                    f"✅ Status: {status_code}, Customer fetch working, printer connectivity issue expected", 
+                                    {'status_code': status_code, 'customer_id': self.real_customer_id, 'response_preview': response_text[:100]}
+                                )
+                            except:
+                                self.log_result(
+                                    "POST /print/customer (real customer_id)", 
+                                    True, 
+                                    f"✅ Status: {status_code}, Customer fetch working, printer connectivity issue expected", 
+                                    {'status_code': status_code, 'customer_id': self.real_customer_id, 'response_preview': response_text[:100]}
+                                )
+                        else:
+                            self.log_result(
+                                "POST /print/customer (real customer_id)", 
+                                False, 
+                                f"❌ Status: {status_code}, Customer fetch failed or stack trace", 
+                                {'status_code': status_code, 'customer_missing': is_customer_missing_error, 'has_stack_trace': is_stack_trace}
+                            )
+                    elif status_code == 500:
+                        # Check if it's due to customer fetch failure (bad) or printer connectivity (acceptable)
+                        is_customer_fetch_error = "customer" in response_text.lower() and ("not found" in response_text.lower() or "fetch" in response_text.lower())
+                        is_stack_trace = "Traceback" in response_text or "File \"" in response_text
+                        
+                        if is_customer_fetch_error or is_stack_trace:
+                            self.log_result(
+                                "POST /print/customer (real customer_id)", 
+                                False, 
+                                f"❌ Status: 500 due to customer fetch failure", 
+                                {'status_code': status_code, 'customer_fetch_error': is_customer_fetch_error, 'has_stack_trace': is_stack_trace}
+                            )
+                        else:
+                            self.log_result(
+                                "POST /print/customer (real customer_id)", 
+                                True, 
+                                f"✅ Status: 500 but not due to customer fetch (printer connectivity issue)", 
+                                {'status_code': status_code, 'response_preview': response_text[:100]}
+                            )
+                    else:
+                        self.log_result(
+                            "POST /print/customer (real customer_id)", 
+                            False, 
+                            f"❌ Unexpected status: {status_code}", 
+                            {'status_code': status_code, 'response_preview': response_text[:100]}
+                        )
+            else:
+                self.log_result("POST /print/customer (real customer_id)", False, "❌ No real customer_id available from previous test")
+        except Exception as e:
+            self.log_result("POST /print/customer (real customer_id)", False, f"❌ Exception: {str(e)}")
+        
+        # Test 4: POST /api/print/license with small fake base64 image payload and printer_ip "127.0.0.1"
+        try:
+            # Create a small fake base64 image (1x1 pixel PNG)
+            fake_base64_image = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            
+            license_print_payload = {
+                "image_data": f"data:image/png;base64,{fake_base64_image}",
+                "printer_ip": "127.0.0.1"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/print/license", json=license_print_payload) as response:
+                status_code = response.status
+                response_text = await response.text()
+                
+                # Expected: may still succeed generating PDF bytes since it doesn't contact printer; ensure response schema stable
+                if status_code == 200:
+                    try:
+                        data = await response.json()
+                        # Check for stable response schema
+                        expected_fields = ['success', 'bytes']  # Common fields for print responses
+                        has_stable_schema = any(field in data for field in expected_fields)
+                        
+                        if has_stable_schema:
+                            self.log_result(
+                                "POST /print/license (fake base64)", 
+                                True, 
+                                f"✅ Status: {status_code}, PDF generation successful, stable schema", 
+                                {'status_code': status_code, 'response_fields': list(data.keys()), 'bytes': data.get('bytes', 0)}
+                            )
+                        else:
+                            self.log_result(
+                                "POST /print/license (fake base64)", 
+                                False, 
+                                f"❌ Status: {status_code}, Unstable response schema", 
+                                {'status_code': status_code, 'response_fields': list(data.keys())}
+                            )
+                    except:
+                        self.log_result(
+                            "POST /print/license (fake base64)", 
+                            False, 
+                            f"❌ Status: {status_code}, Invalid JSON response", 
+                            {'status_code': status_code, 'response_preview': response_text[:100]}
+                        )
+                elif status_code in [400, 500, 503, 520]:
+                    # Check if error is clean and not a stack trace
+                    is_stack_trace = "Traceback" in response_text or "File \"" in response_text
+                    
+                    if not is_stack_trace:
+                        try:
+                            data = await response.json() if response.content_type == 'application/json' else {}
+                            self.log_result(
+                                "POST /print/license (fake base64)", 
+                                True, 
+                                f"✅ Status: {status_code}, Clean error response (acceptable)", 
+                                {'status_code': status_code, 'has_stack_trace': False, 'response_preview': response_text[:100]}
+                            )
+                        except:
+                            self.log_result(
+                                "POST /print/license (fake base64)", 
+                                True, 
+                                f"✅ Status: {status_code}, Clean error response (acceptable)", 
+                                {'status_code': status_code, 'has_stack_trace': False, 'response_preview': response_text[:100]}
+                            )
+                    else:
+                        self.log_result(
+                            "POST /print/license (fake base64)", 
+                            False, 
+                            f"❌ Status: {status_code}, Stack trace in response", 
+                            {'status_code': status_code, 'has_stack_trace': True, 'response_preview': response_text[:200]}
+                        )
+                else:
+                    self.log_result(
+                        "POST /print/license (fake base64)", 
+                        False, 
+                        f"❌ Unexpected status: {status_code}", 
+                        {'status_code': status_code, 'response_preview': response_text[:100]}
+                    )
+        except Exception as e:
+            self.log_result("POST /print/license (fake base64)", False, f"❌ Exception: {str(e)}")
+
     async def run_all_tests(self):
         """Run comprehensive backend regression tests for de-monolith (customers + vin)"""
         print("🚀 Backend Regression Testing - De-Monolith for Customers + VIN")
