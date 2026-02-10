@@ -1,7 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
+import { impactLight } from '../lib/haptics';
 
 export function VehicleEditorScreen({ vehicle, onSave, onCancel }) {
   const title = useMemo(() => [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' '), [vehicle]);
@@ -13,59 +16,87 @@ export function VehicleEditorScreen({ vehicle, onSave, onCancel }) {
   const [notes, setNotes] = useState(vehicle.notes || '');
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Vehicle</Text>
-      <Text style={styles.subtitle}>{title || vehicle.vin}</Text>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={styles.container}>
+        {/* Header with close */}
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Edit Vehicle</Text>
+            <Text style={styles.subtitle}>{title || vehicle.vin}</Text>
+          </View>
+          <Pressable onPress={onCancel} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.85 }]}>
+            <Ionicons name="close" size={18} color={colors.text} />
+          </Pressable>
+        </View>
 
-      <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Status</Text>
-        <View style={{ height: 10 }} />
-        <View style={styles.pills}>
-          {['active', 'trade', 'pending', 'sold'].map((s) => (
-            <Pressable key={s} onPress={() => setStatus(s)} style={({ pressed }) => [styles.pill, status === s && styles.pillActive, pressed && { opacity: 0.9 }]}>
-              <Text style={[styles.pillText, status === s && styles.pillTextActive]}>{s.toUpperCase()}</Text>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+          <GlassCard style={{ marginTop: 14 }}>
+            <Text style={styles.sectionLabel}>STATUS</Text>
+            <View style={{ height: 10 }} />
+            <View style={styles.pills}>
+              {['active', 'trade', 'pending', 'sold'].map((s) => (
+                <Pressable
+                  key={s}
+                  onPress={() => {
+                    impactLight();
+                    setStatus(s);
+                  }}
+                  style={({ pressed }) => [styles.pill, status === s && styles.pillActive, pressed && { opacity: 0.9 }]}
+                >
+                  <Text style={[styles.pillText, status === s && styles.pillTextActive]}>{s.toUpperCase()}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </GlassCard>
+
+          <GlassCard style={{ marginTop: 14 }}>
+            <Text style={styles.sectionLabel}>DETAILS</Text>
+            <View style={{ height: 10 }} />
+
+            <Text style={styles.fieldLabel}>Stock Number</Text>
+            <TextInput value={stockNumber} onChangeText={setStockNumber} placeholder="e.g., STK-2024-001" placeholderTextColor={colors.textMute} style={styles.input} />
+
+            <View style={{ height: 10 }} />
+            <Text style={styles.fieldLabel}>Price</Text>
+            <TextInput value={price} onChangeText={setPrice} placeholder="28500" placeholderTextColor={colors.textMute} keyboardType="numeric" style={styles.input} />
+
+            <View style={{ height: 10 }} />
+            <Text style={styles.fieldLabel}>Mileage</Text>
+            <TextInput value={mileage} onChangeText={setMileage} placeholder="45000" placeholderTextColor={colors.textMute} keyboardType="numeric" style={styles.input} />
+
+            <View style={{ height: 10 }} />
+            <Text style={styles.fieldLabel}>Notes</Text>
+            <TextInput value={notes} onChangeText={setNotes} placeholder="Internal notes..." placeholderTextColor={colors.textMute} style={[styles.input, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]} multiline />
+          </GlassCard>
+
+          <View style={{ height: 16 }} />
+
+          <View style={styles.actions}>
+            <Pressable onPress={onCancel} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
+              <Text style={styles.btnText}>Cancel</Text>
             </Pressable>
-          ))}
-        </View>
-      </GlassCard>
-
-      <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Details</Text>
-        <View style={{ height: 10 }} />
-
-        <ScrollView contentContainerStyle={{ gap: 10 }}>
-          <TextInput value={stockNumber} onChangeText={setStockNumber} placeholder="Stock #" placeholderTextColor={colors.textMute} style={styles.input} />
-          <TextInput value={price} onChangeText={setPrice} placeholder="Price (e.g., 28500)" placeholderTextColor={colors.textMute} keyboardType="numeric" style={styles.input} />
-          <TextInput value={mileage} onChangeText={setMileage} placeholder="Mileage (e.g., 45000)" placeholderTextColor={colors.textMute} keyboardType="numeric" style={styles.input} />
-          <TextInput value={notes} onChangeText={setNotes} placeholder="Notes" placeholderTextColor={colors.textMute} style={[styles.input, { height: 96, textAlignVertical: 'top', paddingTop: 12 }]} multiline />
+            <Pressable
+              onPress={() => {
+                impactLight();
+                onSave({
+                  ...vehicle,
+                  status,
+                  stockNumber: stockNumber.trim(),
+                  price: price.trim() ? Number(price) : null,
+                  mileage: mileage.trim() ? Number(mileage) : null,
+                  notes,
+                  updatedAt: new Date().toISOString(),
+                });
+              }}
+              style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && { opacity: 0.85 }]}
+            >
+              <Ionicons name="checkmark" size={16} color="#0E0E0E" />
+              <Text style={[styles.btnText, { color: '#0E0E0E' }]}>Save</Text>
+            </Pressable>
+          </View>
         </ScrollView>
-
-        <View style={{ height: 12 }} />
-
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <Pressable onPress={onCancel} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
-            <Text style={styles.btnText}>Cancel</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              const next = {
-                ...vehicle,
-                status,
-                stockNumber: stockNumber.trim(),
-                price: price.trim() ? Number(price) : null,
-                mileage: mileage.trim() ? Number(mileage) : null,
-                notes: notes,
-                updatedAt: new Date().toISOString(),
-              };
-              onSave(next);
-            }}
-            style={({ pressed }) => [styles.btn, styles.btnPrimary, pressed && { opacity: 0.85 }]}
-          >
-            <Text style={[styles.btnText, { color: '#0E0E0E' }]}>Save</Text>
-          </Pressable>
-        </View>
-      </GlassCard>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -75,23 +106,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 16,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   title: {
     color: colors.text,
-    fontSize: 22,
-    fontWeight: '900',
+    ...type.h1,
   },
   subtitle: {
-    marginTop: 6,
+    marginTop: 4,
     color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    ...type.label,
+    fontSize: 11,
   },
-  section: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '900',
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.stroke2,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionLabel: {
+    color: colors.textMute,
+    ...type.label,
+    fontSize: 11,
+  },
+  fieldLabel: {
+    color: colors.textMute,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
   pills: {
     flexDirection: 'row',
@@ -99,8 +149,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   pill: {
-    height: 34,
-    paddingHorizontal: 12,
+    height: 38,
+    paddingHorizontal: 14,
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.stroke2,
@@ -114,15 +164,14 @@ const styles = StyleSheet.create({
   },
   pillText: {
     color: colors.textMute,
+    ...type.label,
     fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.8,
   },
   pillTextActive: {
     color: colors.gold,
   },
   input: {
-    height: 46,
+    height: 48,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke2,
@@ -132,15 +181,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
+  actions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   btn: {
     flex: 1,
-    height: 46,
+    height: 50,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke2,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
   btnPrimary: {
     backgroundColor: colors.gold,
@@ -148,9 +203,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: colors.text,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
+    ...type.label,
+    fontSize: 12,
   },
 });
