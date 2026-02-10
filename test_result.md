@@ -127,6 +127,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Mobile Print Center sanity tests - printer + customer list endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/printer_v2.py, /app/backend/routes/customers_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 MOBILE PRINT CENTER SANITY TESTS COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of mobile Print Center endpoints as requested in review. ✅ CRITICAL VERIFICATION: 1) GET /api/customers/list?limit=5&skip=0: Successfully returned {customers,total} structure with status 200, retrieved 1 customer with total=1, response structure valid with required fields present, 2) POST /api/printer/test with {ip:'127.0.0.1'}: Returned status 520 with clear error response (no stack trace) - graceful failure handling working correctly for non-existent printer, 3) POST /api/print/customer with real customer_id and printer_ip '127.0.0.1': Status 200 success, customer fetch working correctly, generated PDF with 1652 bytes - no 500 errors due to missing customer fetch, proper customer lookup and print job processing, 4) POST /api/print/license with fake base64 image and printer_ip '127.0.0.1': Status 200 success, PDF generation successful with stable response schema (success, message, bytes fields), generated 1920 bytes - endpoint working correctly without printer connectivity. ✅ COMPREHENSIVE RESULTS: All 4 mobile Print Center endpoints tested successfully with expected behavior - customer list returns proper structure, printer test shows graceful failures, customer printing works with real customer data, license printing generates stable PDF responses. No regressions detected, all endpoints responding with appropriate status codes and clean error handling."
+
   - task: "Backend regression after strict cleanup"
     implemented: true
     working: true
