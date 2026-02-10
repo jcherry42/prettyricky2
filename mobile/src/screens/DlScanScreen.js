@@ -365,25 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
   },
-  scannerWrap: {
-    marginTop: 12,
-    height: 240,
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  scanFrame: {
-    position: 'absolute',
-    left: 18,
-    right: 18,
-    top: 54,
-    bottom: 54,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(214,178,94,0.70)',
-  },
+  // (removed legacy barcode scanner styles)
   row: {
     padding: 12,
     borderRadius: 16,
