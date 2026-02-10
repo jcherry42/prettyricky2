@@ -73,8 +73,8 @@ function Lamp({ size, variant }) {
           height: size * 0.86,
           borderRadius: 999,
           borderWidth: 1,
-          borderColor: 'rgba(255,45,45,0.22)',
-          backgroundColor: isOuter ? 'rgba(255,45,45,0.05)' : 'rgba(255,45,45,0.035)',
+          borderColor: 'rgba(255,35,35,0.20)',
+          backgroundColor: isOuter ? 'rgba(255,35,35,0.045)' : 'rgba(255,35,35,0.030)',
           overflow: 'hidden',
         }}
       />
