@@ -8,14 +8,16 @@ import { type } from '../theme/typography';
 export function BrandTaillights({ compact = false }) {
   return (
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
-      <View style={styles.cluster}>
-        <View style={[styles.light, styles.outer]}>
-          <View style={styles.ring} />
-          <View style={styles.center} />
-        </View>
-        <View style={[styles.light, styles.inner]}>
-          <View style={styles.ring} />
-          <View style={styles.center} />
+      <View style={styles.housing}>
+        <View style={styles.cluster}>
+          <View style={[styles.light, styles.outer]}>
+            <View style={styles.ring} />
+            <View style={styles.center} />
+          </View>
+          <View style={[styles.light, styles.inner]}>
+            <View style={styles.ring} />
+            <View style={styles.center} />
+          </View>
         </View>
       </View>
 
