@@ -1,12 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { impactMedium } from '../lib/haptics';
 
 // Glowing red assist button.
 export function AssistGlowButton({ onPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
-      <Pressable onPress={onPress} style={({ pressed }) => [styles.btn, pressed && { transform: [{ scale: 0.985 }], opacity: 0.94 }]}>
+      <Pressable onPress={() => { impactMedium(); onPress?.(); }} style={({ pressed }) => [styles.btn, pressed && { transform: [{ scale: 0.985 }], opacity: 0.94 }]}>
         <LinearGradient
           colors={['rgba(255,45,45,0.55)', 'rgba(120,0,0,0.25)', 'rgba(0,0,0,0.25)']}
           locations={[0, 0.6, 1]}
