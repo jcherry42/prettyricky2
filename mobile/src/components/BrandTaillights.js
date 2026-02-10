@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
   },
   ring: {
     position: 'absolute',
-    width: '86%',
-    height: '86%',
+    width: '84%',
+    height: '84%',
     borderRadius: 999,
     borderWidth: 2,
     borderColor: 'rgba(255,45,45,0.55)',
