@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InfotainmentShell } from './src/components/InfotainmentShell';
 import { Tabs } from './src/navigation/Tabs';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
+import { PttProvider } from './src/context/PttContext';
 
 export default function App() {
   return (
