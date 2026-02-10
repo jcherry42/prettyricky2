@@ -158,6 +158,18 @@ backend:
     stuck_count: 0
     priority: "high"
     needs_retesting: false
+
+  - task: "License OCR extraction fields - add license_number + expiration"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Updated /api/license/scan Vision prompt + normalization to include license_number and expiration (MM/DD/YYYY). Mobile DL tab now uploads front image (PII) for OCR; barcode path removed per user. Needs backend regression test."
     status_history:
       - working: false
         agent: "testing"
