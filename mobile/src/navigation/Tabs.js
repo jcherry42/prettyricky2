@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ConnectivityScreen } from '../screens/ConnectivityScreen';
 import { VinScanScreen } from '../screens/VinScanScreen';
 import { InventoryScreen } from '../screens/InventoryScreen';
 import { DlScanScreen } from '../screens/DlScanScreen';
 import { colors } from '../theme/colors';
-import { Text } from 'react-native';
+import { FloatingCheckButton } from '../components/FloatingCheckButton';
+import { CommandCenterModal } from '../components/CommandCenterModal';
 
 const Tab = createBottomTabNavigator();
 
