@@ -19,9 +19,10 @@ export function InfotainmentShell({ children }) {
         style={styles.highlight}
         start={{ x: 0.0, y: 0.0 }}
         end={{ x: 1.0, y: 1.0 }}
+        pointerEvents="none"
       />
 
-      {children}
+      <View style={styles.content}>{children}</View>
     </View>
   );
 }
