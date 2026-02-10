@@ -95,14 +95,23 @@ export function Tabs() {
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
 
+      <FloatingOnStarButton onPress={() => setTalkOpen(true)} />
+      <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
+
       {settings.sportMode ? (
         <>
           <FloatingPttButton
             flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
-            recording={false}
-            disabled={false}
-            onPressIn={() => setPttOpen(true)}
-            onPressOut={() => {}}
+            badgeDirection={settings.pttDirection === 'target_to_en' ? '→ EN' : 'EN →'}
+            recording={ptt.status === 'recording'}
+            disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
+            onPressIn={async () => {
+              setPttOpen(true);
+              await ptt.startRecording();
+            }}
+            onPressOut={async () => {
+              await ptt.stopRecording();
+            }}
           />
           <PttOverlay visible={pttOpen} onClose={() => setPttOpen(false)} />
         </>
