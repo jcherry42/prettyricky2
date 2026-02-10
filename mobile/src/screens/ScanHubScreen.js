@@ -56,23 +56,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...type.h2,
   },
-  cardBody: {
-    marginTop: 8,
-    color: colors.textDim,
-    ...type.bodyDim,
-    lineHeight: 18,
-  },
-  hint: {
-    borderRadius: 24,
-    borderColor: 'rgba(255,255,255,0.10)',
-  },
-  hintTitle: {
-    color: colors.text,
-    ...type.label,
-  },
-  hintBody: {
-    marginTop: 8,
-    color: colors.textDim,
-    ...type.bodyDim,
-  },
+  // descriptions removed
 });
