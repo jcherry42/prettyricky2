@@ -51,7 +51,6 @@ export function IntakeScreen() {
       <GlassCard style={styles.summary}>
         <Text style={styles.summaryLabel}>Vehicles</Text>
         <Text style={styles.summaryValue}>{inv.vehicles.length}</Text>
-        <Text style={styles.summaryBody}>Offline-first cache. Tap VIN Scan to add more.</Text>
       </GlassCard>
 
       <View style={{ height: 14 }} />
