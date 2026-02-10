@@ -88,7 +88,7 @@ export function Tabs() {
 
       <FloatingCheckButton onPress={() => setCcOpen(true)} onLongPress={() => setPrintOpen(true)} />
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
-      <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} licenseImageBase64={null} />
+      <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
 
       {settings.sportMode ? (
         <>
