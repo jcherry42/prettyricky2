@@ -84,8 +84,9 @@ export function PttProvider({ children }) {
         voice: 'auto',
       });
 
-      const mime = res?.mime_type || 'audio/mpeg';
-      const b64 = res?.audio_data || '';
+      const format = res?.format || 'mp3';
+      const b64 = res?.audio_base64 || '';
+      const mime = format === 'mp3' ? 'audio/mpeg' : `audio/${format}`;
       if (!b64) throw new Error('TTS returned empty audio');
 
       const uri = `data:${mime};base64,${b64}`;
