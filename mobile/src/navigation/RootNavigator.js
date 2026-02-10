@@ -82,6 +82,10 @@ export function RootNavigator() {
           name="Home"
           component={HomeScreen}
           options={{
+            headerShown: true,
+            headerTransparent: true,
+            headerTitle: () => <BrandTaillights compact />,
+            headerStyle: { backgroundColor: 'transparent' },
             tabBarIcon: ({ focused }) => (
               <Ionicons name={focused ? 'home' : 'home-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
             ),
