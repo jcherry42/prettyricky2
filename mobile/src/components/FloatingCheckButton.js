@@ -22,7 +22,7 @@ export function FloatingCheckButton({ onPress, onLongPress }) {
           start={{ x: 0.0, y: 0.0 }}
           end={{ x: 1.0, y: 1.0 }}
         />
-        <Text style={styles.label}>CHECK</Text>
+        <Text style={styles.icon}>⛭</Text>
       </Pressable>
     </View>
   );
