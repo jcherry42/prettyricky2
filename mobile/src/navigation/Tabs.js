@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ConnectivityScreen } from '../screens/ConnectivityScreen';
 import { VinScanScreen } from '../screens/VinScanScreen';
+import { InventoryScreen } from '../screens/InventoryScreen';
 import { DlScanScreen } from '../screens/DlScanScreen';
 import { colors } from '../theme/colors';
 import { Text } from 'react-native';
