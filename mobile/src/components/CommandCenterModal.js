@@ -257,7 +257,7 @@ export function CommandCenterModal({ visible, onClose }) {
                   <Text style={styles.btnText}>Save printer</Text>
                 </Pressable>
               </GlassCard>
-            </>
+            </ScrollView>
           ) : null}
         </View>
       </View>
