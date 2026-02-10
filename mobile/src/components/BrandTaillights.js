@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     ...type.label,
     fontSize: 12,
-    letterSpacing: 2.4,
+    letterSpacing: 2.6,
   },
 });
