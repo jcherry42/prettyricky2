@@ -820,6 +820,12 @@ CRITICAL INSTRUCTIONS:
             if extracted_data.get('zip_code'):
                 # Clean zip code - keep only digits and hyphen
                 extracted_data['zip_code'] = re.sub(r'[^\d-]', '', str(extracted_data['zip_code']))
+
+            if extracted_data.get('license_number'):
+                extracted_data['license_number'] = str(extracted_data['license_number']).strip()
+
+            if extracted_data.get('expiration'):
+                extracted_data['expiration'] = normalize_date_mmddyyyy(str(extracted_data['expiration']))
             
             # Calculate confidence
             confidence, notes = calculate_license_confidence(extracted_data)
