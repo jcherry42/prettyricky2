@@ -120,9 +120,8 @@
 
 test_plan:
   current_focus:
-    - "Backend URL refactor regression - Tower Talk and VoiceTranslator"
-    - "Mobile regression - Quick Add modal scrolling + keyboard"
-    - "ImportModal manual entry tab scroll testing"
+    - "Mobile: Driver's License OCR scan (front image upload)"
+    - "Backend: /api/license/scan now extracts license_number + expiration"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
   test_all: false
   test_priority: "high_first"
