@@ -2122,13 +2122,13 @@ class BackendTester:
 async def main():
     """Main test runner"""
     async with BackendTester() as tester:
-        # Run CORS connectivity tests as requested in review
-        success = await tester.run_cors_connectivity_tests()
+        # Run Mobile Print Center sanity tests as requested in review
+        success = await tester.run_all_tests()
         
         # Save detailed results
         with open('/app/backend_test_results.json', 'w') as f:
             json.dump({
-                'test_type': 'cors_connectivity',
+                'test_type': 'mobile_print_center_sanity',
                 'timestamp': datetime.now().isoformat(),
                 'backend_url': BACKEND_URL,
                 'total_tests': len(tester.results),
