@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, Modal } from 'react-native';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
-import { loadInventory, removeFromInventory } from '../lib/inventory';
+import { loadInventory, removeFromInventory, updateVehicle } from '../lib/inventory';
+import { VehicleEditorScreen } from './VehicleEditorScreen';
 
 function VehicleRow({ item, onRemove }) {
   const title = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
