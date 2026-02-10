@@ -363,4 +363,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  rowSelected: {
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(214,178,94,0.08)',
+  },
 });
