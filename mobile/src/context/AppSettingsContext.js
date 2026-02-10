@@ -50,6 +50,15 @@ export function AppSettingsProvider({ children }) {
 
   const upsertPrinter = useCallback(
     async ({ id, name, ip }) => {
+
+  const setEcoMode = useCallback(
+    async (ecoMode) => {
+      const next = { ...settings, ecoMode: !!ecoMode };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
       const clean = {
         id: id || `${Date.now()}_${Math.random().toString(16).slice(2)}`,
         name: String(name || '').trim() || 'Printer',
