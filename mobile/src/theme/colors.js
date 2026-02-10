@@ -1,0 +1,16 @@
+export const colors = {
+  bg0: '#040608',
+  bg1: '#070A0E',
+  panel: 'rgba(255,255,255,0.06)',
+  panel2: 'rgba(255,255,255,0.09)',
+  stroke: 'rgba(255,255,255,0.10)',
+  stroke2: 'rgba(255,255,255,0.16)',
+  text: 'rgba(255,255,255,0.92)',
+  textDim: 'rgba(255,255,255,0.70)',
+  textMute: 'rgba(255,255,255,0.55)',
+  gold: '#D6B25E',
+  red: '#FF2D2D',
+  green: '#40FF9B',
+  blue: '#5EA7FF',
+  shadow: 'rgba(0,0,0,0.6)',
+};
