@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   center: {
-    width: 9,
-    height: 9,
+    width: 8,
+    height: 8,
     borderRadius: 999,
     backgroundColor: 'rgba(255,75,75,0.75)',
   },
