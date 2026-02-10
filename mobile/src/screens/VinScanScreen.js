@@ -1,19 +1,47 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Ionicons } from '@expo/vector-icons';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
 import { addToInventory } from '../lib/inventory';
 import { colors } from '../theme/colors';
+import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
+import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
 
 const STORAGE_KEY = 'sc_v1_vins';
 
 function cleanVin(s) {
-  return String(s || '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 17);
+  return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
+}
+
+function HistoryItem({ item, onDecode }) {
+  const decoded = item.decoded?.vehicle;
+  const label = decoded ? `${decoded.year || ''} ${decoded.make || ''} ${decoded.model || ''}`.trim() : null;
+
+  return (
+    <Pressable
+      onPress={() => onDecode(item)}
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}
+    >
+      <View style={styles.rowLeft}>
+        <Text style={styles.vin}>{item.vin}</Text>
+        <Text style={styles.meta}>{item.source} · {new Date(item.savedAt).toLocaleDateString()}</Text>
+        {label ? <Text style={styles.decodedLine}>{label}</Text> : null}
+        {item.savedToInventoryAt ? (
+          <View style={styles.savedBadge}>
+            <Ionicons name="checkmark-circle" size={12} color={colors.green} />
+            <Text style={[styles.meta, { color: colors.green, marginTop: 0, marginLeft: 4 }]}>Saved to Inventory</Text>
+          </View>
+        ) : null}
+        {item.decodeError ? (
+          <Text style={[styles.meta, { color: colors.red }]} numberOfLines={1}>{item.decodeError}</Text>
+        ) : null}
+      </View>
+      <Ionicons name="chevron-forward" size={16} color={colors.textMute} />
+    </Pressable>
+  );
 }
 
 export function VinScanScreen() {
@@ -21,6 +49,7 @@ export function VinScanScreen() {
   const [scanning, setScanning] = useState(false);
   const [manualVin, setManualVin] = useState('');
   const [history, setHistory] = useState([]);
+  const [decoding, setDecoding] = useState(null);
 
   const canScan = useMemo(() => perm?.granted === true, [perm]);
 
@@ -32,25 +61,51 @@ export function VinScanScreen() {
   const saveVin = useCallback(async (vin, source) => {
     const v = cleanVin(vin);
     if (v.length < 8) return;
-
-    // Dedupe: remove existing VIN entries
     const without = history.filter((h) => h.vin !== v);
-
     const entry = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
       vin: v,
       source,
       savedAt: new Date().toISOString(),
     };
-
     const next = [entry, ...without].slice(0, 50);
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
+    impactMedium();
   }, [history]);
 
-  useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+  const decodeAndSave = useCallback(async (item) => {
+    try {
+      setDecoding(item.id);
+      const decoded = await decodeVinWithBackend(item.vin);
+      await addToInventory({ vin: item.vin, decoded });
+      const entry = {
+        ...item,
+        decoded,
+        decodedAt: new Date().toISOString(),
+        savedToInventoryAt: new Date().toISOString(),
+      };
+      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+      setHistory(next);
+      await saveJson(STORAGE_KEY, next);
+      notificationSuccess();
+    } catch (e) {
+      const entry = {
+        ...item,
+        decodeError: String(e?.message || e),
+        decodedAt: new Date().toISOString(),
+      };
+      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+      setHistory(next);
+      await saveJson(STORAGE_KEY, next);
+      notificationError();
+      Alert.alert('Decode Failed', String(e?.message || e));
+    } finally {
+      setDecoding(null);
+    }
+  }, [history]);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
 
   useEffect(() => {
     (async () => {
@@ -60,222 +115,206 @@ export function VinScanScreen() {
   }, []);
 
   const onBarCodeScanned = useCallback(
-    async ({ data, type }) => {
+    async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
       if (!v) return;
       setScanning(false);
-      await saveVin(v, `barcode:${type}`);
+      await saveVin(v, 'barcode');
     },
     [scanning, saveVin]
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>VIN</Text>
-      <Text style={styles.subtitle}>Scan fast. Save locally. Decode next.</Text>
-
-      <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Camera VIN Scan</Text>
-        <Text style={styles.body}>
-          Barcode scan only for now. (No OCR yet.)
-        </Text>
-
-        {!canScan && (
-          <Text style={[styles.body, { marginTop: 10, color: colors.red }]}>Camera permission not granted.</Text>
-        )}
-
-        {scanning && canScan && (
-          <View style={styles.scannerWrap}>
-            <BarCodeScanner
-              onBarCodeScanned={onBarCodeScanned}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.scanFrame} />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={styles.container}>
+        {/* Camera Scanner */}
+        <GlassCard>
+          <View style={styles.sectionRow}>
+            <Ionicons name="camera-outline" size={16} color={colors.gold} />
+            <Text style={styles.section}>Camera Scan</Text>
           </View>
-        )}
+
+          {!canScan && (
+            <Text style={[styles.body, { color: colors.red }]}>Camera permission not granted.</Text>
+          )}
+
+          {scanning && canScan && (
+            <View style={styles.scannerWrap}>
+              <BarCodeScanner onBarCodeScanned={onBarCodeScanned} style={StyleSheet.absoluteFill} />
+              <View style={styles.scanFrame} />
+            </View>
+          )}
+
+          <View style={{ height: 10 }} />
+
+          <Pressable
+            onPress={() => {
+              impactMedium();
+              setScanning((s) => !s);
+            }}
+            disabled={!canScan}
+            style={({ pressed }) => [styles.btn, scanning && styles.btnActive, (!canScan || pressed) && { opacity: 0.85 }]}
+          >
+            <Ionicons name={scanning ? 'stop' : 'scan'} size={16} color={scanning ? colors.red : colors.gold} />
+            <Text style={[styles.btnText, scanning && { color: colors.red }]}>{scanning ? 'Stop' : 'Scan'}</Text>
+          </Pressable>
+        </GlassCard>
 
         <View style={{ height: 12 }} />
 
-        <Pressable
-          onPress={() => setScanning((s) => !s)}
-          disabled={!canScan}
-          style={({ pressed }) => [styles.btn, (!canScan || pressed) && { opacity: 0.85 }]}
-        >
-          <Text style={styles.btnText}>{scanning ? 'Stop scan' : 'Start scan'}</Text>
-        </Pressable>
-      </GlassCard>
-
-      <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Manual entry</Text>
-        <View style={{ height: 10 }} />
-        <TextInput
-          value={manualVin}
-          onChangeText={(t) => setManualVin(cleanVin(t))}
-          placeholder="Enter VIN"
-          placeholderTextColor={colors.textMute}
-          autoCapitalize="characters"
-          style={styles.input}
-          maxLength={17}
-        />
-
-        <View style={{ height: 12 }} />
-
-        <Pressable
-          onPress={async () => {
-            await saveVin(manualVin, 'manual');
-            setManualVin('');
-          }}
-          style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
-        >
-          <Text style={styles.btnText}>Save VIN</Text>
-        </Pressable>
-      </GlassCard>
-
-      <GlassCard style={{ marginTop: 14, flex: 1 }}>
-        <Text style={styles.section}>Recent</Text>
-        <Text style={styles.body}>Stored locally on-device (offline-first). Tap to decode.</Text>
-        <View style={{ height: 10 }} />
-
-        <FlatList
-          data={history}
-          keyExtractor={(i) => i.id}
-          renderItem={({ item }) => (
+        {/* Manual Entry */}
+        <GlassCard>
+          <View style={styles.sectionRow}>
+            <Ionicons name="keypad-outline" size={16} color={colors.gold} />
+            <Text style={styles.section}>Manual Entry</Text>
+          </View>
+          <View style={{ height: 8 }} />
+          <View style={styles.inputRow}>
+            <TextInput
+              value={manualVin}
+              onChangeText={(t) => setManualVin(cleanVin(t))}
+              placeholder="Enter 17-digit VIN"
+              placeholderTextColor={colors.textMute}
+              autoCapitalize="characters"
+              style={[styles.input, { flex: 1 }]}
+              maxLength={17}
+            />
             <Pressable
               onPress={async () => {
-                // Decode VIN and add to Local Inventory.
-                try {
-                  const decoded = await decodeVinWithBackend(item.vin);
-                  await addToInventory({ vin: item.vin, decoded });
-
-                  const entry = {
-                    ...item,
-                    decoded,
-                    decodedAt: new Date().toISOString(),
-                    savedToInventoryAt: new Date().toISOString(),
-                  };
-                  const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
-                  setHistory(next);
-                  await saveJson(STORAGE_KEY, next);
-                } catch (e) {
-                  const entry = {
-                    ...item,
-                    decodeError: String(e?.message || e),
-                    decodedAt: new Date().toISOString(),
-                  };
-                  const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
-                  setHistory(next);
-                  await saveJson(STORAGE_KEY, next);
+                if (manualVin.length >= 8) {
+                  await saveVin(manualVin, 'manual');
+                  setManualVin('');
                 }
               }}
-              style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}
+              disabled={manualVin.length < 8}
+              style={({ pressed }) => [styles.iconBtn, (manualVin.length < 8 || pressed) && { opacity: 0.6 }]}
             >
-              <Text style={styles.vin}>{item.vin}</Text>
-              <Text style={styles.meta}>{item.source}</Text>
-              {item.decoded?.vehicle?.year ? (
-                <Text style={styles.decodedLine}>
-                  {item.decoded.vehicle.year} {item.decoded.vehicle.make} {item.decoded.vehicle.model}
-                </Text>
-              ) : null}
-              {item.savedToInventoryAt ? (
-                <Text style={[styles.decodedLine, { color: colors.green }]}>Saved to Local Inventory</Text>
-              ) : null}
-              {item.decodeError ? (
-                <Text style={[styles.decodedLine, { color: colors.red }]} numberOfLines={1}>
-                  {item.decodeError}
-                </Text>
-              ) : null}
+              <Ionicons name="add-circle" size={22} color={colors.gold} />
             </Pressable>
+          </View>
+          {manualVin.length > 0 && manualVin.length < 17 && (
+            <Text style={styles.charCount}>{manualVin.length}/17</Text>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-          contentContainerStyle={{ paddingBottom: 14 }}
-        />
-      </GlassCard>
-    </View>
+        </GlassCard>
+
+        <View style={{ height: 12 }} />
+
+        {/* History */}
+        <GlassCard style={{ flex: 1 }}>
+          <View style={styles.sectionRow}>
+            <Ionicons name="time-outline" size={16} color={colors.textMute} />
+            <Text style={styles.section}>Recent</Text>
+            <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto' }]}>{history.length} saved</Text>
+          </View>
+          <Text style={[styles.body, { fontSize: 11 }]}>Tap to decode & save to local inventory.</Text>
+          <View style={{ height: 8 }} />
+
+          <FlatList
+            data={history}
+            keyExtractor={(i) => i.id}
+            renderItem={({ item }) => <HistoryItem item={item} onDecode={decodeAndSave} />}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            contentContainerStyle={{ paddingBottom: 14 }}
+            showsVerticalScrollIndicator={false}
+          />
+        </GlassCard>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
-  title: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: '900',
-  },
-  subtitle: {
-    marginTop: 6,
-    color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
   section: {
     color: colors.text,
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 0.2,
+    ...type.label,
+    fontSize: 12,
   },
   body: {
-    marginTop: 8,
-    color: colors.textDim,
+    marginTop: 6,
+    color: colors.textMute,
     fontSize: 12,
     lineHeight: 16,
   },
   btn: {
-    height: 46,
+    height: 48,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke2,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  btnActive: {
+    borderColor: 'rgba(255,45,45,0.45)',
+    backgroundColor: 'rgba(255,45,45,0.08)',
   },
   btnText: {
     color: colors.gold,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+    ...type.label,
+    fontSize: 12,
   },
   input: {
-    height: 46,
+    height: 48,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke2,
     paddingHorizontal: 14,
     color: colors.text,
     backgroundColor: 'rgba(0,0,0,0.28)',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: 1.4,
+    letterSpacing: 2.0,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  charCount: {
+    marginTop: 6,
+    color: colors.textMute,
+    fontSize: 11,
+    textAlign: 'right',
+    letterSpacing: 0.5,
   },
   scannerWrap: {
-    marginTop: 12,
-    height: 240,
-    borderRadius: 20,
+    marginTop: 8,
+    height: 200,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.stroke2,
-  decodedLine: {
-    marginTop: 8,
-    color: colors.textDim,
-    fontSize: 12,
-  },
-
     backgroundColor: 'rgba(0,0,0,0.25)',
   },
   scanFrame: {
     position: 'absolute',
     left: 18,
     right: 18,
-    top: 54,
-    bottom: 54,
-    borderRadius: 16,
+    top: 44,
+    bottom: 44,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: 'rgba(214,178,94,0.70)',
   },
@@ -285,6 +324,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.stroke,
     backgroundColor: 'rgba(0,0,0,0.22)',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowLeft: {
+    flex: 1,
   },
   vin: {
     color: colors.text,
@@ -296,5 +340,16 @@ const styles = StyleSheet.create({
     marginTop: 6,
     color: colors.textMute,
     fontSize: 11,
+  },
+  decodedLine: {
+    marginTop: 6,
+    color: colors.textDim,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  savedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
   },
 });
