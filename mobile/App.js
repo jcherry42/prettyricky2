@@ -11,6 +11,12 @@ import { useFontsReady } from './src/hooks/useFontsReady';
 import { View } from 'react-native';
 
 export default function App() {
+  const fontsReady = useFontsReady();
+
+  if (!fontsReady) {
+    return <View style={{ flex: 1, backgroundColor: '#040608' }} />;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -18,7 +24,7 @@ export default function App() {
           <PttProvider>
             <InfotainmentShell>
               <NavigationContainer>
-                <Tabs />
+                <RootNavigator />
               </NavigationContainer>
               <StatusBar style="light" />
             </InfotainmentShell>
