@@ -113,7 +113,7 @@ export function Tabs() {
               await ptt.stopRecording();
             }}
           />
-          <PttOverlay visible={pttOpen} onClose={() => setPttOpen(false)} />
+          <PttOverlayView visible={pttOpen} onClose={() => setPttOpen(false)} />
         </>
       ) : null}
     </>
