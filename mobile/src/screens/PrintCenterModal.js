@@ -36,9 +36,13 @@ function CustomerRow({ item, onSelect }) {
   );
 }
 
-export function PrintCenterModal({ visible, onClose, licenseImageBase64 }) {
+export function PrintCenterModal({ visible, onClose }) {
   const { activePrinter } = useAppSettings();
   const [tab, setTab] = useState('customer');
+
+  const [dlSearch, setDlSearch] = useState('');
+  const [dlScans, setDlScans] = useState([]);
+  const [selectedDl, setSelectedDl] = useState(null);
 
   const [search, setSearch] = useState('');
   const [customers, setCustomers] = useState([]);
