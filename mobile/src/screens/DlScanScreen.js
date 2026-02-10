@@ -54,31 +54,100 @@ export function DlScanScreen() {
     await saveJson(STORAGE_KEY, next);
   }, [history]);
 
-  const onBarCodeScanned = useCallback(
-    async ({ data, type }) => {
-      if (!scanning) return;
-      setScanning(false);
+  const uploadAndExtract = useCallback(
+    async (asset) => {
+      try {
+        setScanState({ state: 'uploading', error: null });
 
-      // Many US DLs include AAMVA PDF417 on the back. We'll parse locally (offline).
-      const parsed = parseAamvaPdf417(data);
+        const uri = asset?.uri;
+        if (!uri) throw new Error('No image selected');
 
-      const entry = {
-        id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        source: `barcode:${type}`,
-        savedAt: new Date().toISOString(),
-        raw: parsed.raw.slice(0, 6000),
-        firstName: parsed.firstName,
-        lastName: parsed.lastName,
-        address: parsed.address,
-        dlNumber: cleanDlNumber(parsed.dlNumber),
-        expiration: parsed.expiration,
-        ok: parsed.ok,
-      };
+        const url = buildApiUrl('/api/license/scan');
+        if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
 
-      await saveEntry(entry);
+        const form = new FormData();
+        form.append('image', {
+          uri,
+          name: 'license.jpg',
+          type: asset?.mimeType || 'image/jpeg',
+        });
+
+        const res = await fetch(url, {
+          method: 'POST',
+          body: form,
+          // DO NOT set Content-Type manually for FormData
+        });
+
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(json?.detail || json?.error || `Upload failed: ${res.status}`);
+        }
+
+        const d = json?.extracted_data || {};
+
+        // Flatten to the 4 required outputs
+        const fullName = [d.first_name, d.middle_name, d.last_name].filter(Boolean).join(' ').trim();
+        const addressLine = [d.address, d.city, d.state, d.zip_code].filter(Boolean).join(', ').trim();
+
+        const entry = {
+          id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          source: 'ocr',
+          savedAt: new Date().toISOString(),
+          imageUrl: json?.image_url || null,
+          confidence: json?.confidence ?? null,
+          extractionNotes: json?.extraction_notes || null,
+
+          fullName,
+          address: addressLine,
+          dlNumber: d.license_number ? String(d.license_number).trim() : '',
+          expiration: d.expiration ? String(d.expiration).trim() : '',
+
+          raw: d,
+          ok: Boolean(fullName) && Boolean(addressLine) && Boolean(d.license_number) && Boolean(d.expiration),
+        };
+
+        await saveEntry(entry);
+        setScanState({ state: 'done', error: null });
+      } catch (e) {
+        setScanState({ state: 'error', error: String(e?.message || e) });
+      }
     },
-    [scanning, saveEntry]
+    [saveEntry]
   );
+
+  const takePhoto = useCallback(async () => {
+    if (cameraPerm?.granted !== true) {
+      setScanState({ state: 'error', error: 'Camera permission not granted' });
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+      base64: false,
+      allowsEditing: false,
+    });
+
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    await uploadAndExtract(asset);
+  }, [cameraPerm, uploadAndExtract]);
+
+  const pickFromLibrary = useCallback(async () => {
+    if (mediaPerm?.granted !== true) {
+      setScanState({ state: 'error', error: 'Photo library permission not granted' });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.9,
+      base64: false,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+
+    if (result.canceled) return;
+    const asset = result.assets?.[0];
+    await uploadAndExtract(asset);
+  }, [mediaPerm, uploadAndExtract]);
 
   return (
     <View style={styles.container}>
