@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { FloatingPttButton } from '../components/FloatingPttButton';
-import { PttOverlay } from '../components/PttOverlay';
+import { PttOverlayView } from '../components/PttOverlayView';
 import { usePtt } from '../context/PttContext';
 import { FloatingOnStarButton } from '../components/FloatingOnStarButton';
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
