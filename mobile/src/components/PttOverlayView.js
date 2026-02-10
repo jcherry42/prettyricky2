@@ -1,14 +1,17 @@
 import React, { useMemo } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import { type } from '../theme/typography';
 import { GlassCard } from './GlassCard';
 import { usePtt } from '../context/PttContext';
+import { impactLight, impactMedium } from '../lib/haptics';
 
 function flagFor(lang) {
-  if (lang === 'es') return '🇲🇽';
-  if (lang === 'fr') return '🇫🇷';
-  if (lang === 'ko') return '🇰🇷';
-  return '🏁';
+  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
+  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
+  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
+  return '\ud83c\udff3\ufe0f';
 }
 
 function langName(lang) {
@@ -22,11 +25,10 @@ function langName(lang) {
 export function PttOverlayView({ visible, onClose }) {
   const ptt = usePtt();
 
-  const label = useMemo(() => {
-    const left = ptt.direction === 'en_to_target' ? `EN` : `${flagFor(ptt.targetLang)} ${ptt.targetLang.toUpperCase()}`;
-    const right = ptt.direction === 'en_to_target' ? `${flagFor(ptt.targetLang)} ${langName(ptt.targetLang)}` : 'EN';
-    return `${left} → ${right}`;
-  }, [ptt.direction, ptt.targetLang]);
+  const fromLang = ptt.direction === 'en_to_target' ? 'English' : langName(ptt.targetLang);
+  const toLang = ptt.direction === 'en_to_target' ? langName(ptt.targetLang) : 'English';
+  const fromFlag = ptt.direction === 'en_to_target' ? '\ud83c\uddfa\ud83c\uddf8' : flagFor(ptt.targetLang);
+  const toFlag = ptt.direction === 'en_to_target' ? flagFor(ptt.targetLang) : '\ud83c\uddfa\ud83c\uddf8';
 
   const canSpeak = Boolean(ptt.result?.translated_text) && (ptt.status === 'done' || ptt.status === 'speaking');
 
@@ -36,71 +38,112 @@ export function PttOverlayView({ visible, onClose }) {
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
         <View style={styles.center}>
-          <GlassCard style={{ width: '92%' }}>
+          <View style={styles.card}>
+            {/* Header */}
             <View style={styles.headRow}>
-              <Text style={styles.title}>VOICE TRANSLATOR</Text>
-              <Text style={styles.langBadge}>{label}</Text>
+              <View style={styles.titleRow}>
+                <Ionicons name="mic" size={16} color="#9333EA" />
+                <Text style={styles.title}>VOICE TRANSLATOR</Text>
+              </View>
+              <Pressable onPress={onClose} style={styles.closeIcon}>
+                <Ionicons name="close" size={16} color={colors.textMute} />
+              </Pressable>
             </View>
 
-            <Text style={styles.body}>Hold the floating mic button to talk. Release to translate.</Text>
-
-            <View style={{ height: 12 }} />
-
-            <Pressable onPress={ptt.toggleDirection} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
-              <Text style={styles.btnText}>Toggle direction</Text>
+            {/* Direction Toggle */}
+            <Pressable
+              onPress={() => {
+                impactMedium();
+                ptt.toggleDirection();
+              }}
+              style={({ pressed }) => [styles.directionRow, pressed && { opacity: 0.88 }]}
+            >
+              <View style={styles.dirLang}>
+                <Text style={styles.dirFlag}>{fromFlag}</Text>
+                <Text style={styles.dirName}>{fromLang}</Text>
+              </View>
+              <View style={styles.dirArrow}>
+                <Ionicons name="swap-horizontal" size={20} color={colors.gold} />
+              </View>
+              <View style={[styles.dirLang, { alignItems: 'flex-end' }]}>
+                <Text style={styles.dirFlag}>{toFlag}</Text>
+                <Text style={styles.dirName}>{toLang}</Text>
+              </View>
             </Pressable>
 
-            {ptt.status === 'recording' ? (
-              <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator color={colors.red} />
-                <Text style={[styles.body, { marginLeft: 10, color: colors.red }]}>Recording…</Text>
+            <Text style={styles.hint}>Hold the floating mic button to talk. Release to translate.</Text>
+
+            {/* Status */}
+            {ptt.status === 'recording' && (
+              <View style={styles.statusRow}>
+                <View style={styles.recordingDot} />
+                <Text style={[styles.statusText, { color: colors.red }]}>Recording\u2026</Text>
               </View>
-            ) : null}
-
-            {ptt.status === 'processing' ? (
-              <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator color={colors.gold} />
-                <Text style={[styles.body, { marginLeft: 10 }]}>Processing…</Text>
+            )}
+            {ptt.status === 'processing' && (
+              <View style={styles.statusRow}>
+                <ActivityIndicator color={colors.gold} size="small" />
+                <Text style={styles.statusText}>Processing\u2026</Text>
               </View>
-            ) : null}
+            )}
+            {ptt.status === 'speaking' && (
+              <View style={styles.statusRow}>
+                <Ionicons name="volume-high" size={16} color={colors.blue} />
+                <Text style={[styles.statusText, { color: colors.blue }]}>Speaking\u2026</Text>
+              </View>
+            )}
 
-            {ptt.error ? <Text style={[styles.body, { marginTop: 12, color: colors.red }]}>{ptt.error}</Text> : null}
+            {ptt.error && (
+              <View style={[styles.statusRow, { marginTop: 8 }]}>
+                <Ionicons name="alert-circle" size={14} color={colors.red} />
+                <Text style={[styles.statusText, { color: colors.red }]}>{ptt.error}</Text>
+              </View>
+            )}
 
+            {/* Results */}
             {ptt.result?.translated_text ? (
-              <View style={{ marginTop: 14 }}>
-                <Text style={styles.section}>Transcript</Text>
-                <Text style={styles.cardText}>{ptt.result.transcript}</Text>
+              <View style={styles.resultSection}>
+                <View style={styles.resultBlock}>
+                  <Text style={styles.resultLabel}>TRANSCRIPT</Text>
+                  <Text style={styles.resultText}>{ptt.result.transcript}</Text>
+                </View>
 
-                <View style={{ height: 10 }} />
+                <View style={styles.divider} />
 
-                <Text style={styles.section}>Translation</Text>
-                <Text style={styles.cardText}>{ptt.result.translated_text}</Text>
+                <View style={styles.resultBlock}>
+                  <Text style={styles.resultLabel}>TRANSLATION</Text>
+                  <Text style={[styles.resultText, { color: colors.gold }]}>{ptt.result.translated_text}</Text>
+                </View>
 
                 <View style={{ height: 12 }} />
 
-                <Pressable
-                  onPress={ptt.speakTranslated}
-                  disabled={!canSpeak}
-                  style={({ pressed }) => [styles.btn, (!canSpeak || pressed) && { opacity: 0.85 }]}
-                >
-                  <Text style={styles.btnText}>{ptt.status === 'speaking' ? 'Speaking…' : 'Speak'}</Text>
-                </Pressable>
+                <View style={styles.resultActions}>
+                  <Pressable
+                    onPress={() => {
+                      impactLight();
+                      ptt.speakTranslated();
+                    }}
+                    disabled={!canSpeak}
+                    style={({ pressed }) => [styles.btn, (!canSpeak || pressed) && { opacity: 0.7 }]}
+                  >
+                    <Ionicons name="volume-high" size={16} color={colors.gold} />
+                    <Text style={styles.btnText}>{ptt.status === 'speaking' ? 'Speaking\u2026' : 'Speak'}</Text>
+                  </Pressable>
 
-                <View style={{ height: 10 }} />
-
-                <Pressable onPress={ptt.reset} style={({ pressed }) => [styles.btnGhost, pressed && { opacity: 0.85 }]}>
-                  <Text style={styles.btnGhostText}>Clear</Text>
-                </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      impactLight();
+                      ptt.reset();
+                    }}
+                    style={({ pressed }) => [styles.btnGhost, pressed && { opacity: 0.7 }]}
+                  >
+                    <Ionicons name="refresh" size={14} color={colors.textMute} />
+                    <Text style={styles.btnGhostText}>Clear</Text>
+                  </Pressable>
+                </View>
               </View>
             ) : null}
-
-            <View style={{ height: 12 }} />
-
-            <Pressable onPress={onClose} style={({ pressed }) => [styles.close, pressed && { opacity: 0.85 }]}
-            >
-              <Text style={styles.closeText}>Close</Text>
-            </Pressable>
-          </GlassCard>
+          </View>
         </View>
       </View>
     </Modal>
@@ -110,95 +153,165 @@ export function PttOverlayView({ visible, onClose }) {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.72)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   center: {
-    width: '100%',
-    alignItems: 'center',
+    width: '92%',
+  },
+  card: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(147,51,234,0.25)',
+    backgroundColor: 'rgba(10,12,16,0.96)',
+    padding: 18,
   },
   headRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 14,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   title: {
     color: colors.text,
-    fontSize: 13,
-    fontWeight: '900',
+    ...type.label,
+    fontSize: 12,
     letterSpacing: 2.0,
   },
-  langBadge: {
-    color: colors.gold,
-    fontSize: 12,
-    fontWeight: '900',
+  closeIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  body: {
-    marginTop: 10,
-    color: colors.textDim,
-    fontSize: 12,
-    lineHeight: 16,
+  directionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    marginBottom: 12,
   },
-  section: {
-    color: colors.textMute,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+  dirLang: {
+    flex: 1,
+    gap: 4,
   },
-  cardText: {
-    marginTop: 6,
+  dirFlag: {
+    fontSize: 20,
+  },
+  dirName: {
     color: colors.text,
     fontSize: 12,
-    lineHeight: 16,
+    fontWeight: '700',
+  },
+  dirArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.30)',
+    backgroundColor: 'rgba(214,178,94,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hint: {
+    color: colors.textMute,
+    fontSize: 11,
+    lineHeight: 15,
+    marginBottom: 8,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+  },
+  statusText: {
+    color: colors.textDim,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  recordingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.red,
+  },
+  resultSection: {
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(0,0,0,0.20)',
+  },
+  resultBlock: {
+    gap: 4,
+  },
+  resultLabel: {
+    color: colors.textMute,
+    ...type.label,
+    fontSize: 9,
+  },
+  resultText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.stroke,
+    marginVertical: 10,
+  },
+  resultActions: {
+    flexDirection: 'row',
+    gap: 8,
   },
   btn: {
-    height: 46,
-    borderRadius: 16,
+    flex: 1,
+    height: 44,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.stroke2,
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
   btnText: {
     color: colors.gold,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
+    ...type.label,
+    fontSize: 11,
   },
   btnGhost: {
-    height: 40,
+    flex: 1,
+    height: 44,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.20)',
+    backgroundColor: 'rgba(0,0,0,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
   },
   btnGhostText: {
     color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
-  },
-  close: {
-    height: 44,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.20)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeText: {
-    color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
+    ...type.label,
+    fontSize: 11,
   },
 });

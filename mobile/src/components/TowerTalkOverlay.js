@@ -1,16 +1,21 @@
-import React, { useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { colors } from '../theme/colors';
+import { type } from '../theme/typography';
 import { GlassCard } from './GlassCard';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
+import { playBase64Audio } from '../lib/audioPlayback';
+import { impactMedium, notificationSuccess, notificationError, selectionTap } from '../lib/haptics';
 
 function flagFor(lang) {
-  if (lang === 'es') return '🇲🇽';
-  if (lang === 'fr') return '🇫🇷';
-  if (lang === 'ko') return '🇰🇷';
-  return '🏁';
+  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
+  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
+  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
+  return '\ud83c\udff3\ufe0f';
 }
 
 export function TowerTalkOverlay({ visible, onClose }) {
@@ -24,18 +29,22 @@ export function TowerTalkOverlay({ visible, onClose }) {
   const [state, setState] = useState({ status: 'idle', error: null });
   const [reply, setReply] = useState('');
   const [translated, setTranslated] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const sportOn = Boolean(settings.sportMode);
   const flag = useMemo(() => flagFor(lang), [lang]);
 
-  async function runTowerTalk() {
+  const runTowerTalk = useCallback(async () => {
     try {
+      impactMedium();
       setState({ status: 'loading', error: null });
       setReply('');
       setTranslated('');
+      setCopied(false);
 
       const res = await apiFetch('/api/tower-talk', {
         method: 'POST',
+        timeout: 20000,
         body: JSON.stringify({
           situation: situation.trim(),
           context: {
@@ -47,14 +56,17 @@ export function TowerTalkOverlay({ visible, onClose }) {
 
       setReply(res?.response || '');
       setState({ status: 'done', error: null });
+      notificationSuccess();
     } catch (e) {
       setState({ status: 'error', error: String(e?.message || e) });
+      notificationError();
     }
-  }
+  }, [situation, customerName, vehicle]);
 
-  async function translateReply() {
+  const translateReply = useCallback(async () => {
     try {
       if (!reply.trim()) return;
+      impactMedium();
       setState({ status: 'translating', error: null });
       const res = await apiFetch('/api/translate', {
         method: 'POST',
@@ -62,129 +74,180 @@ export function TowerTalkOverlay({ visible, onClose }) {
       });
       setTranslated(res?.translated_text || '');
       setState({ status: 'done', error: null });
+      notificationSuccess();
     } catch (e) {
       setState({ status: 'error', error: String(e?.message || e) });
+      notificationError();
     }
-  }
+  }, [reply, lang]);
 
-  async function speak(text, language) {
+  const speak = useCallback(async (text, language) => {
     try {
       if (!text?.trim()) return;
+      impactMedium();
       setState({ status: 'speaking', error: null });
-      await ttsSpeak({ text, language, voice: 'auto' });
+      const res = await ttsSpeak({ text, language, voice: 'auto' });
+      if (res?.audio_base64) {
+        await playBase64Audio({ base64: res.audio_base64, format: res.format || 'mp3' });
+      }
       setState({ status: 'done', error: null });
     } catch (e) {
       setState({ status: 'error', error: String(e?.message || e) });
     }
-  }
+  }, []);
+
+  const copyToClipboard = useCallback(async (text) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      setCopied(true);
+      selectionTap();
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      // silently fail
+    }
+  }, []);
+
+  const isLoading = state.status === 'loading' || state.status === 'translating' || state.status === 'speaking';
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
-      <View style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={styles.backdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View style={styles.center}>
-          <GlassCard style={{ width: '92%' }}>
-            <View style={styles.headRow}>
-              <Text style={styles.title}>TOWER TALK</Text>
-              <Text style={styles.langBadge}>{sportOn ? `SPORT · ${flag}` : 'SPORT OFF'}</Text>
-            </View>
-
-            <ScrollView contentContainerStyle={{ paddingBottom: 10 }}>
-              <Text style={styles.body}>High-performance sales authority. Short. Calm. Closing-focused.</Text>
-
-              <View style={{ height: 12 }} />
-
-              <TextInput
-                value={situation}
-                onChangeText={setSituation}
-                placeholder="Situation (e.g., customer asking about price, wants to think, payment concern…)"
-                placeholderTextColor={colors.textMute}
-                style={[styles.input, { height: 96, textAlignVertical: 'top', paddingTop: 12 }]}
-                multiline
-              />
-
-              <View style={{ height: 10 }} />
-
-              <TextInput
-                value={customerName}
-                onChangeText={setCustomerName}
-                placeholder="Customer name (optional)"
-                placeholderTextColor={colors.textMute}
-                style={styles.input}
-              />
-
-              <View style={{ height: 10 }} />
-
-              <TextInput
-                value={vehicle}
-                onChangeText={setVehicle}
-                placeholder="Vehicle (optional)"
-                placeholderTextColor={colors.textMute}
-                style={styles.input}
-              />
-
-              <View style={{ height: 12 }} />
-
-              <Pressable onPress={runTowerTalk} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
-                <Text style={styles.btnText}>Generate</Text>
-                {state.status === 'loading' ? (
-                  <View style={{ marginLeft: 10 }}>
-                    <ActivityIndicator color={colors.gold} />
-                  </View>
-                ) : null}
-              </Pressable>
-
-              {state.error ? <Text style={[styles.body, { marginTop: 12, color: colors.red }]}>{state.error}</Text> : null}
-
-              {reply ? (
-                <View style={{ marginTop: 14 }}>
-                  <Text style={styles.section}>Reply</Text>
-                  <Text style={styles.cardText}>{reply}</Text>
-
-                  <View style={{ height: 12 }} />
-
-                  <Pressable onPress={() => speak(reply, 'en')} style={({ pressed }) => [styles.btnGhost, pressed && { opacity: 0.85 }]}>
-                    <Text style={styles.btnGhostText}>Speak (EN)</Text>
+          <View style={styles.center}>
+            <View style={styles.card}>
+              {/* Header */}
+              <View style={styles.headRow}>
+                <View style={styles.titleRow}>
+                  <View style={styles.titleDot} />
+                  <Text style={styles.title}>TOWER TALK</Text>
+                </View>
+                <View style={styles.badgeRow}>
+                  {sportOn && <Text style={styles.langBadge}>{flag}</Text>}
+                  <Pressable onPress={onClose} style={styles.closeIcon}>
+                    <Ionicons name="close" size={16} color={colors.textMute} />
                   </Pressable>
+                </View>
+              </View>
 
-                  {sportOn ? (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }} keyboardShouldPersistTaps="handled">
+                <Text style={styles.body}>High-performance sales authority. Short. Calm. Closing-focused.</Text>
+
+                <View style={{ height: 14 }} />
+
+                <TextInput
+                  value={situation}
+                  onChangeText={setSituation}
+                  placeholder="What's the situation? (e.g., customer asking about price, wants to think it over...)"
+                  placeholderTextColor={colors.textMute}
+                  style={[styles.input, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]}
+                  multiline
+                  maxLength={500}
+                />
+                <Text style={styles.charCount}>{situation.length}/500</Text>
+
+                <View style={{ height: 8 }} />
+
+                <View style={styles.fieldRow}>
+                  <TextInput
+                    value={customerName}
+                    onChangeText={setCustomerName}
+                    placeholder="Customer name"
+                    placeholderTextColor={colors.textMute}
+                    style={[styles.input, { flex: 1 }]}
+                  />
+                  <TextInput
+                    value={vehicle}
+                    onChangeText={setVehicle}
+                    placeholder="Vehicle"
+                    placeholderTextColor={colors.textMute}
+                    style={[styles.input, { flex: 1 }]}
+                  />
+                </View>
+
+                <View style={{ height: 14 }} />
+
+                <Pressable
+                  onPress={runTowerTalk}
+                  disabled={isLoading || !situation.trim()}
+                  style={({ pressed }) => [styles.generateBtn, (isLoading || !situation.trim() || pressed) && { opacity: 0.8 }]}
+                >
+                  {state.status === 'loading' ? (
+                    <ActivityIndicator color="#0E0E0E" />
+                  ) : (
                     <>
-                      <View style={{ height: 10 }} />
-                      <Pressable onPress={translateReply} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
-                        <Text style={styles.btnText}>Translate {flag}</Text>
-                        {state.status === 'translating' ? (
-                          <View style={{ marginLeft: 10 }}>
-                            <ActivityIndicator color={colors.gold} />
+                      <Ionicons name="flash" size={16} color="#0E0E0E" />
+                      <Text style={styles.generateBtnText}>Generate</Text>
+                    </>
+                  )}
+                </Pressable>
+
+                {state.error && (
+                  <View style={styles.errorRow}>
+                    <Ionicons name="alert-circle" size={14} color={colors.red} />
+                    <Text style={[styles.body, { color: colors.red, marginTop: 0, marginLeft: 6, flex: 1 }]}>{state.error}</Text>
+                  </View>
+                )}
+
+                {reply ? (
+                  <View style={styles.replySection}>
+                    <View style={styles.replySectionHeader}>
+                      <Text style={styles.sectionLabel}>RESPONSE</Text>
+                      <View style={styles.replyActions}>
+                        <Pressable onPress={() => copyToClipboard(reply)} style={styles.actionIcon}>
+                          <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={16} color={copied ? colors.green : colors.textMute} />
+                        </Pressable>
+                        <Pressable onPress={() => speak(reply, 'en')} style={styles.actionIcon}>
+                          <Ionicons name="volume-high-outline" size={16} color={colors.textMute} />
+                        </Pressable>
+                      </View>
+                    </View>
+                    <Text style={styles.replyText}>{reply}</Text>
+
+                    {sportOn && (
+                      <>
+                        <View style={{ height: 12 }} />
+                        <Pressable
+                          onPress={translateReply}
+                          disabled={state.status === 'translating'}
+                          style={({ pressed }) => [styles.translateBtn, (state.status === 'translating' || pressed) && { opacity: 0.8 }]}
+                        >
+                          {state.status === 'translating' ? (
+                            <ActivityIndicator color={colors.gold} size="small" />
+                          ) : (
+                            <>
+                              <Ionicons name="language" size={14} color={colors.gold} />
+                              <Text style={styles.translateBtnText}>Translate {flag}</Text>
+                            </>
+                          )}
+                        </Pressable>
+
+                        {translated ? (
+                          <View style={{ marginTop: 12 }}>
+                            <View style={styles.replySectionHeader}>
+                              <Text style={styles.sectionLabel}>TRANSLATION</Text>
+                              <View style={styles.replyActions}>
+                                <Pressable onPress={() => copyToClipboard(translated)} style={styles.actionIcon}>
+                                  <Ionicons name="copy-outline" size={16} color={colors.textMute} />
+                                </Pressable>
+                                <Pressable onPress={() => speak(translated, lang)} style={styles.actionIcon}>
+                                  <Ionicons name="volume-high-outline" size={16} color={colors.textMute} />
+                                </Pressable>
+                              </View>
+                            </View>
+                            <Text style={styles.replyText}>{translated}</Text>
                           </View>
                         ) : null}
-                      </Pressable>
-
-                      {translated ? (
-                        <>
-                          <View style={{ height: 12 }} />
-                          <Text style={styles.section}>Translation</Text>
-                          <Text style={styles.cardText}>{translated}</Text>
-                          <View style={{ height: 12 }} />
-                          <Pressable onPress={() => speak(translated, lang)} style={({ pressed }) => [styles.btnGhost, pressed && { opacity: 0.85 }]}>
-                            <Text style={styles.btnGhostText}>Speak ({lang.toUpperCase()})</Text>
-                          </Pressable>
-                        </>
-                      ) : null}
-                    </>
-                  ) : null}
-                </View>
-              ) : null}
-
-              <View style={{ height: 12 }} />
-
-              <Pressable onPress={onClose} style={({ pressed }) => [styles.close, pressed && { opacity: 0.85 }]}>
-                <Text style={styles.closeText}>Close</Text>
-              </Pressable>
-            </ScrollView>
-          </GlassCard>
+                      </>
+                    )}
+                  </View>
+                ) : null}
+              </ScrollView>
+            </View>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -192,106 +255,160 @@ export function TowerTalkOverlay({ visible, onClose }) {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.65)',
+    backgroundColor: 'rgba(0,0,0,0.72)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   center: {
-    width: '100%',
-    alignItems: 'center',
+    width: '92%',
+    maxHeight: '85%',
+  },
+  card: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,45,45,0.25)',
+    backgroundColor: 'rgba(10,12,16,0.96)',
+    padding: 18,
+    maxHeight: '100%',
   },
   headRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  titleDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.red,
   },
   title: {
     color: colors.text,
+    ...type.label,
     fontSize: 13,
-    fontWeight: '900',
     letterSpacing: 2.0,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   langBadge: {
-    color: colors.red,
-    fontSize: 12,
-    fontWeight: '900',
+    fontSize: 16,
+  },
+  closeIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   body: {
-    marginTop: 10,
+    marginTop: 6,
     color: colors.textDim,
     fontSize: 12,
     lineHeight: 16,
   },
-  section: {
-    color: colors.textMute,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-  cardText: {
-    marginTop: 6,
-    color: colors.text,
-    fontSize: 12,
-    lineHeight: 16,
+  fieldRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   input: {
-    borderRadius: 16,
+    height: 48,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.stroke2,
     paddingHorizontal: 14,
     color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.28)',
+    backgroundColor: 'rgba(0,0,0,0.30)',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '600',
   },
-  btn: {
-    height: 46,
+  charCount: {
+    marginTop: 4,
+    color: colors.textMute,
+    fontSize: 10,
+    textAlign: 'right',
+  },
+  generateBtn: {
+    height: 50,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: 8,
   },
-  btnText: {
-    color: colors.gold,
+  generateBtnText: {
+    color: '#0E0E0E',
+    ...type.label,
     fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
   },
-  btnGhost: {
-    height: 40,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.20)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  errorRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
-  btnGhostText: {
-    color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
-  },
-  close: {
-    height: 44,
+  replySection: {
+    marginTop: 16,
+    padding: 14,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke,
     backgroundColor: 'rgba(0,0,0,0.20)',
+  },
+  replySectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sectionLabel: {
+    color: colors.textMute,
+    ...type.label,
+    fontSize: 10,
+  },
+  replyActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  actionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeText: {
-    color: colors.textMute,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
+  replyText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '500',
+  },
+  translateBtn: {
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.40)',
+    backgroundColor: 'rgba(214,178,94,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  translateBtnText: {
+    color: colors.gold,
+    ...type.label,
+    fontSize: 11,
   },
 });
