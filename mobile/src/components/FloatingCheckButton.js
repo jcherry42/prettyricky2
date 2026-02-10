@@ -50,10 +50,9 @@ const styles = StyleSheet.create({
     elevation: 10,
     backgroundColor: 'rgba(214,178,94,0.12)',
   },
-  label: {
+  icon: {
     color: '#0E0E0E',
-    fontSize: 12,
+    fontSize: 22,
     fontWeight: '900',
-    letterSpacing: 1.2,
   },
 });
