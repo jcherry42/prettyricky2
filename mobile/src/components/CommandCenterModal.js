@@ -56,7 +56,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
 }
 
 export function CommandCenterModal({ visible, onClose }) {
-  const { settings, setDefaultTargetLanguage, setSportMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
+  const { settings, setDefaultTargetLanguage, setSportMode, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
   const [activeTab, setActiveTab] = useState('settings');
 
   const [printerName, setPrinterName] = useState('');
