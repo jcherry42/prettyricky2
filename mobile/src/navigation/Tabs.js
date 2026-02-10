@@ -86,6 +86,15 @@ export function Tabs() {
 
       <FloatingCheckButton onPress={() => setCcOpen(true)} />
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
+
+      <FloatingPttButton
+        flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
+        recording={false}
+        disabled={false}
+        onPressIn={() => setPttOpen(true)}
+        onPressOut={() => {}}
+      />
+      <PttOverlay visible={pttOpen} onClose={() => setPttOpen(false)} />
     </>
   );
 }
