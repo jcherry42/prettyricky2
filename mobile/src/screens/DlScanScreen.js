@@ -245,12 +245,17 @@ export function DlScanScreen() {
               id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
               source: 'manual',
               savedAt: new Date().toISOString(),
-              raw: null,
-              firstName: firstName.trim(),
-              lastName: lastName.trim(),
+              imageUrl: null,
+              confidence: null,
+              extractionNotes: null,
+
+              fullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
               address: address.trim(),
               dlNumber: dlNumber.trim(),
               expiration: expiration.trim(),
+
+              raw: null,
+              ok: Boolean(firstName.trim() || lastName.trim()) && Boolean(address.trim()) && Boolean(dlNumber.trim()) && Boolean(expiration.trim()),
             };
             await saveEntry(entry);
             setFirstName('');
