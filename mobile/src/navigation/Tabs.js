@@ -4,8 +4,7 @@ import { Text } from 'react-native';
 import { FloatingPttButton } from '../components/FloatingPttButton';
 import { PttOverlayView } from '../components/PttOverlayView';
 import { usePtt } from '../context/PttContext';
-import { FloatingOnStarButton } from '../components/FloatingOnStarButton';
-import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
+// (Tabs navigator deprecated; RootNavigator is used in App.js)
 import { useAppSettings } from '../context/AppSettingsContext';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ConnectivityScreen } from '../screens/ConnectivityScreen';
