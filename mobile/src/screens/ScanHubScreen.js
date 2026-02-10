@@ -6,14 +6,12 @@ import { GlassCard } from '../components/GlassCard';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
 
-function ActionCard({ title, body, accent, onPress }) {
+function ActionCard({ title, accent, onPress }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.cardPress, pressed && { opacity: 0.9 }]}
-    >
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.cardPress, pressed && { opacity: 0.9 }]}>
       <GlassCard style={[styles.card, { borderColor: accent }]}
       >
         <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardBody}>{body}</Text>
       </GlassCard>
     </Pressable>
   );
