@@ -6,10 +6,15 @@ import { colors } from '../theme/colors';
 // CHECK button: short press opens Command Center; long press opens Print Center.
 
 
-export function FloatingCheckButton({ onPress }) {
+export function FloatingCheckButton({ onPress, onLongPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
-      <Pressable onPress={onPress} style={({ pressed }) => [styles.btn, pressed && { transform: [{ scale: 0.985 }], opacity: 0.94 }]}>
+      <Pressable
+        onPress={onPress}
+        onLongPress={onLongPress}
+        delayLongPress={380}
+        style={({ pressed }) => [styles.btn, pressed && { transform: [{ scale: 0.985 }], opacity: 0.94 }]}
+      >
         <LinearGradient
           colors={['rgba(214,178,94,0.92)', 'rgba(214,178,94,0.30)', 'rgba(0,0,0,0.20)']}
           locations={[0, 0.55, 1]}
