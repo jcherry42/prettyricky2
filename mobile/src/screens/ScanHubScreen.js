@@ -33,8 +33,7 @@ export function ScanHubScreen({ navigation }) {
       <View style={{ height: 14 }} />
 
       <ActionCard
-        title="Driver’s License"
-        body="Front-image OCR to extract name, address, DL#, expiration."
+        title="Driver's License"
         accent="rgba(255,45,45,0.45)"
         onPress={() => navigation.navigate('DlScan')}
       />
