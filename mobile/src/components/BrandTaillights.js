@@ -100,8 +100,8 @@ function Lamp({ size, variant }) {
 
 function Cluster({ flip = false }) {
   // Outer larger, inner smaller, aligned bottoms (like R34).
-  const outer = 26;
-  const inner = 18;
+  const outer = 28;
+  const inner = 20;
 
   const left = flip ? <Lamp size={inner} variant="inner" /> : <Lamp size={outer} variant="outer" />;
   const right = flip ? <Lamp size={outer} variant="outer" /> : <Lamp size={inner} variant="inner" />;
