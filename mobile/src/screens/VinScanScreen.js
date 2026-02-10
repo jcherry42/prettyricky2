@@ -130,17 +130,53 @@ export function VinScanScreen() {
 
       <GlassCard style={{ marginTop: 14, flex: 1 }}>
         <Text style={styles.section}>Recent</Text>
-        <Text style={styles.body}>Stored locally on-device (offline-first).</Text>
+        <Text style={styles.body}>Stored locally on-device (offline-first). Tap to decode.</Text>
         <View style={{ height: 10 }} />
 
         <FlatList
           data={history}
           keyExtractor={(i) => i.id}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable
+              onPress={async () => {
+                // Minimal decode action for now: call backend VIN decode and log result in history.
+                // This proves API connectivity without building full vehicle UI yet.
+                try {
+                  const decoded = await decodeVinWithBackend(item.vin);
+                  const entry = {
+                    ...item,
+                    decoded,
+                    decodedAt: new Date().toISOString(),
+                  };
+                  const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+                  setHistory(next);
+                  await saveJson(STORAGE_KEY, next);
+                } catch (e) {
+                  const entry = {
+                    ...item,
+                    decodeError: String(e?.message || e),
+                    decodedAt: new Date().toISOString(),
+                  };
+                  const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+                  setHistory(next);
+                  await saveJson(STORAGE_KEY, next);
+                }
+              }}
+              style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}
+            >
               <Text style={styles.vin}>{item.vin}</Text>
               <Text style={styles.meta}>{item.source}</Text>
-            </View>
+              {item.decoded?.vehicle?.year ? (
+                <Text style={styles.decodedLine}>
+                  {item.decoded.vehicle.year} {item.decoded.vehicle.make} {item.decoded.vehicle.model}
+                </Text>
+              ) : null}
+              {item.decodeError ? (
+                <Text style={[styles.decodedLine, { color: colors.red }]} numberOfLines={1}>
+                  {item.decodeError}
+                </Text>
+              ) : null}
+            </Pressable>
           )}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={{ paddingBottom: 14 }}
