@@ -100,13 +100,13 @@ export function RootNavigator() {
         />
 
         <Tab.Screen
-          name="Inventory"
-          component={InventoryScreen}
+          name="Intake"
+          component={IntakeScreen}
           options={{
             tabBarIcon: ({ focused }) => (
-              <Ionicons name={focused ? 'car-sport' : 'car-sport-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
+              <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
             ),
-            tabBarLabel: ({ focused }) => <TabLabel focused={focused}>INV</TabLabel>,
+            tabBarLabel: ({ focused }) => <TabLabel focused={focused}>INTAKE</TabLabel>,
           }}
         />
       </Tab.Navigator>
