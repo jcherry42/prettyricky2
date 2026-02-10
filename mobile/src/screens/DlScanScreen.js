@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { loadJson, saveJson } from '../lib/storage';
-import { parseAamvaPdf417 } from '../lib/aamva';
+import { buildApiUrl } from '../config/backend';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
