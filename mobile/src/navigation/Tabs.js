@@ -12,6 +12,7 @@ import { DlScanScreen } from '../screens/DlScanScreen';
 import { colors } from '../theme/colors';
 import { FloatingCheckButton } from '../components/FloatingCheckButton';
 import { CommandCenterModal } from '../components/CommandCenterModal';
+import { PrintCenterModal } from '../screens/PrintCenterModal';
 
 const Tab = createBottomTabNavigator();
 
