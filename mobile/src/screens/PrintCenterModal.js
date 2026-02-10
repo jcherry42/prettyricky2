@@ -205,7 +205,6 @@ export function PrintCenterModal({ visible, onClose }) {
 
           {tab === 'license' ? (
             <>
-            <>
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Select DL scan</SectionTitle>
                 <View style={{ height: 10 }} />
