@@ -21,19 +21,7 @@ export function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    borderRadius: 26,
-  },
-  heroTitle: {
-    color: colors.text,
-    ...type.h2,
-  },
-  heroBody: {
-    marginTop: 10,
-    color: colors.textDim,
-    ...type.body,
-    lineHeight: 19,
-  },
+  // hero removed
   primaryBtn: {
     height: 54,
     borderRadius: 18,
