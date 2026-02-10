@@ -15,7 +15,6 @@ export function FloatingOnStarButton({ onPress }) {
           end={{ x: 1.0, y: 1.0 }}
         />
         <Text style={styles.star}>✶</Text>
-        <Text style={styles.label}>ONSTAR</Text>
       </Pressable>
     </View>
   );
