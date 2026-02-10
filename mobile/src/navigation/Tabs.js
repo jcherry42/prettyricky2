@@ -30,8 +30,17 @@ function TabIcon({ label, focused }) {
   );
 }
 
+function flagFor(lang) {
+  if (lang === 'es') return '🇲🇽';
+  if (lang === 'fr') return '🇫🇷';
+  if (lang === 'ko') return '🇰🇷';
+  return '🏁';
+}
+
 export function Tabs() {
   const [ccOpen, setCcOpen] = useState(false);
+  const [pttOpen, setPttOpen] = useState(false);
+  const { settings } = useAppSettings();
 
   return (
     <>
