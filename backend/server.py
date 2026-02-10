@@ -705,7 +705,9 @@ Return a JSON object with these fields:
   "address": "Street address (number and street only)",
   "city": "City name",
   "state": "State (2-letter abbreviation like CA, TX, NY)",
-  "zip_code": "ZIP code (5 digits, or 5+4 format)"
+  "zip_code": "ZIP code (5 digits, or 5+4 format)",
+  "license_number": "Driver license number / ID number",
+  "expiration": "Expiration date (MM/DD/YYYY)"
 }
 
 CRITICAL INSTRUCTIONS:
