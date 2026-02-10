@@ -113,8 +113,8 @@ export function PrintCenterModal({ visible, onClose }) {
   }, [selectedCustomer, printerIp]);
 
   const printLicense = useCallback(async () => {
-    if (!licenseImageBase64) {
-      setState({ status: 'error', msg: 'No license image available. Scan a DL first.' });
+    if (!selectedDl?.licenseImageBase64) {
+      setState({ status: 'error', msg: 'Select a DL scan with an image first.' });
       return;
     }
 
@@ -122,13 +122,13 @@ export function PrintCenterModal({ visible, onClose }) {
       setState({ status: 'printing', msg: '' });
       const res = await apiFetch('/api/print/license', {
         method: 'POST',
-        body: JSON.stringify({ image_data: licenseImageBase64, printer_ip: printerIp }),
+        body: JSON.stringify({ image_data: selectedDl.licenseImageBase64, printer_ip: printerIp }),
       });
       setState({ status: 'done', msg: res?.message || 'Print sent' });
     } catch (e) {
       setState({ status: 'error', msg: String(e?.message || e) });
     }
-  }, [licenseImageBase64, printerIp]);
+  }, [selectedDl, printerIp]);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="overFullScreen" transparent>
