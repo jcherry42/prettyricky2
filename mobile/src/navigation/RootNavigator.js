@@ -84,6 +84,7 @@ export function RootNavigator() {
           options={{
             headerShown: true,
             headerTransparent: true,
+            headerTitleAlign: 'center',
             headerTitle: () => <BrandTaillights compact />,
             headerStyle: { backgroundColor: 'transparent' },
             tabBarIcon: ({ focused }) => (
