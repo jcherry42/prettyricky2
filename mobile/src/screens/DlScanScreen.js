@@ -283,7 +283,7 @@ export function DlScanScreen() {
               <Text style={styles.rowTitle}>{item.source.toUpperCase()}</Text>
               {item.source === 'manual' ? (
                 <>
-                  <Text style={styles.rowLine}>{item.firstName} {item.lastName}</Text>
+                  <Text style={styles.rowLine}>{item.fullName}</Text>
                   <Text style={styles.rowLine}>{item.address}</Text>
                   <Text style={styles.rowLine}>DL: {item.dlNumber} · EXP: {item.expiration}</Text>
                 </>
