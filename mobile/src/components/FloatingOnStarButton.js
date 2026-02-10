@@ -24,8 +24,8 @@ export function FloatingOnStarButton({ onPress }) {
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: 16,
-    bottom: 166,
+    right: 16,
+    bottom: 86,
   },
   btn: {
     width: 72,
