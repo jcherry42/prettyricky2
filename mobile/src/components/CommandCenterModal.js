@@ -94,12 +94,15 @@ export function CommandCenterModal({ visible, onClose }) {
 
         <View style={styles.sheet}>
           <View style={styles.header}>
-            <View>
-              <Text style={styles.headerTitle}>COMMAND CENTER</Text>
-              <Text style={styles.headerSub}>Mobile-optimized · Infotainment spec</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="settings" size={16} color={colors.gold} />
+              <View>
+                <Text style={styles.headerTitle}>COMMAND CENTER</Text>
+                <Text style={styles.headerSub}>Mobile-optimized · Infotainment spec</Text>
+              </View>
             </View>
             <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.85 }]}>
-              <Text style={styles.closeText}>✕</Text>
+              <Ionicons name="close" size={16} color={colors.text} />
             </Pressable>
           </View>
 
