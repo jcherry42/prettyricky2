@@ -120,6 +120,7 @@
 
 test_plan:
   current_focus:
+    - "Mobile Print Center sanity tests - printer + customer list endpoints"
     - "Mobile: Driver's License OCR scan (front image upload)"
     - "Backend: /api/license/scan now extracts license_number + expiration"
   stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
