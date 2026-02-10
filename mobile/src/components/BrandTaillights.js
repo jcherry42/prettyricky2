@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   light: {
-    width: 26,
-    height: 26,
+    width: 24,
+    height: 24,
     borderRadius: 999,
     borderWidth: 2,
     borderColor: 'rgba(255,45,45,0.55)',
