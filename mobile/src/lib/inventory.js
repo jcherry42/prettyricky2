@@ -22,11 +22,19 @@ export function buildVehicleFromDecode({ vin, decoded }) {
     make: v.make || null,
     model: v.model || null,
     trim: v.trim || null,
+
+    // editable fields
+    stockNumber: '',
+    price: null,
+    mileage: null,
+    status: 'active',
+    notes: '',
+
     confidence: decoded?.confidence ?? null,
     source: decoded?.source || 'backend',
     addedAt: new Date().toISOString(),
-    status: 'active',
-    notes: '',
+    updatedAt: null,
+
     decodedRaw: decoded || null,
   };
 }
