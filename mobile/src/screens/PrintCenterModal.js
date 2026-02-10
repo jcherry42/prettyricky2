@@ -301,6 +301,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeText: {
+  rowSelected: {
+    borderColor: 'rgba(214,178,94,0.60)',
+    backgroundColor: 'rgba(214,178,94,0.10)',
+  },
+
     color: colors.text,
     fontSize: 16,
     fontWeight: '900',
