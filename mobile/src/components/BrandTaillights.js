@@ -36,10 +36,10 @@ function LedRing({ size, dots = 14, dotSize = 2.4 }) {
             width: dotSize,
             height: dotSize,
             borderRadius: 999,
-            backgroundColor: 'rgba(255,70,70,0.95)',
-            shadowColor: 'rgba(255,45,45,0.95)',
-            shadowOpacity: 0.55,
-            shadowRadius: 6,
+            backgroundColor: 'rgba(255,35,35,1.0)',
+            shadowColor: 'rgba(255,35,35,1.0)',
+            shadowOpacity: 0.78,
+            shadowRadius: 7,
             shadowOffset: { width: 0, height: 0 },
           }}
         />
