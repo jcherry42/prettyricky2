@@ -1,6 +1,6 @@
 {
   "test_type": "cors_connectivity",
-  "timestamp": "2026-02-03T11:56:23.850745",
+  "timestamp": "2026-02-10T17:45:40.089068",
   "backend_url": "https://car-sales-weapon.preview.emergentagent.com/api",
   "total_tests": 4,
   "passed": 4,
@@ -10,11 +10,11 @@
     {
       "test": "POST /tower-talk (Origin: null)",
       "success": true,
-      "details": "Tower Talk successful with null origin (353 chars) - CORS: null",
-      "timestamp": "2026-02-03T11:56:20.632791",
+      "details": "Tower Talk successful with null origin (310 chars) - CORS: null",
+      "timestamp": "2026-02-10T17:45:38.122873",
       "response_data": {
         "status": 200,
-        "response_length": 353,
+        "response_length": 310,
         "cors_header": "null"
       }
     },
@@ -22,10 +22,10 @@
       "test": "POST /tower-talk (Origin: emergentagent.com)",
       "success": true,
       "details": "Tower Talk successful with emergentagent.com origin - CORS: None",
-      "timestamp": "2026-02-03T11:56:23.363170",
+      "timestamp": "2026-02-10T17:45:39.599106",
       "response_data": {
         "status": 200,
-        "response_length": 276,
+        "response_length": 356,
         "cors_header": null
       }
     },
@@ -33,7 +33,7 @@
       "test": "POST /translate (Origin: null)",
       "success": true,
       "details": "Translation successful with null origin (confidence: 0.95) - CORS: null",
-      "timestamp": "2026-02-03T11:56:23.840468",
+      "timestamp": "2026-02-10T17:45:40.041196",
       "response_data": {
         "status": 200,
         "original": "hello",
@@ -47,7 +47,7 @@
       "test": "POST /translate (Origin: emergentagent.com)",
       "success": true,
       "details": "Translation successful with emergentagent.com origin - CORS: None",
-      "timestamp": "2026-02-03T11:56:23.850609",
+      "timestamp": "2026-02-10T17:45:40.088897",
       "response_data": {
         "status": 200,
         "original": "hello",
