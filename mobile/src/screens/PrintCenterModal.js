@@ -72,6 +72,26 @@ export function PrintCenterModal({ visible, onClose }) {
       setState({ status: 'loading', msg: '' });
       const res = await apiFetch(`/api/customers/list?limit=50&skip=0&search=${encodeURIComponent(search || '')}`);
       setCustomers(res?.customers || []);
+
+  const loadDlScans = useCallback(async () => {
+    try {
+      setState({ status: 'loading', msg: '' });
+      const scans = await loadJson('sc_v1_driver_license_scans', []);
+      const list = Array.isArray(scans) ? scans : [];
+      const q = (dlSearch || '').toLowerCase();
+      const filtered = q
+        ? list.filter((s) =>
+            String(s.fullName || '').toLowerCase().includes(q) ||
+            String(s.dlNumber || '').toLowerCase().includes(q)
+          )
+        : list;
+      setDlScans(filtered);
+      setState({ status: 'idle', msg: '' });
+    } catch (e) {
+      setState({ status: 'error', msg: String(e?.message || e) });
+    }
+  }, [dlSearch]);
+
       setState({ status: 'idle', msg: '' });
     } catch (e) {
       setState({ status: 'error', msg: String(e?.message || e) });
