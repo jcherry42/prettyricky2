@@ -4,9 +4,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InfotainmentShell } from './src/components/InfotainmentShell';
-import { Tabs } from './src/navigation/Tabs';
+import { RootNavigator } from './src/navigation/RootNavigator';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
 import { PttProvider } from './src/context/PttContext';
+import { useFontsReady } from './src/hooks/useFontsReady';
+import { View } from 'react-native';
 
 export default function App() {
   return (
