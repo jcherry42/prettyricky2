@@ -25,14 +25,16 @@ export function BrandTaillights({ compact = false }) {
         <Text style={styles.brand}>SUPERCHARG'D</Text>
       </View>
 
-      <View style={styles.cluster}>
-        <View style={[styles.light, styles.inner]}>
-          <View style={styles.ring} />
-          <View style={styles.center} />
-        </View>
-        <View style={[styles.light, styles.outer]}>
-          <View style={styles.ring} />
-          <View style={styles.center} />
+      <View style={styles.housing}>
+        <View style={styles.cluster}>
+          <View style={[styles.light, styles.inner]}>
+            <View style={styles.ring} />
+            <View style={styles.center} />
+          </View>
+          <View style={[styles.light, styles.outer]}>
+            <View style={styles.ring} />
+            <View style={styles.center} />
+          </View>
         </View>
       </View>
     </View>
