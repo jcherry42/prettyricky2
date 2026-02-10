@@ -1,0 +1,56 @@
+import { loadJson, saveJson } from './storage';
+
+const INVENTORY_KEY = 'sc_v1_local_inventory';
+
+export async function loadInventory() {
+  const data = await loadJson(INVENTORY_KEY, { vehicles: [] });
+  if (!data || typeof data !== 'object') return { vehicles: [] };
+  if (!Array.isArray(data.vehicles)) return { vehicles: [] };
+  return data;
+}
+
+export async function saveInventory(next) {
+  return saveJson(INVENTORY_KEY, next);
+}
+
+export function buildVehicleFromDecode({ vin, decoded }) {
+  const v = decoded?.vehicle || {};
+  return {
+    id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+    vin,
+    year: v.year || null,
+    make: v.make || null,
+    model: v.model || null,
+    trim: v.trim || null,
+    confidence: decoded?.confidence ?? null,
+    source: decoded?.source || 'backend',
+    addedAt: new Date().toISOString(),
+    status: 'active',
+    notes: '',
+    decodedRaw: decoded || null,
+  };
+}
+
+export async function addToInventory({ vin, decoded }) {
+  const inv = await loadInventory();
+  const exists = inv.vehicles.find((x) => x.vin === vin);
+  if (exists) {
+    // Update existing with latest decode
+    const updated = inv.vehicles.map((x) => (x.vin === vin ? { ...x, decodedRaw: decoded || x.decodedRaw } : x));
+    const next = { ...inv, vehicles: updated };
+    await saveInventory(next);
+    return next;
+  }
+
+  const item = buildVehicleFromDecode({ vin, decoded });
+  const next = { ...inv, vehicles: [item, ...inv.vehicles].slice(0, 200) };
+  await saveInventory(next);
+  return next;
+}
+
+export async function removeFromInventory(vehicleId) {
+  const inv = await loadInventory();
+  const next = { ...inv, vehicles: inv.vehicles.filter((v) => v.id !== vehicleId) };
+  await saveInventory(next);
+  return next;
+}
