@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadJson, saveJson } from '../lib/storage';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
