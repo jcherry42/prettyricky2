@@ -1,42 +1,131 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 
 // Mobile reinterpretation of the web header taillights + SUPERCHARG'D text.
-// No buttons, just the signature mark.
+// Goal: closer to an R34 cluster: outer lamp larger than inner, with even baselines,
+// and a premium dotted LED ring feel.
+
+function LedRing({ size, dots = 14, dotSize = 2.4 }) {
+  const pts = useMemo(() => {
+    const r = size * 0.36;
+    const cx = size / 2;
+    const cy = size / 2;
+    const out = [];
+    for (let i = 0; i < dots; i += 1) {
+      const a = (Math.PI * 2 * i) / dots;
+      out.push({
+        key: i,
+        left: cx + Math.cos(a) * r - dotSize / 2,
+        top: cy + Math.sin(a) * r - dotSize / 2,
+      });
+    }
+    return out;
+  }, [size, dots, dotSize]);
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {pts.map((p) => (
+        <View
+          key={p.key}
+          style={{
+            position: 'absolute',
+            left: p.left,
+            top: p.top,
+            width: dotSize,
+            height: dotSize,
+            borderRadius: 999,
+            backgroundColor: 'rgba(255,70,70,0.95)',
+            shadowColor: 'rgba(255,45,45,0.95)',
+            shadowOpacity: 0.55,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 0 },
+          }}
+        />
+      ))}
+    </View>
+  );
+}
+
+function Lamp({ size, variant }) {
+  const isOuter = variant === 'outer';
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 999,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        borderWidth: 1,
+        borderColor: isOuter ? 'rgba(255,45,45,0.40)' : 'rgba(255,45,45,0.28)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: 'rgba(255,45,45,0.55)',
+        shadowOpacity: isOuter ? 0.40 : 0.28,
+        shadowRadius: isOuter ? 14 : 10,
+        shadowOffset: { width: 0, height: 6 },
+      }}
+    >
+      <View
+        style={{
+          width: size * 0.86,
+          height: size * 0.86,
+          borderRadius: 999,
+          borderWidth: 1,
+          borderColor: 'rgba(255,45,45,0.22)',
+          backgroundColor: isOuter ? 'rgba(255,45,45,0.05)' : 'rgba(255,45,45,0.035)',
+          overflow: 'hidden',
+        }}
+      />
+
+      {/* dotted LED ring */}
+      <LedRing size={size} dots={isOuter ? 16 : 14} dotSize={isOuter ? 2.6 : 2.2} />
+
+      {/* subtle center lens */}
+      <View
+        style={{
+          position: 'absolute',
+          width: size * 0.28,
+          height: size * 0.28,
+          borderRadius: 999,
+          backgroundColor: 'rgba(255,80,80,0.20)',
+          borderWidth: 1,
+          borderColor: 'rgba(255,80,80,0.24)',
+        }}
+      />
+    </View>
+  );
+}
+
+function Cluster({ flip = false }) {
+  // Outer larger, inner smaller, aligned bottoms (like R34).
+  const outer = 26;
+  const inner = 18;
+
+  const left = flip ? <Lamp size={inner} variant="inner" /> : <Lamp size={outer} variant="outer" />;
+  const right = flip ? <Lamp size={outer} variant="outer" /> : <Lamp size={inner} variant="inner" />;
+
+  return (
+    <View style={styles.housing}>
+      <View style={styles.cluster}>
+        {left}
+        {right}
+      </View>
+    </View>
+  );
+}
+
 export function BrandTaillights({ compact = false }) {
   return (
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
-      <View style={styles.housing}>
-        <View style={styles.cluster}>
-          <View style={[styles.light, styles.outer]}>
-            <View style={styles.ring} />
-            <View style={styles.center} />
-          </View>
-          <View style={[styles.light, styles.inner]}>
-            <View style={styles.ring} />
-            <View style={styles.center} />
-          </View>
-        </View>
-      </View>
+      <Cluster />
 
       <View style={styles.centerText}>
         <Text style={styles.brand}>SUPERCHARG'D</Text>
       </View>
 
-      <View style={styles.housing}>
-        <View style={styles.cluster}>
-          <View style={[styles.light, styles.inner]}>
-            <View style={styles.ring} />
-            <View style={styles.center} />
-          </View>
-          <View style={[styles.light, styles.outer]}>
-            <View style={styles.ring} />
-            <View style={styles.center} />
-          </View>
-        </View>
-      </View>
+      <Cluster flip />
     </View>
   );
 }
@@ -47,62 +136,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
+    gap: 12,
     paddingVertical: 10,
   },
   housing: {
-    height: 30,
+    height: 34,
     paddingHorizontal: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,45,45,0.18)',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderColor: 'rgba(255,45,45,0.16)',
+    backgroundColor: 'rgba(0,0,0,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cluster: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     alignItems: 'flex-end',
-  },
-  light: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: 'rgba(255,45,45,0.55)',
-    backgroundColor: 'rgba(255,45,45,0.10)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(255,45,45,0.75)',
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-  },
-  outer: {
-    width: 24,
-    height: 24,
-  },
-  inner: {
-    width: 24,
-    height: 24,
-    borderColor: 'rgba(255,45,45,0.45)',
-    backgroundColor: 'rgba(255,45,45,0.08)',
-  },
-  ring: {
-    position: 'absolute',
-    width: '84%',
-    height: '84%',
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: 'rgba(255,45,45,0.55)',
-    opacity: 0.9,
-  },
-  center: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,75,75,0.75)',
   },
   centerText: {
     alignItems: 'center',
