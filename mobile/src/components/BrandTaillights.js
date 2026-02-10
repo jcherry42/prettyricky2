@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   cluster: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     alignItems: 'flex-end',
   },
   centerText: {
