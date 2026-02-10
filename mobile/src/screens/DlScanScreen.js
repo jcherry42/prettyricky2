@@ -41,8 +41,10 @@ export function DlScanScreen() {
 
   useEffect(() => {
     (async () => {
-      const p = await BarCodeScanner.requestPermissionsAsync();
-      setPerm(p);
+      const cam = await ImagePicker.requestCameraPermissionsAsync();
+      const media = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      setCameraPerm(cam);
+      setMediaPerm(media);
     })();
   }, []);
 
