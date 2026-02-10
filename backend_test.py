@@ -2180,14 +2180,19 @@ class BackendTester:
 
     async def run_all_tests(self):
         """Run backend tests with priority on Mobile Print Center sanity tests"""
-        print("🚀 Backend API Testing Suite - Mobile Print Center Focus")
+        print("🚀 Backend API Testing Suite - Mobile Overlay Endpoints Focus")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
         # Core health check first
         await self.test_health_check()
         
-        # PRIORITY: Mobile Print Center sanity tests (as requested in review)
+        # PRIORITY: Mobile overlay endpoints (tower-talk, translate, TTS) as requested in review
+        print("\n🎯 MOBILE OVERLAY ENDPOINTS (Review Request Priority):")
+        await self.test_mobile_overlay_endpoints()
+        
+        # SECONDARY: Mobile Print Center sanity tests
+        print("\n📱 MOBILE PRINT CENTER SANITY TESTS:")
         await self.test_mobile_print_center_endpoints()
         
         print("\n📋 ADDITIONAL REGRESSION TESTS:")
