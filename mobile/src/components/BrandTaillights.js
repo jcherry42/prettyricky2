@@ -8,7 +8,7 @@ import { useTaillightFlash } from '../context/TaillightFlashContext';
 // Goal: closer to an R34 cluster: outer lamp larger than inner, with even baselines,
 // and a premium dotted LED ring feel.
 
-function LedRing({ size, dots = 14, dotSize = 2.4 }) {
+function LedRing({ size, dots = 14, dotSize = 2.4, intensity = 1 }) {
   const pts = useMemo(() => {
     const r = size * 0.36;
     const cx = size / 2;
