@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { impactLight, selectionTap } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
