@@ -11,6 +11,22 @@ export default defineConfig({
     )
   },
   plugins: [
+    // Ensure /mobile/ serves the exported Expo web build (public/mobile/index.html)
+    {
+      name: 'mobile-export-redirect',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url || '';
+          if (url === '/mobile' || url === '/mobile/' || url.startsWith('/mobile?')) {
+            res.statusCode = 302;
+            res.setHeader('Location', '/mobile/index.html');
+            res.end();
+            return;
+          }
+          next();
+        });
+      },
+    },
     react(),
     VitePWA({
       registerType: 'autoUpdate',
