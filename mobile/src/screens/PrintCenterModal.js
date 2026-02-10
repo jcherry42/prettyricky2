@@ -205,20 +205,48 @@ export function PrintCenterModal({ visible, onClose }) {
 
           {tab === 'license' ? (
             <>
+            <>
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>Select DL scan</SectionTitle>
+                <View style={{ height: 10 }} />
+                <TextInput
+                  value={dlSearch}
+                  onChangeText={setDlSearch}
+                  placeholder="Search name or DL#"
+                  placeholderTextColor={colors.textMute}
+                  style={styles.input}
+                />
+                <View style={{ height: 12 }} />
+                <ActionButton label="Load DL scans" onPress={loadDlScans} loading={state.status === 'loading'} />
+              </GlassCard>
+
+              <GlassCard style={{ marginTop: 14, flex: 1 }}>
+                <SectionTitle>Results</SectionTitle>
+                <Text style={styles.body}>{selectedDl ? 'Selected' : 'Tap a scan to select'}</Text>
+                <View style={{ height: 12 }} />
+
+                <FlatList
+                  data={dlScans}
+                  keyExtractor={(i) => i.id}
+                  renderItem={({ item }) => <DlRow item={item} selected={selectedDl?.id === item.id} onSelect={setSelectedDl} />}
+                  ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+                  contentContainerStyle={{ paddingBottom: 14 }}
+                />
+              </GlassCard>
+
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Confirm</SectionTitle>
-                <Text style={styles.body}>This will print the last scanned license image.</Text>
+                <Text style={styles.body}>This will print the selected DL image to the active printer.</Text>
                 <View style={{ height: 12 }} />
                 <ActionButton
-                  label="Print driver’s license"
+                  label="Print drivers license"
                   onPress={printLicense}
-                  disabled={!canPrint || state.status === 'printing'}
+                  disabled={!canPrint || !selectedDl || state.status === 'printing'}
                   loading={state.status === 'printing'}
                 />
               </GlassCard>
             </>
           ) : null}
-
           {state.status === 'done' ? <Text style={[styles.body, { color: colors.green, marginTop: 10 }]}>{state.msg}</Text> : null}
           {state.status === 'error' ? <Text style={[styles.body, { color: colors.red, marginTop: 10 }]}>{state.msg}</Text> : null}
         </View>
