@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-na
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
+import { addToInventory } from '../lib/inventory';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
