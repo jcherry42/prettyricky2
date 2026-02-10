@@ -52,6 +52,9 @@ export default defineConfig({
         navigateFallbackDenylist: [
           /^\/api\//,
           /\/sounds\//,
+          /^\/mobile\//,
+          /^\/_expo\//,
+          /^\/assets\//,
         ],
         runtimeCaching: [
           // Same-origin API: always hit the network.
