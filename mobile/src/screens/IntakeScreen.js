@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, TextInput, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, TextInput, RefreshControl, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
@@ -10,7 +11,10 @@ import { loadInventory, removeFromInventory, updateVehicle } from '../lib/invent
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
-import { Modal } from 'react-native';
+import { VinScanScreen } from './VinScanScreen';
+import { DlScanScreen } from './DlScanScreen';
+
+const ELECTRIC_BLUE = '#00D4FF';
 
 const STATUS_COLORS = {
   active: colors.green,
@@ -19,16 +23,14 @@ const STATUS_COLORS = {
   sold: colors.textMute,
 };
 
+/* ---------- Vehicle Card ---------- */
 function VehicleCard({ item, onEdit, onRemove }) {
   const title = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
   const statusColor = STATUS_COLORS[item.status] || colors.textMute;
 
   return (
     <Pressable
-      onPress={() => {
-        impactLight();
-        onEdit(item);
-      }}
+      onPress={() => { impactLight(); onEdit(item); }}
       style={({ pressed }) => [styles.vehicleCard, pressed && { opacity: 0.88 }]}
     >
       <View style={styles.vehicleHeader}>
@@ -67,7 +69,8 @@ function VehicleCard({ item, onEdit, onRemove }) {
   );
 }
 
-export function IntakeScreen() {
+/* ---------- Intake Hub (main screen) ---------- */
+function IntakeHub({ navigation }) {
   const [inv, setInv] = useState({ vehicles: [] });
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -107,9 +110,32 @@ export function IntakeScreen() {
       <Screen>
         <ScreenHeader
           title="Intake"
-          subtitle="Local Inventory"
+          subtitle="Scan · Decode · Manage"
           right={<Text style={styles.countBadge}>{stats.total}</Text>}
         />
+
+        <View style={{ height: 14 }} />
+
+        {/* Scan Action Cards */}
+        <View style={styles.scanRow}>
+          <Pressable
+            onPress={() => { impactLight(); navigation.navigate('VinScan'); }}
+            style={({ pressed }) => [styles.scanCard, pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 }]}
+          >
+            <Ionicons name="barcode-outline" size={22} color={colors.gold} />
+            <Text style={styles.scanLabel}>VIN</Text>
+            <Text style={styles.scanSub}>SCANNER</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => { impactLight(); navigation.navigate('DlScan'); }}
+            style={({ pressed }) => [styles.scanCard, styles.scanCardDl, pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 }]}
+          >
+            <Ionicons name="card-outline" size={22} color="#FF2D2D" />
+            <Text style={styles.scanLabel}>DL</Text>
+            <Text style={styles.scanSub}>LICENSE</Text>
+          </Pressable>
+        </View>
 
         <View style={{ height: 14 }} />
 
@@ -152,12 +178,12 @@ export function IntakeScreen() {
 
         {/* Vehicle List */}
         {filtered.length === 0 ? (
-          <GlassCard style={{ alignItems: 'center', paddingVertical: 32 }}>
-            <Ionicons name="car-outline" size={36} color={colors.textMute} />
-            <Text style={[styles.emptyText, { marginTop: 12 }]}>
+          <GlassCard style={{ alignItems: 'center', paddingVertical: 28 }}>
+            <Ionicons name="car-outline" size={32} color={colors.textMute} />
+            <Text style={[styles.emptyText, { marginTop: 10 }]}>
               {search ? 'No vehicles match your search' : 'No vehicles yet'}
             </Text>
-            <Text style={styles.emptyHint}>Scan a VIN to add vehicles to your local inventory.</Text>
+            <Text style={styles.emptyHint}>Scan a VIN to decode & add to local inventory.</Text>
           </GlassCard>
         ) : (
           <FlatList
@@ -205,11 +231,70 @@ export function IntakeScreen() {
   );
 }
 
+/* ---------- Stack Navigator ---------- */
+const Stack = createNativeStackNavigator();
+
+export function IntakeScreen() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: 'rgba(4,6,8,0.95)' },
+        headerTintColor: colors.gold,
+        headerTitleStyle: {
+          color: colors.text,
+          fontWeight: '800',
+          fontSize: 14,
+          letterSpacing: 1.2,
+        },
+        headerBackTitleVisible: false,
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen name="IntakeHub" component={IntakeHub} options={{ headerShown: false }} />
+      <Stack.Screen name="VinScan" component={VinScanScreen} options={{ title: 'VIN SCANNER' }} />
+      <Stack.Screen name="DlScan" component={DlScanScreen} options={{ title: "DRIVER'S LICENSE" }} />
+    </Stack.Navigator>
+  );
+}
+
+/* ---------- Styles ---------- */
 const styles = StyleSheet.create({
   countBadge: {
     color: colors.gold,
     ...type.h1,
     fontSize: 22,
+  },
+  scanRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  scanCard: {
+    flex: 1,
+    height: 80,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.25)',
+    backgroundColor: 'rgba(214,178,94,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  scanCardDl: {
+    borderColor: 'rgba(255,45,45,0.25)',
+    backgroundColor: 'rgba(255,45,45,0.06)',
+  },
+  scanLabel: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2.0,
+  },
+  scanSub: {
+    color: colors.textMute,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.0,
   },
   statsRow: {
     flexDirection: 'row',
