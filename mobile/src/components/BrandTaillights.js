@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
   },
   centerText: {
     alignItems: 'center',
+    paddingHorizontal: 6,
   },
   brand: {
     color: colors.text,
