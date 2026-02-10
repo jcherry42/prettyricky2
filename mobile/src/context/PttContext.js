@@ -1,10 +1,12 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Audio } from 'expo-av';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
 import { useAppSettings } from './AppSettingsContext';
 
 const PttContext = createContext(null);
+
+const MAX_RECORDING_MS = 15000; // 15 second maximum
 
 export function PttProvider({ children }) {
   const { settings, setPttDirection } = useAppSettings();
@@ -18,6 +20,22 @@ export function PttProvider({ children }) {
 
   const recordingRef = useRef(null);
   const playbackRef = useRef(null);
+  const timeoutRef = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recordingRef.current) {
+        recordingRef.current.stopAndUnloadAsync().catch(() => {});
+      }
+      if (playbackRef.current) {
+        playbackRef.current.unloadAsync().catch(() => {});
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -37,6 +55,13 @@ export function PttProvider({ children }) {
       );
 
       recordingRef.current = recording;
+
+      // Auto-stop after max duration
+      timeoutRef.current = setTimeout(() => {
+        if (recordingRef.current) {
+          stopRecording();
+        }
+      }, MAX_RECORDING_MS);
     } catch (e) {
       setStatus('error');
       setError(String(e?.message || e));
