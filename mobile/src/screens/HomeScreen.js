@@ -35,23 +35,5 @@ const styles = StyleSheet.create({
     color: colors.gold,
     ...type.label,
   },
-  grid: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  tile: {
-    flex: 1,
-    borderRadius: 22,
-  },
-  tileLabel: {
-    color: colors.textMute,
-    ...type.label,
-    fontSize: 11,
-  },
-  tileBody: {
-    marginTop: 10,
-    color: colors.textDim,
-    ...type.bodyDim,
-    lineHeight: 18,
-  },
+  // tiles removed
 });
