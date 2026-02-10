@@ -81,6 +81,11 @@ export function DlScanScreen() {
           confidence: json?.confidence ?? null,
           extractionNotes: json?.extraction_notes || null,
 
+          // NOTE: for print, keep base64 preview payload locally. (PII)
+          // Expo image picker provides a file URI; we store a lightweight base64 only if backend returns it later.
+          // For now, we store nothing here and rely on imageUrl fetch when adding print flow.
+          licenseImageBase64: null,
+
           fullName,
           address: addressLine,
           dlNumber: d.license_number ? String(d.license_number).trim() : '',
