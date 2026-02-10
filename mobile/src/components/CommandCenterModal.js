@@ -165,11 +165,11 @@ export function CommandCenterModal({ visible, onClose }) {
                   <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}> {settings.ecoMode ? 'ON' : 'OFF'}</Text>
                 </Pressable>
               </GlassCard>
-            </>
+            </ScrollView>
           ) : null}
 
           {activeTab === 'printers' ? (
-            <>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Active printer</SectionTitle>
                 <Text style={styles.body}>One global default printer (matches web behavior).</Text>
