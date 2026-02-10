@@ -12,25 +12,23 @@ import { usePtt } from '../context/PttContext';
 import { HomeScreen } from '../screens/HomeScreen';
 import { BrandTaillights } from '../components/BrandTaillights';
 import { IntakeScreen } from '../screens/IntakeScreen';
-import { ScanStack } from './ScanStack';
 
-import { FloatingCheckButton } from '../components/FloatingCheckButton';
+import { FloatingButtonCluster } from '../components/FloatingButtonCluster';
 import { CommandCenterModal } from '../components/CommandCenterModal';
 import { PrintCenterModal } from '../screens/PrintCenterModal';
 
 import { FloatingPttButton } from '../components/FloatingPttButton';
 import { PttOverlayView } from '../components/PttOverlayView';
 
-import { AssistGlowButton } from '../components/AssistGlowButton';
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
 
 const Tab = createBottomTabNavigator();
 
 function flagFor(lang) {
-  if (lang === 'es') return '🇲🇽';
-  if (lang === 'fr') return '🇫🇷';
-  if (lang === 'ko') return '🇰🇷';
-  return '🏁';
+  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
+  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
+  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
+  return '\ud83c\udff3\ufe0f';
 }
 
 function TabLabel({ children, focused }) {
@@ -88,20 +86,9 @@ export function RootNavigator() {
             headerTitle: () => <BrandTaillights compact />,
             headerStyle: { backgroundColor: 'transparent' },
             tabBarIcon: ({ focused }) => (
-              <Ionicons name={focused ? 'home' : 'home-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
+              <Ionicons name={focused ? 'speedometer' : 'speedometer-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
             ),
             tabBarLabel: ({ focused }) => <TabLabel focused={focused}>HOME</TabLabel>,
-          }}
-        />
-
-        <Tab.Screen
-          name="Scan"
-          component={ScanStack}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <Ionicons name={focused ? 'scan' : 'scan-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
-            ),
-            tabBarLabel: ({ focused }) => <TabLabel focused={focused}>SCAN</TabLabel>,
           }}
         />
 
@@ -117,19 +104,24 @@ export function RootNavigator() {
         />
       </Tab.Navigator>
 
-      {/* Floating actions (A): CHECK left, ASSIST right, PTT appears in SPORT */}
-      <FloatingCheckButton onPress={() => setCcOpen(true)} onLongPress={() => setPrintOpen(true)} />
+      {/* Floating button cluster: CHECK | EJECT | TOWER TALK */}
+      <FloatingButtonCluster
+        onCheck={() => setCcOpen(true)}
+        onEject={() => setPrintOpen(true)}
+        onTowerTalk={() => setTalkOpen(true)}
+      />
+
+      {/* Modals */}
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
-
-      <AssistGlowButton onPress={() => setTalkOpen(true)} />
       <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
 
+      {/* PTT (only in SPORT mode) */}
       {settings.sportMode ? (
         <>
           <FloatingPttButton
             flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
-            badgeDirection={settings.pttDirection === 'target_to_en' ? '→ EN' : 'EN →'}
+            badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
             recording={ptt.status === 'recording'}
             disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
             onPressIn={async () => {
@@ -144,7 +136,6 @@ export function RootNavigator() {
         </>
       ) : null}
 
-      {/* Spacer view to prevent RN warning about fragments in some versions */}
       <View style={{ width: 0, height: 0 }} />
     </>
   );
