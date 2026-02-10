@@ -7,7 +7,7 @@ export function GlassCard({ children, style }) {
   return (
     <View style={[styles.wrap, style]}>
       <LinearGradient
-        colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.04)']}
+        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
