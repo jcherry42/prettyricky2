@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 
-export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, flagLabel }) {
+export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, flagLabel, badgeDirection = '→' }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       {flagLabel ? (
