@@ -152,35 +152,43 @@ export function DlScanScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Driver’s License</Text>
-      <Text style={styles.subtitle}>Barcode-first · No photo upload</Text>
+      <Text style={styles.subtitle}>OCR front scan · PII upload enabled</Text>
 
       <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Scan (PDF417)</Text>
+        <Text style={styles.section}>OCR scan (front image)</Text>
         <Text style={styles.body}>
-          Scan the barcode on the back of a US driver’s license when available. This mode does not
-          send images anywhere.
+          Take a photo of the FRONT of a US driver’s license. The image is uploaded to the backend and
+          processed with OpenAI Vision to extract Name, Address, DL # and Expiration.
         </Text>
-
-        {!canScan && (
-          <Text style={[styles.body, { marginTop: 10, color: colors.red }]}>Camera permission not granted.</Text>
-        )}
-
-        {scanning && canScan && (
-          <View style={styles.scannerWrap}>
-            <BarCodeScanner onBarCodeScanned={onBarCodeScanned} style={StyleSheet.absoluteFill} />
-            <View style={styles.scanFrame} />
-          </View>
-        )}
 
         <View style={{ height: 12 }} />
 
         <Pressable
-          onPress={() => setScanning((s) => !s)}
-          disabled={!canScan}
-          style={({ pressed }) => [styles.btn, (!canScan || pressed) && { opacity: 0.85 }]}
+          onPress={takePhoto}
+          style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
         >
-          <Text style={styles.btnText}>{scanning ? 'Stop scan' : 'Start scan'}</Text>
+          <Text style={styles.btnText}>Take photo</Text>
         </Pressable>
+
+        <View style={{ height: 10 }} />
+
+        <Pressable
+          onPress={pickFromLibrary}
+          style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+        >
+          <Text style={styles.btnText}>Choose from library</Text>
+        </Pressable>
+
+        {scanState.state === 'uploading' ? (
+          <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
+            <ActivityIndicator color={colors.gold} />
+            <Text style={[styles.body, { marginLeft: 10 }]}>Scanning…</Text>
+          </View>
+        ) : null}
+
+        {scanState.state === 'error' ? (
+          <Text style={[styles.body, { marginTop: 12, color: colors.red }]}>{scanState.error}</Text>
+        ) : null}
       </GlassCard>
 
       <GlassCard style={{ marginTop: 14 }}>
