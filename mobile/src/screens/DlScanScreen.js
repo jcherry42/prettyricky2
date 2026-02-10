@@ -176,7 +176,7 @@ export function DlScanScreen() {
       </GlassCard>
 
       <GlassCard style={{ marginTop: 14 }}>
-        <Text style={styles.section}>Manual capture (fallback)</Text>
+        <Text style={styles.section}>Manual entry (fallback)</Text>
         <Text style={styles.body}>If barcode is missing/unreadable, enter the required fields.</Text>
 
         <View style={{ height: 10 }} />
