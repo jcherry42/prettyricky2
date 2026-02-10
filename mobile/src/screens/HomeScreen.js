@@ -13,32 +13,9 @@ export function HomeScreen({ navigation }) {
 
       <View style={{ height: 14 }} />
 
-      <GlassCard style={styles.hero}>
-        <Text style={styles.heroTitle}>Calm authority. Fast execution.</Text>
-        <Text style={styles.heroBody}>
-          Scan VIN and Driver’s License. Save inventory offline. Use Tower Talk to close high-stakes,
-          emotional deals. SPORT unlocks translation + PTT.
-        </Text>
-      </GlassCard>
-
-      <View style={{ height: 14 }} />
-
       <Pressable onPress={() => navigation.navigate('Scan')} style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9 }]}>
         <Text style={styles.primaryBtnText}>Open Scan</Text>
       </Pressable>
-
-      <View style={{ height: 14 }} />
-
-      <View style={styles.grid}>
-        <GlassCard style={styles.tile}>
-          <Text style={styles.tileLabel}>CHECK</Text>
-          <Text style={styles.tileBody}>Command Center + Printer setup. Long-press for Print Center.</Text>
-        </GlassCard>
-        <GlassCard style={styles.tile}>
-          <Text style={styles.tileLabel}>ONSTAR</Text>
-          <Text style={styles.tileBody}>Tower Talk: high-performance closing and objection handling.</Text>
-        </GlassCard>
-      </View>
     </Screen>
   );
 }
