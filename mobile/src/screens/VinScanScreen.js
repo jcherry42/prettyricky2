@@ -252,6 +252,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.stroke2,
+  decodedLine: {
+    marginTop: 8,
+    color: colors.textDim,
+    fontSize: 12,
+  },
+
     backgroundColor: 'rgba(0,0,0,0.25)',
   },
   scanFrame: {
