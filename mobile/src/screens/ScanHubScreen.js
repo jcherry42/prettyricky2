@@ -26,7 +26,6 @@ export function ScanHubScreen({ navigation }) {
 
       <ActionCard
         title="VIN Scan"
-        body="Capture VIN fast. Decode. Save to Local Inventory."
         accent="rgba(214,178,94,0.55)"
         onPress={() => navigation.navigate('VinScan')}
       />
