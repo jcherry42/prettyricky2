@@ -48,7 +48,7 @@ export function DlScanScreen() {
   const saveEntry = useCallback(async (entry) => {
     const next = [entry, ...history].slice(0, 50);
     setHistory(next);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    await saveJson(STORAGE_KEY, next);
   }, [history]);
 
   const onBarCodeScanned = useCallback(
