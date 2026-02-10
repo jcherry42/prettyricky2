@@ -4,6 +4,7 @@ import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { apiFetch } from '../lib/api';
+import { loadJson } from '../lib/storage';
 
 function SectionTitle({ children }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
