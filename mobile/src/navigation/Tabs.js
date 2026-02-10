@@ -28,45 +28,52 @@ function TabIcon({ label, focused }) {
 }
 
 export function Tabs() {
+  const [ccOpen, setCcOpen] = useState(false);
+
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: 'rgba(0,0,0,0.55)',
-          borderTopColor: 'rgba(255,255,255,0.10)',
-          borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 10,
-          paddingTop: 8,
-        },
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon label="HOME" focused={focused} /> }}
-      />
-      <Tab.Screen
-        name="VIN"
-        component={VinScanScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon label="VIN" focused={focused} /> }}
-      />
-      <Tab.Screen
-        name="Inventory"
-        component={InventoryScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon label="INV" focused={focused} /> }}
-      />
-      <Tab.Screen
-        name="DL"
-        component={DlScanScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon label="DL" focused={focused} /> }}
-      />
-      <Tab.Screen
-        name="Link"
-        component={ConnectivityScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon label="LINK" focused={focused} /> }}
-      />
-    </Tab.Navigator>
+    <>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            borderTopColor: 'rgba(255,255,255,0.10)',
+            borderTopWidth: 1,
+            height: 64,
+            paddingBottom: 10,
+            paddingTop: 8,
+          },
+        }}
+      >
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ tabBarIcon: ({ focused }) => <TabIcon label="HOME" focused={focused} /> }}
+        />
+        <Tab.Screen
+          name="VIN"
+          component={VinScanScreen}
+          options={{ tabBarIcon: ({ focused }) => <TabIcon label="VIN" focused={focused} /> }}
+        />
+        <Tab.Screen
+          name="Inventory"
+          component={InventoryScreen}
+          options={{ tabBarIcon: ({ focused }) => <TabIcon label="INV" focused={focused} /> }}
+        />
+        <Tab.Screen
+          name="DL"
+          component={DlScanScreen}
+          options={{ tabBarIcon: ({ focused }) => <TabIcon label="DL" focused={focused} /> }}
+        />
+        <Tab.Screen
+          name="Link"
+          component={ConnectivityScreen}
+          options={{ tabBarIcon: ({ focused }) => <TabIcon label="LINK" focused={focused} /> }}
+        />
+      </Tab.Navigator>
+
+      <FloatingCheckButton onPress={() => setCcOpen(true)} />
+      <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
+    </>
   );
 }
