@@ -6,6 +6,7 @@ const STORAGE_KEY = 'sc_v1_settings';
 const DEFAULT_SETTINGS = {
   defaultTargetLanguage: 'es',
   sportMode: false,
+  ecoMode: false,
   printers: [], // {id,name,ip}
   activePrinterId: null,
 };
