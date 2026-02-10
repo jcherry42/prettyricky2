@@ -89,9 +89,9 @@ function Lamp({ size, variant }) {
           width: size * 0.28,
           height: size * 0.28,
           borderRadius: 999,
-          backgroundColor: 'rgba(255,80,80,0.20)',
+          backgroundColor: 'rgba(255,60,60,0.18)',
           borderWidth: 1,
-          borderColor: 'rgba(255,80,80,0.24)',
+          borderColor: 'rgba(255,60,60,0.22)',
         }}
       />
     </View>
