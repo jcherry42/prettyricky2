@@ -62,26 +62,10 @@ export function DlScanScreen() {
         const uri = asset?.uri;
         if (!uri) throw new Error('No image selected');
 
-        const url = buildApiUrl('/api/license/scan');
-        if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
-
-        const form = new FormData();
-        form.append('image', {
+        const json = await uploadImageToLicenseScan({
           uri,
-          name: 'license.jpg',
-          type: asset?.mimeType || 'image/jpeg',
+          mimeType: asset?.mimeType || 'image/jpeg',
         });
-
-        const res = await fetch(url, {
-          method: 'POST',
-          body: form,
-          // DO NOT set Content-Type manually for FormData
-        });
-
-        const json = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(json?.detail || json?.error || `Upload failed: ${res.status}`);
-        }
 
         const d = json?.extracted_data || {};
 
