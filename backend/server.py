@@ -643,11 +643,17 @@ def calculate_license_confidence(data: dict) -> tuple:
     
     # Validation checks (25 points)
     if data.get('state') and len(data['state']) == 2:
-        confidence += 10
+        confidence += 8
     if data.get('zip_code') and len(data['zip_code']) >= 5:
-        confidence += 10
+        confidence += 8
     if data.get('first_name') and len(data['first_name']) >= 2:
-        confidence += 5
+        confidence += 4
+
+    # License-specific fields (5 points)
+    if data.get('license_number'):
+        confidence += 3
+    if data.get('expiration'):
+        confidence += 2
     
     return confidence, notes
 
