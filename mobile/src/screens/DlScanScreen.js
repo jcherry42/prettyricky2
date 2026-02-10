@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { loadJson, saveJson } from '../lib/storage';
-import { buildApiUrl } from '../config/backend';
+import { uploadImageToLicenseScan } from '../lib/upload';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
