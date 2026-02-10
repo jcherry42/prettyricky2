@@ -4,6 +4,8 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 
+const ELECTRIC_BLUE = '#00D4FF';
+
 function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }) {
   const pts = useMemo(() => {
     const r = size * 0.36;
@@ -77,9 +79,7 @@ function Lamp({ size, variant, glowAnim }) {
           opacity: glowAnim,
         }}
       />
-
       <LedRing size={size} dots={isOuter ? 16 : 14} dotSize={isOuter ? 2.6 : 2.2} glowAnim={glowAnim} />
-
       <Animated.View
         style={{
           position: 'absolute',
@@ -99,16 +99,11 @@ function Lamp({ size, variant, glowAnim }) {
 function Cluster({ flip = false, glowAnim }) {
   const outer = 28;
   const inner = 20;
-
   const left = flip ? <Lamp size={inner} variant="inner" glowAnim={glowAnim} /> : <Lamp size={outer} variant="outer" glowAnim={glowAnim} />;
   const right = flip ? <Lamp size={outer} variant="outer" glowAnim={glowAnim} /> : <Lamp size={inner} variant="inner" glowAnim={glowAnim} />;
-
   return (
     <View style={styles.housing}>
-      <View style={styles.cluster}>
-        {left}
-        {right}
-      </View>
+      <View style={styles.cluster}>{left}{right}</View>
     </View>
   );
 }
@@ -119,18 +114,9 @@ export function BrandTaillights({ compact = false }) {
 
   useEffect(() => {
     if (flash) {
-      // Brake flash: ramp to full brightness then decay
       Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 2.2,
-          duration: 50,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 280,
-          useNativeDriver: true,
-        }),
+        Animated.timing(glowAnim, { toValue: 2.2, duration: 50, useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 1, duration: 280, useNativeDriver: true }),
       ]).start();
     }
   }, [flash, glowAnim]);
@@ -138,11 +124,9 @@ export function BrandTaillights({ compact = false }) {
   return (
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
       <Cluster glowAnim={glowAnim} />
-
       <View style={styles.centerText}>
         <Text style={styles.brand}>SUPERCHARG'D</Text>
       </View>
-
       <Cluster flip glowAnim={glowAnim} />
     </View>
   );
@@ -177,9 +161,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   brand: {
-    color: colors.text,
+    color: ELECTRIC_BLUE,
     ...type.label,
     fontSize: 12,
     letterSpacing: 2.6,
+    textShadowColor: 'rgba(0,212,255,0.60)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
 });
