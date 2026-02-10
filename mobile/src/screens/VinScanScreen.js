@@ -33,6 +33,9 @@ export function VinScanScreen() {
     const v = cleanVin(vin);
     if (v.length < 8) return;
 
+    // Dedupe: remove existing VIN entries
+    const without = history.filter((h) => h.vin !== v);
+
     const entry = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
       vin: v,
@@ -40,7 +43,7 @@ export function VinScanScreen() {
       savedAt: new Date().toISOString(),
     };
 
-    const next = [entry, ...history].slice(0, 50);
+    const next = [entry, ...without].slice(0, 50);
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
   }, [history]);
