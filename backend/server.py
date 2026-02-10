@@ -714,10 +714,13 @@ CRITICAL INSTRUCTIONS:
 1. Look for the NAME field - it may be formatted as "LAST, FIRST MIDDLE" or "FIRST MIDDLE LAST"
 2. The address is usually on 2-3 lines below the name
 3. State abbreviations are always 2 letters (e.g., CA not California)
-4. If text is unclear but partially visible, extract what you can see
-5. Use proper capitalization (e.g., "John" not "JOHN")
-6. If a field is completely unreadable, use null
-7. Return ONLY the JSON object - no explanations or markdown"""
+4. License number might be labeled "DL", "LIC", "ID", "Customer ID", or similar
+5. Expiration might be labeled "EXP", "Expires", "Expiration", or similar
+6. Expiration MUST be returned as MM/DD/YYYY when possible (convert from formats like YYYY-MM-DD or YYYYMMDD)
+7. If text is unclear but partially visible, extract what you can see
+8. Use proper capitalization (e.g., "John" not "JOHN")
+9. If a field is completely unreadable, use null
+10. Return ONLY the JSON object - no explanations or markdown"""
 
         # Initialize chat with retry-aware session
         chat = LlmChat(
