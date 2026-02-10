@@ -13,12 +13,14 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppSettingsProvider>
-          <InfotainmentShell>
-            <NavigationContainer>
-              <Tabs />
-            </NavigationContainer>
-            <StatusBar style="light" />
-          </InfotainmentShell>
+          <PttProvider>
+            <InfotainmentShell>
+              <NavigationContainer>
+                <Tabs />
+              </NavigationContainer>
+              <StatusBar style="light" />
+            </InfotainmentShell>
+          </PttProvider>
         </AppSettingsProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
