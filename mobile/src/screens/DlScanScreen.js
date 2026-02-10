@@ -15,7 +15,7 @@ function cleanDlNumber(s) {
     .slice(0, 24);
 }
 
-// NOTE: v1 is barcode-only + manual fallback (per user privacy requirement: NO OCR image upload).
+// OCR-first scan (front image upload) + manual fallback.
 export function DlScanScreen() {
   const [cameraPerm, setCameraPerm] = useState(null);
   const [mediaPerm, setMediaPerm] = useState(null);
