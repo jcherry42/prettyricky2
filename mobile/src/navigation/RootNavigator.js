@@ -117,7 +117,7 @@ export function RootNavigator() {
         />
       </Tab.Navigator>
 
-      {/* Floating actions (A): CHECK left, ONSTAR right, PTT appears in SPORT */}
+      {/* Floating actions (A): CHECK left, ASSIST right, PTT appears in SPORT */}
       <FloatingCheckButton onPress={() => setCcOpen(true)} onLongPress={() => setPrintOpen(true)} />
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
