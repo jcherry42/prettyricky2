@@ -45,7 +45,9 @@ export function Tabs() {
   const [ccOpen, setCcOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
+  const [talkOpen, setTalkOpen] = useState(false);
   const { settings } = useAppSettings();
+  const ptt = usePtt();
 
   return (
     <>
