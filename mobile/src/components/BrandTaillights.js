@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
   outer: {
-    width: 28,
-    height: 28,
+    width: 24,
+    height: 24,
   },
   inner: {
     width: 24,
