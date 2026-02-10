@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(214,178,94,0.16)',
     overflow: 'hidden',
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(8,10,12,0.74)',
     shadowColor: '#000',
     shadowOpacity: 0.35,
     shadowRadius: 24,
