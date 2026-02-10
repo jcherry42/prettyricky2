@@ -1,5 +1,7 @@
 import { buildApiUrl } from '../config/backend';
 
+const DEFAULT_TIMEOUT = 15000;
+
 export async function apiFetch(path, options = {}) {
   const url = buildApiUrl(path);
   if (!url) {
@@ -8,28 +10,45 @@ export async function apiFetch(path, options = {}) {
     throw err;
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  });
+  const controller = new AbortController();
+  const timeout = options.timeout || DEFAULT_TIMEOUT;
+  const timer = setTimeout(() => controller.abort(), timeout);
 
-  const text = await res.text();
-  let json;
   try {
-    json = text ? JSON.parse(text) : null;
-  } catch {
-    json = { raw: text };
-  }
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+    });
 
-  if (!res.ok) {
-    const err = new Error(json?.detail || `Request failed: ${res.status}`);
-    err.status = res.status;
-    err.payload = json;
-    throw err;
-  }
+    clearTimeout(timer);
 
-  return json;
+    const text = await res.text();
+    let json;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = { raw: text };
+    }
+
+    if (!res.ok) {
+      const err = new Error(json?.detail || `Request failed: ${res.status}`);
+      err.status = res.status;
+      err.payload = json;
+      throw err;
+    }
+
+    return json;
+  } catch (e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') {
+      const err = new Error(`Request timed out after ${timeout / 1000}s`);
+      err.code = 'TIMEOUT';
+      throw err;
+    }
+    throw e;
+  }
 }

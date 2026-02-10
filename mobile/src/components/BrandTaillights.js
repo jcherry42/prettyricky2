@@ -1,14 +1,10 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 
-// Mobile reinterpretation of the web header taillights + SUPERCHARG'D text.
-// Goal: closer to an R34 cluster: outer lamp larger than inner, with even baselines,
-// and a premium dotted LED ring feel.
-
-function LedRing({ size, dots = 14, dotSize = 2.4, intensity = 1 }) {
+function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }) {
   const pts = useMemo(() => {
     const r = size * 0.36;
     const cx = size / 2;
@@ -28,7 +24,7 @@ function LedRing({ size, dots = 14, dotSize = 2.4, intensity = 1 }) {
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {pts.map((p) => (
-        <View
+        <Animated.View
           key={p.key}
           style={{
             position: 'absolute',
@@ -38,6 +34,7 @@ function LedRing({ size, dots = 14, dotSize = 2.4, intensity = 1 }) {
             height: dotSize,
             borderRadius: 999,
             backgroundColor: 'rgba(255,35,35,1.0)',
+            opacity: glowAnim,
             shadowColor: 'rgba(255,35,35,1.0)',
             shadowOpacity: 0.78,
             shadowRadius: 7,
@@ -49,7 +46,7 @@ function LedRing({ size, dots = 14, dotSize = 2.4, intensity = 1 }) {
   );
 }
 
-function Lamp({ size, variant }) {
+function Lamp({ size, variant, glowAnim }) {
   const isOuter = variant === 'outer';
   return (
     <View
@@ -68,7 +65,7 @@ function Lamp({ size, variant }) {
         shadowOffset: { width: 0, height: 6 },
       }}
     >
-      <View
+      <Animated.View
         style={{
           width: size * 0.86,
           height: size * 0.86,
@@ -77,14 +74,13 @@ function Lamp({ size, variant }) {
           borderColor: 'rgba(255,35,35,0.20)',
           backgroundColor: isOuter ? 'rgba(255,35,35,0.045)' : 'rgba(255,35,35,0.030)',
           overflow: 'hidden',
+          opacity: glowAnim,
         }}
       />
 
-      {/* dotted LED ring */}
-      <LedRing size={size} dots={isOuter ? 16 : 14} dotSize={isOuter ? 2.6 : 2.2} />
+      <LedRing size={size} dots={isOuter ? 16 : 14} dotSize={isOuter ? 2.6 : 2.2} glowAnim={glowAnim} />
 
-      {/* subtle center lens */}
-      <View
+      <Animated.View
         style={{
           position: 'absolute',
           width: size * 0.28,
@@ -93,19 +89,19 @@ function Lamp({ size, variant }) {
           backgroundColor: 'rgba(255,60,60,0.18)',
           borderWidth: 1,
           borderColor: 'rgba(255,60,60,0.22)',
+          opacity: glowAnim,
         }}
       />
     </View>
   );
 }
 
-function Cluster({ flip = false }) {
-  // Outer larger, inner smaller, aligned bottoms (like R34).
+function Cluster({ flip = false, glowAnim }) {
   const outer = 28;
   const inner = 20;
 
-  const left = flip ? <Lamp size={inner} variant="inner" /> : <Lamp size={outer} variant="outer" />;
-  const right = flip ? <Lamp size={outer} variant="outer" /> : <Lamp size={inner} variant="inner" />;
+  const left = flip ? <Lamp size={inner} variant="inner" glowAnim={glowAnim} /> : <Lamp size={outer} variant="outer" glowAnim={glowAnim} />;
+  const right = flip ? <Lamp size={outer} variant="outer" glowAnim={glowAnim} /> : <Lamp size={inner} variant="inner" glowAnim={glowAnim} />;
 
   return (
     <View style={styles.housing}>
@@ -118,15 +114,36 @@ function Cluster({ flip = false }) {
 }
 
 export function BrandTaillights({ compact = false }) {
+  const { flash } = useTaillightFlash();
+  const glowAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (flash) {
+      // Brake flash: ramp to full brightness then decay
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 2.2,
+          duration: 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 280,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [flash, glowAnim]);
+
   return (
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
-      <Cluster />
+      <Cluster glowAnim={glowAnim} />
 
       <View style={styles.centerText}>
         <Text style={styles.brand}>SUPERCHARG'D</Text>
       </View>
 
-      <Cluster flip />
+      <Cluster flip glowAnim={glowAnim} />
     </View>
   );
 }

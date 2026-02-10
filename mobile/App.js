@@ -7,6 +7,7 @@ import { InfotainmentShell } from './src/components/InfotainmentShell';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
 import { PttProvider } from './src/context/PttContext';
+import { TaillightFlashProvider } from './src/context/TaillightFlashContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
 import { View } from 'react-native';
 
@@ -22,12 +23,14 @@ export default function App() {
       <SafeAreaProvider>
         <AppSettingsProvider>
           <PttProvider>
-            <InfotainmentShell>
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
-              <StatusBar style="light" />
-            </InfotainmentShell>
+            <TaillightFlashProvider>
+              <InfotainmentShell>
+                <NavigationContainer>
+                  <RootNavigator />
+                </NavigationContainer>
+                <StatusBar style="light" />
+              </InfotainmentShell>
+            </TaillightFlashProvider>
           </PttProvider>
         </AppSettingsProvider>
       </SafeAreaProvider>

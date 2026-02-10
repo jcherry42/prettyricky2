@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { impactLight } from '../lib/haptics';
 
 const TaillightFlashContext = createContext(null);
 
@@ -7,17 +8,17 @@ export function TaillightFlashProvider({ children }) {
   const timerRef = useRef(null);
 
   const triggerFlash = useCallback(() => {
-    // Quick brake flash pulse. Re-triggerable.
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
 
+    impactLight();
     setFlash(true);
     timerRef.current = setTimeout(() => {
       setFlash(false);
       timerRef.current = null;
-    }, 140);
+    }, 180);
   }, []);
 
   const value = useMemo(() => ({ flash, triggerFlash }), [flash, triggerFlash]);
