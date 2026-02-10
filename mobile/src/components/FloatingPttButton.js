@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { impactMedium, impactHeavy } from '../lib/haptics';
 
 export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, flagLabel, badgeDirection = '→' }) {
   return (
@@ -15,8 +16,8 @@ export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, 
 
       <Pressable
         disabled={disabled}
-        onPressIn={onPressIn}
-        onPressOut={onPressOut}
+        onPressIn={() => { impactHeavy(); onPressIn?.(); }}
+        onPressOut={() => { impactMedium(); onPressOut?.(); }}
         style={({ pressed }) => [
           styles.btn,
           recording && styles.btnRecording,
