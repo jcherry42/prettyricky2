@@ -1,8 +1,8 @@
-import { PttOverlay } from './PttOverlay';
+// Deprecated: replaced by PttOverlayView + PttProvider.
+// Keeping file to avoid import breakages if any cached bundle references it.
+export {}; 
 
-export default PttOverlay;
-
-const styles = StyleSheet.create({
+// (intentionally empty)
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.65)',
