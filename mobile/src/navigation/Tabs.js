@@ -51,6 +51,11 @@ export function Tabs() {
         options={{ tabBarIcon: ({ focused }) => <TabIcon label="VIN" focused={focused} /> }}
       />
       <Tab.Screen
+        name="Inventory"
+        component={InventoryScreen}
+        options={{ tabBarIcon: ({ focused }) => <TabIcon label="INV" focused={focused} /> }}
+      />
+      <Tab.Screen
         name="DL"
         component={DlScanScreen}
         options={{ tabBarIcon: ({ focused }) => <TabIcon label="DL" focused={focused} /> }}
