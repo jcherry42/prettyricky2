@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,75,75,0.75)',
   },
   centerText: {
-    flex: 1,
     alignItems: 'center',
   },
   brand: {
