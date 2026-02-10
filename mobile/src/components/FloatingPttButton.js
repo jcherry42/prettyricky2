@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
     right: 16,
-    bottom: 156,
+    bottom: 152,
   },
   badge: {
     position: 'absolute',
