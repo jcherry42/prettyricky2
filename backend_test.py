@@ -2028,6 +2028,156 @@ class BackendTester:
         except Exception as e:
             self.log_result("POST /print/license (fake base64)", False, f"❌ Exception: {str(e)}")
 
+    async def test_mobile_overlay_endpoints(self):
+        """Test tower-talk, translate, and TTS endpoints used by mobile overlays"""
+        try:
+            # Test 1: POST /api/tower-talk with exact JSON from review request
+            tower_talk_payload = {
+                "situation": "Customer says they want to think about it and will get back to me.",
+                "context": {
+                    "customerName": "Alex",
+                    "vehicle": "2022 BMW X5"
+                }
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/tower-talk", json=tower_talk_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    response_text = data.get('response', '')
+                    if response_text and isinstance(response_text, str):
+                        self.log_result(
+                            "POST /tower-talk (mobile overlay)", 
+                            True, 
+                            f"Generated response ({len(response_text)} chars)", 
+                            {'response_length': len(response_text), 'has_response_field': True}
+                        )
+                    else:
+                        self.log_result("POST /tower-talk (mobile overlay)", False, f"Missing or invalid response field. Data: {data}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /tower-talk (mobile overlay)", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {'expected_error': 'API key not configured'}
+                        )
+                    else:
+                        self.log_result("POST /tower-talk (mobile overlay)", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /tower-talk (mobile overlay)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test 2: POST /api/translate with exact JSON from review request
+            translate_payload = {
+                "text": "I can have it ready for you in 10 minutes. When can you swing by?",
+                "source_lang": "auto",
+                "target_lang": "es"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/translate", json=translate_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    translated_text = data.get('translated_text', '')
+                    
+                    # Verify expected fields from review request
+                    required_fields = ['translated_text']
+                    has_required = all(field in data for field in required_fields)
+                    
+                    if translated_text and has_required:
+                        self.log_result(
+                            "POST /translate (mobile overlay)", 
+                            True, 
+                            f"Translation successful: '{translated_text}'", 
+                            {
+                                'original': translate_payload['text'],
+                                'translated': translated_text,
+                                'detected_lang': data.get('detected_lang'),
+                                'confidence': data.get('confidence'),
+                                'has_required_fields': has_required
+                            }
+                        )
+                    else:
+                        self.log_result("POST /translate (mobile overlay)", False, f"Missing required fields or empty translation. Data: {data}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /translate (mobile overlay)", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {'expected_error': 'API key not configured'}
+                        )
+                    else:
+                        self.log_result("POST /translate (mobile overlay)", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /translate (mobile overlay)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test 3: POST /api/tts with exact JSON from review request
+            tts_payload = {
+                "text": "Hola, ¿cuándo puedes venir?",
+                "voice": "auto",
+                "language": "es"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/tts", json=tts_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    audio_base64 = data.get('audio_base64', '')
+                    format_field = data.get('format', '')
+                    voice_used = data.get('voice_used', '')
+                    
+                    # Verify expected fields from review request (audio_data as base64, mime_type)
+                    # Note: The actual response uses 'audio_base64' and 'format' instead of 'audio_data' and 'mime_type'
+                    has_audio_data = bool(audio_base64)
+                    has_format = bool(format_field)
+                    
+                    if has_audio_data and has_format:
+                        self.log_result(
+                            "POST /tts (mobile overlay)", 
+                            True, 
+                            f"TTS generated successfully (voice: {voice_used}, format: {format_field})", 
+                            {
+                                'text': tts_payload['text'],
+                                'voice_used': voice_used,
+                                'format': format_field,
+                                'audio_size': len(audio_base64),
+                                'cached': data.get('cached', False)
+                            }
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /tts (mobile overlay)", False, f"Missing audio data or format. Data keys: {list(data.keys())}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "POST /tts (mobile overlay)", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {'expected_error': 'API key not configured'}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /tts (mobile overlay)", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /tts (mobile overlay)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("Mobile overlay endpoints", False, f"Exception: {str(e)}")
+            return False
+
     async def run_all_tests(self):
         """Run backend tests with priority on Mobile Print Center sanity tests"""
         print("🚀 Backend API Testing Suite - Mobile Print Center Focus")
