@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
+import { useTaillightFlash } from '../context/TaillightFlashContext';
 
 // Mobile reinterpretation of the web header taillights + SUPERCHARG'D text.
 // Goal: closer to an R34 cluster: outer lamp larger than inner, with even baselines,
