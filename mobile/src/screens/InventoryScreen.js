@@ -64,24 +64,23 @@ export function InventoryScreen() {
               }}
             />
           )}
-
-      <Modal visible={!!editing} animationType="slide" presentationStyle="fullScreen">
-        {editing ? (
-          <VehicleEditorScreen
-            vehicle={editing}
-            onCancel={() => setEditing(null)}
-            onSave={async (nextVehicle) => {
-              const next = await updateVehicle(editing.id, nextVehicle);
-              setInv(next);
-              setEditing(null);
-            }}
-          />
-        ) : null}
-      </Modal>
-
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
           contentContainerStyle={{ paddingBottom: 14 }}
         />
+
+        <Modal visible={!!editing} animationType="slide" presentationStyle="fullScreen">
+          {editing ? (
+            <VehicleEditorScreen
+              vehicle={editing}
+              onCancel={() => setEditing(null)}
+              onSave={async (nextVehicle) => {
+                const next = await updateVehicle(editing.id, nextVehicle);
+                setInv(next);
+                setEditing(null);
+              }}
+            />
+          ) : null}
+        </Modal>
       </GlassCard>
 
       <Pressable onPress={refresh} style={({ pressed }) => [styles.refreshBtn, pressed && { opacity: 0.85 }]}>
