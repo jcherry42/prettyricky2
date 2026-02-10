@@ -7,6 +7,7 @@ const DEFAULT_SETTINGS = {
   defaultTargetLanguage: 'es',
   sportMode: false,
   ecoMode: false,
+  pttDirection: 'en_to_target', // 'en_to_target' | 'target_to_en'
   printers: [], // {id,name,ip}
   activePrinterId: null,
 };
