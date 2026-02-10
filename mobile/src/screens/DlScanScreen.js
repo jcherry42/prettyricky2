@@ -17,8 +17,10 @@ function cleanDlNumber(s) {
 
 // NOTE: v1 is barcode-only + manual fallback (per user privacy requirement: NO OCR image upload).
 export function DlScanScreen() {
-  const [perm, setPerm] = useState(null);
-  const [scanning, setScanning] = useState(false);
+  const [cameraPerm, setCameraPerm] = useState(null);
+  const [mediaPerm, setMediaPerm] = useState(null);
+
+  const [scanState, setScanState] = useState({ state: 'idle', error: null });
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
