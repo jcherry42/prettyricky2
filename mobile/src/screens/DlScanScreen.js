@@ -323,6 +323,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 18,
+  rowMeta: {
+    marginTop: 6,
+    color: colors.textMute,
+    fontSize: 11,
+  },
+
     paddingTop: 16,
   },
   title: {
