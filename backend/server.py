@@ -571,6 +571,50 @@ def normalize_state(state: str) -> str:
     return state_map.get(state, state[:2])
 
 
+
+
+def normalize_date_mmddyyyy(value: str) -> Optional[str]:
+    """Normalize common expiration date formats to MM/DD/YYYY."""
+    if not value:
+        return value
+    import re
+
+    s = str(value).strip()
+    digits = re.sub(r"[^0-9]", "", s)
+
+    # Most common: YYYYMMDD
+    if len(digits) == 8:
+        yyyy = digits[0:4]
+        mm = digits[4:6]
+        dd = digits[6:8]
+        try:
+            mmi = int(mm)
+            ddi = int(dd)
+            if 1 <= mmi <= 12 and 1 <= ddi <= 31:
+                return f"{mm}/{dd}/{yyyy}"
+        except Exception:
+            pass
+
+        # Alternate: MMDDYYYY
+        mm2 = digits[0:2]
+        dd2 = digits[2:4]
+        yyyy2 = digits[4:8]
+        try:
+            mmi = int(mm2)
+            ddi = int(dd2)
+            if 1 <= mmi <= 12 and 1 <= ddi <= 31:
+                return f"{mm2}/{dd2}/{yyyy2}"
+        except Exception:
+            pass
+
+    # Already MM/DD/YYYY or similar
+    m = re.search(r"(\d{1,2})\/(\d{1,2})\/(\d{4})", s)
+    if m:
+        mm, dd, yyyy = m.group(1).zfill(2), m.group(2).zfill(2), m.group(3)
+        return f"{mm}/{dd}/{yyyy}"
+
+    return value
+
 def calculate_license_confidence(data: dict) -> tuple:
     """Calculate confidence score and notes for extracted license data"""
     confidence = 0
