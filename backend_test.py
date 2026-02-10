@@ -2029,35 +2029,64 @@ class BackendTester:
             self.log_result("POST /print/license (fake base64)", False, f"❌ Exception: {str(e)}")
 
     async def run_all_tests(self):
-        """Run comprehensive backend regression tests for de-monolith (customers + vin)"""
-        print("🚀 Backend Regression Testing - De-Monolith for Customers + VIN")
+        """Run backend tests with priority on Mobile Print Center sanity tests"""
+        print("🚀 Backend API Testing Suite - Mobile Print Center Focus")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
-        print("\n🎯 DE-MONOLITH REGRESSION TESTS:")
+        # Core health check first
+        await self.test_health_check()
         
-        # Test 1: Customers endpoints
-        print("\n1️⃣ Testing Customer Endpoints (routes/customers_v2.py)...")
+        # PRIORITY: Mobile Print Center sanity tests (as requested in review)
+        await self.test_mobile_print_center_endpoints()
         
-        print("   • GET /api/customers (merged list) with and without search...")
+        print("\n📋 ADDITIONAL REGRESSION TESTS:")
+        
+        # Customer endpoints regression testing
+        print("\n1️⃣ Testing Customer Endpoints...")
+        await self.test_customers_list_endpoint()
         await self.test_customers_merged_list()
-        
-        print("   • GET /api/customers/stats...")
+        await self.test_customer_crud_operations()
+        await self.test_customer_vehicle_attachment()
         await self.test_customer_stats()
         
-        print("   • GET /api/customers/list...")
-        await self.test_customers_list_endpoint()
+        # Vehicle endpoints regression testing
+        print("\n2️⃣ Testing Vehicle Endpoints...")
+        await self.test_vehicles_endpoints()
         
-        print("   • POST /api/customers/create...")
-        await self.test_customers_create_endpoint()
+        # VIN Scanner workflow testing
+        print("\n3️⃣ Testing VIN Endpoints...")
+        await self.test_vin_decode_workflow()
+        await self.test_vin_save_workflow()
         
-        print("   • GET/PATCH/DELETE /api/customers/{id}...")
-        await self.test_customer_crud_operations()
+        # Tower Talk + Translation refactor regression testing
+        print("\n4️⃣ Testing Tower Talk + Translation...")
+        await self.test_tower_talk_api()
+        await self.test_translate_api()
         
-        print("   • Attach/detach vehicle endpoints...")
-        await self.test_customer_vehicle_attachment()
+        # License scan pipeline testing (updated with license_number + expiration)
+        print("\n5️⃣ Testing License Scan Pipeline...")
+        await self.test_license_scan_pipeline_updated()
+        await self.test_license_customer_creation()
         
-        # Test 2: VIN endpoints
+        # Printer endpoints regression testing
+        print("\n6️⃣ Testing Printer Endpoints...")
+        await self.test_printer_endpoints()
+        
+        # Quality audit endpoints
+        print("\n7️⃣ Testing Quality Audit Endpoints...")
+        await self.test_quality_audit_endpoints()
+        
+        print("=" * 80)
+        print(f"✅ Tests passed: {len(self.results) - len(self.failed_tests)}")
+        print(f"❌ Tests failed: {len(self.failed_tests)}")
+        
+        if self.failed_tests:
+            print("\nFailed tests:")
+            for test in self.failed_tests:
+                print(f"  - {test}")
+        
+        return len(self.failed_tests) == 0
         print("\n2️⃣ Testing VIN Endpoints (routes/vin_v2.py)...")
         
         print("   • GET /api/vin/decode/{vin}...")
