@@ -61,9 +61,9 @@ function Lamp({ size, variant }) {
         borderColor: isOuter ? 'rgba(255,45,45,0.40)' : 'rgba(255,45,45,0.28)',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: 'rgba(255,45,45,0.55)',
-        shadowOpacity: isOuter ? 0.40 : 0.28,
-        shadowRadius: isOuter ? 14 : 10,
+        shadowColor: 'rgba(255,35,35,0.65)',
+        shadowOpacity: isOuter ? 0.55 : 0.38,
+        shadowRadius: isOuter ? 16 : 12,
         shadowOffset: { width: 0, height: 6 },
       }}
     >
