@@ -58,7 +58,7 @@ function Lamp({ size, variant }) {
         borderRadius: 999,
         backgroundColor: 'rgba(0,0,0,0.55)',
         borderWidth: 1,
-        borderColor: isOuter ? 'rgba(255,45,45,0.40)' : 'rgba(255,45,45,0.28)',
+        borderColor: isOuter ? 'rgba(255,35,35,0.48)' : 'rgba(255,35,35,0.32)',
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: 'rgba(255,35,35,0.65)',
