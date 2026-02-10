@@ -5,19 +5,26 @@ import { GlassCard } from '../components/GlassCard';
 import { loadInventory, removeFromInventory, updateVehicle } from '../lib/inventory';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
 
-function VehicleRow({ item, onRemove }) {
+function VehicleRow({ item, onRemove, onEdit }) {
   const title = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
+  const subtitle = [
+    item.stockNumber ? `Stock: ${item.stockNumber}` : null,
+    typeof item.price === 'number' ? `Price: $${item.price.toLocaleString()}` : null,
+    typeof item.mileage === 'number' ? `Mi: ${item.mileage.toLocaleString()}` : null,
+  ].filter(Boolean).join(' · ');
+
   return (
-    <View style={styles.row}>
+    <Pressable onPress={() => onEdit(item)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.88 }]}>
       <View style={{ flex: 1 }}>
         <Text style={styles.rowTitle}>{title || 'Vehicle'}</Text>
         <Text style={styles.rowVin}>{item.vin}</Text>
+        {subtitle ? <Text style={styles.rowMeta}>{subtitle}</Text> : null}
         <Text style={styles.rowMeta}>Status: {item.status} · Added: {new Date(item.addedAt).toLocaleString()}</Text>
       </View>
       <Pressable onPress={() => onRemove(item.id)} style={({ pressed }) => [styles.smallBtn, pressed && { opacity: 0.85 }]}>
         <Text style={styles.smallBtnText}>REMOVE</Text>
       </Pressable>
-    </View>
+    </Pressable>
   );
 }
 
