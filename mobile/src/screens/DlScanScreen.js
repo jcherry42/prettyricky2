@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicat
 import * as ImagePicker from 'expo-image-picker';
 import { loadJson, saveJson } from '../lib/storage';
 import { uploadImageToLicenseScan } from '../lib/upload';
+import { uriToBase64 } from '../lib/image';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
