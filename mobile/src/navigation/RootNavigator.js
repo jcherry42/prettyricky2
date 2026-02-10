@@ -10,6 +10,7 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { usePtt } from '../context/PttContext';
 
 import { HomeScreen } from '../screens/HomeScreen';
+import { BrandTaillights } from '../components/BrandTaillights';
 import { IntakeScreen } from '../screens/IntakeScreen';
 import { ScanStack } from './ScanStack';
 
