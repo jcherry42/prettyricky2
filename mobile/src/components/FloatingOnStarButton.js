@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// OnStar-inspired Tower Talk button: glowing red.
+// Deprecated old button (word removed). Kept for compatibility.
 export function FloatingOnStarButton({ onPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">

@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Glowing red assist button (previously referred to as an OnStar-style button).
+// Glowing red assist button.
 export function AssistGlowButton({ onPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
