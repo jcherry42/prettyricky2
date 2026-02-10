@@ -9,7 +9,7 @@ export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, 
       {flagLabel ? (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{flagLabel}</Text>
-          <Text style={styles.badgeArrow}>→</Text>
+          <Text style={styles.badgeArrow}>{badgeDirection}</Text>
         </View>
       ) : null}
 
