@@ -55,6 +55,7 @@ export function AppSettingsProvider({ children }) {
       await persist(next);
     },
     [settings, persist]
+  );
 
   const setPttDirection = useCallback(
     async (pttDirection) => {
@@ -62,8 +63,6 @@ export function AppSettingsProvider({ children }) {
       await persist(next);
     },
     [settings, persist]
-  );
-
   );
 
   const upsertPrinter = useCallback(
