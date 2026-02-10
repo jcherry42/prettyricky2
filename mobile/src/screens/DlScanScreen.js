@@ -74,6 +74,7 @@ export function DlScanScreen() {
         const fullName = [d.first_name, d.middle_name, d.last_name].filter(Boolean).join(' ').trim();
         const addressLine = [d.address, d.city, d.state, d.zip_code].filter(Boolean).join(', ').trim();
 
+        const base64 = await uriToBase64(uri);
         const entry = {
           id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
           source: 'ocr',
