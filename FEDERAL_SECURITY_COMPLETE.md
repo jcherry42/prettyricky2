@@ -85,7 +85,7 @@ const data = await secureStorage.getItem('sensitive_data');
 
 ```
 ✅ Rate limiting enabled: 100 req/min, 150 burst
-✅ CORS configured for: ['http://localhost:3000', 'https://superchargd.preview.emergentagent.com']
+✅ CORS configured for: ['http://localhost:3000', 'https://car-sales-weapon.preview.emergentagent.com']
 ✅ Security headers enabled
 Starting Closr API server - FEDERAL-GRADE SECURITY ENABLED...
 ✅ Audit logging initialized

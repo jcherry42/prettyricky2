@@ -7,7 +7,7 @@ import requests
 import time
 import os
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://superchargd.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://car-sales-weapon.preview.emergentagent.com')
 
 
 class TestHealthEndpoints:
