@@ -140,14 +140,16 @@ export function VinScanScreen() {
           renderItem={({ item }) => (
             <Pressable
               onPress={async () => {
-                // Minimal decode action for now: call backend VIN decode and log result in history.
-                // This proves API connectivity without building full vehicle UI yet.
+                // Decode VIN and add to Local Inventory.
                 try {
                   const decoded = await decodeVinWithBackend(item.vin);
+                  await addToInventory({ vin: item.vin, decoded });
+
                   const entry = {
                     ...item,
                     decoded,
                     decodedAt: new Date().toISOString(),
+                    savedToInventoryAt: new Date().toISOString(),
                   };
                   const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
                   setHistory(next);
