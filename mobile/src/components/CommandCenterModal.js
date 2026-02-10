@@ -33,7 +33,7 @@ function LangChip({ code, label, active, onPress }) {
 }
 
 const LANGS = [
-  { code: 'es', label: '🇪🇸 Spanish' },
+  { code: 'es', label: '🇲🇽 Spanish' },
   { code: 'fr', label: '🇫🇷 French' },
   { code: 'ko', label: '🇰🇷 Korean' },
 ];
