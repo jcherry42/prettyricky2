@@ -566,88 +566,171 @@ class BackendTester:
             self.log_result("GET /customers/stats", False, f"Exception: {str(e)}")
             return False
     
-    async def test_license_scan_pipeline(self):
-        """Test license scan pipeline with small and normal images"""
+    async def test_license_scan_pipeline_updated(self):
+        """Test updated license scan pipeline after adding license_number + expiration extraction"""
         try:
-            # Test 1: Very small image payload - should return success=false BUT include image_url
-            # Create a very small 1x1 pixel PNG (under 10KB threshold)
-            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            # Test 1: Health check first
+            async with self.session.get(f"{BACKEND_URL}/health") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "GET /health (license scan test)", 
+                        True, 
+                        f"Health check passed: {data.get('status')}", 
+                        {'status': data.get('status')}
+                    )
+                else:
+                    self.log_result("GET /health (license scan test)", False, f"HTTP {response.status}")
+                    return False
             
-            # Convert base64 to bytes for file upload
+            # Test 2: Use existing license image from uploads directory
+            # Pick a normal-sized license image from the available ones
+            import os
+            license_files = [
+                "license_007b26203e64.jpg",
+                "license_092e4f85a096.jpg", 
+                "license_177c6bc30199.jpg",
+                "license_288dd7185549.jpg"
+            ]
+            
+            # Try to read an existing license image
+            test_image_path = None
+            for filename in license_files:
+                filepath = f"/app/backend/uploads/{filename}"
+                if os.path.exists(filepath):
+                    test_image_path = filepath
+                    break
+            
+            if not test_image_path:
+                # Fallback: create a normal-sized test image
+                import base64
+                import io
+                valid_png_base64 = """iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR42mNk+M9QjwEHNDAAACYABgDTodatAAAAAElFTkSuQmCC"""
+                normal_image_bytes = base64.b64decode(valid_png_base64)
+                normal_image_data = normal_image_bytes * 500  # Make it ~15KB
+                
+                form_data = aiohttp.FormData()
+                form_data.add_field('image', io.BytesIO(normal_image_data), filename='normal_license.png', content_type='image/png')
+            else:
+                # Use existing license image
+                with open(test_image_path, 'rb') as f:
+                    image_data = f.read()
+                
+                form_data = aiohttp.FormData()
+                form_data.add_field('image', io.BytesIO(image_data), filename=os.path.basename(test_image_path), content_type='image/jpeg')
+            
+            # Test POST /license/scan with normal image
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers={}) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    
+                    # Verify response structure includes required fields
+                    required_fields = ['success', 'image_url', 'extracted_data', 'confidence', 'extraction_notes']
+                    missing_fields = [field for field in required_fields if field not in data]
+                    
+                    if missing_fields:
+                        self.log_result(
+                            "POST /license/scan (normal image - structure)", 
+                            False, 
+                            f"Missing required response fields: {missing_fields}", 
+                            {'response_keys': list(data.keys())}
+                        )
+                        return False
+                    
+                    # Check if image_url is present (critical requirement)
+                    if not data.get('image_url'):
+                        self.log_result(
+                            "POST /license/scan (normal image - image_url)", 
+                            False, 
+                            "Missing image_url in response", 
+                            {'response': data}
+                        )
+                        return False
+                    
+                    # Store image_url for customer creation test
+                    self.test_image_url = data.get('image_url')
+                    
+                    # Check extracted_data structure for new fields
+                    extracted_data = data.get('extracted_data', {})
+                    if extracted_data:
+                        # Verify license_number and expiration fields exist (can be null but must be present)
+                        required_extraction_fields = ['first_name', 'last_name', 'address', 'city', 'state', 'zip_code', 'license_number', 'expiration']
+                        missing_extraction_fields = [field for field in required_extraction_fields if field not in extracted_data]
+                        
+                        if missing_extraction_fields:
+                            self.log_result(
+                                "POST /license/scan (extracted_data fields)", 
+                                False, 
+                                f"Missing required extraction fields: {missing_extraction_fields}", 
+                                {'extracted_fields': list(extracted_data.keys())}
+                            )
+                            return False
+                        
+                        # Check if license_number and expiration are present (new requirement)
+                        license_number = extracted_data.get('license_number')
+                        expiration = extracted_data.get('expiration')
+                        
+                        self.log_result(
+                            "POST /license/scan (normal image - success)", 
+                            True, 
+                            f"License scan successful with new fields. License: {license_number}, Expiration: {expiration}", 
+                            {
+                                'success': data.get('success'),
+                                'image_url': data.get('image_url'),
+                                'confidence': data.get('confidence'),
+                                'license_number': license_number,
+                                'expiration': expiration,
+                                'extracted_fields': list(extracted_data.keys())
+                            }
+                        )
+                    else:
+                        # OCR failed but image_url should still be present
+                        self.log_result(
+                            "POST /license/scan (normal image - OCR failed)", 
+                            True, 
+                            f"OCR failed but image_url preserved: {data.get('image_url')}", 
+                            {
+                                'success': data.get('success'),
+                                'image_url': data.get('image_url'),
+                                'error': data.get('error')
+                            }
+                        )
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/scan (normal image)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test 3: Very small image - should return success=false BUT include image_url
             import base64
             import io
+            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
             tiny_image_bytes = base64.b64decode(tiny_png_base64)
             
-            # Create multipart form data for small image
             form_data = aiohttp.FormData()
             form_data.add_field('image', io.BytesIO(tiny_image_bytes), filename='tiny_license.png', content_type='image/png')
             
-            # Remove Content-Type header for multipart upload
-            headers = {}
-            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers=headers) as response:
+            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers={}) as response:
                 if response.status == 200:
                     data = await response.json()
                     # Should return success=false but MUST include image_url
                     if not data.get('success') and data.get('image_url'):
                         self.log_result(
-                            "POST /license/scan (small image)", 
+                            "POST /license/scan (small image - low quality path)", 
                             True, 
                             f"Small image correctly failed OCR but preserved image_url: {data.get('image_url')}", 
                             {'success': data.get('success'), 'image_url': data.get('image_url'), 'error': data.get('error')}
                         )
-                        # Store image_url for customer creation test (from successful small image upload)
-                        self.test_image_url = data.get('image_url')
+                        return True
                     else:
-                        self.log_result("POST /license/scan (small image)", False, f"Expected success=false with image_url, got: {data}")
+                        self.log_result("POST /license/scan (small image - low quality path)", False, f"Expected success=false with image_url, got: {data}")
                         return False
                 else:
                     error_text = await response.text()
-                    self.log_result("POST /license/scan (small image)", False, f"HTTP {response.status}: {error_text}")
-                    return False
-            
-            # Test 2: Normal sized image - should return 200 and include image_url
-            # Use a valid PNG image (create a simple valid PNG)
-            # This is a valid 2x2 PNG image in base64
-            valid_png_base64 = """iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR42mNk+M9QjwEHNDAAACYABgDTodatAAAAAElFTkSuQmCC"""
-            
-            # Pad it to make it larger (simulate a normal license photo size)
-            normal_image_bytes = base64.b64decode(valid_png_base64)
-            # Duplicate the image data to make it larger
-            normal_image_data = normal_image_bytes * 500  # Make it ~15KB
-            
-            form_data = aiohttp.FormData()
-            form_data.add_field('image', io.BytesIO(normal_image_data), filename='normal_license.png', content_type='image/png')
-            
-            async with self.session.post(f"{BACKEND_URL}/license/scan", data=form_data, headers={}) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    # Should include image_url regardless of OCR success/failure
-                    if data.get('image_url'):
-                        self.log_result(
-                            "POST /license/scan (normal image)", 
-                            True, 
-                            f"Normal image processed and returned image_url: {data.get('image_url')}", 
-                            {'success': data.get('success'), 'image_url': data.get('image_url'), 'confidence': data.get('confidence')}
-                        )
-                        return True
-                    else:
-                        # If no image_url returned, this indicates the production gate fix may not be complete
-                        # But we can still proceed with the test using the small image URL
-                        self.log_result(
-                            "POST /license/scan (normal image)", 
-                            False, 
-                            f"Normal image failed OCR and didn't return image_url (production gate fix may be incomplete): {data.get('error', 'Unknown error')}", 
-                            {'success': data.get('success'), 'error': data.get('error')}
-                        )
-                        # Still return True since we have image_url from small image test
-                        return True
-                else:
-                    error_text = await response.text()
-                    self.log_result("POST /license/scan (normal image)", False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("POST /license/scan (small image - low quality path)", False, f"HTTP {response.status}: {error_text}")
                     return False
                     
         except Exception as e:
-            self.log_result("License scan pipeline", False, f"Exception: {str(e)}")
+            self.log_result("License scan pipeline (updated)", False, f"Exception: {str(e)}")
             return False
 
     async def test_license_customer_creation(self):
