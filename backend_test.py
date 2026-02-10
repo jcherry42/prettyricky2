@@ -568,6 +568,10 @@ class BackendTester:
     
     async def test_license_scan_pipeline_updated(self):
         """Test updated license scan pipeline after adding license_number + expiration extraction"""
+        import base64
+        import io
+        import os
+        
         try:
             # Test 1: Health check first
             async with self.session.get(f"{BACKEND_URL}/health") as response:
@@ -585,7 +589,6 @@ class BackendTester:
             
             # Test 2: Use existing license image from uploads directory
             # Pick a normal-sized license image from the available ones
-            import os
             license_files = [
                 "license_007b26203e64.jpg",
                 "license_092e4f85a096.jpg", 
@@ -603,8 +606,6 @@ class BackendTester:
             
             if not test_image_path:
                 # Fallback: create a normal-sized test image
-                import base64
-                import io
                 valid_png_base64 = """iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAEklEQVR42mNk+M9QjwEHNDAAACYABgDTodatAAAAAElFTkSuQmCC"""
                 normal_image_bytes = base64.b64decode(valid_png_base64)
                 normal_image_data = normal_image_bytes * 500  # Make it ~15KB
@@ -701,8 +702,6 @@ class BackendTester:
                     return False
             
             # Test 3: Very small image - should return success=false BUT include image_url
-            import base64
-            import io
             tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
             tiny_image_bytes = base64.b64decode(tiny_png_base64)
             
