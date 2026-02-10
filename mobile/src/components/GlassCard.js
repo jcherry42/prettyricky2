@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   wrap: {
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(214,178,94,0.16)',
     overflow: 'hidden',
     backgroundColor: colors.panel,
     shadowColor: '#000',
