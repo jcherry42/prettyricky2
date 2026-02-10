@@ -73,7 +73,7 @@ export function ConnectivityScreen() {
         <Text style={styles.body}>
           Set EXPO_PUBLIC_BACKEND_URL in your Expo environment. Example:
         </Text>
-        <Text style={styles.code}>EXPO_PUBLIC_BACKEND_URL=https://car-sales-weapon.preview.emergentagent.com</Text>
+        <Text style={styles.code}>EXPO_PUBLIC_BACKEND_URL=https://infotainment-dealer.preview.emergentagent.com</Text>
         <Text style={[styles.body, { marginTop: 10 }]}>
           All API calls are made to {backendUrl ? `${backendUrl}/api/*` : '[backend]/api/*'}.
         </Text>

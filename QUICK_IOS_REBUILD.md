@@ -10,7 +10,7 @@ cd /app/frontend
 rm -rf ios/App/public dist
 
 # 3. Build with explicit env var
-VITE_BACKEND_URL=https://car-sales-weapon.preview.emergentagent.com yarn build:prod
+VITE_BACKEND_URL=https://infotainment-dealer.preview.emergentagent.com yarn build:prod
 
 # 4. Sync to iOS
 npx cap sync ios
