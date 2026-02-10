@@ -115,12 +115,21 @@ export function AppSettingsProvider({ children }) {
     return printers.find((p) => p.id === settings.activePrinterId) || printers[0] || null;
   }, [settings]);
 
+  const toggleSportMode = useCallback(
+    async () => {
+      const next = { ...settings, sportMode: !settings.sportMode };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
   const value = useMemo(
     () => ({
       loaded,
       settings,
       setDefaultTargetLanguage,
       setSportMode,
+      toggleSportMode,
       setEcoMode,
       setPttDirection,
       upsertPrinter,
