@@ -30,6 +30,7 @@ function VehicleRow({ item, onRemove, onEdit }) {
 
 export function InventoryScreen() {
   const [inv, setInv] = useState({ vehicles: [] });
+  const [editing, setEditing] = useState(null);
 
   const refresh = useCallback(async () => {
     const data = await loadInventory();
