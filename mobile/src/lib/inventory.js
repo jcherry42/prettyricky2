@@ -54,6 +54,7 @@ export async function addToInventory({ vin, decoded }) {
   const next = { ...inv, vehicles: [item, ...inv.vehicles].slice(0, 200) };
   await saveInventory(next);
   return next;
+}
 
 export async function updateVehicle(vehicleId, patch) {
   const inv = await loadInventory();
@@ -61,8 +62,6 @@ export async function updateVehicle(vehicleId, patch) {
   const next = { ...inv, vehicles: nextVehicles };
   await saveInventory(next);
   return next;
-}
-
 }
 
 export async function removeFromInventory(vehicleId) {
