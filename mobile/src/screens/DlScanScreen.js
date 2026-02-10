@@ -30,14 +30,8 @@ export function DlScanScreen() {
   const canScan = useMemo(() => perm?.granted === true, [perm]);
 
   const loadHistory = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!raw) return setHistory([]);
-    try {
-      const parsed = JSON.parse(raw);
-      setHistory(Array.isArray(parsed) ? parsed : []);
-    } catch {
-      setHistory([]);
-    }
+    const parsed = await loadJson(STORAGE_KEY, []);
+    setHistory(Array.isArray(parsed) ? parsed : []);
   }, []);
 
   useEffect(() => {
