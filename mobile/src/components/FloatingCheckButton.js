@@ -3,6 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 
+// CHECK button: short press opens Command Center; long press opens Print Center.
+
+
 export function FloatingCheckButton({ onPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
