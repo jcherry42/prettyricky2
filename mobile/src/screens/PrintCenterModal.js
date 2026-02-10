@@ -35,6 +35,7 @@ function CustomerRow({ item, onSelect }) {
       <Text style={styles.rowMeta} numberOfLines={1}>{item.phone || item.email || item.id}</Text>
     </Pressable>
   );
+}
 
 function DlRow({ item, onSelect, selected }) {
   const name = item.fullName || 'DL Scan';
@@ -46,8 +47,6 @@ function DlRow({ item, onSelect, selected }) {
       <Text style={styles.rowMeta} numberOfLines={1}>{new Date(item.savedAt).toLocaleString()}</Text>
     </Pressable>
   );
-}
-
 }
 
 export function PrintCenterModal({ visible, onClose }) {
