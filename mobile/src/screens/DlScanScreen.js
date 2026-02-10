@@ -204,7 +204,20 @@ export function DlScanScreen() {
                   <Text style={styles.rowLine}>DL: {item.dlNumber} · EXP: {item.expiration}</Text>
                 </>
               ) : (
-                <Text style={styles.rowLine} numberOfLines={2}>RAW: {String(item.raw || '')}</Text>
+                <>
+                  <Text style={styles.rowLine}>
+                    {item.firstName || item.lastName ? `${item.firstName} ${item.lastName}` : 'Name: —'}
+                  </Text>
+                  <Text style={styles.rowLine}>{item.address ? item.address : 'Address: —'}</Text>
+                  <Text style={styles.rowLine}>
+                    DL: {item.dlNumber || '—'} · EXP: {item.expiration || '—'}
+                  </Text>
+                  {!item.ok ? (
+                    <Text style={[styles.rowLine, { color: colors.red }]}>
+                      Barcode read, but fields incomplete — use Manual capture.
+                    </Text>
+                  ) : null}
+                </>
               )}
             </View>
           )}
