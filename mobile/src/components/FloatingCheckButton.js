@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { impactMedium } from '../lib/haptics';
 
 // CHECK ENGINE button: short press opens Command Center; long press opens Print Center.
 
@@ -10,8 +11,8 @@ export function FloatingCheckButton({ onPress, onLongPress }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       <Pressable
-        onPress={onPress}
-        onLongPress={onLongPress}
+        onPress={() => { impactMedium(); onPress?.(); }}
+        onLongPress={() => { impactMedium(); onLongPress?.(); }}
         delayLongPress={380}
         style={({ pressed }) => [styles.btn, pressed && { transform: [{ scale: 0.985 }], opacity: 0.94 }]}
       >
