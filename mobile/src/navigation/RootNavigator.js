@@ -10,7 +10,7 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { usePtt } from '../context/PttContext';
 
 import { HomeScreen } from '../screens/HomeScreen';
-import { InventoryScreen } from '../screens/InventoryScreen';
+import { IntakeScreen } from '../screens/IntakeScreen';
 import { ScanStack } from './ScanStack';
 
 import { FloatingCheckButton } from '../components/FloatingCheckButton';
