@@ -122,6 +122,7 @@ export function AppSettingsProvider({ children }) {
       setDefaultTargetLanguage,
       setSportMode,
       setEcoMode,
+      setPttDirection,
       upsertPrinter,
       removePrinter,
       setActivePrinter,
