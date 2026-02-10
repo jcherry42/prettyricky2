@@ -1,0 +1,36 @@
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '../theme/colors';
+
+export function GlassCard({ children, style }) {
+  return (
+    <View style={[styles.wrap, style]}>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.04)']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      <View style={styles.inner}>{children}</View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    overflow: 'hidden',
+    backgroundColor: colors.panel,
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
+  inner: {
+    padding: 16,
+  },
+});
