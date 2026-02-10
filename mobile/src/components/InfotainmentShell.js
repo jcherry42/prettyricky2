@@ -32,6 +32,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg0,
   },
+  content: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 520,
+    alignSelf: 'center',
+  },
+
   highlight: {
     position: 'absolute',
     left: -120,
