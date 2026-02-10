@@ -20,7 +20,7 @@ import { PrintCenterModal } from '../screens/PrintCenterModal';
 import { FloatingPttButton } from '../components/FloatingPttButton';
 import { PttOverlayView } from '../components/PttOverlayView';
 
-import { FloatingOnStarButton } from '../components/FloatingOnStarButton';
+import { AssistGlowButton } from '../components/AssistGlowButton';
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
 
 const Tab = createBottomTabNavigator();
