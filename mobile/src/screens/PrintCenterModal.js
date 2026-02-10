@@ -35,6 +35,19 @@ function CustomerRow({ item, onSelect }) {
       <Text style={styles.rowMeta} numberOfLines={1}>{item.phone || item.email || item.id}</Text>
     </Pressable>
   );
+
+function DlRow({ item, onSelect, selected }) {
+  const name = item.fullName || 'DL Scan';
+  const meta = `DL: ${item.dlNumber || '—'} · EXP: ${item.expiration || '—'}`;
+  return (
+    <Pressable onPress={() => onSelect(item)} style={({ pressed }) => [styles.row, selected && styles.rowSelected, pressed && { opacity: 0.88 }]}>
+      <Text style={styles.rowTitle}>{name}</Text>
+      <Text style={styles.rowMeta} numberOfLines={1}>{meta}</Text>
+      <Text style={styles.rowMeta} numberOfLines={1}>{new Date(item.savedAt).toLocaleString()}</Text>
+    </Pressable>
+  );
+}
+
 }
 
 export function PrintCenterModal({ visible, onClose }) {
