@@ -174,6 +174,9 @@ export function VinScanScreen() {
                   {item.decoded.vehicle.year} {item.decoded.vehicle.make} {item.decoded.vehicle.model}
                 </Text>
               ) : null}
+              {item.savedToInventoryAt ? (
+                <Text style={[styles.decodedLine, { color: colors.green }]}>Saved to Local Inventory</Text>
+              ) : null}
               {item.decodeError ? (
                 <Text style={[styles.decodedLine, { color: colors.red }]} numberOfLines={1}>
                   {item.decodeError}
