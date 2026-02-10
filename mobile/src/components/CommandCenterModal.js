@@ -145,6 +145,19 @@ export function CommandCenterModal({ visible, onClose }) {
                   <Text style={[styles.toggleText, settings.sportMode && { color: colors.gold }]}> {settings.sportMode ? 'ON' : 'OFF'}</Text>
                 </Pressable>
               </GlassCard>
+
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>Eco Mode</SectionTitle>
+                <Text style={styles.body}>Reduce blur + animation intensity for older devices (native-smooth).</Text>
+                <View style={{ height: 12 }} />
+                <Pressable
+                  onPress={() => setEcoMode(!settings.ecoMode)}
+                  style={({ pressed }) => [styles.toggle, settings.ecoMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
+                >
+                  <View style={[styles.toggleDot, settings.ecoMode && styles.toggleDotOn]} />
+                  <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}> {settings.ecoMode ? 'ON' : 'OFF'}</Text>
+                </Pressable>
+              </GlassCard>
             </>
           ) : null}
 
