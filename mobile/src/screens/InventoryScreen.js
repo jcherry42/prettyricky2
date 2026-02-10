@@ -57,6 +57,7 @@ export function InventoryScreen() {
           renderItem={({ item }) => (
             <VehicleRow
               item={item}
+              onEdit={(v) => setEditing(v)}
               onRemove={async (id) => {
                 const next = await removeFromInventory(id);
                 setInv(next);
