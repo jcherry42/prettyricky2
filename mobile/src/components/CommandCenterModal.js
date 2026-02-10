@@ -113,14 +113,16 @@ export function CommandCenterModal({ visible, onClose }) {
           </View>
 
           {activeTab === 'dashboard' ? (
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
             <GlassCard style={{ marginTop: 14 }}>
               <SectionTitle>Dashboard</SectionTitle>
               <Text style={styles.body}>Porting in progress. Next: customer KPIs, import status, and pipeline.</Text>
             </GlassCard>
+            </ScrollView>
           ) : null}
 
           {activeTab === 'settings' ? (
-            <>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Language</SectionTitle>
                 <Text style={styles.body}>Used by SPORT translation, voice translate, and TTS voices.</Text>
