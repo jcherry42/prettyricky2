@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { loadJson, saveJson } from '../lib/storage';
+import { parseAamvaPdf417 } from '../lib/aamva';
 import { colors } from '../theme/colors';
 import { GlassCard } from '../components/GlassCard';
 
