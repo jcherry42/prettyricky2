@@ -89,12 +89,7 @@ const styles = StyleSheet.create({
     ...type.h1,
     fontSize: 28,
   },
-  summaryBody: {
-    marginTop: 10,
-    color: colors.textDim,
-    ...type.bodyDim,
-    lineHeight: 18,
-  },
+  // summary body removed
   rowCard: {
     borderRadius: 26,
   },
