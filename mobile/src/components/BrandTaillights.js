@@ -50,9 +50,20 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 10,
   },
+  housing: {
+    height: 30,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,45,45,0.18)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cluster: {
     flexDirection: 'row',
     gap: 6,
+    alignItems: 'flex-end',
   },
   light: {
     width: 26,
