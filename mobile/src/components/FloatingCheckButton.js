@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     color: '#0E0E0E',
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '900',
   },
 });
