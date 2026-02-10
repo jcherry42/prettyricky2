@@ -48,10 +48,5 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     marginBottom: 2,
   },
-  label: {
-    color: 'rgba(255,245,245,0.95)',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-  },
+  // label removed
 });
