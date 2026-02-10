@@ -57,19 +57,20 @@ export function DlScanScreen() {
       if (!scanning) return;
       setScanning(false);
 
-      // Many US DLs include AAMVA PDF417 on the back. Parsing varies by state.
-      // For v1, we store the raw payload and allow manual extraction if needed.
+      // Many US DLs include AAMVA PDF417 on the back. We'll parse locally (offline).
+      const parsed = parseAamvaPdf417(data);
+
       const entry = {
         id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
         source: `barcode:${type}`,
         savedAt: new Date().toISOString(),
-        raw: String(data || '').slice(0, 6000),
-        // extracted (optional for future parser):
-        firstName: '',
-        lastName: '',
-        address: '',
-        dlNumber: '',
-        expiration: '',
+        raw: parsed.raw.slice(0, 6000),
+        firstName: parsed.firstName,
+        lastName: parsed.lastName,
+        address: parsed.address,
+        dlNumber: cleanDlNumber(parsed.dlNumber),
+        expiration: parsed.expiration,
+        ok: parsed.ok,
       };
 
       await saveEntry(entry);
