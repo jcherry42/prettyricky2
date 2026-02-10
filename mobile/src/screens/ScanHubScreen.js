@@ -40,10 +40,7 @@ export function ScanHubScreen({ navigation }) {
 
       <View style={{ height: 14 }} />
 
-      <GlassCard style={styles.hint}>
-        <Text style={styles.hintTitle}>Print</Text>
-        <Text style={styles.hintBody}>Long-press CHECK to open Print Center.</Text>
-      </GlassCard>
+      <View style={{ height: 0 }} />
     </Screen>
   );
 }
