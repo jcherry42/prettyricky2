@@ -132,9 +132,7 @@ export function TowerTalkOverlay({ visible, onClose }) {
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }} keyboardShouldPersistTaps="handled">
-                <Text style={styles.body}>High-performance sales authority. Short. Calm. Closing-focused.</Text>
-
-                <View style={{ height: 14 }} />
+                <View style={{ height: 6 }} />
 
                 <TextInput
                   value={situation}
