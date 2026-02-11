@@ -286,12 +286,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2.0,
   },
-  scanSub: {
-    color: colors.textMute,
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 1.0,
-  },
   statsRow: {
     flexDirection: 'row',
     gap: 10,
