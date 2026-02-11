@@ -14,8 +14,6 @@ import { VehicleEditorScreen } from './VehicleEditorScreen';
 import { VinScanScreen } from './VinScanScreen';
 import { DlScanScreen } from './DlScanScreen';
 
-const ELECTRIC_BLUE = '#00D4FF';
-
 const STATUS_COLORS = {
   active: colors.green,
   trade: colors.gold,
