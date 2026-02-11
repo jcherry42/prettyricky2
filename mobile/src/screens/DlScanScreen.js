@@ -245,7 +245,7 @@ export function DlScanScreen() {
           <View style={styles.sectionRow}>
             <Ionicons name="time-outline" size={16} color={colors.textMute} />
             <Text style={styles.sectionLabel}>Recent Scans</Text>
-            <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto', fontSize: 11 }]}>{history.length} saved</Text>
+            <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto', fontSize: 11 }]}>{history.length}</Text>
           </View>
           <View style={{ height: 8 }} />
 
