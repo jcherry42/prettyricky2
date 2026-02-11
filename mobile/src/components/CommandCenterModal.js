@@ -129,7 +129,7 @@ export function CommandCenterModal({ visible, onClose }) {
                     <LangChip
                       key={l.code}
                       code={l.code}
-                      label={l.label}
+                      flag={l.flag}
                       active={selectedLang === l.code}
                       onPress={() => setDefaultTargetLanguage(l.code)}
                     />
