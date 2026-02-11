@@ -207,7 +207,6 @@ export function VinScanScreen() {
             <Text style={styles.section}>Recent</Text>
             <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto' }]}>{history.length}</Text>
           </View>
-          <Text style={[styles.body, { fontSize: 11 }]}>Tap to decode & save to local inventory.</Text>
           <View style={{ height: 8 }} />
 
           <FlatList
