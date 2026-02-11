@@ -25,19 +25,18 @@ function SectionTitle({ children }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
-function LangChip({ code, label, active, onPress }) {
+function LangChip({ code, flag, active, onPress }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.langChip, active && styles.langChipActive, pressed && { opacity: 0.9 }]}>
-      <Text style={[styles.langChipText, active && styles.langChipTextActive]}>{label}</Text>
-      <Text style={[styles.langChipCode, active && styles.langChipTextActive]}>{code.toUpperCase()}</Text>
+    <Pressable onPress={() => { impactLight(); onPress(); }} style={({ pressed }) => [styles.langChip, active && styles.langChipActive, pressed && { opacity: 0.9 }]}>
+      <Text style={styles.langFlag}>{flag}</Text>
     </Pressable>
   );
 }
 
 const LANGS = [
-  { code: 'es', label: '🇲🇽 Spanish' },
-  { code: 'fr', label: '🇫🇷 French' },
-  { code: 'ko', label: '🇰🇷 Korean' },
+  { code: 'es', flag: '\ud83c\uddf2\ud83c\uddfd' },
+  { code: 'fr', flag: '\ud83c\uddeb\ud83c\uddf7' },
+  { code: 'ko', flag: '\ud83c\uddf0\ud83c\uddf7' },
 ];
 
 function PrinterRow({ item, active, onSetActive, onRemove }) {
