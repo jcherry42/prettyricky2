@@ -1,26 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
-import { type } from '../theme/typography';
+import { View, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
 import { Screen } from '../components/Screen';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { SportModeButton } from '../components/SportModeButton';
-
-const ELECTRIC_BLUE = '#00D4FF';
-
-/* ---------- Ambient gauge ring ---------- */
-function GaugeRing({ value, color, icon }) {
-  return (
-    <View style={styles.gauge}>
-      <View style={[styles.gaugeRing, { borderColor: color }]}>
-        <Ionicons name={icon} size={18} color={color} />
-      </View>
-      <Text style={[styles.gaugeValue, { color }]}>{value}</Text>
-    </View>
-  );
-}
 
 /* ---------- Ambient light strip ---------- */
 function AmbientStrip({ active, color }) {
