@@ -224,12 +224,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  hint: {
-    color: colors.textMute,
-    fontSize: 11,
-    lineHeight: 15,
-    marginBottom: 8,
-  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
