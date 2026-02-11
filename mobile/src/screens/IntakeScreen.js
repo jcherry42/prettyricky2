@@ -123,7 +123,6 @@ function IntakeHub({ navigation }) {
           >
             <Ionicons name="barcode-outline" size={22} color={colors.gold} />
             <Text style={styles.scanLabel}>VIN</Text>
-            <Text style={styles.scanSub}>SCANNER</Text>
           </Pressable>
 
           <Pressable
@@ -132,7 +131,6 @@ function IntakeHub({ navigation }) {
           >
             <Ionicons name="card-outline" size={22} color="#FF2D2D" />
             <Text style={styles.scanLabel}>DL</Text>
-            <Text style={styles.scanSub}>LICENSE</Text>
           </Pressable>
         </View>
 
