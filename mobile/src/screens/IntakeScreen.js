@@ -180,9 +180,8 @@ function IntakeHub({ navigation }) {
           <GlassCard style={{ alignItems: 'center', paddingVertical: 28 }}>
             <Ionicons name="car-outline" size={32} color={colors.textMute} />
             <Text style={[styles.emptyText, { marginTop: 10 }]}>
-              {search ? 'No vehicles match your search' : 'No vehicles yet'}
+              {search ? 'No matches' : 'No vehicles'}
             </Text>
-            <Text style={styles.emptyHint}>Scan a VIN to decode & add to local inventory.</Text>
           </GlassCard>
         ) : (
           <FlatList
