@@ -135,8 +135,6 @@ export function RootNavigator() {
           <PttOverlayView visible={pttOpen} onClose={() => setPttOpen(false)} />
         </>
       ) : null}
-
-      <View style={{ width: 0, height: 0 }} />
     </>
   );
 }
