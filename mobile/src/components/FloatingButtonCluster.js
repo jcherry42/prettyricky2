@@ -10,8 +10,6 @@ function GlassButton({ icon, iconColor, glowColor, onPress, size = 52 }) {
   return (
     <Pressable
       onPress={() => { impactMedium(); onPress?.(); }}
-      onLongPress={onLongPress ? () => { impactMedium(); onLongPress(); } : undefined}
-      delayLongPress={380}
       style={({ pressed }) => [pressed && { transform: [{ scale: 0.94 }], opacity: 0.92 }]}
     >
       <View style={[styles.glassOuter, { width: size, height: size, borderRadius: size / 2 }]}>
