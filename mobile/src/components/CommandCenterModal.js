@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { impactLight, selectionTap } from '../lib/haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { impactLight } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { apiFetch } from '../lib/api';
 
 const TABS = [
-  { key: 'dashboard', label: 'DASH' },
   { key: 'settings', label: 'SETTINGS' },
   { key: 'printers', label: 'PRINTERS' },
 ];
@@ -25,10 +25,36 @@ function SectionTitle({ children }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
-function LangChip({ code, flag, active, onPress }) {
+/* --- Liquid Glass Language Button --- */
+function LangGlass({ flag, active, onPress }) {
   return (
-    <Pressable onPress={() => { impactLight(); onPress(); }} style={({ pressed }) => [styles.langChip, active && styles.langChipActive, pressed && { opacity: 0.9 }]}>
-      <Text style={styles.langFlag}>{flag}</Text>
+    <Pressable
+      onPress={() => { impactLight(); onPress(); }}
+      style={({ pressed }) => [pressed && { transform: [{ scale: 0.95 }] }]}
+    >
+      <View style={[styles.langGlassOuter, active && styles.langGlassOuterActive]}>
+        <LinearGradient
+          colors={
+            active
+              ? ['rgba(214,178,94,0.18)', 'rgba(214,178,94,0.06)', 'rgba(0,0,0,0.10)']
+              : ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.04)', 'rgba(0,0,0,0.12)']
+          }
+          locations={[0, 0.5, 1]}
+          style={[StyleSheet.absoluteFill, { borderRadius: 22 }]}
+        />
+        <View style={[styles.langGlassInner, active && styles.langGlassInnerActive]}>
+          <LinearGradient
+            colors={
+              active
+                ? ['rgba(214,178,94,0.10)', 'rgba(214,178,94,0.03)', 'rgba(0,0,0,0.08)']
+                : ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.01)', 'rgba(0,0,0,0.10)']
+            }
+            locations={[0, 0.45, 1]}
+            style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
+          />
+          <Text style={styles.langFlag}>{flag}</Text>
+        </View>
+      </View>
     </Pressable>
   );
 }
@@ -42,7 +68,7 @@ const LANGS = [
 function PrinterRow({ item, active, onSetActive, onRemove }) {
   return (
     <View style={styles.printerRow}>
-      <Pressable onPress={() => onSetActive(item.id)} style={({ pressed }) => [styles.radio, active && styles.radioActive, pressed && { opacity: 0.9 }]}>
+      <Pressable onPress={() => { impactLight(); onSetActive(item.id); }} style={({ pressed }) => [styles.radio, active && styles.radioActive, pressed && { opacity: 0.9 }]}>
         <View style={[styles.radioDot, active && { backgroundColor: colors.gold }]} />
       </Pressable>
       <View style={{ flex: 1 }}>
@@ -50,14 +76,14 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
         <Text style={styles.printerIp}>{item.ip}</Text>
       </View>
       <Pressable onPress={() => onRemove(item.id)} style={({ pressed }) => [styles.smallBtn, pressed && { opacity: 0.85 }]}>
-        <Text style={styles.smallBtnText}>REMOVE</Text>
+        <Ionicons name="trash-outline" size={14} color={colors.red} />
       </Pressable>
     </View>
   );
 }
 
 export function CommandCenterModal({ visible, onClose }) {
-  const { settings, setDefaultTargetLanguage, setSportMode, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
+  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
   const [activeTab, setActiveTab] = useState('settings');
 
   const [printerName, setPrinterName] = useState('');
@@ -65,7 +91,6 @@ export function CommandCenterModal({ visible, onClose }) {
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
 
   const selectedLang = settings.defaultTargetLanguage || 'es';
-
   const canTestPrinter = useMemo(() => Boolean(activePrinter?.ip), [activePrinter]);
 
   const testActivePrinter = useCallback(async () => {
@@ -79,7 +104,7 @@ export function CommandCenterModal({ visible, onClose }) {
       if (res?.success) {
         setPrinterTest({ state: 'ok', message: res.printer_name || 'Connected' });
       } else {
-        setPrinterTest({ state: 'error', message: res?.error || 'Connection failed' });
+        setPrinterTest({ state: 'error', message: res?.error || 'Failed' });
       }
     } catch (e) {
       setPrinterTest({ state: 'error', message: String(e?.message || e) });
@@ -92,43 +117,34 @@ export function CommandCenterModal({ visible, onClose }) {
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
         <View style={styles.sheet}>
+          {/* Header */}
           <View style={styles.header}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Ionicons name="settings" size={16} color={colors.gold} />
-              <View>
-                <Text style={styles.headerTitle}>COMMAND CENTER</Text>
-              </View>
+              <Text style={styles.headerTitle}>COMMAND CENTER</Text>
             </View>
             <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.85 }]}>
               <Ionicons name="close" size={16} color={colors.text} />
             </Pressable>
           </View>
 
+          {/* Tabs */}
           <View style={styles.tabs}>
             {TABS.map((t) => (
               <TabButton key={t.key} label={t.label} active={activeTab === t.key} onPress={() => setActiveTab(t.key)} />
             ))}
           </View>
 
-          {activeTab === 'dashboard' ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-            <GlassCard style={{ marginTop: 14 }}>
-              <SectionTitle>Dashboard</SectionTitle>
-              <Text style={styles.body}></Text>
-            </GlassCard>
-            </ScrollView>
-          ) : null}
-
+          {/* SETTINGS */}
           {activeTab === 'settings' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Language</SectionTitle>
-                <View style={{ height: 10 }} />
+                <View style={{ height: 14 }} />
                 <View style={styles.langRow}>
                   {LANGS.map((l) => (
-                    <LangChip
+                    <LangGlass
                       key={l.code}
-                      code={l.code}
                       flag={l.flag}
                       active={selectedLang === l.code}
                       onPress={() => setDefaultTargetLanguage(l.code)}
@@ -141,21 +157,22 @@ export function CommandCenterModal({ visible, onClose }) {
                 <SectionTitle>Eco Mode</SectionTitle>
                 <View style={{ height: 12 }} />
                 <Pressable
-                  onPress={() => setEcoMode(!settings.ecoMode)}
+                  onPress={() => { impactLight(); setEcoMode(!settings.ecoMode); }}
                   style={({ pressed }) => [styles.toggle, settings.ecoMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
                 >
                   <View style={[styles.toggleDot, settings.ecoMode && styles.toggleDotOn]} />
-                  <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}> {settings.ecoMode ? 'ON' : 'OFF'}</Text>
+                  <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}>{settings.ecoMode ? 'ON' : 'OFF'}</Text>
                 </Pressable>
               </GlassCard>
             </ScrollView>
           ) : null}
 
+          {/* PRINTERS */}
           {activeTab === 'printers' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              {/* Active printer */}
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>Active printer</SectionTitle>
-                <Text style={styles.body}>One global default printer (matches web behavior).</Text>
+                <SectionTitle>Active Printer</SectionTitle>
                 <View style={{ height: 10 }} />
                 {activePrinter ? (
                   <View style={styles.activePrinterBox}>
@@ -163,7 +180,9 @@ export function CommandCenterModal({ visible, onClose }) {
                     <Text style={styles.printerIp}>{activePrinter.ip}</Text>
                   </View>
                 ) : (
-                  <Text style={styles.body}>No printers saved yet.</Text>
+                  <View style={styles.activePrinterBox}>
+                    <Text style={[styles.printerIp, { marginTop: 0 }]}>None configured</Text>
+                  </View>
                 )}
 
                 <View style={{ height: 12 }} />
@@ -171,73 +190,90 @@ export function CommandCenterModal({ visible, onClose }) {
                 <Pressable
                   onPress={testActivePrinter}
                   disabled={!canTestPrinter || printerTest.state === 'loading'}
-                  style={({ pressed }) => [styles.btn, (!canTestPrinter || printerTest.state === 'loading' || pressed) && { opacity: 0.85 }]}
+                  style={({ pressed }) => [styles.btn, (!canTestPrinter || printerTest.state === 'loading' || pressed) && { opacity: 0.7 }]}
                 >
-                  <Text style={styles.btnText}>Test connection</Text>
-                  {printerTest.state === 'loading' ? (
-                    <View style={{ marginLeft: 10 }}>
-                      <ActivityIndicator color={colors.gold} />
-                    </View>
-                  ) : null}
+                  <Ionicons name="wifi" size={14} color={colors.gold} />
+                  <Text style={styles.btnText}>Test</Text>
+                  {printerTest.state === 'loading' && <ActivityIndicator color={colors.gold} style={{ marginLeft: 8 }} />}
                 </Pressable>
 
-                {printerTest.state === 'ok' ? <Text style={[styles.body, { color: colors.green, marginTop: 10 }]}>{printerTest.message}</Text> : null}
-                {printerTest.state === 'error' ? <Text style={[styles.body, { color: colors.red, marginTop: 10 }]}>{printerTest.message}</Text> : null}
+                {printerTest.state === 'ok' && (
+                  <View style={styles.statusRow}>
+                    <Ionicons name="checkmark-circle" size={14} color={colors.green} />
+                    <Text style={[styles.statusText, { color: colors.green }]}>{printerTest.message}</Text>
+                  </View>
+                )}
+                {printerTest.state === 'error' && (
+                  <View style={styles.statusRow}>
+                    <Ionicons name="alert-circle" size={14} color={colors.red} />
+                    <Text style={[styles.statusText, { color: colors.red }]}>{printerTest.message}</Text>
+                  </View>
+                )}
               </GlassCard>
 
-              <GlassCard style={{ marginTop: 14, flex: 1 }}>
-                <SectionTitle>Printers</SectionTitle>
-                <Text style={styles.body}>Tap the radio to set active. Named printers supported.</Text>
-
-                <View style={{ height: 12 }} />
-
-                <FlatList
-                  data={settings.printers || []}
-                  keyExtractor={(i) => i.id}
-                  renderItem={({ item }) => (
-                    <PrinterRow
-                      item={item}
-                      active={settings.activePrinterId === item.id}
-                      onSetActive={setActivePrinter}
-                      onRemove={removePrinter}
-                    />
-                  )}
-                  ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-                  contentContainerStyle={{ paddingBottom: 14 }}
-                />
-              </GlassCard>
-
+              {/* Saved printers */}
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>Add printer</SectionTitle>
+                <SectionTitle>Saved Printers</SectionTitle>
+                <View style={{ height: 10 }} />
+
+                {(settings.printers || []).length === 0 ? (
+                  <View style={styles.activePrinterBox}>
+                    <Text style={[styles.printerIp, { marginTop: 0 }]}>No printers saved</Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={settings.printers || []}
+                    keyExtractor={(i) => i.id}
+                    renderItem={({ item }) => (
+                      <PrinterRow
+                        item={item}
+                        active={settings.activePrinterId === item.id}
+                        onSetActive={setActivePrinter}
+                        onRemove={removePrinter}
+                      />
+                    )}
+                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                    scrollEnabled={false}
+                  />
+                )}
+              </GlassCard>
+
+              {/* Add printer */}
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>Add Printer</SectionTitle>
                 <View style={{ height: 10 }} />
                 <TextInput
                   value={printerName}
                   onChangeText={setPrinterName}
-                  placeholder="Name (e.g., Front Desk)"
+                  placeholder="Name"
                   placeholderTextColor={colors.textMute}
                   style={styles.input}
                 />
-                <View style={{ height: 10 }} />
+                <View style={{ height: 8 }} />
                 <TextInput
                   value={printerIp}
                   onChangeText={setPrinterIp}
-                  placeholder="IP (e.g., 192.168.1.42)"
+                  placeholder="IP Address"
                   placeholderTextColor={colors.textMute}
                   style={styles.input}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="numeric"
                 />
                 <View style={{ height: 12 }} />
                 <Pressable
                   onPress={async () => {
                     if (!printerIp.trim()) return;
-                    await upsertPrinter({ name: printerName, ip: printerIp });
+                    impactLight();
+                    await upsertPrinter({ name: printerName.trim() || 'Printer', ip: printerIp.trim() });
                     setPrinterName('');
                     setPrinterIp('');
                   }}
-                  style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}
+                  disabled={!printerIp.trim()}
+                  style={({ pressed }) => [styles.btn, (!printerIp.trim() || pressed) && { opacity: 0.7 }]}
                 >
-                  <Text style={styles.btnText}>Save printer</Text>
+                  <Ionicons name="add-circle" size={16} color={colors.gold} />
+                  <Text style={styles.btnText}>Save</Text>
                 </Pressable>
               </GlassCard>
             </ScrollView>
@@ -259,11 +295,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 26,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: 'rgba(10,12,16,0.96)',
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 18,
-    maxHeight: '92%',
+    maxHeight: '88%',
   },
   header: {
     flexDirection: 'row',
@@ -276,28 +312,15 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 2.4,
   },
-  headerSub: {
-    marginTop: 6,
-    color: colors.textMute,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.0,
-    textTransform: 'uppercase',
-  },
   closeBtn: {
     width: 40,
     height: 40,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  closeText: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '900',
   },
   tabs: {
     marginTop: 12,
@@ -309,7 +332,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(0,0,0,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -332,68 +355,69 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
   },
-  body: {
-    marginTop: 8,
-    color: colors.textDim,
-    fontSize: 12,
-    lineHeight: 16,
-  },
   langRow: {
     flexDirection: 'row',
-    gap: 10,
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  langChip: {
-    width: 64,
-    height: 64,
+  langGlassOuter: {
+    flex: 1,
+    height: 72,
     borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.30)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(20,24,30,0.55)',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: 'rgba(0,0,0,0.30)',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  langChipActive: {
-    borderColor: 'rgba(214,178,94,0.70)',
-    backgroundColor: 'rgba(214,178,94,0.12)',
+  langGlassOuterActive: {
+    borderColor: 'rgba(214,178,94,0.50)',
+    shadowColor: 'rgba(214,178,94,0.30)',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+  },
+  langGlassInner: {
+    width: '90%',
+    height: '85%',
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(25,28,35,0.40)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  langGlassInnerActive: {
+    borderColor: 'rgba(214,178,94,0.20)',
+    backgroundColor: 'rgba(214,178,94,0.06)',
   },
   langFlag: {
-    fontSize: 28,
-  },
-  langChipText: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  langChipCode: {
-    marginTop: 4,
-    color: colors.textMute,
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-  },
-  langChipTextActive: {
-    color: colors.gold,
+    fontSize: 32,
   },
   toggle: {
     height: 44,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(0,0,0,0.30)',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   toggleOn: {
-    borderColor: 'rgba(214,178,94,0.70)',
-    backgroundColor: 'rgba(214,178,94,0.12)',
+    borderColor: 'rgba(214,178,94,0.60)',
+    backgroundColor: 'rgba(214,178,94,0.10)',
   },
   toggleDot: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   toggleDotOn: {
     backgroundColor: colors.gold,
@@ -409,24 +433,24 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: 8,
   },
   btnText: {
     color: colors.gold,
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 1.2,
-    textTransform: 'uppercase',
   },
   input: {
     height: 46,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 14,
     color: colors.text,
     backgroundColor: 'rgba(0,0,0,0.28)',
@@ -437,15 +461,15 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.22)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.20)',
   },
   printerRow: {
     padding: 12,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.22)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.20)',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -455,7 +479,7 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -474,25 +498,30 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   printerIp: {
-    marginTop: 6,
+    marginTop: 4,
     color: colors.textMute,
     fontSize: 11,
     fontWeight: '700',
+    fontFamily: 'monospace',
   },
   smallBtn: {
-    height: 34,
-    paddingHorizontal: 10,
+    width: 36,
+    height: 36,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(255,45,45,0.10)',
+    borderColor: 'rgba(255,45,45,0.20)',
+    backgroundColor: 'rgba(255,45,45,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  smallBtnText: {
-    color: colors.red,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.0,
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
