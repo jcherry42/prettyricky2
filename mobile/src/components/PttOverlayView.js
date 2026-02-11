@@ -3,7 +3,6 @@ import { Modal, Pressable, StyleSheet, Text, View, ActivityIndicator } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { GlassCard } from './GlassCard';
 import { usePtt } from '../context/PttContext';
 import { impactLight, impactMedium } from '../lib/haptics';
 
