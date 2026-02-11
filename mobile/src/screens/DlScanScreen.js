@@ -215,7 +215,6 @@ export function DlScanScreen() {
           </GlassCard>
         ) : (
           <GlassCard>
-            <Text style={styles.body}>Manually enter the required fields from the driver's license.</Text>
             <View style={{ height: 10 }} />
 
             <ScrollView showsVerticalScrollIndicator={false}>
