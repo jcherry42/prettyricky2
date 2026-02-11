@@ -71,27 +71,4 @@ const styles = StyleSheet.create({
     height: 1,
     borderRadius: 1,
   },
-  gaugeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingVertical: 18,
-  },
-  gauge: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  gaugeRing: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    backgroundColor: 'rgba(0,0,0,0.40)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gaugeValue: {
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 1.0,
-  },
 });
