@@ -110,7 +110,6 @@ function IntakeHub({ navigation }) {
       <Screen>
         <ScreenHeader
           title="Intake"
-          subtitle="Scan · Decode · Manage"
           right={<Text style={styles.countBadge}>{stats.total}</Text>}
         />
 
