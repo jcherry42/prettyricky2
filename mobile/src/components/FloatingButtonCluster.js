@@ -49,26 +49,20 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
         <GlassButton
           icon="settings-outline"
           iconColor={colors.gold}
-          label="CHECK"
           glowColor="rgba(214,178,94,0.35)"
           onPress={onCheck}
         />
 
-        {/* EJECT - Print Center */}
         <GlassButton
           icon="push-outline"
           iconColor="#FF8C00"
-          label="EJECT"
           glowColor="rgba(255,140,0,0.50)"
           onPress={onEject}
-          size={52}
         />
 
-        {/* TOWER TALK - AI Assistant */}
         <GlassButton
           icon="radio-outline"
           iconColor="#FF2D2D"
-          label="TALK"
           glowColor="rgba(255,45,45,0.45)"
           onPress={onTowerTalk}
         />
