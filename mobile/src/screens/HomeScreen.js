@@ -1,46 +1,42 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { GlassCard } from '../components/GlassCard';
 import { Screen } from '../components/Screen';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { SportModeButton } from '../components/SportModeButton';
-import { impactLight } from '../lib/haptics';
 
 const ELECTRIC_BLUE = '#00D4FF';
 
 /* ---------- Ambient gauge ring ---------- */
-function GaugeRing({ label, value, color, icon }) {
+function GaugeRing({ value, color, icon }) {
   return (
     <View style={styles.gauge}>
       <View style={[styles.gaugeRing, { borderColor: color }]}>
         <Ionicons name={icon} size={18} color={color} />
       </View>
-      <Text style={styles.gaugeValue}>{value}</Text>
-      <Text style={styles.gaugeLabel}>{label}</Text>
+      <Text style={[styles.gaugeValue, { color }]}>{value}</Text>
     </View>
   );
 }
 
 /* ---------- Ambient light strip ---------- */
 function AmbientStrip({ active, color }) {
-  const anim = useRef(new Animated.Value(0.15)).current;
+  const anim = useRef(new Animated.Value(0.12)).current;
 
   useEffect(() => {
     if (active) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(anim, { toValue: 0.5, duration: 2000, useNativeDriver: true }),
-          Animated.timing(anim, { toValue: 0.15, duration: 2000, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.45, duration: 2200, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.12, duration: 2200, useNativeDriver: true }),
         ])
       ).start();
     } else {
       anim.stopAnimation();
-      anim.setValue(0.08);
+      anim.setValue(0.06);
     }
   }, [active, anim]);
 
@@ -49,7 +45,7 @@ function AmbientStrip({ active, color }) {
   );
 }
 
-export function HomeScreen({ navigation }) {
+export function HomeScreen() {
   const { triggerFlash } = useTaillightFlash();
   const { settings } = useAppSettings();
   const sportActive = Boolean(settings.sportMode);
@@ -59,114 +55,38 @@ export function HomeScreen({ navigation }) {
     <Pressable style={{ flex: 1 }} onPress={triggerFlash}>
       <Screen>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-          {/* Top spacer for header */}
-          <View style={{ height: 52 }} />
+          {/* Header clearance */}
+          <View style={{ height: 56 }} />
 
-          {/* Ambient light strip */}
           <AmbientStrip active color={ambientColor} />
 
-          {/* CENTER CONSOLE: Sport button */}
+          {/* CENTER CONSOLE */}
           <View style={styles.sportRow}>
             <SportModeButton />
           </View>
 
-          {/* Status Gauges */}
+          {/* Gauges */}
           <View style={styles.gaugeRow}>
             <GaugeRing
-              label="MODE"
               value={sportActive ? 'SPORT' : 'ECO'}
               color={sportActive ? '#FF4500' : colors.green}
               icon={sportActive ? 'flame' : 'leaf'}
             />
             <GaugeRing
-              label="LANG"
               value={(settings.defaultTargetLanguage || 'ES').toUpperCase()}
               color={ELECTRIC_BLUE}
               icon="language"
             />
             <GaugeRing
-              label="PRINTER"
-              value={settings.printers?.length > 0 ? 'READY' : '\u2014'}
+              value={settings.printers?.length > 0 ? 'ON' : '\u2014'}
               color={settings.printers?.length > 0 ? colors.green : colors.textMute}
               icon={settings.printers?.length > 0 ? 'print' : 'print-outline'}
             />
           </View>
 
-          {/* Ambient light strip */}
           <AmbientStrip active color={ambientColor} />
 
-          <View style={{ height: 20 }} />
-
-          {/* Feature modules */}
-          <View style={styles.moduleGrid}>
-            <Pressable
-              onPress={() => { impactLight(); navigation.navigate('Intake'); }}
-              style={({ pressed }) => [styles.moduleCard, pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 }]}
-            >
-              <LinearGradient
-                colors={['rgba(214,178,94,0.12)', 'rgba(214,178,94,0.03)', 'rgba(0,0,0,0.10)']}
-                style={StyleSheet.absoluteFill}
-              />
-              <Ionicons name="scan-outline" size={24} color={colors.gold} />
-              <Text style={styles.moduleLabel}>INTAKE</Text>
-              <Text style={styles.moduleSub}>VIN + License</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => { impactLight(); navigation.navigate('Intake'); }}
-              style={({ pressed }) => [styles.moduleCard, pressed && { transform: [{ scale: 0.97 }], opacity: 0.9 }]}
-            >
-              <LinearGradient
-                colors={['rgba(0,212,255,0.10)', 'rgba(0,212,255,0.02)', 'rgba(0,0,0,0.10)']}
-                style={StyleSheet.absoluteFill}
-              />
-              <Ionicons name="car-sport-outline" size={24} color={ELECTRIC_BLUE} />
-              <Text style={styles.moduleLabel}>INVENTORY</Text>
-              <Text style={styles.moduleSub}>Local stock</Text>
-            </Pressable>
-          </View>
-
-          <View style={{ height: 14 }} />
-
-          {/* Info cards */}
-          <GlassCard style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <View style={[styles.infoDot, { backgroundColor: '#FF2D2D' }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.infoTitle}>Tower Talk</Text>
-                <Text style={styles.infoDesc}>AI sales authority. Tap the red button in the control bar.</Text>
-              </View>
-            </View>
-          </GlassCard>
-
-          <View style={{ height: 10 }} />
-
-          <GlassCard style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <View style={[styles.infoDot, { backgroundColor: '#FF8C00' }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.infoTitle}>Print Center</Text>
-                <Text style={styles.infoDesc}>Eject customer profiles + licenses. Orange button or Command Center.</Text>
-              </View>
-            </View>
-          </GlassCard>
-
-          {sportActive && (
-            <>
-              <View style={{ height: 10 }} />
-              <GlassCard style={[styles.infoCard, { borderColor: 'rgba(255,80,0,0.25)' }]}>
-                <View style={styles.infoRow}>
-                  <Ionicons name="mic" size={16} color="#9333EA" />
-                  <View style={{ flex: 1, marginLeft: 8 }}>
-                    <Text style={[styles.infoTitle, { color: '#FF8C00' }]}>SPORT Mode Active</Text>
-                    <Text style={styles.infoDesc}>Hold the floating mic to translate. PTT translation is live.</Text>
-                  </View>
-                </View>
-              </GlassCard>
-            </>
-          )}
-
-          <View style={{ height: 100 }} />
+          <View style={{ height: 120 }} />
         </ScrollView>
       </Screen>
     </Pressable>
@@ -180,7 +100,7 @@ const styles = StyleSheet.create({
   sportRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 28,
   },
   ambientStrip: {
     width: '100%',
@@ -190,82 +110,24 @@ const styles = StyleSheet.create({
   gaugeRow: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    paddingVertical: 16,
+    paddingVertical: 18,
   },
   gauge: {
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   gaugeRing: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     borderWidth: 2,
     backgroundColor: 'rgba(0,0,0,0.40)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   gaugeValue: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  gaugeLabel: {
-    color: colors.textMute,
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-  },
-  moduleGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  moduleCard: {
-    flex: 1,
-    height: 100,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(10,14,18,0.80)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    overflow: 'hidden',
-  },
-  moduleLabel: {
-    color: colors.text,
     fontSize: 11,
     fontWeight: '900',
-    letterSpacing: 1.6,
-  },
-  moduleSub: {
-    color: colors.textMute,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  infoCard: {
-    borderRadius: 18,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  infoDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  infoTitle: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  infoDesc: {
-    marginTop: 3,
-    color: colors.textMute,
-    fontSize: 11,
-    lineHeight: 15,
+    letterSpacing: 1.0,
   },
 });
