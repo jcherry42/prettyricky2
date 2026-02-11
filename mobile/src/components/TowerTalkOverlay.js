@@ -109,6 +109,18 @@ export function TowerTalkOverlay({ visible, onClose }) {
 
   const isLoading = state.status === 'loading' || state.status === 'translating' || state.status === 'speaking';
 
+  // Pulsing glow for Generate button
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [glowAnim]);
+  const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.75] });
+
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
