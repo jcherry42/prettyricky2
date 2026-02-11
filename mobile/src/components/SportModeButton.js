@@ -1,11 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
-import { type } from '../theme/typography';
 import { useAppSettings } from '../context/AppSettingsContext';
-import { impactHeavy, notificationSuccess, impactMedium } from '../lib/haptics';
+import { impactHeavy } from '../lib/haptics';
 
 /* ---------- Animated flame element ---------- */
 function Flame({ style, delay = 0, active }) {
