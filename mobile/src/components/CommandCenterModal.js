@@ -115,7 +115,7 @@ export function CommandCenterModal({ visible, onClose }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
             <GlassCard style={{ marginTop: 14 }}>
               <SectionTitle>Dashboard</SectionTitle>
-              <Text style={styles.body}>Porting in progress. Next: customer KPIs, import status, and pipeline.</Text>
+              <Text style={styles.body}></Text>
             </GlassCard>
             </ScrollView>
           ) : null}
