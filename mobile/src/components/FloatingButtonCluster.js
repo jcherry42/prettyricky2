@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Pressable, StyleSheet, Text } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { impactMedium } from '../lib/haptics';
 
 /* ─── Liquid glass pill button ─── */
-function GlassButton({ icon, iconColor, label, glowColor, onPress, onLongPress, size = 52 }) {
+function GlassButton({ icon, iconColor, glowColor, onPress, size = 52 }) {
   return (
     <Pressable
       onPress={() => { impactMedium(); onPress?.(); }}
