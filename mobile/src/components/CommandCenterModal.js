@@ -344,20 +344,21 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   langChip: {
-    flexGrow: 1,
-    minWidth: 110,
-    height: 52,
-    borderRadius: 18,
-    borderWidth: 1,
+    width: 64,
+    height: 64,
+    borderRadius: 22,
+    borderWidth: 1.5,
     borderColor: colors.stroke2,
     backgroundColor: 'rgba(0,0,0,0.30)',
-    paddingHorizontal: 12,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
   },
   langChipActive: {
     borderColor: 'rgba(214,178,94,0.70)',
     backgroundColor: 'rgba(214,178,94,0.12)',
+  },
+  langFlag: {
+    fontSize: 28,
   },
   langChipText: {
     color: colors.text,
