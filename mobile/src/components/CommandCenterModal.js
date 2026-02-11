@@ -140,7 +140,6 @@ export function CommandCenterModal({ visible, onClose }) {
 
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>SPORT Mode</SectionTitle>
-                <Text style={styles.body}>When ON, translation tools become available system-wide.</Text>
                 <View style={{ height: 12 }} />
                 <Pressable
                   onPress={() => setSportMode(!settings.sportMode)}
