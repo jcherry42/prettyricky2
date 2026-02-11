@@ -65,25 +65,6 @@ export function HomeScreen() {
             <SportModeButton />
           </View>
 
-          {/* Gauges */}
-          <View style={styles.gaugeRow}>
-            <GaugeRing
-              value={sportActive ? 'SPORT' : 'ECO'}
-              color={sportActive ? '#FF4500' : colors.green}
-              icon={sportActive ? 'flame' : 'leaf'}
-            />
-            <GaugeRing
-              value={(settings.defaultTargetLanguage || 'ES').toUpperCase()}
-              color={ELECTRIC_BLUE}
-              icon="language"
-            />
-            <GaugeRing
-              value={settings.printers?.length > 0 ? 'ON' : '\u2014'}
-              color={settings.printers?.length > 0 ? colors.green : colors.textMute}
-              icon={settings.printers?.length > 0 ? 'print' : 'print-outline'}
-            />
-          </View>
-
           <AmbientStrip active color={ambientColor} />
 
           <View style={{ height: 120 }} />
