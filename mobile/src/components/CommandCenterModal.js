@@ -139,18 +139,6 @@ export function CommandCenterModal({ visible, onClose }) {
               </GlassCard>
 
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>SPORT Mode</SectionTitle>
-                <View style={{ height: 12 }} />
-                <Pressable
-                  onPress={() => setSportMode(!settings.sportMode)}
-                  style={({ pressed }) => [styles.toggle, settings.sportMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
-                >
-                  <View style={[styles.toggleDot, settings.sportMode && styles.toggleDotOn]} />
-                  <Text style={[styles.toggleText, settings.sportMode && { color: colors.gold }]}> {settings.sportMode ? 'ON' : 'OFF'}</Text>
-                </Pressable>
-              </GlassCard>
-
-              <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Eco Mode</SectionTitle>
                 <View style={{ height: 12 }} />
                 <Pressable
