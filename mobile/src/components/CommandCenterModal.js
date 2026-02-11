@@ -124,7 +124,6 @@ export function CommandCenterModal({ visible, onClose }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Language</SectionTitle>
-                <Text style={styles.body}>Used by SPORT translation, voice translate, and TTS voices.</Text>
                 <View style={{ height: 10 }} />
                 <View style={styles.langRow}>
                   {LANGS.map((l) => (
