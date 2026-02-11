@@ -71,8 +71,6 @@ export function PttOverlayView({ visible, onClose }) {
               </View>
             </Pressable>
 
-            <Text style={styles.hint}>Hold the floating mic button to talk. Release to translate.</Text>
-
             {/* Status */}
             {ptt.status === 'recording' && (
               <View style={styles.statusRow}>
