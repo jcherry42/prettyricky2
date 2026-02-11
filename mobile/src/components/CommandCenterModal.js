@@ -152,7 +152,6 @@ export function CommandCenterModal({ visible, onClose }) {
 
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Eco Mode</SectionTitle>
-                <Text style={styles.body}>Reduce blur + animation intensity for older devices (native-smooth).</Text>
                 <View style={{ height: 12 }} />
                 <Pressable
                   onPress={() => setEcoMode(!settings.ecoMode)}
