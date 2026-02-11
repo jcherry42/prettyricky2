@@ -183,7 +183,6 @@ export function DlScanScreen() {
 
         {tab === 'ocr' ? (
           <GlassCard>
-            <Text style={styles.body}>Take a photo of the FRONT of a US driver's license. AI Vision extracts Name, Address, DL # and Expiration.</Text>
             <View style={{ height: 12 }} />
 
             <View style={styles.actionRow}>
