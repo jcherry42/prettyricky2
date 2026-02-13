@@ -51,7 +51,8 @@ export async function addToInventory({ vin, decoded }) {
   }
 
   const item = buildVehicleFromDecode({ vin, decoded });
-  const next = { ...inv, vehicles: [item, ...inv.vehicles].slice(0, 200) };
+  const trimmed = inv.vehicles.slice(0, 74); // keep at most 74 existing so new makes 75
+  const next = { ...inv, vehicles: [item, ...trimmed] };
   await saveInventory(next);
   return next;
 }
