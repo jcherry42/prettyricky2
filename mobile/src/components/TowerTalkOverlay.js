@@ -301,6 +301,9 @@ const PRESET_RESPONSES = {
                         <Pressable onPress={() => speak(reply, 'en')} style={styles.actionIcon}>
                           <Ionicons name="volume-high-outline" size={16} color={colors.textMute} />
                         </Pressable>
+                        <Pressable onPress={() => sendAsSms(reply)} style={styles.actionIcon}>
+                          <Ionicons name="send" size={16} color={colors.gold} />
+                        </Pressable>
                       </View>
                     </View>
                     <Text style={styles.replyText}>{reply}</Text>
