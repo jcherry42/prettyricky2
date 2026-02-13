@@ -124,12 +124,14 @@ export function RootNavigator() {
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
             recording={ptt.status === 'recording'}
             disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
-            onPressIn={async () => {
+            onPressIn={() => {
               setPttOpen(true);
-              await ptt.startRecording();
+              ptt.startRecording?.();
             }}
-            onPressOut={async () => {
-              await ptt.stopRecording();
+            onPressOut={() => {
+              if (ptt.status === 'recording') {
+                ptt.stopRecording?.();
+              }
             }}
           />
           <PttOverlayView visible={pttOpen} onClose={() => setPttOpen(false)} />
