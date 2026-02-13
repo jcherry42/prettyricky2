@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert, Modal } from 'react-native';
+import { Camera } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { loadJson, saveJson } from '../lib/storage';
@@ -9,6 +10,7 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
 import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
+import { createCustomerFromLocalEntry } from '../lib/customers';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 
