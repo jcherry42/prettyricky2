@@ -38,6 +38,26 @@ export function buildVehicleFromDecode({ vin, decoded }) {
     source: decoded?.source || 'backend',
     addedAt: new Date().toISOString(),
     updatedAt: null,
+export function countryFlagForVehicle(v) {
+  const country = (v.assemblyLocation || v.plantCountry || '').toUpperCase();
+  if (!country) return '🏁';
+  if (country.includes('USA') || country.includes('UNITED STATES')) return '🇺🇸';
+  if (country.includes('CANADA')) return '🇨🇦';
+  if (country.includes('MEXICO')) return '🇲🇽';
+  if (country.includes('JAPAN')) return '🇯🇵';
+  if (country.includes('KOREA')) return '🇰🇷';
+  if (country.includes('GERMANY')) return '🇩🇪';
+  if (country.includes('UK') or country.includes('UNITED KINGDOM') or country.includes('ENGLAND')) return '🇬🇧';
+  if (country.includes('ITALY')) return '🇮🇹';
+  if (country.includes('FRANCE')) return '🇫🇷';
+  if (country.includes('CHINA')) return '🇨🇳';
+  if (country.includes('SWEDEN')) return '🇸🇪';
+  if (country.includes('FINLAND')) return '🇫🇮';
+  if (country.includes('BRAZIL')) return '🇧🇷';
+  return '🌍';
+}
+
+
 
     decodedRaw: decoded || null,
   };
