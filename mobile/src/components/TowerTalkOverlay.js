@@ -319,14 +319,14 @@ const PRESET_RESPONSES = {
                                     pressed && { opacity: 0.9 },
                                   ]}
                                 >
-                    <LinearGradient
-                      colors={['rgba(251,191,36,0.35)', 'rgba(17,24,39,0.95)']}
-                      locations={[0, 1]}
-                      style={StyleSheet.absoluteFill}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                    <View style={styles.inquiryInner}>
+                                  <LinearGradient
+                                    colors={['rgba(251,191,36,0.35)', 'rgba(17,24,39,0.95)']}
+                                    locations={[0, 1]}
+                                    style={StyleSheet.absoluteFill}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                  />
+                                  <View style={styles.inquiryInner}>
                       <Ionicons
                         name={
                           it.icon === 'star'
