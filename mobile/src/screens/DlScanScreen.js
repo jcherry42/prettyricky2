@@ -95,6 +95,9 @@ export function DlScanScreen() {
       const uri = asset?.uri;
       if (!uri) throw new Error('No image selected');
 
+      // Slight delay to allow camera UI to settle
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const json = await uploadImageToLicenseScan({ uri, mimeType: asset?.mimeType || 'image/jpeg' });
       const d = json?.extracted_data || {};
       const fullName = [d.first_name, d.middle_name, d.last_name].filter(Boolean).join(' ').trim();
