@@ -64,7 +64,7 @@ export function VinScanScreen() {
 
   const saveVin = useCallback(async (vin, source) => {
     const v = cleanVin(vin);
-    if (v.length < 8) return null;
+    if (v.length !== 17) return null;
     const without = history.filter((h) => h.vin !== v);
     const entry = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -125,7 +125,7 @@ export function VinScanScreen() {
     async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
-      if (!v || v.length !== 17) return;
+      if (!v || v.length !== 17 || !/^[A-HJ-NPR-Z0-9]{17}$/.test(v)) return;
       setScanning(false);
       setScannerOpen(false);
       const entry = await saveVin(v, 'barcode');
