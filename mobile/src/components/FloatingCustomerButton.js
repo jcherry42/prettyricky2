@@ -37,7 +37,7 @@ export function FloatingCustomerButton({ onPress, disabled }) {
   );
 }
 
-const SIZE = 56;
+const SIZE = scaleSize(56);
 
 const styles = StyleSheet.create({
   wrap: {
