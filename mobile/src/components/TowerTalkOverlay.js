@@ -301,8 +301,8 @@ const PRESET_RESPONSES = {
 
                         {/* Inquiry type selector */}
                         <View style={styles.inquiryBlock}>
-            <Text style={styles.inquiryLabel}>INQUIRY</Text>
-            <View style={styles.inquiryGrid}>
+                          <Text style={styles.inquiryLabel}>INQUIRY</Text>
+                          <View style={styles.inquiryGrid}>
               {INQUIRY_TYPES.map((it) => {
                 const active = selectedInquiry === it.id;
                 return (
