@@ -167,6 +167,16 @@ const PRESET_RESPONSES = {
     }
   }, []);
 
+  const sendAsSms = useCallback(async (text) => {
+    try {
+      // TODO: Implement SMS sending functionality
+      console.log('Sending SMS:', text);
+      selectionTap();
+    } catch (e) {
+      // silently fail
+    }
+  }, []);
+
   const isLoading = state.status === 'loading' || state.status === 'translating' || state.status === 'speaking';
 
   // Pulsing glow for Generate button
