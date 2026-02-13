@@ -125,10 +125,14 @@ export function RootNavigator() {
       <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
       <CustomerListModal visible={customersOpen} onClose={() => setCustomersOpen(false)} />
 
+      {/* Bluetooth customer button - always on Home */}
+      {isHome && (
+        <FloatingCustomerButton onPress={() => setCustomersOpen(true)} />
+      )}
+
       {/* PTT (only in SPORT mode) */}
       {settings.sportMode ? (
         <>
-          <FloatingCustomerButton onPress={() => setCustomersOpen(true)} />
           <FloatingPttButton
             flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
