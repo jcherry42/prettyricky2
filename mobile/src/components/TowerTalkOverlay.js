@@ -298,6 +298,92 @@ const PRESET_RESPONSES = {
                     {sportOn && (
                       <>
                         <View style={{ height: 12 }} />
+
+          {/* Inquiry type selector */}
+          <View style={styles.inquiryBlock}>
+            <Text style={styles.inquiryLabel}>INQUIRY</Text>
+            <View style={styles.inquiryGrid}>
+              {INQUIRY_TYPES.map((it) => {
+                const active = selectedInquiry === it.id;
+                return (
+                  <Pressable
+                    key={it.id}
+                    onPress={() => {
+                      selectionTap();
+                      setSelectedInquiry(it.id);
+                      setPresetIndex(null);
+                    }}
+                    style={({ pressed }) => [
+                      styles.inquiryPill,
+                      active && styles.inquiryPillActive,
+                      pressed && { opacity: 0.9 },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={['rgba(251,191,36,0.35)', 'rgba(17,24,39,0.95)']}
+                      locations={[0, 1]}
+                      style={StyleSheet.absoluteFill}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                    <View style={styles.inquiryInner}>
+                      <Ionicons
+                        name={
+                          it.icon === 'star'
+                            ? 'star'
+                            : it.icon === 'dollar'
+                            ? 'pricetag'
+                            : it.icon === 'calendar'
+                            ? 'calendar'
+                            : it.icon === 'repeat'
+                            ? 'repeat'
+                            : it.icon === 'card'
+                            ? 'card'
+                            : it.icon === 'car'
+                            ? 'car'
+                            : it.icon === 'clock'
+                            ? 'time'
+                            : 'chatbubble'
+                        }
+                        size={16}
+                        color={colors.text}
+                      />
+                      <Text style={styles.inquiryText}>{it.label}</Text>
+                    </View>
+                    <View style={styles.inquiryGlow} />
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Preset responses */}
+            <View style={styles.presetsRow}>
+              {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
+                const active = presetIndex === idx;
+                return (
+                  <Pressable
+                    key={idx}
+                    onPress={() => {
+                      selectionTap();
+                      setPresetIndex(idx);
+                      setReply(text);
+                      setTranslated('');
+                      setCopied(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.presetChip,
+                      active && styles.presetChipActive,
+                      pressed && { opacity: 0.9 },
+                    ]}
+                  >
+                    <Text style={styles.presetText} numberOfLines={2}>
+                      {text}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
                         <Pressable
                           onPress={translateReply}
                           disabled={state.status === 'translating'}
