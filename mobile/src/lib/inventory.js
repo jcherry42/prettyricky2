@@ -22,6 +22,10 @@ export function buildVehicleFromDecode({ vin, decoded }) {
     make: v.make || null,
     model: v.model || null,
     trim: v.trim || null,
+    fuelType: v.fuel_type || null,
+    engineDisplay: v.engine_display || null,
+    plantCountry: v.plant_country || null,
+    assemblyLocation: v.assembly_location || null,
 
     // editable fields
     stockNumber: '',
