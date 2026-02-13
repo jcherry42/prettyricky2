@@ -70,9 +70,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   btn: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: scaleSize(56),
+    height: scaleSize(56),
+    borderRadius: scaleSize(28),
     borderWidth: 2,
     borderColor: 'rgba(147,51,234,0.40)',
     overflow: 'hidden',
