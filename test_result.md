@@ -124,12 +124,8 @@
 
 test_plan:
   current_focus:
-    - "Mobile VIN scanner end-to-end behavior - decode + inventory backend endpoints"
-    - "Mobile overlay endpoints - tower-talk + translate + TTS for mobile overlays"
-    - "Mobile Print Center sanity tests - printer + customer list endpoints"
-    - "Mobile: Driver's License OCR scan (front image upload)"
-    - "Backend: /api/license/scan now extracts license_number + expiration"
-  stuck_tasks: ["Email Parser Import", "VIN Scanner Recent History", "Language Selector in Settings"]
+    - "Mobile Supercharg'd web preview testing - Command Center PRINTERS IP template, SPORT PTT button, Customer Bluetooth button, Language buttons layout"
+  stuck_tasks: ["Mobile IP template 4-segment verification", "Floating Customer Bluetooth button implementation"]
   test_all: false
   test_priority: "high_first"
 
