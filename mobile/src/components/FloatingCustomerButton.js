@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { impactMedium, impactHeavy } from '../lib/haptics';
+import { scaleSize } from '../theme/layout';
 
 export function FloatingCustomerButton({ onPress, disabled }) {
   return (
