@@ -78,6 +78,61 @@ export function TowerTalkOverlay({ visible, onClose }) {
         body: JSON.stringify({ text: reply, source_lang: 'auto', target_lang: lang }),
       });
       setTranslated(res?.translated_text || '');
+const INQUIRY_TYPES = [
+  { id: 'new_lead', label: 'New Lead', icon: 'star' },
+  { id: 'price_question', label: 'Price', icon: 'dollar' },
+  { id: 'availability', label: 'Avail', icon: 'calendar' },
+  { id: 'trade_in', label: 'Trade', icon: 'repeat' },
+  { id: 'financing', label: 'Finance', icon: 'card' },
+  { id: 'test_drive', label: 'Test', icon: 'car' },
+  { id: 'follow_up', label: 'Follow', icon: 'clock' },
+  { id: 'objection', label: 'Obj', icon: 'chat' },
+];
+
+const PRESET_RESPONSES = {
+  new_lead: [
+    "I’ve got this vehicle here and it’s a strong choice. When can you swing by so we can walk it in person?",
+    "The vehicle you asked about is available and worth a look in person. When does it make sense for you to come in?",
+    "Let’s get you eyes on it. It’s easier to make a call when you’re here with the vehicle. What time works?",
+  ],
+  price_question: [
+    "I’ll be straight with you on price and what you’re getting for it. When can you stop in so we can go over it line by line?",
+    "Price is one part of the deal. When you’re here I can show you exactly where the value is and how we can structure it.",
+    "If numbers are the concern, let’s sit down and make them make sense. When can you come by?",
+  ],
+  availability: [
+    "Yes, it’s here and available. If you’re serious, I’d lock in a time to see it so you’re not chasing it after it’s gone.",
+    "I’ve got it on the lot and ready. Photos don’t do it justice – worth a quick drive in.",
+    "It’s here now. The only question is whether it fits you – and that happens when you’re behind the wheel.",
+  ],
+  trade_in: [
+    "Bring your current vehicle in and I’ll put a real number on it, not a guess. That way you know exactly where you stand.",
+    "Your trade has value. Let’s get eyes on it and make sure you’re not leaving money on the table.",
+    "I’ve seen a lot of trades in this segment. I’ll be direct and fair when you bring it by.",
+  ],
+  financing: [
+    "We work with strong lenders and I’ve seen approvals in all kinds of situations. Let’s sit down and find the right lane for you.",
+    "Financing is usually the easiest part once we pick the right structure. Come in and we’ll lay it out in plain English.",
+    "If you’re unsure about payments, let’s build a payment that fits you instead of guessing over text.",
+  ],
+  test_drive: [
+    "The only way to know if it’s your car is to drive it. I’ll have it pulled up and ready when you get here.",
+    "Let’s put you behind the wheel and see how it feels in real traffic, not just on paper.",
+    "Give me a time that works and I’ll have the vehicle staged for you when you roll in.",
+  ],
+  follow_up: [
+    "Just keeping this on your radar – the vehicle is still here and it’s a good one. Let me know what you’re thinking.",
+    "I don’t like chasing people, but I also don’t like seeing good matches slip away. Where are you leaning?",
+    "If you’re still on the fence, a quick look in person might give you the clarity you’re looking for.",
+  ],
+  objection: [
+    "I hear the concern. Let’s walk through it together when you’re here – there’s usually a clean way forward.",
+    "You’re not the first person to have that hesitation. I’ve helped a lot of people through the same thing.",
+    "I’m not here to pressure you, I’m here to give you the full picture so you can decide with confidence.",
+  ],
+};
+
+
       setState({ status: 'done', error: null });
       notificationSuccess();
     } catch (e) {
