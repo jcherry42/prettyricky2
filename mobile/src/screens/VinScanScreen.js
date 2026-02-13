@@ -50,6 +50,7 @@ export function VinScanScreen() {
   const [manualVin, setManualVin] = useState('');
   const [history, setHistory] = useState([]);
   const [decoding, setDecoding] = useState(null);
+  const [lastScan, setLastScan] = useState(null);
 
   const canScan = useMemo(() => perm?.granted === true, [perm]);
 
@@ -60,7 +61,7 @@ export function VinScanScreen() {
 
   const saveVin = useCallback(async (vin, source) => {
     const v = cleanVin(vin);
-    if (v.length < 8) return;
+    if (v.length < 8) return null;
     const without = history.filter((h) => h.vin !== v);
     const entry = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -72,6 +73,7 @@ export function VinScanScreen() {
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
     impactMedium();
+    return entry;
   }, [history]);
 
   const decodeAndSave = useCallback(async (item) => {
@@ -88,6 +90,7 @@ export function VinScanScreen() {
       const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
       setHistory(next);
       await saveJson(STORAGE_KEY, next);
+      setLastScan({ vin: item.vin, decoded });
       notificationSuccess();
     } catch (e) {
       const entry = {
@@ -98,6 +101,7 @@ export function VinScanScreen() {
       const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
       setHistory(next);
       await saveJson(STORAGE_KEY, next);
+      setLastScan({ vin: item.vin, error: String(e?.message || e) });
       notificationError();
       Alert.alert('Decode Failed', String(e?.message || e));
     } finally {
@@ -118,11 +122,14 @@ export function VinScanScreen() {
     async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
-      if (!v) return;
+      if (!v || v.length < 8) return;
       setScanning(false);
-      await saveVin(v, 'barcode');
+      const entry = await saveVin(v, 'barcode');
+      if (entry) {
+        await decodeAndSave(entry);
+      }
     },
-    [scanning, saveVin]
+    [scanning, saveVin, decodeAndSave]
   );
 
   return (
@@ -143,6 +150,21 @@ export function VinScanScreen() {
             <View style={styles.scannerWrap}>
               <BarCodeScanner onBarCodeScanned={onBarCodeScanned} style={StyleSheet.absoluteFill} />
               <View style={styles.scanFrame} />
+            </View>
+          )}
+
+          {!scanning && lastScan?.vin && (
+            <View style={{ marginTop: 10 }}>
+              <Text style={styles.lastScanLabel}>Last VIN</Text>
+              <Text style={styles.lastScanVin}>{lastScan.vin}</Text>
+              {lastScan.decoded?.vehicle ? (
+                <Text style={styles.lastScanDetail}>
+                  {[lastScan.decoded.vehicle.year, lastScan.decoded.vehicle.make, lastScan.decoded.vehicle.model].filter(Boolean).join(' ')}
+                </Text>
+              ) : null}
+              {lastScan.error ? (
+                <Text style={[styles.lastScanDetail, { color: colors.red }]} numberOfLines={1}>{lastScan.error}</Text>
+              ) : null}
             </View>
           )}
 
@@ -350,5 +372,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
+  },
+  lastScanLabel: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+  },
+  lastScanVin: {
+    marginTop: 4,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 2.0,
+  },
+  lastScanDetail: {
+    marginTop: 4,
+    color: colors.textDim,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
