@@ -124,6 +124,7 @@
 
 test_plan:
   current_focus:
+    - "Mobile VIN scanner end-to-end behavior - decode + inventory backend endpoints"
     - "Mobile overlay endpoints - tower-talk + translate + TTS for mobile overlays"
     - "Mobile Print Center sanity tests - printer + customer list endpoints"
     - "Mobile: Driver's License OCR scan (front image upload)"
