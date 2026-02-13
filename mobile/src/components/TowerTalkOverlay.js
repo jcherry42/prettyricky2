@@ -198,6 +198,22 @@ const PRESET_RESPONSES = {
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
           <View style={styles.center}>
+  const sendAsSms = useCallback((text) => {
+    if (!text || !text.trim()) return;
+    const body = encodeURIComponent(text.trim());
+    const url = Platform.select({
+      ios: `sms:&body=${body}`,
+      android: `sms:?body=${body}`,
+      default: `sms:?body=${body}`,
+    });
+    try {
+      Linking.openURL(url);
+    } catch (e) {
+      // non-fatal: SMS not available
+    }
+  }, []);
+
+
             <View style={styles.card}>
               {/* Header */}
               <View style={styles.headRow}>
