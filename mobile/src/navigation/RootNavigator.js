@@ -18,6 +18,7 @@ import { CommandCenterModal } from '../components/CommandCenterModal';
 import { PrintCenterModal } from '../screens/PrintCenterModal';
 
 import { FloatingPttButton } from '../components/FloatingPttButton';
+import { FloatingCustomerButton } from '../components/FloatingCustomerButton';
 import { PttOverlayView } from '../components/PttOverlayView';
 
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
@@ -51,6 +52,7 @@ export function RootNavigator() {
   const [printOpen, setPrintOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
+  const [customersOpen, setCustomersOpen] = useState(false);
 
   const { settings } = useAppSettings();
   const ptt = usePtt();
@@ -115,10 +117,12 @@ export function RootNavigator() {
       <CommandCenterModal visible={ccOpen} onClose={() => setCcOpen(false)} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
       <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
+      <CustomerListModal visible={customersOpen} onClose={() => setCustomersOpen(false)} />
 
       {/* PTT (only in SPORT mode) */}
       {settings.sportMode ? (
         <>
+          <FloatingCustomerButton onPress={() => setCustomersOpen(true)} />
           <FloatingPttButton
             flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
