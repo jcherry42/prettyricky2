@@ -164,6 +164,53 @@ export function DlScanScreen() {
       dlNumber: dlNumber.trim(),
       expiration: expiration.trim(),
       raw: null,
+      <Modal
+        visible={cameraModalOpen}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        transparent={false}
+      >
+        <View style={styles.liveRoot}>
+          <View style={styles.liveHeader}>
+            <Pressable onPress={() => setCameraModalOpen(false)} style={styles.liveClose}>
+              <Ionicons name="close" size={20} color={colors.text} />
+            </Pressable>
+            <Text style={styles.liveTitle}>LICENSE SCAN</Text>
+          </View>
+          <View style={styles.liveBody}>
+            <View style={styles.liveCameraWrap}>
+              <Camera
+                ref={cameraRef}
+                style={StyleSheet.absoluteFill}
+                onCameraReady={() => setCameraReady(true)}
+                ratio="16:9"
+              />
+              <View style={styles.liveFrame} />
+              <View style={styles.liveGradientTop} />
+              <View style={styles.liveGradientBottom} />
+            </View>
+            <Text style={styles.liveHint}>Center the back of the license in the frame and hold steady. The camera will capture a sharp image for AI extraction.</Text>
+            <Pressable
+              onPress={async () => {
+                if (!cameraReady || !cameraRef.current) return;
+                try {
+                  impactMedium();
+                  const photo = await cameraRef.current.takePictureAsync({ quality: 0.8, base64: false, skipProcessing: false });
+                  await uploadAndExtract({ uri: photo.uri, mimeType: 'image/jpeg' });
+                  setCameraModalOpen(false);
+                } catch (e) {
+                  setScanState({ state: 'error', error: String(e?.message || e) });
+                }
+              }}
+              style={({ pressed }) => [styles.liveShutter, pressed && { opacity: 0.85 }]}
+            >
+              <View style={styles.liveShutterInner} />
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+
       ok: Boolean(firstName.trim() || lastName.trim()) && Boolean(address.trim()) && Boolean(dlNumber.trim()) && Boolean(expiration.trim()),
     };
     await saveEntry(entry);
