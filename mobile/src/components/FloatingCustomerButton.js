@@ -42,8 +42,8 @@ const SIZE = scaleSize(56);
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    left: 16,
-    bottom: 152,
+    left: scaleSize(16),
+    bottom: scaleSize(152),
   },
   btn: {
     width: SIZE,
