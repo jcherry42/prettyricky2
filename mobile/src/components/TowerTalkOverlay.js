@@ -327,37 +327,37 @@ const PRESET_RESPONSES = {
                                     end={{ x: 1, y: 1 }}
                                   />
                                   <View style={styles.inquiryInner}>
-                      <Ionicons
-                        name={
-                          it.icon === 'star'
-                            ? 'star'
-                            : it.icon === 'dollar'
-                            ? 'pricetag'
-                            : it.icon === 'calendar'
-                            ? 'calendar'
-                            : it.icon === 'repeat'
-                            ? 'repeat'
-                            : it.icon === 'card'
-                            ? 'card'
-                            : it.icon === 'car'
-                            ? 'car'
-                            : it.icon === 'clock'
-                            ? 'time'
-                            : 'chatbubble'
-                        }
-                        size={16}
-                        color={colors.text}
-                      />
-                      <Text style={styles.inquiryText}>{it.label}</Text>
-                    </View>
-                    <View style={styles.inquiryGlow} />
-                  </Pressable>
-                );
-              })}
-            </View>
+                                    <Ionicons
+                                      name={
+                                        it.icon === 'star'
+                                          ? 'star'
+                                          : it.icon === 'dollar'
+                                          ? 'pricetag'
+                                          : it.icon === 'calendar'
+                                          ? 'calendar'
+                                          : it.icon === 'repeat'
+                                          ? 'repeat'
+                                          : it.icon === 'card'
+                                          ? 'card'
+                                          : it.icon === 'car'
+                                          ? 'car'
+                                          : it.icon === 'clock'
+                                          ? 'time'
+                                          : 'chatbubble'
+                                      }
+                                      size={16}
+                                      color={colors.text}
+                                    />
+                                    <Text style={styles.inquiryText}>{it.label}</Text>
+                                  </View>
+                                  <View style={styles.inquiryGlow} />
+                                </Pressable>
+                              );
+                            })}
+                          </View>
 
-            {/* Preset responses */}
-            <View style={styles.presetsRow}>
+                          {/* Preset responses */}
+                          <View style={styles.presetsRow}>
               {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
                 const active = presetIndex === idx;
                 return (
