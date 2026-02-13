@@ -78,6 +78,8 @@ export function PttProvider({ children }) {
   }, []);
 
   const stopRecording = useCallback(async () => {
+    pendingStopRef.current = true;
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
