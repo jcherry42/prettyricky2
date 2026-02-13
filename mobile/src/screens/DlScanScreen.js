@@ -244,9 +244,19 @@ export function DlScanScreen() {
             <View style={{ height: 12 }} />
 
             <View style={styles.actionRow}>
-              <Pressable onPress={takePhoto} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}>
+              <Pressable
+                onPress={() => {
+                  if (cameraPerm?.granted !== true) {
+                    Alert.alert('Permission Required', 'Camera permission not granted.');
+                    return;
+                  }
+                  impactMedium();
+                  setCameraModalOpen(true);
+                }}
+                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
+              >
                 <Ionicons name="camera" size={20} color={colors.gold} />
-                <Text style={styles.actionBtnText}>Camera</Text>
+                <Text style={styles.actionBtnText}>Live Scan</Text>
               </Pressable>
 
               <Pressable onPress={pickFromLibrary} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}>
