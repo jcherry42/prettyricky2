@@ -72,7 +72,7 @@ export function VinScanScreen() {
       source,
       savedAt: new Date().toISOString(),
     };
-    const next = [entry, ...without].slice(0, 50);
+    const next = [entry, ...without].slice(0, 75);
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
     impactMedium();
@@ -230,13 +230,15 @@ export function VinScanScreen() {
             />
             <Pressable
               onPress={async () => {
-                if (manualVin.length >= 8) {
-                  await saveVin(manualVin, 'manual');
-                  setManualVin('');
+                if (manualVin.length !== 17) return;
+                const entry = await saveVin(manualVin, 'manual');
+                if (entry) {
+                  await decodeAndSave(entry);
                 }
+                setManualVin('');
               }}
-              disabled={manualVin.length < 8}
-              style={({ pressed }) => [styles.iconBtn, (manualVin.length < 8 || pressed) && { opacity: 0.6 }]}
+              disabled={manualVin.length !== 17}
+              style={({ pressed }) => [styles.iconBtn, (manualVin.length !== 17 || pressed) && { opacity: 0.6 }]}
             >
               <Ionicons name="add-circle" size={22} color={colors.gold} />
             </Pressable>
