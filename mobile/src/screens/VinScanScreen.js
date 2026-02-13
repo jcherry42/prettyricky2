@@ -125,8 +125,9 @@ export function VinScanScreen() {
     async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
-      if (!v || v.length < 8) return;
+      if (!v || v.length !== 17) return;
       setScanning(false);
+      setScannerOpen(false);
       const entry = await saveVin(v, 'barcode');
       if (entry) {
         await decodeAndSave(entry);
