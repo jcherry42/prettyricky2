@@ -135,13 +135,12 @@ export function RootNavigator() {
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
             recording={ptt.status === 'recording'}
             disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
-            onPressIn={() => {
-              setPttOpen(true);
-              ptt.startRecording?.();
-            }}
-            onPressOut={() => {
+            onPress={() => {
               if (ptt.status === 'recording') {
                 ptt.stopRecording?.();
+              } else if (ptt.status === 'idle' || ptt.status === 'done' || ptt.status === 'error') {
+                setPttOpen(true);
+                ptt.startRecording?.();
               }
             }}
           />
