@@ -399,13 +399,14 @@ const styles = StyleSheet.create({
   },
   langRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
   },
   langGlassOuter: {
     flex: 1,
-    height: 72,
-    borderRadius: 22,
+    height: 86,
+    borderRadius: 26,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
     backgroundColor: 'rgba(20,24,30,0.55)',
@@ -424,9 +425,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
   langGlassInner: {
-    width: '90%',
-    height: '85%',
-    borderRadius: 20,
+    width: '94%',
+    height: '82%',
+    borderRadius: 24,
     borderWidth: 0.5,
     borderColor: 'rgba(255,255,255,0.06)',
     backgroundColor: 'rgba(25,28,35,0.40)',
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(214,178,94,0.06)',
   },
   langFlag: {
-    fontSize: 32,
+    fontSize: 36,
   },
   toggle: {
     height: 44,
