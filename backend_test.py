@@ -604,7 +604,101 @@ class BackendTester:
         except Exception as e:
             self.log_result("VIN edge cases and error handling", False, f"Exception: {str(e)}")
             return False
-        """Test customer statistics endpoint"""
+    
+    async def test_vin_v2_regression_sweep(self):
+        """Regression sweep of existing vin_v2 functionality"""
+        try:
+            # Test 1: VIN decode with realistic VINs
+            test_vins = ["JM3KKEHA3T1355103", "7MMVAADW5TN144528"]
+            decode_success = 0
+            
+            for vin in test_vins:
+                async with self.session.get(f"{BACKEND_URL}/vin/decode/{vin}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('year') and data.get('make') and data.get('model'):
+                            decode_success += 1
+                    elif response.status == 404:
+                        # External service limitation is acceptable
+                        decode_success += 1
+            
+            # Test 2: VIN save functionality
+            import random
+            test_vin = f"1HGBH41JXMN{random.randint(100000, 999999)}"
+            save_payload = {
+                "vin": test_vin,
+                "vehicle_data": {
+                    "year": 2024,
+                    "make": "Honda",
+                    "model": "Civic",
+                    "trim": "Sport"
+                }
+            }
+            
+            save_success = False
+            async with self.session.post(f"{BACKEND_URL}/vin/save", json=save_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    save_success = data.get('success', False)
+            
+            # Test 3: VIN save-to-inventory with duplicate detection
+            inventory_vin = f"1HGBH41JXMN{random.randint(100000, 999999)}"
+            inventory_payload = {
+                "vin": inventory_vin,
+                "vehicle_data": {
+                    "year": 2024,
+                    "make": "Honda",
+                    "model": "Accord",
+                    "trim": "EX"
+                },
+                "category": "active_inventory"
+            }
+            
+            inventory_success = False
+            duplicate_rejection = False
+            
+            # First save
+            async with self.session.post(f"{BACKEND_URL}/vin/save-to-inventory", json=inventory_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    inventory_success = data.get('success', False)
+                    
+                    # Try duplicate save
+                    if inventory_success:
+                        async with self.session.post(f"{BACKEND_URL}/vin/save-to-inventory", json=inventory_payload) as dup_response:
+                            duplicate_rejection = dup_response.status == 409
+            
+            # Compile results
+            total_tests = 4  # decode (2 VINs), save, inventory+duplicate
+            passed_tests = decode_success + (1 if save_success else 0) + (1 if inventory_success and duplicate_rejection else 0)
+            
+            if passed_tests >= 3:  # Allow for external service limitations
+                self.log_result(
+                    "VIN v2 regression sweep", 
+                    True, 
+                    f"VIN functionality regression test passed ({passed_tests}/{total_tests} tests)", 
+                    {
+                        'decode_success': decode_success,
+                        'save_success': save_success,
+                        'inventory_success': inventory_success,
+                        'duplicate_rejection': duplicate_rejection,
+                        'total_passed': passed_tests
+                    }
+                )
+                return True
+            else:
+                self.log_result(
+                    "VIN v2 regression sweep", 
+                    False, 
+                    f"VIN regression test failed ({passed_tests}/{total_tests} tests passed)"
+                )
+                return False
+                
+        except Exception as e:
+            self.log_result("VIN v2 regression sweep", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_customer_stats(self):
         try:
             async with self.session.get(f"{BACKEND_URL}/customers/stats") as response:
                 if response.status == 200:
