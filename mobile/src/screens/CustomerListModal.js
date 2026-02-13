@@ -37,11 +37,39 @@ export function CustomerListModal({ visible, onClose }) {
   const [entries, setEntries] = useState([]);
   const [search, setSearch] = useState('');
 
+  const [manualFirst, setManualFirst] = useState('');
+  const [manualLast, setManualLast] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [manualDl, setManualDl] = useState('');
+  const [manualExp, setManualExp] = useState('');
+
   const load = useCallback(async () => {
     const parsed = await loadJson(STORAGE_KEY, []);
     const all = Array.isArray(parsed) ? parsed.map(buildDisplayEntry) : [];
     setEntries(all);
   }, []);
+
+  const saveManual = useCallback(async () => {
+    const fullName = `${manualFirst.trim()} ${manualLast.trim()}`.trim();
+    const entry = {
+      id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      source: 'manual',
+      savedAt: new Date().toISOString(),
+      fullName,
+      address: manualAddress.trim(),
+      dlNumber: manualDl.trim(),
+      expiration: manualExp.trim(),
+      ok: Boolean(fullName) && Boolean(manualAddress.trim()) && Boolean(manualDl.trim()) && Boolean(manualExp.trim()),
+    };
+    const next = [entry, ...entries].slice(0, 100);
+    setEntries(next.map(buildDisplayEntry));
+    await saveJson(STORAGE_KEY, next);
+    setManualFirst('');
+    setManualLast('');
+    setManualAddress('');
+    setManualDl('');
+    setManualExp('');
+  }, [entries, manualFirst, manualLast, manualAddress, manualDl, manualExp]);
 
   useEffect(() => {
     if (visible) {
