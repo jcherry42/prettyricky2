@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigationState } from '@react-navigation/native';
 
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
