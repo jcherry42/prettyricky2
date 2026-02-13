@@ -60,7 +60,7 @@ export function PttProvider({ children }) {
 
       if (pendingStopRef.current) {
         // User already released the button while we were spinning up
-        await rec.stopAndUnloadAsync().catch(() => {});
+        await recording.stopAndUnloadAsync().catch(() => {});
         recordingRef.current = null;
         return;
       }
