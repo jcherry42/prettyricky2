@@ -250,16 +250,21 @@ export function CommandCenterModal({ visible, onClose }) {
                   style={styles.input}
                 />
                 <View style={{ height: 8 }} />
-                <TextInput
-                  value={printerIp}
-                  onChangeText={setPrinterIp}
-                  placeholder="IP Address"
-                  placeholderTextColor={colors.textMute}
-                  style={styles.input}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="numeric"
-                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {[0, 1, 2, 3].map((idx) => (
+                    <TextInput
+                      key={idx}
+                      value={printerIp}
+                      onChangeText={setPrinterIp}
+                      placeholder={idx === 0 ? '192' : '0'}
+                      placeholderTextColor={colors.textMute}
+                      style={[styles.input, { flex: 1 }]}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="numeric"
+                    />
+                  ))}
+                </View>
                 <View style={{ height: 12 }} />
                 <Pressable
                   onPress={async () => {
