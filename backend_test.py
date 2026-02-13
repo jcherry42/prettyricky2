@@ -2374,6 +2374,8 @@ class BackendTester:
         print("\n3️⃣ Testing VIN Endpoints...")
         await self.test_vin_decode_workflow()
         await self.test_vin_save_workflow()
+        await self.test_vin_edge_cases_and_error_handling()
+        await self.test_vin_v2_regression_sweep()
         
         # Tower Talk + Translation refactor regression testing
         print("\n4️⃣ Testing Tower Talk + Translation...")
