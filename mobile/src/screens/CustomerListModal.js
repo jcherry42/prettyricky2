@@ -138,6 +138,66 @@ export function CustomerListModal({ visible, onClose }) {
               showsVerticalScrollIndicator={false}
             />
           </GlassCard>
+
+          <View style={{ height: 12 }} />
+
+          <GlassCard>
+            <View style={styles.sectionRow}>
+              <Ionicons name="person-add" size={16} color={colors.blue} />
+              <Text style={styles.sectionLabel}>Add Customer Manually</Text>
+            </View>
+            <View style={{ height: 8 }} />
+            <View style={styles.manualRow}>
+              <TextInput
+                value={manualFirst}
+                onChangeText={setManualFirst}
+                placeholder="First name"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+              />
+              <TextInput
+                value={manualLast}
+                onChangeText={setManualLast}
+                placeholder="Last name"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+              />
+            </View>
+            <View style={{ height: 8 }} />
+            <TextInput
+              value={manualAddress}
+              onChangeText={setManualAddress}
+              placeholder="Full address"
+              placeholderTextColor={colors.textMute}
+              style={styles.input}
+            />
+            <View style={{ height: 8 }} />
+            <View style={styles.manualRow}>
+              <TextInput
+                value={manualDl}
+                onChangeText={setManualDl}
+                placeholder="DL #"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+              />
+              <TextInput
+                value={manualExp}
+                onChangeText={setManualExp}
+                placeholder="MM/DD/YYYY"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ height: 10 }} />
+            <Pressable
+              onPress={saveManual}
+              style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.9 }]}
+            >
+              <Ionicons name="save" size={14} color={colors.gold} />
+              <Text style={styles.saveBtnText}>Save Customer</Text>
+            </Pressable>
+          </GlassCard>
         </View>
       </KeyboardAvoidingView>
     </Modal>
