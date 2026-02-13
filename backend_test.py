@@ -551,7 +551,59 @@ class BackendTester:
             self.log_result("POST /vin/save-to-inventory", False, f"Exception: {str(e)}")
             return False
     
-    async def test_customer_stats(self):
+    async def test_vin_edge_cases_and_error_handling(self):
+        """Test VIN decode with invalid/short VINs and error handling"""
+        try:
+            # Test with invalid/short VIN
+            invalid_vins = [
+                "TOOSHORT",  # Too short
+                "TOOLONGVINTOBEVALID123",  # Too long
+                "1HGBH41JXMN12345I",  # Contains invalid character 'I'
+                "1HGBH41JXMN12345O",  # Contains invalid character 'O'
+                "1HGBH41JXMN12345Q",  # Contains invalid character 'Q'
+            ]
+            
+            for invalid_vin in invalid_vins:
+                async with self.session.get(f"{BACKEND_URL}/vin/decode/{invalid_vin}") as response:
+                    if response.status == 400:  # Expected validation error
+                        error_data = await response.json()
+                        error_message = error_data.get('detail', '')
+                        
+                        # Verify error message is clear and not HTML/stack trace
+                        is_clear_error = (
+                            'VIN must be exactly 17 characters' in error_message or
+                            'invalid characters' in error_message or
+                            'not allowed' in error_message
+                        )
+                        is_not_html = '<' not in error_message and 'Traceback' not in error_message
+                        
+                        if is_clear_error and is_not_html:
+                            self.log_result(
+                                f"GET /vin/decode (invalid VIN: {invalid_vin[:10]}...)", 
+                                True, 
+                                f"Clear validation error returned: {error_message}", 
+                                {'vin': invalid_vin, 'error': error_message, 'status': 400}
+                            )
+                        else:
+                            self.log_result(
+                                f"GET /vin/decode (invalid VIN: {invalid_vin[:10]}...)", 
+                                False, 
+                                f"Error message not clear or contains HTML/stack trace: {error_message}"
+                            )
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(
+                            f"GET /vin/decode (invalid VIN: {invalid_vin[:10]}...)", 
+                            False, 
+                            f"Expected 400 validation error, got {response.status}: {error_text}"
+                        )
+                        return False
+            
+            return True
+        except Exception as e:
+            self.log_result("VIN edge cases and error handling", False, f"Exception: {str(e)}")
+            return False
         """Test customer statistics endpoint"""
         try:
             async with self.session.get(f"{BACKEND_URL}/customers/stats") as response:
