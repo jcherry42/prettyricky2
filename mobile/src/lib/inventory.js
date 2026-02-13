@@ -38,6 +38,10 @@ export function buildVehicleFromDecode({ vin, decoded }) {
     source: decoded?.source || 'backend',
     addedAt: new Date().toISOString(),
     updatedAt: null,
+    decodedRaw: decoded || null,
+  };
+}
+
 export function countryFlagForVehicle(v) {
   const country = (v.assemblyLocation || v.plantCountry || '').toUpperCase();
   if (!country) return '🏁';
