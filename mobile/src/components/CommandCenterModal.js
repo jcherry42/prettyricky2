@@ -546,6 +546,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'monospace',
   },
+  ipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ipSegment: {
+    flex: 1,
+    textAlign: 'center',
+  },
+  ipDot: {
+    color: colors.textMute,
+    fontSize: 18,
+    fontWeight: '900',
+    paddingHorizontal: 2,
+  },
   smallBtn: {
     width: 36,
     height: 36,
