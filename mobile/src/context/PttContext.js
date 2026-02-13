@@ -21,6 +21,7 @@ export function PttProvider({ children }) {
   const recordingRef = useRef(null);
   const playbackRef = useRef(null);
   const timeoutRef = useRef(null);
+  const pendingStopRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
