@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
+import { scaleSize, scaleFont } from '../theme/layout';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
