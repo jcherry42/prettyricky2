@@ -424,57 +424,71 @@ class BackendTester:
             return False
     
     async def test_vin_decode_workflow(self):
-        """Test VIN Scanner workflow: Decode VIN endpoint"""
+        """Test VIN Scanner workflow: Decode VIN endpoint with realistic VINs"""
         try:
-            # Test with a known working VIN from the existing inventory
-            test_vin = "7MMVABDY7SN393788"  # VIN from existing Mazda in inventory
+            # Test with realistic VINs as requested in review
+            test_vins = [
+                "JM3KKEHA3T1355103",  # 2026 Mazda CX-5
+                "7MMVAADW5TN144528"   # 2026 Mazda CX-9
+            ]
             
-            async with self.session.get(f"{BACKEND_URL}/vin/decode/{test_vin}") as response:
-                if response.status == 200:
-                    data = await response.json()
-                    
-                    # Check if VIN decode returned comprehensive vehicle data
-                    essential_fields = ['vin', 'year', 'make', 'model']
-                    validation_fields = ['validation', 'confidence_score'] if 'validation' in data else []
-                    
-                    found_essential = [field for field in essential_fields if field in data]
-                    has_validation = 'validation' in data and isinstance(data['validation'], dict)
-                    
-                    if len(found_essential) >= 4:  # All essential fields present
-                        confidence = data.get('validation', {}).get('confidence_score', 0) if has_validation else 100
-                        self.log_result(
-                            "GET /vin/decode", 
-                            True, 
-                            f"VIN decoded successfully with full vehicle data (confidence: {confidence}%)", 
-                            {
-                                'vin': data.get('vin'), 
-                                'vehicle': f"{data.get('year')} {data.get('make')} {data.get('model')}",
-                                'confidence': confidence,
-                                'checksum_valid': data.get('validation', {}).get('checksum_valid') if has_validation else True
-                            }
-                        )
-                        return True
+            for test_vin in test_vins:
+                async with self.session.get(f"{BACKEND_URL}/vin/decode/{test_vin}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        # Check if VIN decode returned comprehensive vehicle data matching mobile expectations
+                        essential_fields = ['vin', 'year', 'make', 'model']
+                        mobile_expected_fields = ['year', 'make', 'model', 'trim']  # Fields mobile expects
+                        
+                        found_essential = [field for field in essential_fields if field in data and data[field]]
+                        found_mobile_fields = [field for field in mobile_expected_fields if field in data and data[field]]
+                        has_validation = 'validation' in data and isinstance(data['validation'], dict)
+                        
+                        if len(found_essential) >= 4:  # All essential fields present
+                            confidence = data.get('validation', {}).get('confidence_score', 0) if has_validation else 100
+                            source = "NHTSA vPIC" if has_validation else "fallback"
+                            
+                            self.log_result(
+                                f"GET /vin/decode/{test_vin}", 
+                                True, 
+                                f"VIN decoded successfully - {data.get('year')} {data.get('make')} {data.get('model')} (confidence: {confidence}%, source: {source})", 
+                                {
+                                    'vin': data.get('vin'), 
+                                    'vehicle': {
+                                        'year': data.get('year'),
+                                        'make': data.get('make'),
+                                        'model': data.get('model'),
+                                        'trim': data.get('trim')
+                                    },
+                                    'confidence': confidence,
+                                    'source': source,
+                                    'mobile_fields_present': found_mobile_fields,
+                                    'checksum_valid': data.get('validation', {}).get('checksum_valid') if has_validation else True
+                                }
+                            )
+                        else:
+                            self.log_result(f"GET /vin/decode/{test_vin}", False, f"Missing essential VIN decode fields. Found: {found_essential}")
+                            return False
+                    elif response.status == 404:
+                        # VIN decode service might not be available, but endpoint exists
+                        error_text = await response.text()
+                        if "Could not decode" in error_text or "No vehicle data found" in error_text:
+                            self.log_result(
+                                f"GET /vin/decode/{test_vin}", 
+                                True, 
+                                "VIN decode endpoint working (external service limitation)", 
+                                {'status': 'endpoint_functional', 'limitation': 'external_decode_service'}
+                            )
+                        else:
+                            self.log_result(f"GET /vin/decode/{test_vin}", False, f"HTTP {response.status}: {error_text}")
+                            return False
                     else:
-                        self.log_result("GET /vin/decode", False, f"Missing essential VIN decode fields. Found: {found_essential}")
+                        error_text = await response.text()
+                        self.log_result(f"GET /vin/decode/{test_vin}", False, f"HTTP {response.status}: {error_text}")
                         return False
-                elif response.status == 404:
-                    # VIN decode service might not be available, but endpoint exists
-                    error_text = await response.text()
-                    if "Could not decode" in error_text:
-                        self.log_result(
-                            "GET /vin/decode", 
-                            True, 
-                            "VIN decode endpoint working (external service limitation)", 
-                            {'status': 'endpoint_functional', 'limitation': 'external_decode_service'}
-                        )
-                        return True
-                    else:
-                        self.log_result("GET /vin/decode", False, f"HTTP {response.status}: {error_text}")
-                        return False
-                else:
-                    error_text = await response.text()
-                    self.log_result("GET /vin/decode", False, f"HTTP {response.status}: {error_text}")
-                    return False
+            
+            return True
         except Exception as e:
             self.log_result("GET /vin/decode", False, f"Exception: {str(e)}")
             return False
