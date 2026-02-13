@@ -87,11 +87,40 @@ export function CommandCenterModal({ visible, onClose }) {
   const [activeTab, setActiveTab] = useState('settings');
 
   const [printerName, setPrinterName] = useState('');
-  const [printerIp, setPrinterIp] = useState('');
+  const [ipParts, setIpParts] = useState(['', '', '', '']);
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
+
+  const ipInputRefs = useRef([]);
+
+  const fullIp = useMemo(() => ipParts.join('.'), [ipParts]);
 
   const selectedLang = settings.defaultTargetLanguage || 'es';
   const canTestPrinter = useMemo(() => Boolean(activePrinter?.ip), [activePrinter]);
+
+  const canSavePrinter = useMemo(() => {
+    if (!fullIp || !/^\d{1,3}(\.\d{1,3}){3}$/.test(fullIp)) return false;
+    const octets = fullIp.split('.');
+    return octets.every((part) => {
+      const n = Number(part);
+      return Number.isFinite(n) && n >= 0 && n <= 255;
+    });
+  }, [fullIp]);
+
+  const updateIpPart = useCallback((index, value) => {
+    const cleaned = value.replace(/[^0-9]/g, '').slice(0, 3);
+    setIpParts((prev) => {
+      const next = [...prev];
+      next[index] = cleaned;
+      return next;
+    });
+
+    if (cleaned.length === 3 && index < 3) {
+      const nextRef = ipInputRefs.current[index + 1];
+      if (nextRef && typeof nextRef.focus === 'function') {
+        nextRef.focus();
+      }
+    }
+  }, []);
 
   const testActivePrinter = useCallback(async () => {
     if (!activePrinter?.ip) return;
