@@ -60,6 +60,9 @@ export function DlScanScreen() {
   const [expiration, setExpiration] = useState('');
 
   const [history, setHistory] = useState([]);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const cameraRef = useRef(null);
 
   const loadHistory = useCallback(async () => {
     const parsed = await loadJson(STORAGE_KEY, []);
