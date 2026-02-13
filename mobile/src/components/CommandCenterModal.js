@@ -279,32 +279,40 @@ export function CommandCenterModal({ visible, onClose }) {
                   style={styles.input}
                 />
                 <View style={{ height: 8 }} />
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  {[0, 1, 2, 3].map((idx) => (
-                    <TextInput
-                      key={idx}
-                      value={printerIp}
-                      onChangeText={setPrinterIp}
-                      placeholder={idx === 0 ? '192' : '0'}
-                      placeholderTextColor={colors.textMute}
-                      style={[styles.input, { flex: 1 }]}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      keyboardType="numeric"
-                    />
+                <View style={styles.ipRow}>
+                  {ipParts.map((segment, idx) => (
+                    <React.Fragment key={idx}>
+                      <TextInput
+                        ref={(el) => {
+                          ipInputRefs.current[idx] = el;
+                        }}
+                        value={segment}
+                        onChangeText={(txt) => updateIpPart(idx, txt)}
+                        placeholder={idx === 0 ? '192' : idx === 1 ? '168' : '0'}
+                        placeholderTextColor={colors.textMute}
+                        style={[styles.input, styles.ipSegment]}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        keyboardType="number-pad"
+                        maxLength={3}
+                      />
+                      {idx < 3 && (
+                        <Text style={styles.ipDot}>.</Text>
+                      )}
+                    </React.Fragment>
                   ))}
                 </View>
                 <View style={{ height: 12 }} />
                 <Pressable
                   onPress={async () => {
-                    if (!printerIp.trim()) return;
+                    if (!canSavePrinter) return;
                     impactLight();
-                    await upsertPrinter({ name: printerName.trim() || 'Printer', ip: printerIp.trim() });
+                    await upsertPrinter({ name: printerName.trim() || 'Printer', ip: fullIp });
                     setPrinterName('');
-                    setPrinterIp('');
+                    setIpParts(['', '', '', '']);
                   }}
-                  disabled={!printerIp.trim()}
-                  style={({ pressed }) => [styles.btn, (!printerIp.trim() || pressed) && { opacity: 0.7 }]}
+                  disabled={!canSavePrinter}
+                  style={({ pressed }) => [styles.btn, (!canSavePrinter || pressed) && { opacity: 0.7 }]}
                 >
                   <Ionicons name="add-circle" size={16} color={colors.gold} />
                   <Text style={styles.btnText}>Save</Text>
