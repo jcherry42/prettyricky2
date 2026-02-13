@@ -172,7 +172,9 @@ export function VinScanScreen() {
                     style={StyleSheet.absoluteFill}
                     barCodeTypes={[BarCodeScanner.Constants.BarCodeType.code39, BarCodeScanner.Constants.BarCodeType.code128]}
                   />
+                  <View style={styles.scanMaskTop} />
                   <View style={styles.scanFrame} />
+                  <View style={styles.scanMaskHole} pointerEvents="none" />
                 </View>
                 <Text style={styles.modalHint}>Align the VIN window stamp in the frame. The scanner will capture all 17 characters.</Text>
               </View>
