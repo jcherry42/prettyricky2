@@ -303,22 +303,22 @@ const PRESET_RESPONSES = {
                         <View style={styles.inquiryBlock}>
                           <Text style={styles.inquiryLabel}>INQUIRY</Text>
                           <View style={styles.inquiryGrid}>
-              {INQUIRY_TYPES.map((it) => {
-                const active = selectedInquiry === it.id;
-                return (
-                  <Pressable
-                    key={it.id}
-                    onPress={() => {
-                      selectionTap();
-                      setSelectedInquiry(it.id);
-                      setPresetIndex(null);
-                    }}
-                    style={({ pressed }) => [
-                      styles.inquiryPill,
-                      active && styles.inquiryPillActive,
-                      pressed && { opacity: 0.9 },
-                    ]}
-                  >
+                            {INQUIRY_TYPES.map((it) => {
+                              const active = selectedInquiry === it.id;
+                              return (
+                                <Pressable
+                                  key={it.id}
+                                  onPress={() => {
+                                    selectionTap();
+                                    setSelectedInquiry(it.id);
+                                    setPresetIndex(null);
+                                  }}
+                                  style={({ pressed }) => [
+                                    styles.inquiryPill,
+                                    active && styles.inquiryPillActive,
+                                    pressed && { opacity: 0.9 },
+                                  ]}
+                                >
                     <LinearGradient
                       colors={['rgba(251,191,36,0.35)', 'rgba(17,24,39,0.95)']}
                       locations={[0, 1]}
