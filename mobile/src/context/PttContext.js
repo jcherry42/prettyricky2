@@ -41,6 +41,7 @@ export function PttProvider({ children }) {
   const startRecording = useCallback(async () => {
     try {
       setError(null);
+      pendingStopRef.current = false;
       setStatus('recording');
 
       const perm = await Audio.requestPermissionsAsync();
@@ -56,6 +57,13 @@ export function PttProvider({ children }) {
       );
 
       recordingRef.current = recording;
+
+      if (pendingStopRef.current) {
+        // User already released the button while we were spinning up
+        await rec.stopAndUnloadAsync().catch(() => {});
+        recordingRef.current = null;
+        return;
+      }
 
       // Auto-stop after max duration
       timeoutRef.current = setTimeout(() => {
