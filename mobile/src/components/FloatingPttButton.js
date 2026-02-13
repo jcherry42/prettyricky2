@@ -5,7 +5,7 @@ import { colors } from '../theme/colors';
 import { impactMedium, impactHeavy } from '../lib/haptics';
 import { scaleSize } from '../theme/layout';
 
-export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, flagLabel, badgeDirection = '→' }) {
+export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '→' }) {
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       {flagLabel ? (
@@ -17,8 +17,7 @@ export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, 
 
       <Pressable
         disabled={disabled}
-        onPressIn={() => { impactHeavy(); onPressIn?.(); }}
-        onPressOut={() => { impactMedium(); onPressOut?.(); }}
+        onPress={() => { impactHeavy(); onPress?.(); }}
         style={({ pressed }) => [
           styles.btn,
           recording && styles.btnRecording,
