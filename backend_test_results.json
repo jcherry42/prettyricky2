@@ -1,7 +1,7 @@
 {
   "test_type": "mobile_print_center_sanity",
   "timestamp": "2026-02-10T18:07:55.086272",
-  "backend_url": "https://infotainment-dealer.preview.emergentagent.com/api",
+  "backend_url": "https://salespro-hub-2.preview.emergentagent.com/api",
   "total_tests": 45,
   "passed": 45,
   "failed": 0,

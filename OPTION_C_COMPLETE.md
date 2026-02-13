@@ -172,7 +172,7 @@ cd /app/backend
 ### Manual Testing
 ```bash
 # 1. Register user
-curl -X POST https://infotainment-dealer.preview.emergentagent.com/api/auth/register \
+curl -X POST https://salespro-hub-2.preview.emergentagent.com/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     \"email\": \"test@example.com\",
@@ -182,7 +182,7 @@ curl -X POST https://infotainment-dealer.preview.emergentagent.com/api/auth/regi
   }'
 
 # 2. Login
-curl -X POST https://infotainment-dealer.preview.emergentagent.com/api/auth/login \
+curl -X POST https://salespro-hub-2.preview.emergentagent.com/api/auth/login \
   -H \"Content-Type: application/json\" \
   -d '{
     \"email\": \"test@example.com\",
@@ -190,7 +190,7 @@ curl -X POST https://infotainment-dealer.preview.emergentagent.com/api/auth/logi
   }'
 
 # 3. Get user info (use token from login)
-curl -X GET https://infotainment-dealer.preview.emergentagent.com/api/auth/me \
+curl -X GET https://salespro-hub-2.preview.emergentagent.com/api/auth/me \
   -H \"Authorization: Bearer YOUR_TOKEN_HERE\"
 ```
 
