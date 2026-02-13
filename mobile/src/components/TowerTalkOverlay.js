@@ -358,32 +358,32 @@ const PRESET_RESPONSES = {
 
                           {/* Preset responses */}
                           <View style={styles.presetsRow}>
-              {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
-                const active = presetIndex === idx;
-                return (
-                  <Pressable
-                    key={idx}
-                    onPress={() => {
-                      selectionTap();
-                      setPresetIndex(idx);
-                      setReply(text);
-                      setTranslated('');
-                      setCopied(false);
-                    }}
-                    style={({ pressed }) => [
-                      styles.presetChip,
-                      active && styles.presetChipActive,
-                      pressed && { opacity: 0.9 },
-                    ]}
-                  >
-                    <Text style={styles.presetText} numberOfLines={2}>
-                      {text}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
+                            {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
+                              const active = presetIndex === idx;
+                              return (
+                                <Pressable
+                                  key={idx}
+                                  onPress={() => {
+                                    selectionTap();
+                                    setPresetIndex(idx);
+                                    setReply(text);
+                                    setTranslated('');
+                                    setCopied(false);
+                                  }}
+                                  style={({ pressed }) => [
+                                    styles.presetChip,
+                                    active && styles.presetChipActive,
+                                    pressed && { opacity: 0.9 },
+                                  ]}
+                                >
+                                  <Text style={styles.presetText} numberOfLines={2}>
+                                    {text}
+                                  </Text>
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        </View>
                         <Pressable
                           onPress={translateReply}
                           disabled={state.status === 'translating'}
