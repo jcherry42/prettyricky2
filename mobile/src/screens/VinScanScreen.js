@@ -150,12 +150,32 @@ export function VinScanScreen() {
             <Text style={[styles.body, { color: colors.red }]}>Camera permission not granted.</Text>
           )}
 
-          {scanning && canScan && (
-            <View style={styles.scannerWrap}>
-              <BarCodeScanner onBarCodeScanned={onBarCodeScanned} style={StyleSheet.absoluteFill} />
-              <View style={styles.scanFrame} />
+          <Modal
+            visible={scannerOpen && canScan}
+            animationType="slide"
+            presentationStyle="fullScreen"
+            transparent={false}
+          >
+            <View style={styles.modalRoot}>
+              <View style={styles.modalHeader}>
+                <Pressable onPress={() => { setScannerOpen(false); setScanning(false); }} style={styles.modalClose}>
+                  <Ionicons name="close" size={20} color={colors.text} />
+                </Pressable>
+                <Text style={styles.modalTitle}>VIN SCAN</Text>
+              </View>
+              <View style={styles.modalBody}>
+                <View style={styles.scannerWrap}>
+                  <BarCodeScanner
+                    onBarCodeScanned={onBarCodeScanned}
+                    style={StyleSheet.absoluteFill}
+                    barCodeTypes={[BarCodeScanner.Constants.BarCodeType.code39, BarCodeScanner.Constants.BarCodeType.code128]}
+                  />
+                  <View style={styles.scanFrame} />
+                </View>
+                <Text style={styles.modalHint}>Align the VIN window stamp in the frame. The scanner will capture all 17 characters.</Text>
+              </View>
             </View>
-          )}
+          </Modal>
 
           {!scanning && lastScan?.vin && (
             <View style={{ marginTop: 10 }}>
