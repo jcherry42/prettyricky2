@@ -51,6 +51,7 @@ export function TowerTalkOverlay({ visible, onClose }) {
         timeout: 20000,
         body: JSON.stringify({
           situation: situation.trim(),
+          inquiryType: selectedInquiry,
           context: {
             customerName: customerName.trim() || undefined,
             vehicle: vehicle.trim() || undefined,
