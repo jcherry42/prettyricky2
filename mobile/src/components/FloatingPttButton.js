@@ -42,8 +42,8 @@ export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, 
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    right: 16,
-    bottom: 152,
+    right: scaleSize(16),
+    bottom: scaleSize(152),
   },
   badge: {
     position: 'absolute',
