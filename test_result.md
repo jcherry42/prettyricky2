@@ -134,6 +134,18 @@ test_plan:
   test_priority: "high_first"
 
 backend:
+  - task: "Mobile VIN scanner end-to-end behavior - decode + inventory backend endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/vin_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 MOBILE VIN SCANNER END-TO-END TESTING COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of VIN scanner backend endpoints as requested in review for mobile app integration. ✅ CRITICAL VERIFICATION: 1) POST /api/vin/decode/{vin} with realistic VINs: Successfully decoded JM3KKEHA3T1355103 → 2026 MAZDA CX-90 (confidence: 100%, source: NHTSA vPIC) and 7MMVAADW5TN144528 → 2026 MAZDA CX-50 (confidence: 100%, source: NHTSA vPIC), both returning proper JSON structure with vehicle.year, .make, .model, .trim fields that mobile decodeVinWithBackend() expects, 2) Inventory add/save endpoints: POST /api/vin/save-to-inventory successfully saves VINs to MongoDB with proper vehicle entries created, duplicate VIN handling working correctly with 409 conflict status as expected, 3) Edge/error handling: Invalid/short VINs return clear validation errors (400 status) with simple error strings like 'VIN must be exactly 17 characters' and 'VIN contains invalid characters' - no HTML/stack traces that would break mobile error handling, 4) Regression sweep: All existing vin_v2 functionality passes - decode (2/2 VINs), save, save-to-inventory, and duplicate rejection (409 behavior) working correctly. ✅ MOBILE CONTRACT VERIFICATION: Response shape matches mobile expectations with required fields (year, make, model, trim, confidence, source), backend URL configuration using REACT_APP_BACKEND_URL working correctly, all curl commands documented with proper response structures. ✅ COMPREHENSIVE RESULTS: VIN decode and inventory wiring fully functional for mobile VinScanScreen integration - decodeVinWithBackend(vin) and addToInventory({ vin, decoded }) backend paths verified and working as designed."
+
   - task: "Mobile overlay endpoints - tower-talk + translate + TTS for mobile overlays"
     implemented: true
     working: true
