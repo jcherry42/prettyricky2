@@ -310,6 +310,18 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
+  - task: "Mobile Supercharg'd web preview testing - Command Center PRINTERS IP template, SPORT PTT button, Customer Bluetooth button, Language buttons layout"
+    implemented: true
+    working: false
+    file: "/app/frontend/public/mobile/index.html"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "🎯 MOBILE SUPERCHARG'D TESTING COMPLETED - MIXED RESULTS: Conducted comprehensive testing of mobile web preview at https://salespro-hub-2.preview.emergentagent.com/mobile/index.html focusing on 4 key areas as requested. ✅ SUCCESSFUL TESTS: 1) SPORT mode activation: SPORT button works correctly, shows glowing orange/red effect when active with flame animations, 2) Command Center access: Floating pill cluster's left button (gear icon) successfully opens Command Center modal with proper overlay, 3) Command Center navigation: Both SETTINGS and PRINTERS tabs accessible and functional, 4) Language buttons layout: Found 3 flag buttons (Mexico, France, South Korea) with proper sizing (not tiny/shrunken), buttons appear as larger cohesive pills on single row as expected for mobile viewport 390x844, 5) PTT button responsiveness: Purple microphone button responds correctly to press/hold/release interactions, no stuck states detected, smooth interaction behavior. ❌ CRITICAL ISSUES FOUND: 1) IP template verification needed: Found input fields in PRINTERS → Add Printer section but could not definitively confirm 4-segment structure with separating dots vs single text field - requires main agent verification of implementation, 2) Floating Customer (Bluetooth) button: Could not locate or access blue glowing Bluetooth customer button or CUSTOMERS modal - button may not be implemented or positioned differently than expected, tested multiple positions in bottom area without success. ✅ ADDITIONAL FINDINGS: App loads successfully with SUPERCHARG'D branding, HOME/INTAKE tabs functional, Eco Mode toggle visible in settings, overall mobile responsiveness good. RECOMMENDATION: Main agent should verify IP template implementation (4 segments vs single field) and investigate Bluetooth customer button implementation status."
+
   - task: "Backend URL refactor regression - Tower Talk and VoiceTranslator"
     implemented: true
     working: true
