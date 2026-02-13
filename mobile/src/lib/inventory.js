@@ -61,12 +61,6 @@ export function countryFlagForVehicle(v) {
   return '🌍';
 }
 
-
-
-    decodedRaw: decoded || null,
-  };
-}
-
 export async function addToInventory({ vin, decoded }) {
   const inv = await loadInventory();
   const exists = inv.vehicles.find((x) => x.vin === vin);
