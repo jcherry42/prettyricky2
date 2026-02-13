@@ -131,6 +131,7 @@ export function VinScanScreen() {
       const entry = await saveVin(v, 'barcode');
       if (entry) {
         await decodeAndSave(entry);
+        setLastScan({ vin: entry.vin, decoded: entry.decoded || null, flag: '🏁' });
       }
     },
     [scanning, saveVin, decodeAndSave]
