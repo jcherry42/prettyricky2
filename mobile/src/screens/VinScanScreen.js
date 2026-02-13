@@ -196,14 +196,16 @@ export function VinScanScreen() {
 
           <Pressable
             onPress={() => {
+              if (!canScan) return;
               impactMedium();
-              setScanning((s) => !s);
+              setScanning(true);
+              setScannerOpen(true);
             }}
             disabled={!canScan}
             style={({ pressed }) => [styles.btn, scanning && styles.btnActive, (!canScan || pressed) && { opacity: 0.85 }]}
           >
-            <Ionicons name={scanning ? 'stop' : 'scan'} size={16} color={scanning ? colors.red : colors.gold} />
-            <Text style={[styles.btnText, scanning && { color: colors.red }]}>{scanning ? 'Stop' : 'Scan'}</Text>
+            <Ionicons name="scan" size={16} color={colors.gold} />
+            <Text style={styles.btnText}>Scan VIN</Text>
           </Pressable>
         </GlassCard>
 
