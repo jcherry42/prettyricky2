@@ -522,22 +522,23 @@ class BackendTester:
                             "POST /vin/save-to-inventory (first save)", 
                             True, 
                             "VIN saved to inventory successfully", 
-                            {'vin': test_vin, 'message': data.get('message')}
+                            {'vin': test_vin, 'message': data.get('message'), 'id': data.get('id')}
                         )
                         
-                        # Second save attempt - should reject duplicate
+                        # Second save attempt - should reject duplicate with 409 status
                         async with self.session.post(f"{BACKEND_URL}/vin/save-to-inventory", json=test_payload) as dup_response:
                             if dup_response.status == 409:  # Conflict status for duplicate
                                 dup_data = await dup_response.json()
                                 self.log_result(
                                     "POST /vin/save-to-inventory (duplicate rejection)", 
                                     True, 
-                                    "Duplicate VIN correctly rejected", 
-                                    {'vin': test_vin, 'error': dup_data.get('detail')}
+                                    "Duplicate VIN correctly rejected with 409 status", 
+                                    {'vin': test_vin, 'error': dup_data.get('detail'), 'status': 409}
                                 )
                                 return True
                             else:
-                                self.log_result("POST /vin/save-to-inventory (duplicate rejection)", False, f"Expected 409 conflict, got {dup_response.status}")
+                                dup_text = await dup_response.text()
+                                self.log_result("POST /vin/save-to-inventory (duplicate rejection)", False, f"Expected 409 conflict, got {dup_response.status}: {dup_text}")
                                 return False
                     else:
                         self.log_result("POST /vin/save-to-inventory (first save)", False, f"Save failed: {data}")
