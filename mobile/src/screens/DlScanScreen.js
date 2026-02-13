@@ -81,9 +81,12 @@ export function DlScanScreen() {
   }, []);
 
   const saveEntry = useCallback(async (entry) => {
-    const next = [entry, ...history].slice(0, 50);
+    const next = [entry, ...history].slice(0, 100);
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
+
+    // Fire-and-forget backend customer creation for OCR/manually added entries
+    await createCustomerFromLocalEntry(entry).catch(() => {});
   }, [history]);
 
   const uploadAndExtract = useCallback(async (asset) => {
