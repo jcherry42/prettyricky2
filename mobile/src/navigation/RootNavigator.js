@@ -59,6 +59,10 @@ export function RootNavigator() {
   const { settings } = useAppSettings();
   const ptt = usePtt();
 
+  const navState = useNavigationState((state) => state);
+  const currentRouteName = navState?.routes?.[navState.index]?.name || 'Home';
+  const isHome = currentRouteName === 'Home';
+
   const tabBarStyle = useMemo(
     () => ({
       backgroundColor: 'rgba(0,0,0,0.62)',
