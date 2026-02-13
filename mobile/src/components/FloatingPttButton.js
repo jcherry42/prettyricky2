@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { impactMedium, impactHeavy } from '../lib/haptics';
+import { scaleSize } from '../theme/layout';
 
 export function FloatingPttButton({ onPressIn, onPressOut, recording, disabled, flagLabel, badgeDirection = '→' }) {
   return (
