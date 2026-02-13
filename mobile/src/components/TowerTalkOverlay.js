@@ -610,4 +610,73 @@ const styles = StyleSheet.create({
     ...type.label,
     fontSize: 11,
   },
+  inquiryBlock: {
+    marginTop: 8,
+  },
+  inquiryLabel: {
+    color: colors.textMute,
+    ...type.label,
+    fontSize: 10,
+    marginBottom: 8,
+  },
+  inquiryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  inquiryPill: {
+    position: 'relative',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(0,0,0,0.30)',
+    overflow: 'hidden',
+  },
+  inquiryPillActive: {
+    borderColor: 'rgba(251,191,36,0.60)',
+    backgroundColor: 'rgba(251,191,36,0.15)',
+  },
+  inquiryInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  inquiryText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  inquiryGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+  },
+  presetsRow: {
+    gap: 8,
+  },
+  presetChip: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke2,
+    backgroundColor: 'rgba(0,0,0,0.20)',
+    padding: 10,
+    marginBottom: 6,
+  },
+  presetChipActive: {
+    borderColor: 'rgba(251,191,36,0.40)',
+    backgroundColor: 'rgba(251,191,36,0.10)',
+  },
+  presetText: {
+    color: colors.textDim,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '500',
+  },
 });
