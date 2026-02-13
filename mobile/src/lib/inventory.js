@@ -51,7 +51,7 @@ export function countryFlagForVehicle(v) {
   if (country.includes('JAPAN')) return '🇯🇵';
   if (country.includes('KOREA')) return '🇰🇷';
   if (country.includes('GERMANY')) return '🇩🇪';
-  if (country.includes('UK') or country.includes('UNITED KINGDOM') or country.includes('ENGLAND')) return '🇬🇧';
+  if (country.includes('UK') || country.includes('UNITED KINGDOM') || country.includes('ENGLAND')) return '🇬🇧';
   if (country.includes('ITALY')) return '🇮🇹';
   if (country.includes('FRANCE')) return '🇫🇷';
   if (country.includes('CHINA')) return '🇨🇳';
