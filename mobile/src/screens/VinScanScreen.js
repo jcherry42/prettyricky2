@@ -50,6 +50,9 @@ export function VinScanScreen() {
   const [manualVin, setManualVin] = useState('');
   const [history, setHistory] = useState([]);
   const [decoding, setDecoding] = useState(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+
   const [lastScan, setLastScan] = useState(null);
 
   const canScan = useMemo(() => perm?.granted === true, [perm]);
