@@ -299,8 +299,8 @@ const PRESET_RESPONSES = {
                       <>
                         <View style={{ height: 12 }} />
 
-          {/* Inquiry type selector */}
-          <View style={styles.inquiryBlock}>
+                        {/* Inquiry type selector */}
+                        <View style={styles.inquiryBlock}>
             <Text style={styles.inquiryLabel}>INQUIRY</Text>
             <View style={styles.inquiryGrid}>
               {INQUIRY_TYPES.map((it) => {
