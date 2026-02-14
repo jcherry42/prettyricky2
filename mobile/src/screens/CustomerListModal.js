@@ -79,7 +79,10 @@ export function CustomerListModal({ visible, onClose }) {
     setManualAddress('');
     setManualDl('');
     setManualExp('');
-  }, [entries, manualFirst, manualLast, manualAddress, manualDl, manualExp]);
+    setManualTradeVin('');
+    setManualTradeMiles('');
+    setManualVoiVin('');
+  }, [entries, manualFirst, manualLast, manualAddress, manualDl, manualExp, manualTradeVin, manualTradeMiles, manualVoiVin]);
 
   useEffect(() => {
     if (visible) {
