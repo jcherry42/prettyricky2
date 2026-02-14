@@ -98,6 +98,7 @@ export function PttProvider({ children }) {
       const sourceLang = direction === 'en_to_target' ? 'en' : targetLang;
       const outTarget = direction === 'en_to_target' ? targetLang : 'en';
 
+      setStatus('translating');
       const out = await voiceTranslateUpload({
         uri,
         sourceLang,
