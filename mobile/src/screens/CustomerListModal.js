@@ -42,6 +42,9 @@ export function CustomerListModal({ visible, onClose }) {
   const [manualAddress, setManualAddress] = useState('');
   const [manualDl, setManualDl] = useState('');
   const [manualExp, setManualExp] = useState('');
+  const [manualTradeVin, setManualTradeVin] = useState('');
+  const [manualTradeMiles, setManualTradeMiles] = useState('');
+  const [manualVoiVin, setManualVoiVin] = useState('');
 
   const load = useCallback(async () => {
     const parsed = await loadJson(STORAGE_KEY, []);
