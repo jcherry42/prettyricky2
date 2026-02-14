@@ -26,6 +26,8 @@ export function TowerTalkOverlay({ visible, onClose }) {
   const [situation, setSituation] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [vehicle, setVehicle] = useState('');
+  const [tradeVin, setTradeVin] = useState('');
+  const [tradeMileage, setTradeMileage] = useState('');
 
   const [state, setState] = useState({ status: 'idle', error: null });
   const [reply, setReply] = useState('');
@@ -55,6 +57,8 @@ export function TowerTalkOverlay({ visible, onClose }) {
           context: {
             customerName: customerName.trim() || undefined,
             vehicle: vehicle.trim() || undefined,
+            tradeVin: tradeVin.trim() || undefined,
+            tradeMileage: tradeMileage.trim() || undefined,
           },
         }),
       });
