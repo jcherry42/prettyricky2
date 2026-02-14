@@ -77,10 +77,16 @@ export function PttOverlayView({ visible, onClose }) {
                 <Text style={[styles.statusText, { color: colors.red }]}>Recording\u2026</Text>
               </View>
             )}
-            {ptt.status === 'processing' && (
+            {ptt.status === 'uploading' && (
               <View style={styles.statusRow}>
                 <ActivityIndicator color={colors.gold} size="small" />
-                <Text style={styles.statusText}>Processing\u2026</Text>
+                <Text style={styles.statusText}>Uploading\u2026</Text>
+              </View>
+            )}
+            {ptt.status === 'translating' && (
+              <View style={styles.statusRow}>
+                <ActivityIndicator color={colors.gold} size="small" />
+                <Text style={styles.statusText}>Translating\u2026</Text>
               </View>
             )}
             {ptt.status === 'speaking' && (
