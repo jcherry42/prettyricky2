@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   },
   langGlassOuter: {
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: 1,
     height: 86,
     borderRadius: 26,
     borderWidth: 1,
