@@ -62,7 +62,14 @@ export function CustomerListModal({ visible, onClose }) {
       address: manualAddress.trim(),
       dlNumber: manualDl.trim(),
       expiration: manualExp.trim(),
-      ok: Boolean(fullName) && Boolean(manualAddress.trim()) && Boolean(manualDl.trim()) && Boolean(manualExp.trim()),
+      tradeVin: manualTradeVin.trim() || undefined,
+      tradeMiles: manualTradeMiles.trim() || undefined,
+      voiVin: manualVoiVin.trim() || undefined,
+      ok:
+        Boolean(fullName) &&
+        Boolean(manualAddress.trim()) &&
+        Boolean(manualDl.trim()) &&
+        Boolean(manualExp.trim()),
     };
     const next = [entry, ...entries].slice(0, 100);
     setEntries(next.map(buildDisplayEntry));
