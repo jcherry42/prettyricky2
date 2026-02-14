@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     marginHorizontal: -4,
   },
   langGlassOuter: {
-    flex: 1,
+    width: '32%',
     height: 86,
     borderRadius: 26,
     borderWidth: 1,
