@@ -329,13 +329,13 @@ backend:
         comment: "✅ PRINTER ENDPOINTS REGRESSION TEST COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of refactored printer endpoints in routes/printer_v2.py as requested. CRITICAL VERIFICATION: 1) POST /api/printer/test: Graceful failure handling working correctly for non-existent printer (192.168.1.100), returned HTTP 520 with proper error message 'Cannot connect to printer at 192.168.1.100. Verify IP address and network connectivity.', 2) POST /api/print/license: License printing endpoint working correctly with tiny base64 placeholder image (1x1 PNG), successfully processed print job and returned proper response with byte count, 3) POST /api/print/customer: Customer profile printing working correctly, created test customer 'Maria Rodriguez' and successfully processed print job, returned proper customer name and byte count, 4) POST /api/printer/print (compat): Compatibility endpoint working correctly for IntakeHub integration, successfully processed vehicle_profile print job type with proper response format. All refactored printer endpoints preserve original functionality with improved error handling and no regressions."
 
 frontend:
-  - task: "Mobile Supercharg'd web preview testing - Bluetooth customer button, Tower Talk inquiry selector, SMS integration, responsive layout"
+  - task: "Mobile Supercharg'd comprehensive testing - Command Center language pills (2px gap), Bluetooth button centering, Tower Talk multi-language crash prevention, VIN scanner barcode enhancement, Customer profile fields"
     implemented: true
-    working: true
-    file: "/app/frontend/public/mobile/index.html"
-    stuck_count: 0
+    working: false
+    file: "/app/mobile/"
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: false
         agent: "testing"
