@@ -1,7 +1,7 @@
 {
   "test_type": "mobile_print_center_sanity",
   "timestamp": "2026-02-13T17:37:33.743589",
-  "backend_url": "https://salespro-hub-2.preview.emergentagent.com/api",
+  "backend_url": "https://multilingual-app-58.preview.emergentagent.com/api",
   "total_tests": 48,
   "passed": 47,
   "failed": 1,
@@ -616,7 +616,7 @@
     {
       "test": "Printer endpoints",
       "success": false,
-      "details": "Exception: 520, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://salespro-hub-2.preview.emergentagent.com/api/printer/test'",
+      "details": "Exception: 520, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://multilingual-app-58.preview.emergentagent.com/api/printer/test'",
       "timestamp": "2026-02-13T17:37:31.134913",
       "response_data": null
     },
