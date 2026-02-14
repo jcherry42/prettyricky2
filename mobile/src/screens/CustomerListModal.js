@@ -202,6 +202,36 @@ export function CustomerListModal({ visible, onClose }) {
                 keyboardType="numeric"
               />
             </View>
+            <View style={{ height: 8 }} />
+            <View style={styles.manualRow}>
+              <TextInput
+                value={manualTradeVin}
+                onChangeText={(t) => setManualTradeVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
+                placeholder="Trade In VIN [17 characters]"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+                autoCapitalize="characters"
+                maxLength={17}
+              />
+              <TextInput
+                value={manualTradeMiles}
+                onChangeText={(t) => setManualTradeMiles(t.replace(/[^0-9,]/g, ''))}
+                placeholder="Trade In Mileage [xxx,xxx]"
+                placeholderTextColor={colors.textMute}
+                style={[styles.input, { flex: 1 }]}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={{ height: 8 }} />
+            <TextInput
+              value={manualVoiVin}
+              onChangeText={(t) => setManualVoiVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
+              placeholder="VOI VIN [17 characters]"
+              placeholderTextColor={colors.textMute}
+              style={styles.input}
+              autoCapitalize="characters"
+              maxLength={17}
+            />
             <View style={{ height: 10 }} />
             <Pressable
               onPress={saveManual}
