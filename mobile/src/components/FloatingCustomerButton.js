@@ -62,12 +62,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15,23,42,0.95)',
   },
   innerCircle: {
+    position: 'absolute',
     width: SIZE,
     height: SIZE,
-    borderRadius: SIZE / 2,
-    borderWidth: 0,
-    borderColor: 'transparent',
-    backgroundColor: 'rgba(8,47,73,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
   },
