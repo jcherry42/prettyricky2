@@ -181,14 +181,6 @@ const PRESET_RESPONSES = {
 };
 
 
-      setState({ status: 'done', error: null });
-      notificationSuccess();
-    } catch (e) {
-      setState({ status: 'error', error: String(e?.message || e) });
-      notificationError();
-    }
-  }, [reply, lang]);
-
   const speak = useCallback(async (text, language) => {
     try {
       if (!text || !text.trim()) {
