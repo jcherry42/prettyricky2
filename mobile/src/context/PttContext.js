@@ -89,7 +89,7 @@ export function PttProvider({ children }) {
     if (!rec) return;
 
     try {
-      setStatus('processing');
+      setStatus('uploading');
       await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
       recordingRef.current = null;
