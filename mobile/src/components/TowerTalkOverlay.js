@@ -191,16 +191,35 @@ const PRESET_RESPONSES = {
 
   const speak = useCallback(async (text, language) => {
     try {
-      if (!text?.trim()) return;
+      if (!text || !text.trim()) {
+        console.warn('[TowerTalk] Speak called with empty text');
+        return;
+      }
+      if (!language || typeof language !== 'string') {
+        console.warn('[TowerTalk] Speak called with invalid language:', language);
+        return;
+      }
+      
       impactMedium();
       setState({ status: 'speaking', error: null });
-      const res = await ttsSpeak({ text, language, voice: 'auto' });
+      
+      const res = await ttsSpeak({ text: text.trim(), language, voice: 'auto' });
+      
+      if (!res || typeof res !== 'object') {
+        throw new Error('Invalid TTS response');
+      }
+      
       if (res?.audio_base64) {
         await playBase64Audio({ base64: res.audio_base64, format: res.format || 'mp3' });
+      } else {
+        throw new Error('No audio data received from TTS');
       }
+      
       setState({ status: 'done', error: null });
     } catch (e) {
-      setState({ status: 'error', error: String(e?.message || e) });
+      const errorMsg = e?.message || String(e) || 'Text-to-speech failed';
+      setState({ status: 'error', error: `TTS error: ${errorMsg}` });
+      console.error('[TowerTalk] TTS error:', errorMsg, 'Language:', language);
     }
   }, []);
 
