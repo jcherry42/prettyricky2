@@ -85,14 +85,47 @@ export function TowerTalkOverlay({ visible, onClose }) {
 
   const translateReply = useCallback(async () => {
     try {
-      if (!reply.trim()) return;
+      if (!reply || !reply.trim()) {
+        setState({ status: 'error', error: 'No text to translate' });
+        return;
+      }
+      if (!lang || typeof lang !== 'string') {
+        setState({ status: 'error', error: 'Invalid target language' });
+        return;
+      }
+      
       impactMedium();
       setState({ status: 'translating', error: null });
+      
       const res = await apiFetch('/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: reply, source_lang: 'auto', target_lang: lang }),
+        timeout: 15000,
+        body: JSON.stringify({ 
+          text: reply.trim(), 
+          source_lang: 'auto', 
+          target_lang: lang 
+        }),
       });
-      setTranslated(res?.translated_text || '');
+
+      if (!res || typeof res !== 'object') {
+        throw new Error('Invalid response from translation API');
+      }
+
+      const translatedText = res?.translated_text || '';
+      if (!translatedText || translatedText.trim().length === 0) {
+        throw new Error(`Translation to ${lang.toUpperCase()} returned empty result`);
+      }
+
+      setTranslated(translatedText);
+      setState({ status: 'done', error: null });
+      notificationSuccess();
+    } catch (e) {
+      const errorMsg = e?.message || String(e) || 'Translation failed';
+      setState({ status: 'error', error: `Translation error: ${errorMsg}` });
+      notificationError();
+      console.error('[TowerTalk] Translation error:', errorMsg, 'Lang:', lang);
+    }
+  }, [reply, lang]);
 const INQUIRY_TYPES = [
   { id: 'new_lead', label: 'New Lead', icon: 'star' },
   { id: 'price_question', label: 'Price', icon: 'dollar' },
