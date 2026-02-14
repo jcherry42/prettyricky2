@@ -170,7 +170,20 @@ export function VinScanScreen() {
                   <BarCodeScanner
                     onBarCodeScanned={onBarCodeScanned}
                     style={StyleSheet.absoluteFill}
-                    barCodeTypes={[BarCodeScanner.Constants.BarCodeType.code39, BarCodeScanner.Constants.BarCodeType.code128]}
+                    barCodeTypes={[
+                      BarCodeScanner.Constants.BarCodeType.code39,
+                      BarCodeScanner.Constants.BarCodeType.code128,
+                      BarCodeScanner.Constants.BarCodeType.code93,
+                      BarCodeScanner.Constants.BarCodeType.datamatrix,
+                      BarCodeScanner.Constants.BarCodeType.qr,
+                      BarCodeScanner.Constants.BarCodeType.ean13,
+                      BarCodeScanner.Constants.BarCodeType.ean8,
+                      BarCodeScanner.Constants.BarCodeType.pdf417,
+                      BarCodeScanner.Constants.BarCodeType.upc_e,
+                      BarCodeScanner.Constants.BarCodeType.aztec,
+                      BarCodeScanner.Constants.BarCodeType.interleaved2of5,
+                      BarCodeScanner.Constants.BarCodeType.itf14,
+                    ]}
                   />
                   <View style={styles.scanMaskTop} />
                   <View style={styles.scanFrame} />
