@@ -54,11 +54,12 @@ export function RootNavigator() {
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
   const [customersOpen, setCustomersOpen] = useState(false);
+  const [currentRoute, setCurrentRoute] = useState('Home');
 
   const { settings } = useAppSettings();
   const ptt = usePtt();
 
-  const isHome = true;
+  const isHome = currentRoute === 'Home';
 
   const tabBarStyle = useMemo(
     () => ({
