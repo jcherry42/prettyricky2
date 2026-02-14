@@ -63,14 +63,25 @@ export function TowerTalkOverlay({ visible, onClose }) {
         }),
       });
 
-      setReply(res?.response || '');
+      if (!res || typeof res !== 'object') {
+        throw new Error('Invalid response from Tower Talk API');
+      }
+
+      const responseText = res?.response || '';
+      if (!responseText || responseText.trim().length === 0) {
+        throw new Error('Empty response received from Tower Talk');
+      }
+
+      setReply(responseText);
       setState({ status: 'done', error: null });
       notificationSuccess();
     } catch (e) {
-      setState({ status: 'error', error: String(e?.message || e) });
+      const errorMsg = e?.message || String(e) || 'Tower Talk request failed';
+      setState({ status: 'error', error: errorMsg });
       notificationError();
+      console.error('[TowerTalk] Error:', errorMsg);
     }
-  }, [situation, customerName, vehicle]);
+  }, [situation, customerName, vehicle, tradeVin, tradeMileage, selectedInquiry]);
 
   const translateReply = useCallback(async () => {
     try {
