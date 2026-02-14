@@ -14,7 +14,7 @@ export function PttProvider({ children }) {
   const targetLang = settings.defaultTargetLanguage || 'es';
   const direction = settings.pttDirection || 'en_to_target'; // 'en_to_target' | 'target_to_en'
 
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState('idle'); // 'idle' | 'recording' | 'uploading' | 'translating' | 'speaking' | 'done' | 'error'
   const [error, setError] = useState(null);
   const [result, setResult] = useState({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
 
