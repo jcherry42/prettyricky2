@@ -400,8 +400,9 @@ const styles = StyleSheet.create({
   langRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 4,
+    marginHorizontal: -4,
   },
   langGlassOuter: {
     flex: 1,
