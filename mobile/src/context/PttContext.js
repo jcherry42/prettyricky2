@@ -93,6 +93,8 @@ export function PttProvider({ children }) {
       await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
       recordingRef.current = null;
+
+      setStatus('uploading');
       if (!uri) throw new Error('No recording URI');
 
       const sourceLang = direction === 'en_to_target' ? 'en' : targetLang;
