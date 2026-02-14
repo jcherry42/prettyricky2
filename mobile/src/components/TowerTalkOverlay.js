@@ -250,6 +250,28 @@ const PRESET_RESPONSES = {
                   />
                 </View>
 
+                <View style={{ height: 8 }} />
+
+                <View style={styles.fieldRow}>
+                  <TextInput
+                    value={tradeVin}
+                    onChangeText={(t) => setTradeVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
+                    placeholder="Trade-in VIN (17)"
+                    placeholderTextColor={colors.textMute}
+                    style={[styles.input, { flex: 1 }]}
+                    autoCapitalize="characters"
+                    maxLength={17}
+                  />
+                  <TextInput
+                    value={tradeMileage}
+                    onChangeText={(t) => setTradeMileage(t.replace(/[^0-9,]/g, ''))}
+                    placeholder="Trade-in miles"
+                    placeholderTextColor={colors.textMute}
+                    style={[styles.input, { flex: 1 }]}
+                    keyboardType="numeric"
+                  />
+                </View>
+
                 <View style={{ height: 14 }} />
 
                 <View style={styles.generateWrap}>
