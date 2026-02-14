@@ -275,37 +275,29 @@ const PRESET_RESPONSES = {
                 <View style={{ height: 14 }} />
 
                 <View style={styles.generateWrap}>
-                  {/* Ambient gold glow behind button */}
-                  <Animated.View style={[styles.generateGlow, { opacity: glowOpacity }]} />
-
                   <Pressable
-                    onPress={runTowerTalk}
+                    onPress={() => {
+                      selectionTap();
+                      runTowerTalk();
+                    }}
                     disabled={isLoading || !situation.trim()}
-                    style={({ pressed }) => [(isLoading || !situation.trim() || pressed) && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
+                    style={({ pressed }) => [
+                      styles.generateBtn,
+                      pressed && !(isLoading || !situation.trim()) && { opacity: 0.92, transform: [{ scale: 0.98 }] },
+                      (isLoading || !situation.trim()) && { opacity: 0.55 },
+                    ]}
                   >
-                    <View style={styles.generateBtn}>
-                      <LinearGradient
-                        colors={['#F0D060', '#D6B25E', '#C49B30', '#A8841A']}
-                        locations={[0, 0.3, 0.7, 1]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
-                      />
-                      {/* Glass highlight */}
-                      <LinearGradient
-                        colors={['rgba(255,255,255,0.30)', 'rgba(255,255,255,0.08)', 'transparent']}
-                        locations={[0, 0.4, 1]}
-                        style={[StyleSheet.absoluteFill, { borderRadius: 16, height: '50%' }]}
-                      />
-                      {state.status === 'loading' ? (
-                        <ActivityIndicator color="#0E0E0E" />
-                      ) : (
-                        <>
-                          <Ionicons name="flash" size={17} color="#0E0E0E" />
-                          <Text style={styles.generateBtnText}>GENERATE</Text>
-                        </>
-                      )}
-                    </View>
+                    <LinearGradient
+                      colors={['#FFF5C7', '#FCD76D', '#F5AA1C']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    {state.status === 'loading' ? (
+                      <ActivityIndicator color="#0E0E0E" />
+                    ) : (
+                      <Text style={styles.generateBtnText}>GENERATE</Text>
+                    )}
                   </Pressable>
                 </View>
 
