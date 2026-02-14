@@ -81,6 +81,14 @@ export function RootNavigator() {
           tabBarStyle,
           tabBarHideOnKeyboard: true,
         }}
+        screenListeners={{
+          state: (e) => {
+            const route = e.data?.state?.routes[e.data?.state?.index];
+            if (route?.name) {
+              setCurrentRoute(route.name);
+            }
+          },
+        }}
       >
         <Tab.Screen
           name="Home"
