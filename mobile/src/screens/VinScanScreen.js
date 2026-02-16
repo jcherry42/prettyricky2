@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
@@ -45,7 +45,7 @@ function HistoryItem({ item, onDecode }) {
 }
 
 export function VinScanScreen() {
-  const [perm, setPerm] = useState(null);
+  const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
   const [manualVin, setManualVin] = useState('');
   const [history, setHistory] = useState([]);
@@ -55,7 +55,7 @@ export function VinScanScreen() {
 
   const [lastScan, setLastScan] = useState(null);
 
-  const canScan = useMemo(() => perm?.granted === true, [perm]);
+  const canScan = useMemo(() => permission?.granted === true, [permission]);
 
   const loadHistory = useCallback(async () => {
     const parsed = await loadJson(STORAGE_KEY, []);
@@ -114,14 +114,7 @@ export function VinScanScreen() {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
-  useEffect(() => {
-    (async () => {
-      const p = await BarCodeScanner.requestPermissionsAsync();
-      setPerm(p);
-    })();
-  }, []);
-
-  const onBarCodeScanned = useCallback(
+  const onBarcodeScanned = useCallback(
     async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
@@ -167,23 +160,26 @@ export function VinScanScreen() {
               </View>
               <View style={styles.modalBody}>
                 <View style={styles.scannerWrap}>
-                  <BarCodeScanner
-                    onBarCodeScanned={onBarCodeScanned}
+                  <CameraView
+                    onBarcodeScanned={scanning ? onBarcodeScanned : undefined}
                     style={StyleSheet.absoluteFill}
-                    barCodeTypes={[
-                      BarCodeScanner.Constants.BarCodeType.code39,
-                      BarCodeScanner.Constants.BarCodeType.code128,
-                      BarCodeScanner.Constants.BarCodeType.code93,
-                      BarCodeScanner.Constants.BarCodeType.datamatrix,
-                      BarCodeScanner.Constants.BarCodeType.qr,
-                      BarCodeScanner.Constants.BarCodeType.ean13,
-                      BarCodeScanner.Constants.BarCodeType.ean8,
-                      BarCodeScanner.Constants.BarCodeType.pdf417,
-                      BarCodeScanner.Constants.BarCodeType.upc_e,
-                      BarCodeScanner.Constants.BarCodeType.aztec,
-                      BarCodeScanner.Constants.BarCodeType.interleaved2of5,
-                      BarCodeScanner.Constants.BarCodeType.itf14,
-                    ]}
+                    barcodeScannerSettings={{
+                      barcodeTypes: [
+                        'code39',
+                        'code128',
+                        'code93',
+                        'codabar',
+                        'datamatrix',
+                        'ean13',
+                        'ean8',
+                        'itf14',
+                        'pdf417',
+                        'qr',
+                        'upc_a',
+                        'upc_e',
+                        'aztec',
+                      ],
+                    }}
                   />
                   <View style={styles.scanMaskTop} />
                   <View style={styles.scanFrame} />
@@ -212,14 +208,16 @@ export function VinScanScreen() {
           <View style={{ height: 10 }} />
 
           <Pressable
-            onPress={() => {
-              if (!canScan) return;
+            onPress={async () => {
+              if (!permission?.granted) {
+                const result = await requestPermission();
+                if (!result.granted) return;
+              }
               impactMedium();
               setScanning(true);
               setScannerOpen(true);
             }}
-            disabled={!canScan}
-            style={({ pressed }) => [styles.btn, scanning && styles.btnActive, (!canScan || pressed) && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.btn, scanning && styles.btnActive, pressed && { opacity: 0.85 }]}
           >
             <Ionicons name="scan" size={16} color={colors.gold} />
             <Text style={styles.btnText}>Scan VIN</Text>
