@@ -816,6 +816,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
   },
+  translateBtnSport: {
+    borderColor: 'rgba(255,80,0,0.50)',
+    backgroundColor: 'rgba(255,80,0,0.10)',
+  },
   translateBtnText: {
     color: colors.gold,
     ...type.label,
