@@ -1172,4 +1172,84 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
+  // Ambient Lighting styles
+  ambientHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  ambientPreview: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  toggleAmbientOn: {
+    borderColor: 'rgba(0,255,204,0.50)',
+    backgroundColor: 'rgba(0,255,204,0.08)',
+  },
+  toggleDotAmbientOn: {
+    backgroundColor: '#00FFCC',
+  },
+  ambientLabel: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+  ambientSubtext: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  intensityRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  intensityBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  intensityBtnActive: {
+    borderColor: 'rgba(0,255,204,0.50)',
+    backgroundColor: 'rgba(0,255,204,0.08)',
+  },
+  intensityLabel: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  intensityLabelActive: {
+    color: '#00FFCC',
+  },
+  intensityPct: {
+    color: colors.textMute,
+    fontSize: 9,
+    fontWeight: '700',
+  },
+  intensityPctActive: {
+    color: 'rgba(0,255,204,0.70)',
+  },
+  spectrumRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  spectrumDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
 });
