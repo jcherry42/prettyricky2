@@ -131,14 +131,17 @@ export function HomeScreen() {
       {/* Header clearance */}
       <View style={{ height: 56 }} />
 
-      <AmbientStrip active color={ambientColor} />
+      <AmbientStrip active color={stripColor} />
 
       {/* SPORT button */}
       <View style={styles.sportRow}>
         <SportModeButton />
       </View>
 
-      <AmbientStrip active color={ambientColor} />
+      <AmbientStrip active color={stripColor} />
+
+      {/* Chrome accent divider */}
+      <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 8 }} />
 
       {/* Search bar with wood bezel styling */}
       <View style={styles.searchContainer}>
