@@ -35,9 +35,6 @@ export function TowerTalkOverlay({ visible, onClose }) {
   const [selectedInquiry, setSelectedInquiry] = useState('new_lead');
   const [presetIndex, setPresetIndex] = useState(null);
 
-  const sportOn = Boolean(settings.sportMode);
-  const flag = useMemo(() => flagFor(lang), [lang]);
-
   const runTowerTalk = useCallback(async () => {
     try {
       impactMedium();
