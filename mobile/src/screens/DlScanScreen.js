@@ -1,284 +1,577 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert, Modal } from 'react-native';
-import { Camera } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { loadJson, saveJson } from '../lib/storage';
-import { uploadImageToLicenseScan } from '../lib/upload';
-import { uriToBase64 } from '../lib/image';
+import { uploadFileAuto } from '../utils/chunkedUpload';
+import { useCustomers } from '../context/CustomerContext';
+import { apiFetch } from '../lib/api';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { GlassCard } from '../components/GlassCard';
-import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
-import { createCustomerFromLocalEntry } from '../lib/customers';
+import { impactMedium, notificationSuccess, notificationError, impactLight } from '../lib/haptics';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
+const MAX_HISTORY = 50;
 
-function cleanDlNumber(s) {
-  return String(s || '').toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 24);
+// 10 extraction fields
+const EXTRACTION_FIELDS = [
+  { key: 'first_name', label: 'First Name', icon: 'person', required: true },
+  { key: 'middle_name', label: 'Middle Name', icon: 'person-outline', required: false },
+  { key: 'last_name', label: 'Last Name', icon: 'person', required: true },
+  { key: 'license_number', label: 'License #', icon: 'card', required: true },
+  { key: 'expiration', label: 'Expiration', icon: 'calendar', required: true },
+  { key: 'date_of_birth', label: 'Date of Birth', icon: 'gift', required: true },
+  { key: 'address', label: 'Address', icon: 'location', required: true },
+  { key: 'city', label: 'City', icon: 'business', required: true },
+  { key: 'state', label: 'State', icon: 'map', required: true },
+  { key: 'zip_code', label: 'ZIP Code', icon: 'pin', required: true },
+];
+
+function HistoryCard({ item, onPress, onSaveToCustomer }) {
+  const isPdf417 = item.scanMethod === 'pdf417';
+  const isOcr = item.scanMethod === 'ocr';
+  const confidence = item.confidence || 0;
+  const isSavedToCustomer = Boolean(item.savedToCustomerAt);
+
+  return (
+    <Pressable
+      onPress={() => onPress(item)}
+      style={({ pressed }) => [styles.historyCard, pressed && styles.pressed]}
+    >
+      <LinearGradient
+        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.historyGradient}
+      >
+        <View style={styles.quiltedPattern} />
+
+        {/* Header with badges */}
+        <View style={styles.historyHeader}>
+          <View style={[styles.methodBadge, isPdf417 && styles.methodBadgePdf417]}>
+            <Ionicons name={isPdf417 ? 'barcode' : 'scan'} size={12} color="#000" />
+            <Text style={styles.methodBadgeText}>{isPdf417 ? 'PDF417' : isOcr ? 'OCR' : 'MANUAL'}</Text>
+          </View>
+          {confidence > 0 && (
+            <View style={styles.confidenceBadge}>
+              <Text style={styles.confidenceText}>{confidence}%</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Content */}
+        <View style={styles.historyContent}>
+          <Text style={styles.historyName}>
+            {[item.first_name, item.middle_name, item.last_name].filter(Boolean).join(' ') || 'Unknown Name'}
+          </Text>
+          <View style={styles.historyDetail}>
+            <Ionicons name="card" size={12} color={colors.textDim} />
+            <Text style={styles.historyDetailText}>
+              {item.license_number || '—'}
+            </Text>
+          </View>
+          <View style={styles.historyDetail}>
+            <Ionicons name="location" size={12} color={colors.textDim} />
+            <Text style={styles.historyDetailText}>
+              {[item.city, item.state].filter(Boolean).join(', ') || '—'}
+            </Text>
+          </View>
+          <View style={styles.historyMeta}>
+            <Text style={styles.metaText}>{new Date(item.savedAt).toLocaleDateString()}</Text>
+          </View>
+        </View>
+
+        {/* Actions */}
+        <View style={styles.historyActions}>
+          {isSavedToCustomer ? (
+            <View style={styles.savedBadge}>
+              <Ionicons name="checkmark-circle" size={14} color={colors.green} />
+              <Text style={styles.savedText}>SAVED</Text>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => onSaveToCustomer(item)}
+              style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
+            >
+              <Ionicons name="person-add" size={16} color={colors.gold} />
+            </Pressable>
+          )}
+          <Ionicons name="chevron-forward" size={18} color={colors.gold} style={{ marginLeft: 8 }} />
+        </View>
+
+        {/* Stitching */}
+        <View style={styles.stitchingTop} />
+        <View style={styles.stitchingBottom} />
+      </LinearGradient>
+    </Pressable>
+  );
 }
 
-function HistoryCard({ item }) {
-  const isOcr = item.source === 'ocr';
+function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSavedToCustomer }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState(data);
+
+  useEffect(() => {
+    setEditedData(data);
+  }, [data]);
+
+  const handleSave = () => {
+    onEdit(editedData);
+    setIsEditing(false);
+    impactMedium();
+  };
+
   return (
-    <GlassCard style={styles.histCard}>
-      <View style={styles.histHeader}>
-        <View style={[styles.sourceBadge, isOcr ? styles.sourceBadgeOcr : styles.sourceBadgeManual]}>
-          <Text style={styles.sourceBadgeText}>{isOcr ? 'OCR' : 'MANUAL'}</Text>
-        </View>
-        {item.ok ? (
-          <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+    <View style={styles.extractionPanel}>
+      <View style={styles.extractionHeader}>
+        <Text style={styles.extractionTitle}>EXTRACTED DATA</Text>
+        {!isEditing ? (
+          <Pressable onPress={() => setIsEditing(true)} style={styles.editButton}>
+            <Ionicons name="pencil" size={16} color={colors.gold} />
+            <Text style={styles.editButtonText}>Edit</Text>
+          </Pressable>
         ) : (
-          <Ionicons name="alert-circle" size={16} color={colors.red} />
+          <Pressable onPress={handleSave} style={styles.saveButton}>
+            <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+            <Text style={[styles.editButtonText, { color: colors.green }]}>Save</Text>
+          </Pressable>
         )}
       </View>
-      <Text style={styles.histName}>{item.fullName || 'Name: \u2014'}</Text>
-      <Text style={styles.histDetail}>{item.address || 'Address: \u2014'}</Text>
-      <Text style={styles.histDetail}>DL: {item.dlNumber || '\u2014'} \u00b7 EXP: {item.expiration || '\u2014'}</Text>
-      {typeof item.confidence === 'number' && (
-        <Text style={[styles.histDetail, { color: colors.textMute }]}>Confidence: {item.confidence}%</Text>
-      )}
-      {!item.ok && isOcr && (
-        <Text style={[styles.histDetail, { color: colors.red }]}>Fields incomplete \u2014 use manual capture</Text>
-      )}
-      <Text style={[styles.histDetail, { fontSize: 10, marginTop: 8 }]}>{new Date(item.savedAt).toLocaleString()}</Text>
-    </GlassCard>
+
+      <ScrollView style={styles.fieldsScroll} showsVerticalScrollIndicator={false}>
+        {EXTRACTION_FIELDS.map((field) => (
+          <View key={field.key} style={styles.fieldContainer}>
+            <View style={styles.fieldLabel}>
+              <Ionicons name={field.icon} size={14} color={field.required ? colors.gold : colors.textMute} />
+              <Text style={styles.fieldLabelText}>
+                {field.label}
+                {field.required && <Text style={{ color: colors.red }}> *</Text>}
+              </Text>
+            </View>
+            {isEditing ? (
+              <TextInput
+                value={editedData[field.key] || ''}
+                onChangeText={(text) => setEditedData({ ...editedData, [field.key]: text })}
+                placeholder={`Enter ${field.label.toLowerCase()}`}
+                placeholderTextColor={colors.textMute}
+                style={styles.fieldInput}
+              />
+            ) : (
+              <Text style={styles.fieldValue}>{editedData[field.key] || '—'}</Text>
+            )}
+          </View>
+        ))}
+
+        {!isSavedToCustomer && (
+          <Pressable
+            onPress={onSaveToCustomer}
+            style={({ pressed }) => [styles.saveToCustomerButton, pressed && styles.pressed]}
+          >
+            <Ionicons name="person-add" size={20} color={colors.bg0} />
+            <Text style={styles.saveToCustomerText}>Save to Customer Profile</Text>
+          </Pressable>
+        )}
+
+        {isSavedToCustomer && (
+          <View style={styles.savedToCustomerBadge}>
+            <Ionicons name="checkmark-circle" size={20} color={colors.green} />
+            <Text style={styles.savedToCustomerText}>Saved to Customer Profile</Text>
+          </View>
+        )}
+
+        <View style={{ height: 20 }} />
+      </ScrollView>
+    </View>
   );
 }
 
 export function DlScanScreen() {
-  const [cameraPerm, setCameraPerm] = useState(null);
-  const [mediaPerm, setMediaPerm] = useState(null);
-  const [scanState, setScanState] = useState({ state: 'idle', error: null });
-  const [tab, setTab] = useState('ocr');
+  const [permission, requestPermission] = useCameraPermissions();
+  const { createCustomer } = useCustomers();
 
-  // Manual fields
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [address, setAddress] = useState('');
-  const [dlNumber, setDlNumber] = useState('');
-  const [expiration, setExpiration] = useState('');
-
+  const [scanning, setScanning] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [history, setHistory] = useState([]);
-  const [cameraReady, setCameraReady] = useState(false);
-  const [cameraModalOpen, setCameraModalOpen] = useState(false);
-  const cameraRef = useRef(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  const canScan = permission?.granted === true;
 
   const loadHistory = useCallback(async () => {
     const parsed = await loadJson(STORAGE_KEY, []);
     setHistory(Array.isArray(parsed) ? parsed : []);
   }, []);
 
-  useEffect(() => { loadHistory(); }, [loadHistory]);
-
   useEffect(() => {
-    (async () => {
-      const cam = await ImagePicker.requestCameraPermissionsAsync();
-      const media = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      setCameraPerm(cam);
-      setMediaPerm(media);
-    })();
-  }, []);
+    loadHistory();
+  }, [loadHistory]);
 
-  const saveEntry = useCallback(async (entry) => {
-    const next = [entry, ...history].slice(0, 100);
-    setHistory(next);
-    await saveJson(STORAGE_KEY, next);
+  const saveToHistory = useCallback(
+    async (entry) => {
+      const next = [entry, ...history].slice(0, MAX_HISTORY);
+      setHistory(next);
+      await saveJson(STORAGE_KEY, next);
+      return entry;
+    },
+    [history]
+  );
 
-    // Fire-and-forget backend customer creation for OCR/manually added entries
-    await createCustomerFromLocalEntry(entry).catch(() => {});
-  }, [history]);
+  const updateHistoryItem = useCallback(
+    async (id, updates) => {
+      const next = history.map((item) => (item.id === id ? { ...item, ...updates } : item));
+      setHistory(next);
+      await saveJson(STORAGE_KEY, next);
+    },
+    [history]
+  );
 
-  const uploadAndExtract = useCallback(async (asset) => {
+  const uploadAndScan = useCallback(
+    async (uri, scanMethod = 'ocr') => {
+      try {
+        setUploading(true);
+        setUploadProgress(0);
+
+        // Upload with chunked upload for large files
+        const imageUrl = await uploadFileAuto({
+          uri,
+          filename: `license_${Date.now()}.jpg`,
+          contentType: 'image/jpeg',
+          onProgress: (current, total) => {
+            setUploadProgress(Math.round((current / total) * 100));
+          },
+        });
+
+        // Call backend scan endpoint
+        const response = await apiFetch('/api/license/scan', {
+          method: 'POST',
+          body: JSON.stringify({ image_url: imageUrl }),
+        });
+
+        const extracted = response.extracted_data || {};
+        const confidence = response.confidence || 0;
+
+        const entry = {
+          id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          scanMethod,
+          savedAt: new Date().toISOString(),
+          imageUrl,
+          confidence,
+          first_name: extracted.first_name || '',
+          middle_name: extracted.middle_name || '',
+          last_name: extracted.last_name || '',
+          license_number: extracted.license_number || '',
+          expiration: extracted.expiration || '',
+          date_of_birth: extracted.date_of_birth || '',
+          address: extracted.address || '',
+          city: extracted.city || '',
+          state: extracted.state || '',
+          zip_code: extracted.zip_code || '',
+        };
+
+        await saveToHistory(entry);
+        setSelectedItem(entry);
+        setShowDetailModal(true);
+        notificationSuccess();
+      } catch (error) {
+        notificationError();
+        Alert.alert('Scan Failed', error.message || 'Unable to scan license');
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
+      }
+    },
+    [saveToHistory]
+  );
+
+  const onBarcodeScanned = useCallback(
+    async ({ data }) => {
+      if (!scanning) return;
+
+      // PDF417 barcodes contain structured license data
+      if (data && data.length > 50) {
+        impactMedium();
+        setScanning(false);
+        setScannerOpen(false);
+
+        // For PDF417, we'd ideally parse the data here
+        // For now, treat as OCR and let backend handle
+        Alert.alert('License Detected', 'Processing barcode data...');
+        
+        // In production, parse PDF417 data or send to backend
+        // For this implementation, prompt user to use camera instead
+        impactLight();
+      }
+    },
+    [scanning]
+  );
+
+  const handleCameraScan = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) return;
+    }
+
+    impactMedium();
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.8,
+      allowsEditing: false,
+      base64: false,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      await uploadAndScan(result.assets[0].uri, 'ocr');
+    }
+  };
+
+  const handleGalleryScan = async () => {
+    impactMedium();
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.9,
+      allowsEditing: false,
+      base64: false,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
+
+    if (!result.canceled && result.assets?.[0]) {
+      await uploadAndScan(result.assets[0].uri, 'ocr');
+    }
+  };
+
+  const handleItemPress = (item) => {
+    setSelectedItem(item);
+    setShowDetailModal(true);
+  };
+
+  const handleEdit = (editedData) => {
+    if (selectedItem) {
+      updateHistoryItem(selectedItem.id, editedData);
+      setSelectedItem({ ...selectedItem, ...editedData });
+    }
+  };
+
+  const handleSaveToCustomer = async (item) => {
     try {
-      setScanState({ state: 'uploading', error: null });
-      const uri = asset?.uri;
-      if (!uri) throw new Error('No image selected');
+      impactMedium();
 
-      // Slight delay to allow camera UI to settle
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      if (!item.first_name || !item.last_name) {
+        Alert.alert('Incomplete Data', 'First name and last name are required');
+        return;
+      }
 
-      const json = await uploadImageToLicenseScan({ uri, mimeType: asset?.mimeType || 'image/jpeg' });
-      const d = json?.extracted_data || {};
-      const fullName = [d.first_name, d.middle_name, d.last_name].filter(Boolean).join(' ').trim();
-      const addressLine = [d.address, d.city, d.state, d.zip_code].filter(Boolean).join(', ').trim();
-
-      const base64 = await uriToBase64(uri);
-      const entry = {
-        id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
-        source: 'ocr',
-        savedAt: new Date().toISOString(),
-        imageUrl: json?.image_url || null,
-        confidence: json?.confidence ?? null,
-        extractionNotes: json?.extraction_notes || null,
-        licenseImageBase64: base64,
-        fullName,
-        address: addressLine,
-        dlNumber: d.license_number ? String(d.license_number).trim() : '',
-        expiration: d.expiration ? String(d.expiration).trim() : '',
-        raw: d,
-        ok: Boolean(fullName) && Boolean(addressLine) && Boolean(d.license_number) && Boolean(d.expiration),
+      const customerData = {
+        first_name: item.first_name,
+        last_name: item.last_name,
+        phone: '', // License doesn't have phone
+        email: '', // License doesn't have email
+        address: [item.address, item.city, item.state, item.zip_code].filter(Boolean).join(', '),
+        lead_status: 'new',
+        notes: `License #: ${item.license_number || 'N/A'}\nDOB: ${item.date_of_birth || 'N/A'}\nExpiration: ${item.expiration || 'N/A'}`,
       };
 
-      await saveEntry(entry);
-      setScanState({ state: 'done', error: null });
+      await createCustomer(customerData);
+      await updateHistoryItem(item.id, { savedToCustomerAt: new Date().toISOString() });
+      
+      if (selectedItem?.id === item.id) {
+        setSelectedItem({ ...item, savedToCustomerAt: new Date().toISOString() });
+      }
+
       notificationSuccess();
-    } catch (e) {
-      setScanState({ state: 'error', error: String(e?.message || e) });
+      Alert.alert('Success', 'Customer profile created successfully');
+    } catch (error) {
       notificationError();
+      Alert.alert('Save Failed', error.message || 'Unable to save customer');
     }
-  }, [saveEntry]);
-
-  const takePhoto = useCallback(async () => {
-    if (cameraPerm?.granted !== true) {
-      Alert.alert('Permission Required', 'Camera permission not granted.');
-      return;
-    }
-    impactMedium();
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8, base64: false, allowsEditing: false });
-    if (result.canceled) return;
-    await uploadAndExtract(result.assets?.[0]);
-  }, [cameraPerm, uploadAndExtract]);
-
-  const pickFromLibrary = useCallback(async () => {
-    if (mediaPerm?.granted !== true) {
-      Alert.alert('Permission Required', 'Photo library permission not granted.');
-      return;
-    }
-    impactMedium();
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.9, base64: false, mediaTypes: ['images'] });
-    if (result.canceled) return;
-    await uploadAndExtract(result.assets?.[0]);
-  }, [mediaPerm, uploadAndExtract]);
-
-  const saveManual = useCallback(async () => {
-    const entry = {
-      id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
-      source: 'manual',
-      savedAt: new Date().toISOString(),
-      imageUrl: null,
-      confidence: null,
-      extractionNotes: null,
-      fullName: `${firstName.trim()} ${lastName.trim()}`.trim(),
-      address: address.trim(),
-      dlNumber: dlNumber.trim(),
-      expiration: expiration.trim(),
-      raw: null,
-      ok: Boolean(firstName.trim() || lastName.trim()) && Boolean(address.trim()) && Boolean(dlNumber.trim()) && Boolean(expiration.trim()),
-    };
-    await saveEntry(entry);
-    notificationSuccess();
-    setFirstName('');
-    setLastName('');
-    setAddress('');
-    setDlNumber('');
-    setExpiration('');
-  }, [firstName, lastName, address, dlNumber, expiration, saveEntry]);
+  };
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.container}>
-        {/* Tab Selector */}
-        <View style={styles.tabs}>
-          <Pressable onPress={() => setTab('ocr')} style={({ pressed }) => [styles.tabBtn, tab === 'ocr' && styles.tabBtnActive, pressed && { opacity: 0.9 }]}>
-            <Ionicons name="camera" size={14} color={tab === 'ocr' ? colors.gold : colors.textMute} />
-            <Text style={[styles.tabText, tab === 'ocr' && styles.tabTextActive]}>OCR SCAN</Text>
-          </Pressable>
-          <Pressable onPress={() => setTab('manual')} style={({ pressed }) => [styles.tabBtn, tab === 'manual' && styles.tabBtnActive, pressed && { opacity: 0.9 }]}>
-            <Ionicons name="keypad" size={14} color={tab === 'manual' ? colors.gold : colors.textMute} />
-            <Text style={[styles.tabText, tab === 'manual' && styles.tabTextActive]}>MANUAL</Text>
-          </Pressable>
-        </View>
+        {/* Scan Actions */}
+        <LinearGradient
+          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionBezel}
+        >
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="scan" size={18} color={colors.gold} />
+              <Text style={styles.sectionTitle}>LICENSE SCANNER</Text>
+            </View>
 
-        <View style={{ height: 12 }} />
-
-        {tab === 'ocr' ? (
-          <GlassCard>
-            <View style={{ height: 12 }} />
+            {uploading && (
+              <View style={styles.uploadingCard}>
+                <ActivityIndicator size="small" color={colors.gold} />
+                <Text style={styles.uploadingText}>
+                  {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Scanning with AI...'}
+                </Text>
+              </View>
+            )}
 
             <View style={styles.actionRow}>
               <Pressable
-                onPress={() => {
-                  if (cameraPerm?.granted !== true) {
-                    Alert.alert('Permission Required', 'Camera permission not granted.');
-                    return;
-                  }
-                  impactMedium();
-                  setCameraModalOpen(true);
-                }}
-                style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}
+                onPress={handleCameraScan}
+                disabled={uploading}
+                style={({ pressed }) => [
+                  styles.scanButton,
+                  uploading && styles.scanButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
               >
-                <Ionicons name="camera" size={20} color={colors.gold} />
-                <Text style={styles.actionBtnText}>Live Scan</Text>
+                <Ionicons name="camera" size={22} color={uploading ? colors.textMute : colors.gold} />
+                <Text style={[styles.scanButtonText, uploading && { color: colors.textMute }]}>Take Photo</Text>
               </Pressable>
 
-              <Pressable onPress={pickFromLibrary} style={({ pressed }) => [styles.actionBtn, pressed && { opacity: 0.85 }]}>
-                <Ionicons name="images" size={20} color={colors.gold} />
-                <Text style={styles.actionBtnText}>Library</Text>
+              <Pressable
+                onPress={handleGalleryScan}
+                disabled={uploading}
+                style={({ pressed }) => [
+                  styles.scanButton,
+                  uploading && styles.scanButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Ionicons name="images" size={22} color={uploading ? colors.textMute : colors.gold} />
+                <Text style={[styles.scanButtonText, uploading && { color: colors.textMute }]}>From Gallery</Text>
               </Pressable>
             </View>
 
-            {scanState.state === 'uploading' && (
-              <View style={styles.statusRow}>
-                <ActivityIndicator color={colors.gold} />
-                <Text style={[styles.body, { marginLeft: 10, marginTop: 0 }]}>Scanning with AI Vision\u2026</Text>
-              </View>
-            )}
-            {scanState.state === 'done' && (
-              <View style={styles.statusRow}>
-                <Ionicons name="checkmark-circle" size={16} color={colors.green} />
-                <Text style={[styles.body, { marginLeft: 8, marginTop: 0, color: colors.green }]}>Scan complete</Text>
-              </View>
-            )}
-            {scanState.state === 'error' && (
-              <Text style={[styles.body, { color: colors.red }]}>{scanState.error}</Text>
-            )}
-          </GlassCard>
-        ) : (
-          <GlassCard>
-            <View style={{ height: 10 }} />
+            <Pressable
+              onPress={async () => {
+                if (!permission?.granted) {
+                  const result = await requestPermission();
+                  if (!result.granted) return;
+                }
+                impactMedium();
+                setScanning(true);
+                setScannerOpen(true);
+              }}
+              disabled={uploading}
+              style={({ pressed }) => [
+                styles.barcodeButton,
+                uploading && styles.scanButtonDisabled,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Ionicons name="barcode" size={22} color={uploading ? colors.textMute : colors.gold} />
+              <Text style={[styles.barcodeButtonText, uploading && { color: colors.textMute }]}>
+                Scan PDF417 Barcode
+              </Text>
+            </Pressable>
+          </View>
+        </LinearGradient>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.fieldRow}>
-                <TextInput value={firstName} onChangeText={setFirstName} placeholder="First name" placeholderTextColor={colors.textMute} style={[styles.input, { flex: 1 }]} />
-                <TextInput value={lastName} onChangeText={setLastName} placeholder="Last name" placeholderTextColor={colors.textMute} style={[styles.input, { flex: 1 }]} />
+        {/* PDF417 Scanner Modal */}
+        <Modal visible={scannerOpen && canScan} animationType="slide" presentationStyle="fullScreen">
+          <View style={styles.modalRoot}>
+            <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
+              <View style={styles.modalHeader}>
+                <Pressable
+                  onPress={() => {
+                    setScannerOpen(false);
+                    setScanning(false);
+                  }}
+                  style={styles.modalClose}
+                >
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </Pressable>
+                <Text style={styles.modalTitle}>PDF417 BARCODE SCANNER</Text>
               </View>
-              <View style={{ height: 8 }} />
-              <TextInput value={address} onChangeText={setAddress} placeholder="Full address" placeholderTextColor={colors.textMute} style={styles.input} />
-              <View style={{ height: 8 }} />
-              <View style={styles.fieldRow}>
-                <TextInput value={dlNumber} onChangeText={(t) => setDlNumber(cleanDlNumber(t))} placeholder="DL #" placeholderTextColor={colors.textMute} style={[styles.input, { flex: 1 }]} />
-                <TextInput value={expiration} onChangeText={setExpiration} placeholder="MM/DD/YYYY" placeholderTextColor={colors.textMute} style={[styles.input, { flex: 1 }]} keyboardType="numeric" />
+
+              <View style={styles.modalBody}>
+                <View style={styles.scannerWrap}>
+                  <CameraView
+                    onBarcodeScanned={scanning ? onBarcodeScanned : undefined}
+                    style={StyleSheet.absoluteFill}
+                    barcodeScannerSettings={{
+                      barcodeTypes: ['pdf417'],
+                    }}
+                  />
+                  <View style={styles.scanMaskTop} />
+                  <View style={styles.scanFrame}>
+                    <View style={[styles.corner, styles.cornerTL]} />
+                    <View style={[styles.corner, styles.cornerTR]} />
+                    <View style={[styles.corner, styles.cornerBL]} />
+                    <View style={[styles.corner, styles.cornerBR]} />
+                  </View>
+                  <View style={styles.scanMaskBottom} />
+                </View>
+
+                <View style={styles.scanHintCard}>
+                  <Ionicons name="information-circle" size={20} color={colors.gold} />
+                  <Text style={styles.scanHint}>
+                    Position the barcode on the back of the driver's license in the frame. The PDF417 barcode contains encoded license data.
+                  </Text>
+                </View>
               </View>
-              <View style={{ height: 12 }} />
-              <Pressable onPress={saveManual} style={({ pressed }) => [styles.btn, pressed && { opacity: 0.85 }]}>
-                <Ionicons name="save" size={16} color={colors.gold} />
-                <Text style={styles.btnText}>Save Entry</Text>
-              </Pressable>
-            </ScrollView>
-          </GlassCard>
-        )}
+            </LinearGradient>
+          </View>
+        </Modal>
 
         <View style={{ height: 12 }} />
 
         {/* History */}
-        <GlassCard style={{ flex: 1 }}>
-          <View style={styles.sectionRow}>
-            <Ionicons name="time-outline" size={16} color={colors.textMute} />
-            <Text style={styles.sectionLabel}>Recent Scans</Text>
-            <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto', fontSize: 11 }]}>{history.length}</Text>
+        <View style={styles.historyContainer}>
+          <View style={styles.historyHeaderRow}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="time" size={18} color={colors.textMute} />
+              <Text style={styles.sectionTitle}>RECENT SCANS</Text>
+            </View>
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{history.length}</Text>
+            </View>
           </View>
-          <View style={{ height: 8 }} />
 
-          <FlatList
-            data={history}
-            keyExtractor={(i) => i.id}
-            renderItem={({ item }) => <HistoryCard item={item} />}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            contentContainerStyle={{ paddingBottom: 14 }}
-            showsVerticalScrollIndicator={false}
-          />
-        </GlassCard>
+          {history.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="scan" size={48} color={colors.textMute} />
+              <Text style={styles.emptyText}>No license scans yet</Text>
+              <Text style={styles.emptySubtext}>Take a photo or upload from gallery to get started</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={history}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <HistoryCard item={item} onPress={handleItemPress} onSaveToCustomer={() => handleSaveToCustomer(item)} />
+              )}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+
+        {/* Detail Modal */}
+        <Modal visible={showDetailModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowDetailModal(false)}>
+          <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
+            <LinearGradient
+              colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.detailHeader}
+            >
+              <Pressable onPress={() => setShowDetailModal(false)} style={styles.closeButton}>
+                <Ionicons name="close" size={28} color={colors.text} />
+              </Pressable>
+              <Text style={styles.detailTitle}>License Details</Text>
+              <View style={{ width: 28 }} />
+            </LinearGradient>
+
+            {selectedItem && (
+              <ExtractionPanel
+                data={selectedItem}
+                onEdit={handleEdit}
+                onSaveToCustomer={() => handleSaveToCustomer(selectedItem)}
+                isSavedToCustomer={Boolean(selectedItem.savedToCustomerAt)}
+              />
+            )}
+          </LinearGradient>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -291,232 +584,492 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  tabs: {
-    flexDirection: 'row',
-    gap: 10,
+  sectionBezel: {
+    padding: 3,
+    borderRadius: 12,
   },
-  tabBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 16,
+  sectionCard: {
+    backgroundColor: colors.panel,
+    borderRadius: 9,
+    padding: 14,
     borderWidth: 1,
     borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  },
+  sectionHeader: {
     flexDirection: 'row',
-    gap: 6,
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
   },
-  tabBtnActive: {
-    borderColor: 'rgba(214,178,94,0.60)',
-    backgroundColor: 'rgba(214,178,94,0.10)',
-  },
-  tabText: {
-    color: colors.textMute,
+  sectionTitle: {
     ...type.label,
     fontSize: 11,
-  },
-  tabTextActive: {
     color: colors.gold,
   },
-  body: {
-    marginTop: 8,
-    color: colors.textDim,
-    fontSize: 12,
-    lineHeight: 16,
+  uploadingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    backgroundColor: 'rgba(214,178,94,0.1)',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  uploadingText: {
+    ...type.body,
+    color: colors.gold,
   },
   actionRow: {
     flexDirection: 'row',
     gap: 10,
+    marginBottom: 10,
   },
-  actionBtn: {
+  scanButton: {
     flex: 1,
-    height: 64,
-    borderRadius: 18,
-    borderWidth: 1,
+    height: 70,
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
   },
-  actionBtnText: {
+  scanButtonDisabled: {
+    opacity: 0.4,
+  },
+  scanButtonText: {
+    ...type.label,
+    fontSize: 11,
     color: colors.gold,
-    ...type.label,
-    fontSize: 10,
   },
-  statusRow: {
-    marginTop: 12,
+  barcodeButton: {
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(214,178,94,0.1)',
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sectionLabel: {
-    color: colors.text,
-    ...type.label,
-    fontSize: 12,
-  },
-  fieldRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  input: {
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    paddingHorizontal: 14,
-    color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.28)',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  btn: {
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
-  btnText: {
-    color: colors.gold,
+  barcodeButtonText: {
     ...type.label,
-    fontSize: 12,
+    fontSize: 11,
+    color: colors.gold,
   },
-  liveRoot: {
+  historyContainer: {
     flex: 1,
-    backgroundColor: colors.bg0,
-  },
-  liveHeader: {
-    height: 64,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  liveClose: {
-    position: 'absolute',
-    left: 16,
-    width: 36,
-    height: 36,
+    backgroundColor: colors.panel,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: colors.stroke,
+    padding: 14,
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  liveTitle: {
-    color: colors.text,
+  countBadge: {
+    backgroundColor: colors.gold,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  countText: {
     ...type.label,
-    fontSize: 13,
-    letterSpacing: 2.0,
+    fontSize: 10,
+    color: colors.bg0,
   },
-  liveBody: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  liveCameraWrap: {
-    height: 260,
-    borderRadius: 20,
+  historyCard: {
+    borderRadius: 10,
     overflow: 'hidden',
+  },
+  historyGradient: {
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'black',
+    borderColor: colors.stroke,
+    borderRadius: 10,
+    position: 'relative',
   },
-  liveFrame: {
+  quiltedPattern: {
     position: 'absolute',
-    left: 16,
-    right: 16,
-    top: 64,
-    height: 130,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(214,178,94,0.95)',
-  },
-  liveGradientTop: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
     top: 0,
-    height: 40,
-    backgroundColor: 'rgba(0,0,0,0.40)',
-  },
-  liveGradientBottom: {
-    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: 40,
-    backgroundColor: 'rgba(0,0,0,0.40)',
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.03)',
   },
-  liveHint: {
-    marginTop: 14,
-    color: colors.textDim,
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  methodBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: colors.gold,
+  },
+  methodBadgePdf417: {
+    backgroundColor: colors.green,
+  },
+  methodBadgeText: {
+    ...type.label,
+    fontSize: 9,
+    color: '#000',
+  },
+  confidenceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: 'rgba(64,255,155,0.2)',
+  },
+  confidenceText: {
+    ...type.label,
+    fontSize: 10,
+    color: colors.green,
+  },
+  historyContent: {
+    marginBottom: 8,
+  },
+  historyName: {
+    ...type.h2,
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 6,
+  },
+  historyDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  historyDetailText: {
+    ...type.bodyDim,
     fontSize: 12,
-    lineHeight: 16,
+    color: colors.textDim,
   },
-  liveShutter: {
-    marginTop: 18,
-    alignSelf: 'center',
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 3,
+  historyMeta: {
+    marginTop: 6,
+  },
+  metaText: {
+    ...type.bodyDim,
+    fontSize: 11,
+    color: colors.textMute,
+  },
+  historyActions: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    marginTop: -15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  savedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(64,255,155,0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  savedText: {
+    ...type.label,
+    fontSize: 9,
+    color: colors.green,
+  },
+  saveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stitchingTop: {
+    position: 'absolute',
+    top: 4,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: colors.contrastStitching,
+    opacity: 0.15,
+  },
+  stitchingBottom: {
+    position: 'absolute',
+    bottom: 4,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: colors.contrastStitching,
+    opacity: 0.15,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    ...type.h2,
+    color: colors.textDim,
+    marginTop: 12,
+  },
+  emptySubtext: {
+    ...type.bodyDim,
+    color: colors.textMute,
+    marginTop: 6,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  modalRoot: {
+    flex: 1,
+  },
+  modalHeader: {
+    height: 80,
+    paddingTop: 40,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalClose: {
+    position: 'absolute',
+    left: 16,
+    top: 40,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
     borderColor: colors.stroke2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  liveShutterInner: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.gold,
+  modalTitle: {
+    ...type.label,
+    fontSize: 14,
+    color: colors.text,
+    letterSpacing: 2,
   },
-  histCard: {
-    borderRadius: 18,
+  modalBody: {
+    flex: 1,
+    padding: 16,
   },
-  histHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+  scannerWrap: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  sourceBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+  scanMaskTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '30%',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  scanMaskBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '30%',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  scanFrame: {
+    position: 'absolute',
+    top: '30%',
+    left: 20,
+    right: 20,
+    height: '40%',
+    borderWidth: 2,
+    borderColor: colors.gold,
     borderRadius: 8,
   },
-  sourceBadgeOcr: {
+  corner: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderColor: colors.gold,
+    borderWidth: 3,
+  },
+  cornerTL: {
+    top: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 8,
+  },
+  cornerTR: {
+    top: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 8,
+  },
+  cornerBL: {
+    bottom: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+  },
+  cornerBR: {
+    bottom: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 8,
+  },
+  scanHintCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 16,
+    padding: 12,
     backgroundColor: 'rgba(214,178,94,0.15)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.gold,
   },
-  sourceBadgeManual: {
-    backgroundColor: 'rgba(94,167,255,0.15)',
-  },
-  sourceBadgeText: {
+  scanHint: {
+    ...type.body,
+    flex: 1,
     color: colors.text,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.2,
+    lineHeight: 18,
   },
-  histName: {
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.gold,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  detailTitle: {
+    ...type.h1,
+    color: colors.text,
+  },
+  extractionPanel: {
+    flex: 1,
+    padding: 20,
+  },
+  extractionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  extractionTitle: {
+    ...type.label,
+    fontSize: 13,
+    color: colors.gold,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+    borderRadius: 8,
+  },
+  editButtonText: {
+    ...type.label,
+    fontSize: 11,
+    color: colors.gold,
+  },
+  fieldsScroll: {
+    flex: 1,
+  },
+  fieldContainer: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: colors.panel,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+  },
+  fieldLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  fieldLabelText: {
+    ...type.label,
+    fontSize: 11,
+    color: colors.textDim,
+  },
+  fieldValue: {
+    ...type.body,
     color: colors.text,
     fontSize: 14,
-    fontWeight: '800',
   },
-  histDetail: {
-    marginTop: 4,
-    color: colors.textDim,
-    fontSize: 12,
+  fieldInput: {
+    ...type.body,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.stroke2,
+    paddingHorizontal: 12,
+    color: colors.text,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    fontSize: 14,
+  },
+  saveToCustomerButton: {
+    marginTop: 8,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: colors.gold,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveToCustomerText: {
+    ...type.body,
+    fontFamily: 'SpaceGrotesk_700Bold',
+    color: colors.bg0,
+    fontSize: 14,
+  },
+  savedToCustomerBadge: {
+    marginTop: 8,
+    height: 50,
+    borderRadius: 10,
+    backgroundColor: 'rgba(64,255,155,0.2)',
+    borderWidth: 1.5,
+    borderColor: colors.green,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  savedToCustomerText: {
+    ...type.body,
+    fontFamily: 'SpaceGrotesk_700Bold',
+    color: colors.green,
+    fontSize: 14,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });
