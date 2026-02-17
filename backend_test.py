@@ -2594,7 +2594,10 @@ class BackendTester:
         await self.test_translate_api()
         
         # License scan pipeline testing (updated with license_number + expiration)
-        print("\n5️⃣ Testing License Scan Pipeline...")
+        print("\n5️⃣ Testing License Scanner Backend Changes (Review Request)...")
+        await self.test_license_upload_chunked_workflow()
+        await self.test_license_create_customer_with_new_fields()
+        await self.test_license_single_upload_sanity()
         await self.test_license_scan_pipeline_updated()
         await self.test_license_customer_creation()
         
