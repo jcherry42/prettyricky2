@@ -1167,9 +1167,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Translation API for QuickCompose and Emergency Modal"
-    - "Customer List API for QuickCompose dropdown"
-    - "Vehicle Inventory API for QuickCompose dropdown"
+    - "Translation API for QuickCompose and Emergency Modal - COMPLETED"
+    - "Customer List API for QuickCompose dropdown - COMPLETED"
+    - "Vehicle Inventory API for QuickCompose dropdown - COMPLETED"
+    - "Health Check API - COMPLETED"
+    - "Tower Talk AI API - COMPLETED"
+    - "TTS API - COMPLETED"  
+    - "VIN Decode API - COMPLETED"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
