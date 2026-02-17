@@ -11,7 +11,7 @@ const MAX_RECORDING_MS = 15000; // 15 second maximum
 export function PttProvider({ children }) {
   const { settings, setPttDirection } = useAppSettings();
 
-  const targetLang = settings.defaultTargetLanguage || 'es';
+  const targetLang = settings.defaultTargetLanguage;
   const direction = settings.pttDirection || 'en_to_target'; // 'en_to_target' | 'target_to_en'
 
   const [status, setStatus] = useState('idle'); // 'idle' | 'recording' | 'uploading' | 'translating' | 'speaking' | 'done' | 'error'
