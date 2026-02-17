@@ -166,6 +166,9 @@ export function AppSettingsProvider({ children }) {
       removePrinter,
       setActivePrinter,
       activePrinter,
+      setAmbientLightingEnabled,
+      setAmbientLightingIntensity,
+      toggleAmbientLighting,
     }),
     [
       loaded,
@@ -178,6 +181,9 @@ export function AppSettingsProvider({ children }) {
       removePrinter,
       setActivePrinter,
       activePrinter,
+      setAmbientLightingEnabled,
+      setAmbientLightingIntensity,
+      toggleAmbientLighting,
     ]
   );
 
