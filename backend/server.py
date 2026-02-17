@@ -998,6 +998,160 @@ async def create_customer_from_license(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@api_router.post("/license/upload/init", response_model=LicenseUploadInitResponse)
+async def init_license_upload(request: LicenseUploadInitRequest):
+    """Initialize chunked license upload."""
+    import json
+
+    try:
+        if request.total_size > 15 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Image too large (max 15MB).")
+        if request.total_chunks <= 0:
+            raise HTTPException(status_code=400, detail="Invalid chunk count")
+
+        upload_id = uuid.uuid4().hex
+        upload_dir = LICENSE_CHUNKS_DIR / upload_id
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+        meta = {
+            "upload_id": upload_id,
+            "filename": request.filename,
+            "content_type": request.content_type,
+            "total_size": request.total_size,
+            "total_chunks": request.total_chunks,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": expires_at
+        }
+
+        with open(upload_dir / "meta.json", "w") as f:
+            json.dump(meta, f)
+
+        return LicenseUploadInitResponse(upload_id=upload_id, expires_at=expires_at)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"License upload init error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/license/upload/chunk", response_model=LicenseUploadChunkResponse)
+async def upload_license_chunk(
+    upload_id: str = Form(...),
+    chunk_index: int = Form(...),
+    total_chunks: int = Form(...),
+    chunk: UploadFile = File(...),
+):
+    """Upload a single chunk for a license image."""
+    import json
+
+    upload_dir = LICENSE_CHUNKS_DIR / upload_id
+    meta_path = upload_dir / "meta.json"
+    if not meta_path.exists():
+        raise HTTPException(status_code=404, detail="Upload session not found")
+
+    meta = json.loads(meta_path.read_text())
+    expected_chunks = int(meta.get("total_chunks", 0))
+    if expected_chunks <= 0:
+        raise HTTPException(status_code=400, detail="Invalid upload metadata")
+
+    if total_chunks != expected_chunks:
+        raise HTTPException(status_code=400, detail="Chunk count mismatch")
+
+    if chunk_index < 0 or chunk_index >= expected_chunks:
+        raise HTTPException(status_code=400, detail="Chunk index out of range")
+
+    chunk_data = await chunk.read()
+    if not chunk_data:
+        raise HTTPException(status_code=400, detail="Empty chunk received")
+
+    chunk_path = upload_dir / f"chunk_{chunk_index:06d}.part"
+    with open(chunk_path, "wb") as f:
+        f.write(chunk_data)
+
+    return LicenseUploadChunkResponse(
+        success=True,
+        upload_id=upload_id,
+        received=chunk_index + 1,
+        total_chunks=expected_chunks
+    )
+
+
+@api_router.post("/license/upload/complete", response_model=LicenseUploadResponse)
+async def complete_license_upload(
+    upload_id: str = Form(...),
+    customer_id: Optional[str] = Form(None),
+):
+    """Assemble uploaded chunks into a final license image."""
+    import json
+    import shutil
+
+    upload_dir = LICENSE_CHUNKS_DIR / upload_id
+    meta_path = upload_dir / "meta.json"
+    if not meta_path.exists():
+        raise HTTPException(status_code=404, detail="Upload session not found")
+
+    meta = json.loads(meta_path.read_text())
+    total_chunks = int(meta.get("total_chunks", 0))
+    if total_chunks <= 0:
+        raise HTTPException(status_code=400, detail="Invalid upload metadata")
+
+    # Validate all chunks exist
+    for i in range(total_chunks):
+        chunk_path = upload_dir / f"chunk_{i:06d}.part"
+        if not chunk_path.exists():
+            raise HTTPException(status_code=400, detail=f"Missing chunk {i}")
+
+    filename_source = meta.get("filename", "image.jpg")
+    ext = Path(filename_source).suffix.lower().replace(".", "")
+    if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
+        ext = 'jpg'
+
+    filename = f"license_{uuid.uuid4().hex[:12]}.{ext}"
+    filepath = UPLOADS_DIR / filename
+
+    with open(filepath, "wb") as out:
+        for i in range(total_chunks):
+            chunk_path = upload_dir / f"chunk_{i:06d}.part"
+            with open(chunk_path, "rb") as part:
+                shutil.copyfileobj(part, out)
+
+    image_url = f"/api/uploads/{filename}"
+
+    # Cleanup
+    shutil.rmtree(upload_dir, ignore_errors=True)
+
+    if customer_id:
+        result = await db.customers.find_one_and_update(
+            {"id": customer_id},
+            {
+                "$set": {
+                    "license_image_url": image_url,
+                    "license_image_uploaded_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            return_document=True
+        )
+
+        if result:
+            customer_name = f"{result.get('first_name', '')} {result.get('last_name', '')}".strip()
+            return LicenseUploadResponse(
+                success=True,
+                image_url=image_url,
+                customer_id=customer_id,
+                customer_name=customer_name or "Customer"
+            )
+
+        return LicenseUploadResponse(
+            success=True,
+            image_url=image_url,
+            error="Customer not found, but image was saved"
+        )
+
+    return LicenseUploadResponse(success=True, image_url=image_url)
+
+
 @api_router.post("/license/upload", response_model=LicenseUploadResponse)
 async def upload_license_image(
     image: UploadFile = File(...),
