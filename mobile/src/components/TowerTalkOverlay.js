@@ -282,6 +282,104 @@ const PRESET_RESPONSES = {
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }} keyboardShouldPersistTaps="handled">
                 <View style={{ height: 6 }} />
 
+                {/* Inquiry Type Selector - ALWAYS VISIBLE */}
+                <View style={styles.inquiryBlock}>
+                  <Text style={styles.inquiryLabel}>INQUIRY TYPE</Text>
+                  <View style={styles.inquiryGrid}>
+                    {INQUIRY_TYPES.map((it) => {
+                      const active = selectedInquiry === it.id;
+                      return (
+                        <Pressable
+                          key={it.id}
+                          onPress={() => {
+                            selectionTap();
+                            setSelectedInquiry(it.id);
+                            setPresetIndex(null);
+                            setReply('');
+                            setTranslated('');
+                          }}
+                          style={({ pressed }) => [
+                            styles.inquiryPill,
+                            active && styles.inquiryPillActive,
+                            pressed && { opacity: 0.9 },
+                          ]}
+                        >
+                          <LinearGradient
+                            colors={active ? ['rgba(214,178,94,0.25)', 'rgba(17,24,39,0.95)'] : ['rgba(251,191,36,0.15)', 'rgba(17,24,39,0.95)']}
+                            locations={[0, 1]}
+                            style={StyleSheet.absoluteFill}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                          />
+                          <View style={styles.inquiryInner}>
+                            <Ionicons
+                              name={
+                                it.icon === 'star'
+                                  ? 'star'
+                                  : it.icon === 'dollar'
+                                  ? 'pricetag'
+                                  : it.icon === 'calendar'
+                                  ? 'calendar'
+                                  : it.icon === 'repeat'
+                                  ? 'repeat'
+                                  : it.icon === 'card'
+                                  ? 'card'
+                                  : it.icon === 'car'
+                                  ? 'car'
+                                  : it.icon === 'clock'
+                                  ? 'time'
+                                  : 'chatbubble'
+                              }
+                              size={16}
+                              color={active ? colors.gold : colors.text}
+                            />
+                            <Text style={[styles.inquiryText, active && { color: colors.gold }]}>{it.label}</Text>
+                          </View>
+                          {active && <View style={styles.inquiryGlow} />}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                <View style={{ height: 12 }} />
+
+                {/* Preset Chips - ALWAYS VISIBLE */}
+                <View style={styles.presetsContainer}>
+                  <Text style={styles.inquiryLabel}>QUICK RESPONSES</Text>
+                  <View style={styles.presetsRow}>
+                    {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
+                      const active = presetIndex === idx;
+                      return (
+                        <Pressable
+                          key={idx}
+                          onPress={() => {
+                            selectionTap();
+                            setPresetIndex(idx);
+                            setReply(text);
+                            setTranslated('');
+                            setCopied(false);
+                          }}
+                          style={({ pressed }) => [
+                            styles.presetChip,
+                            active && styles.presetChipActive,
+                            pressed && { opacity: 0.9 },
+                          ]}
+                        >
+                          <View style={styles.presetNumber}>
+                            <Text style={styles.presetNumberText}>{idx + 1}</Text>
+                          </View>
+                          <Text style={[styles.presetText, active && { color: colors.text }]} numberOfLines={2}>
+                            {text}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                <View style={{ height: 16 }} />
+
                 <TextInput
                   value={situation}
                   onChangeText={setSituation}
