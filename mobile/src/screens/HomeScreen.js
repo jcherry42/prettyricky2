@@ -44,6 +44,7 @@ export function HomeScreen() {
   const { triggerFlash } = useTaillightFlash();
   const { settings } = useAppSettings();
   const { customers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
+  const { isEnabled: ambientEnabled, currentColor: ambientColor, opacity: ambientOpacity } = useAmbientLighting();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -53,7 +54,10 @@ export function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const sportActive = Boolean(settings.sportMode);
-  const ambientColor = sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';
+  // Use ambient lighting color if active, otherwise fallback to SPORT/default
+  const stripColor = ambientEnabled && ambientColor
+    ? `${ambientColor}${Math.round(ambientOpacity * 5 * 255).toString(16).padStart(2, '0')}`
+    : sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';
 
   // Load customers on mount
   useEffect(() => {
