@@ -608,7 +608,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
                       <div className="guide-corner bl" />
                       <div className="guide-corner br" />
                     </div>
-                    <p className="guide-text">Position license within frame</p>
+                    <p className="guide-text">Position license within frame (barcode side is fastest)</p>
                   </div>
                   
                   {/* Camera loading */}
