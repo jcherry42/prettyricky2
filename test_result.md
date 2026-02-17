@@ -922,7 +922,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Driver's license scanner OCR + barcode extraction + chunked upload"
+    - "Sprint 6 Translation & TTS Backend Endpoints - Comprehensive 100% Pass Rate"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -930,8 +930,4 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "User approved frontend testing for license scanner UI; running UI tests now."
-  - agent: "main"
-    message: "Please test license upload chunked endpoints and license create-customer flow; validate OCR/barcode extraction UX and retry/error handling."
-  - agent: "main"
-    message: "User requested re-run of License Scanner UI tests before proceeding to translation and VIN scanner tasks."
+    message: "Phase A - Sprint 6 Backend Fix: Running comprehensive backend tests on ALL translation, TTS, and voice-translate endpoints. Previous test run achieved 85.4% pass rate - need to identify and fix all failing tests to reach 100%. Test the following endpoints thoroughly: 1) POST /api/translate with all language pairs (EN<->ES, EN<->FR, EN<->KO, ES<->FR, etc.), edge cases (empty text, very long text, special chars, whitespace-only), 2) POST /api/tts with all 4 languages (en, es, fr, ko), auto voice selection, different speeds, edge cases (empty text, text > 4096 chars), 3) POST /api/voice-translate with valid and invalid audio formats, empty files, oversized files, 4) POST /api/tower-talk with various situations and contexts. Backend URL: http://localhost:8001. Verify every endpoint returns correct response schemas with proper status codes."
