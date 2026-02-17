@@ -224,17 +224,18 @@ const PRESET_RESPONSES = {
   const sendAsSms = useCallback(async (text) => {
     try {
       impactMedium();
-      const smsUrl = `sms:?body=${encodeURIComponent(text)}`;
-      const canOpen = await Linking.canOpenURL(smsUrl);
-      if (canOpen) {
-        await Linking.openURL(smsUrl);
+      const result = await sendTowerTalkSms(text);
+      if (result.success) {
         notificationSuccess();
-      } else {
-        Alert.alert('SMS Not Available', 'Unable to open SMS on this device');
+      } else if (result.cancelled) {
+        // User cancelled - no error needed
+      } else if (result.error) {
+        notificationError();
+        Alert.alert('SMS Error', result.error);
       }
     } catch (e) {
       notificationError();
-      Alert.alert('SMS Error', 'Failed to open SMS application');
+      Alert.alert('SMS Error', 'Failed to open SMS composer');
     }
   }, []);
 
