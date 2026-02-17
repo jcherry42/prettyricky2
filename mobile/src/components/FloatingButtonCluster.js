@@ -6,11 +6,13 @@ import { colors } from '../theme/colors';
 import { impactMedium } from '../lib/haptics';
 
 /* ─── Liquid glass pill button ─── */
-function GlassButton({ icon, iconColor, glowColor, onPress, size = 52 }) {
+function GlassButton({ icon, iconColor, glowColor, onPress, size = 52, accessibilityLabel }) {
   return (
     <Pressable
       onPress={() => { impactMedium(); onPress?.(); }}
       style={({ pressed }) => [pressed && { transform: [{ scale: 0.94 }], opacity: 0.92 }]}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
     >
       <View style={[styles.glassOuter, { width: size, height: size, borderRadius: size / 2 }]}>
         {/* Liquid glass layers */}
