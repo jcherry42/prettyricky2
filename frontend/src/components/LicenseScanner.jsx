@@ -323,7 +323,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [resetExtractionState, runExtraction]);
 
   // Retake photo
   const retake = useCallback(() => {
