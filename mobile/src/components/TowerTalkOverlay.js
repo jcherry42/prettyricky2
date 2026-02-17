@@ -456,7 +456,10 @@ const PRESET_RESPONSES = {
                     {state.status === 'loading' ? (
                       <ActivityIndicator color="#0E0E0E" />
                     ) : (
-                      <Text style={styles.generateBtnText}>GENERATE</Text>
+                      <>
+                        <Ionicons name="sparkles" size={18} color="#0E0E0E" />
+                        <Text style={styles.generateBtnText}>GENERATE AI RESPONSE</Text>
+                      </>
                     )}
                   </Pressable>
                 </View>
