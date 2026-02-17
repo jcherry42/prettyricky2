@@ -205,11 +205,214 @@ export function CommandCenterModal({ visible, onClose }) {
           {/* Tabs */}
           <View style={styles.tabs}>
             {TABS.map((t) => (
-              <TabButton key={t.key} label={t.label} active={activeTab === t.key} onPress={() => setActiveTab(t.key)} />
+              <TabButton key={t.key} label={t.label} icon={t.icon} active={activeTab === t.key} onPress={() => {
+                impactLight();
+                setActiveTab(t.key);
+              }} />
             ))}
           </View>
 
-          {/* SETTINGS */}
+          {/* DASHBOARD */}
+          {activeTab === 'dashboard' ? (
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              {loadingStats ? (
+                <View style={styles.centerContent}>
+                  <ActivityIndicator color={colors.gold} size="large" />
+                  <Text style={styles.loadingText}>Loading dashboard...</Text>
+                </View>
+              ) : stats ? (
+                <>
+                  <GlassCard style={{ marginTop: 14 }}>
+                    <SectionTitle>Overview</SectionTitle>
+                    <View style={{ height: 12 }} />
+                    <View style={styles.statsGrid}>
+                      <View style={styles.statCard}>
+                        <Ionicons name="people" size={24} color={colors.blue} />
+                        <Text style={styles.statValue}>{stats.customers?.total || 0}</Text>
+                        <Text style={styles.statLabel}>Customers</Text>
+                      </View>
+                      <View style={styles.statCard}>
+                        <Ionicons name="car" size={24} color={colors.green} />
+                        <Text style={styles.statValue}>{stats.vehicles?.total || 0}</Text>
+                        <Text style={styles.statLabel}>Vehicles</Text>
+                      </View>
+                    </View>
+                  </GlassCard>
+
+                  <GlassCard style={{ marginTop: 14 }}>
+                    <SectionTitle>Lead Status</SectionTitle>
+                    <View style={{ height: 12 }} />
+                    <View style={styles.statusRow}>
+                      <View style={[styles.statusDot, { backgroundColor: colors.blue }]} />
+                      <Text style={styles.statusText}>New: {stats.customers?.new || 0}</Text>
+                    </View>
+                    <View style={styles.statusRow}>
+                      <View style={[styles.statusDot, { backgroundColor: colors.gold }]} />
+                      <Text style={styles.statusText}>Contacted: {stats.customers?.contacted || 0}</Text>
+                    </View>
+                    <View style={styles.statusRow}>
+                      <View style={[styles.statusDot, { backgroundColor: colors.green }]} />
+                      <Text style={styles.statusText}>Appointment: {stats.customers?.appointment || 0}</Text>
+                    </View>
+                  </GlassCard>
+                </>
+              ) : (
+                <GlassCard style={{ marginTop: 14 }}>
+                  <Text style={styles.emptyText}>No data available</Text>
+                </GlassCard>
+              )}
+            </ScrollView>
+          ) : null}
+
+          {/* CUSTOMERS */}
+          {activeTab === 'customers' ? (
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              <GlassCard style={{ marginTop: 14 }}>
+                <View style={styles.searchHeader}>
+                  <Ionicons name="search" size={16} color={colors.gold} />
+                  <TextInput
+                    value={customerSearch}
+                    onChangeText={setCustomerSearch}
+                    placeholder="Search customers..."
+                    placeholderTextColor={colors.textMute}
+                    style={styles.searchInput}
+                  />
+                  {customerSearch.length > 0 && (
+                    <Pressable onPress={() => setCustomerSearch('')}>
+                      <Ionicons name="close-circle" size={16} color={colors.textMute} />
+                    </Pressable>
+                  )}
+                </View>
+              </GlassCard>
+
+              <GlassCard style={{ marginTop: 14 }}>
+                <View style={styles.customerHeader}>
+                  <SectionTitle>Customer List</SectionTitle>
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{filteredCustomers.length}</Text>
+                  </View>
+                </View>
+                <View style={{ height: 10 }} />
+
+                {customersLoading ? (
+                  <View style={styles.centerContent}>
+                    <ActivityIndicator color={colors.gold} />
+                  </View>
+                ) : filteredCustomers.length === 0 ? (
+                  <View style={styles.emptyBox}>
+                    <Ionicons name="people-outline" size={32} color={colors.textMute} />
+                    <Text style={styles.emptyText}>
+                      {customerSearch ? 'No customers found' : 'No customers yet'}
+                    </Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={filteredCustomers.slice(0, 10)}
+                    keyExtractor={(item) => item.customer_id}
+                    renderItem={({ item }) => (
+                      <View style={styles.customerRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.customerName}>
+                            {`${item.first_name || ''} ${item.last_name || ''}`.trim()}
+                          </Text>
+                          <Text style={styles.customerPhone}>{item.phone || '—'}</Text>
+                        </View>
+                        <View style={[styles.statusPill, { backgroundColor: item.lead_status === 'new' ? colors.blue : colors.gold }]}>
+                          <Text style={styles.statusPillText}>{(item.lead_status || 'new').toUpperCase()}</Text>
+                        </View>
+                      </View>
+                    )}
+                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                    scrollEnabled={false}
+                  />
+                )}
+
+                {filteredCustomers.length > 10 && (
+                  <Text style={styles.moreText}>Showing 10 of {filteredCustomers.length} customers</Text>
+                )}
+              </GlassCard>
+            </ScrollView>
+          ) : null}
+
+          {/* IMPORT */}
+          {activeTab === 'import' ? (
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>Import Data</SectionTitle>
+                <View style={{ height: 16 }} />
+                
+                {/* W140 Instrument Cluster Style - 3 Circular Buttons */}
+                <View style={styles.importGrid}>
+                  <Pressable
+                    onPress={() => {
+                      impactMedium();
+                      Alert.alert('File Upload', 'CSV/JSON file upload coming soon');
+                    }}
+                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
+                  >
+                    <LinearGradient
+                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
+                      style={StyleSheet.absoluteFill}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                    <View style={styles.circularInner}>
+                      <Ionicons name="document-text" size={32} color={colors.gold} />
+                      <Text style={styles.circularLabel}>FILE</Text>
+                      <Text style={styles.circularSubLabel}>Upload</Text>
+                    </View>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => {
+                      impactMedium();
+                      Alert.alert('Manual Entry', 'Manual data entry coming soon');
+                    }}
+                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
+                  >
+                    <LinearGradient
+                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
+                      style={StyleSheet.absoluteFill}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                    <View style={styles.circularInner}>
+                      <Ionicons name="create" size={32} color={colors.gold} />
+                      <Text style={styles.circularLabel}>MANUAL</Text>
+                      <Text style={styles.circularSubLabel}>Entry</Text>
+                    </View>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => {
+                      impactMedium();
+                      Alert.alert('Vision Extract', 'GPT Vision extraction coming soon');
+                    }}
+                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
+                  >
+                    <LinearGradient
+                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
+                      style={StyleSheet.absoluteFill}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                    <View style={styles.circularInner}>
+                      <Ionicons name="eye" size={32} color={colors.gold} />
+                      <Text style={styles.circularLabel}>VISION</Text>
+                      <Text style={styles.circularSubLabel}>Extract</Text>
+                    </View>
+                  </Pressable>
+                </View>
+
+                <View style={{ height: 16 }} />
+                <Text style={styles.importHint}>
+                  Import customer and vehicle data using CSV/JSON files, manual entry, or AI-powered vision extraction
+                </Text>
+              </GlassCard>
+            </ScrollView>
+          ) : null}
+
+          {/* PRINTERS */}
           {activeTab === 'settings' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
