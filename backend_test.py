@@ -3546,108 +3546,69 @@ class BackendTester:
             return False
 
     async def run_all_tests(self):
-        """Run backend tests with priority on Customer Management Endpoints for Sprint 2"""
-        print("🚀 Backend API Testing Suite - Customer Management Endpoints Focus")
+        """Run all backend tests with priority on Translation System & PTT (Sprint 6)"""
+        print("🚀 Starting Backend API Testing Suite - Sprint 6 Focus")
         print(f"Backend URL: {BACKEND_URL}")
-        print("=" * 80)
+        print("=" * 60)
         
         # Core health check first
-        await self.test_health_check()
+        if not await self.test_health_check():
+            print("❌ Health check failed - aborting tests")
+            return
         
-        # PRIORITY: Comprehensive Customer Management Endpoints Testing (Review Request)
-        print("\n🎯 COMPREHENSIVE CUSTOMER MANAGEMENT ENDPOINTS TESTING (Review Request Priority):")
-        await self.test_comprehensive_customer_endpoints()
+        # Run all test suites with Translation System & PTT as priority
+        test_suites = [
+            ("Translation System & PTT (SPRINT 6)", self.test_comprehensive_translation_system),
+            ("Customer Management", self.test_comprehensive_customer_endpoints),
+            ("Vehicle Endpoints", self.test_vehicles_endpoints),
+            ("Tower Talk API", self.test_tower_talk_api),
+            ("Translation API", self.test_translate_api),
+            ("VIN Decode Workflow", self.test_vin_decode_workflow),
+            ("VIN Save Workflow", self.test_vin_save_workflow),
+            ("VIN Edge Cases", self.test_vin_edge_cases_and_error_handling),
+            ("VIN v2 Regression", self.test_vin_v2_regression_sweep),
+            ("License Scan Pipeline", self.test_license_scan_pipeline_updated),
+            ("License Customer Creation", self.test_license_customer_creation),
+            ("Printer Endpoints", self.test_printer_endpoints),
+            ("Quality Audit", self.test_quality_audit_endpoints),
+        ]
         
-        # SECONDARY: Mobile overlay endpoints (tower-talk, translate, TTS)
-        print("\n📱 MOBILE OVERLAY ENDPOINTS:")
-        await self.test_mobile_overlay_endpoints()
+        for suite_name, test_func in test_suites:
+            print(f"\n📋 Running {suite_name} Tests...")
+            try:
+                await test_func()
+            except Exception as e:
+                self.log_result(f"{suite_name} Test Suite", False, f"Exception: {str(e)}")
         
-        # TERTIARY: Mobile Print Center sanity tests
-        print("\n🖨️ MOBILE PRINT CENTER SANITY TESTS:")
-        await self.test_mobile_print_center_endpoints()
+        # Print summary
+        print("\n" + "=" * 60)
+        print("🎯 TEST SUMMARY")
+        print("=" * 60)
         
-        print("\n📋 ADDITIONAL REGRESSION TESTS:")
+        total_tests = len(self.results)
+        passed_tests = sum(1 for r in self.results if r['success'])
+        failed_tests = total_tests - passed_tests
         
-        # Customer endpoints regression testing
-        print("\n1️⃣ Testing Additional Customer Endpoints...")
-        await self.test_customers_list_endpoint()
-        await self.test_customers_merged_list()
-        await self.test_customer_crud_operations()
-        await self.test_customer_vehicle_attachment()
-        await self.test_customer_stats()
-        
-        # Vehicle endpoints regression testing
-        print("\n2️⃣ Testing Vehicle Endpoints...")
-        await self.test_vehicles_endpoints()
-        
-        # VIN Scanner workflow testing
-        print("\n3️⃣ Testing VIN Endpoints...")
-        await self.test_vin_decode_workflow()
-        await self.test_vin_save_workflow()
-        await self.test_vin_edge_cases_and_error_handling()
-        await self.test_vin_v2_regression_sweep()
-        
-        # Tower Talk + Translation refactor regression testing
-        print("\n4️⃣ Testing Tower Talk + Translation...")
-        await self.test_tower_talk_api()
-        await self.test_translate_api()
-        
-        # License scan pipeline testing (updated with license_number + expiration)
-        print("\n5️⃣ Testing License Scanner Backend Changes (Review Request)...")
-        await self.test_license_upload_chunked_workflow()
-        await self.test_license_create_customer_with_new_fields()
-        await self.test_license_single_upload_sanity()
-        await self.test_license_scan_pipeline_updated()
-        await self.test_license_customer_creation()
-        
-        # Printer endpoints regression testing
-        print("\n6️⃣ Testing Printer Endpoints...")
-        await self.test_printer_endpoints()
-        
-        # Quality audit endpoints
-        print("\n7️⃣ Testing Quality Audit Endpoints...")
-        await self.test_quality_audit_endpoints()
-        
-        print("=" * 80)
-        print(f"✅ Tests passed: {len(self.results) - len(self.failed_tests)}")
-        print(f"❌ Tests failed: {len(self.failed_tests)}")
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
         
         if self.failed_tests:
-            print("\nFailed tests:")
+            print(f"\n❌ Failed Tests:")
             for test in self.failed_tests:
-                print(f"  - {test}")
+                print(f"   - {test}")
         
-        return len(self.failed_tests) == 0
-        print("\n2️⃣ Testing VIN Endpoints (routes/vin_v2.py)...")
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+        print(f"\n🎯 Success Rate: {success_rate:.1f}%")
         
-        print("   • GET /api/vin/decode/{vin}...")
-        await self.test_vin_decode_endpoint()
-        
-        print("   • POST /api/vin/save and POST /api/vin/save-to-inventory...")
-        await self.test_vin_save_endpoints()
-        
-        # Test 3: Previous refactors sanity check
-        print("\n3️⃣ Testing Previous Refactors (sanity check)...")
-        
-        print("   • POST /api/tower-talk, POST /api/translate, vehicles, printer, license scan...")
-        await self.test_previous_refactor_sanity_check()
-        
-        print("=" * 80)
-        print(f"🏁 De-Monolith Regression Testing Complete: {len(self.results)} tests run")
-        
-        passed = len([r for r in self.results if r['success']])
-        failed = len(self.failed_tests)
-        
-        print(f"✅ Passed: {passed}")
-        print(f"❌ Failed: {failed}")
-        
-        if self.failed_tests:
-            print("\n🔍 Failed Tests:")
-            for test in self.failed_tests:
-                print(f"   • {test}")
+        if success_rate >= 90:
+            print("🎉 EXCELLENT - Backend is production ready!")
+        elif success_rate >= 75:
+            print("✅ GOOD - Minor issues to address")
         else:
-            print("\n🎉 All de-monolith regression tests passed! Refactor successful.")
+            print("⚠️  NEEDS ATTENTION - Multiple issues found")
         
+        return success_rate >= 75
         return failed == 0
 
 async def main():
