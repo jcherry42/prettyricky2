@@ -36,6 +36,12 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const [isPrinting, setIsPrinting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savedCustomerId, setSavedCustomerId] = useState(null);
+  const [licenseData, setLicenseData] = useState(EMPTY_LICENSE_DATA);
+  const [scanMethod, setScanMethod] = useState('');
+  const [scanConfidence, setScanConfidence] = useState(0);
+  const [scanError, setScanError] = useState('');
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   // Camera states
   const [stream, setStream] = useState(null);
