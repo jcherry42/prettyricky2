@@ -53,6 +53,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           iconColor={colors.gold}
           glowColor="rgba(214,178,94,0.35)"
           onPress={onCheck}
+          accessibilityLabel="Command Center"
         />
 
         <GlassButton
@@ -60,6 +61,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           iconColor="#FF8C00"
           glowColor="rgba(255,140,0,0.50)"
           onPress={onEject}
+          accessibilityLabel="Print Center"
         />
 
         <GlassButton
@@ -67,6 +69,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           iconColor="#FF2D2D"
           glowColor="rgba(255,45,45,0.45)"
           onPress={onTowerTalk}
+          accessibilityLabel="Tower Talk AI Assistant"
         />
       </View>
     </View>
