@@ -251,11 +251,15 @@ export function HomeScreen() {
         <FlatList
           data={filteredCustomers}
           renderItem={renderCustomer}
-          keyExtractor={(item) => item.customer_id || item.id}
+          keyExtractor={(item) => item.customer_id || item.id || `item-${Math.random()}`}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          initialNumToRender={8}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
