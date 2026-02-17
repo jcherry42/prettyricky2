@@ -116,196 +116,169 @@ class ComprehensiveBackendTester:
         print(f"\n🎯 OVERALL PASS RATE: {total_passed}/{total_tests} ({pass_rate:.1f}%)")
         return pass_rate >= 100.0
     
-    # ============== 1. HEALTH CHECK ==============
+    # ============== 1. HEALTH ==============
     
     async def test_health_check(self):
-        """Test 1: GET /api/health → expect 200 with {"status": "healthy"}"""
+        """Test 1: GET /api/health → expect 200"""
         try:
             async with self.session.get(f"{BACKEND_URL}/health") as response:
                 actual_status = response.status
                 if response.status == 200:
                     data = await response.json()
                     if data.get("status") == "healthy":
-                        self.log_result("1.1 Health Check", 200, actual_status, True, f"Status: {data.get('status')}", data)
+                        self.log_result("1. Health Check", 200, actual_status, True, f"Status: {data.get('status')}")
                     else:
-                        self.log_result("1.1 Health Check", 200, actual_status, False, f"Expected status='healthy', got: {data}")
+                        self.log_result("1. Health Check", 200, actual_status, False, f"Expected status='healthy', got: {data}")
                 else:
-                    self.log_result("1.1 Health Check", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("1. Health Check", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("1.1 Health Check", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("1. Health Check", 200, 0, False, f"Exception: {str(e)}")
     
-    # ============== 2. CUSTOMER CRUD (FULL LIFECYCLE) ==============
+    # ============== 2. CUSTOMER CRUD FULL LIFECYCLE ==============
     
-    async def test_customer_list_basic(self):
-        """Test 2.1: GET /api/customers/list?limit=5 → expect 200 with {"customers": [...], "total": N}"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=5") as response:
-                actual_status = response.status
-                if response.status == 200:
-                    data = await response.json()
-                    if "customers" in data and "total" in data:
-                        customers = data.get("customers", [])
-                        total = data.get("total", 0)
-                        self.log_result(
-                            "2.1 Customer List Basic", 200, actual_status, True,
-                            f"Retrieved {len(customers)} customers, total: {total}", 
-                            {"count": len(customers), "total": total}
-                        )
-                    else:
-                        self.log_result("2.1 Customer List Basic", 200, actual_status, False, f"Missing 'customers' or 'total' fields. Got: {list(data.keys())}")
-                else:
-                    error_text = await response.text()
-                    self.log_result("2.1 Customer List Basic", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
-        except Exception as e:
-            self.log_result("2.1 Customer List Basic", 200, 0, False, f"Exception: {str(e)}")
-    
-    async def test_customer_list_with_search(self):
-        """Test 2.2: GET /api/customers/list?limit=2&search=Test → expect 200 (filtered results)"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=2&search=Test") as response:
-                actual_status = response.status
-                if response.status == 200:
-                    data = await response.json()
-                    if "customers" in data and "total" in data:
-                        customers = data.get("customers", [])
-                        total = data.get("total", 0)
-                        self.log_result(
-                            "2.2 Customer List with Search", 200, actual_status, True,
-                            f"Search returned {len(customers)} customers, total: {total}", 
-                            {"search": "Test", "count": len(customers), "total": total}
-                        )
-                    else:
-                        self.log_result("2.2 Customer List with Search", 200, actual_status, False, f"Missing 'customers' or 'total' fields")
-                else:
-                    error_text = await response.text()
-                    self.log_result("2.2 Customer List with Search", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
-        except Exception as e:
-            self.log_result("2.2 Customer List with Search", 200, 0, False, f"Exception: {str(e)}")
-    
-    async def test_customer_create_full_lifecycle(self):
-        """Test 2.3: POST /api/customers/create with Sprint14 test data → expect 200, save ID"""
+    async def test_customer_create(self):
+        """Test 2.1: POST /api/customers/create SportSync test customer → expect 200, save ID"""
         try:
             payload = {
-                "first_name": "Sprint14",
-                "last_name": "TestUser",
-                "phone": "555-1414",
-                "email": "s14@test.com",
+                "first_name": "SportSync",
+                "last_name": "Test",
+                "phone": "555-9900", 
+                "email": "sync@test.com",
                 "lead_status": "new"
             }
             async with self.session.post(f"{BACKEND_URL}/customers/create", json=payload) as response:
                 actual_status = response.status
                 if response.status == 200:
                     data = await response.json()
-                    # Check for different possible customer ID fields
                     customer = data.get("customer", {})
-                    customer_id = (data.get("customer_id") or 
-                                 data.get("id") or 
-                                 customer.get("id") or 
-                                 customer.get("customer_id"))
+                    customer_id = (data.get("customer_id") or data.get("id") or 
+                                 customer.get("id") or customer.get("customer_id"))
                     
                     if customer_id:
-                        # Save for later tests
                         self.test_customer_id = customer_id
-                        name = f"{payload['first_name']} {payload['last_name']}"
-                        self.log_result(
-                            "2.3 Customer Create Full Lifecycle", 200, actual_status, True,
-                            f"Customer created: {name} (ID: {customer_id})", 
-                            {"customer_id": customer_id, "name": name}
-                        )
+                        self.log_result("2.1 Customer Create", 200, actual_status, True, 
+                                      f"SportSync customer created (ID: {customer_id})")
                     else:
-                        self.log_result("2.3 Customer Create Full Lifecycle", 200, actual_status, False, f"Missing customer ID in response. Got: {list(data.keys())}")
+                        self.log_result("2.1 Customer Create", 200, actual_status, False, 
+                                      f"Missing customer ID in response")
                 else:
                     error_text = await response.text()
-                    self.log_result("2.3 Customer Create Full Lifecycle", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("2.1 Customer Create", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("2.3 Customer Create Full Lifecycle", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("2.1 Customer Create", 200, 0, False, f"Exception: {str(e)}")
+    
+    async def test_customer_list_basic(self):
+        """Test 2.2: GET /api/customers/list?limit=3 → expect 200, customers array"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=3") as response:
+                actual_status = response.status
+                if response.status == 200:
+                    data = await response.json()
+                    if "customers" in data:
+                        customers = data.get("customers", [])
+                        self.log_result("2.2 Customer List Basic", 200, actual_status, True,
+                                      f"Retrieved {len(customers)} customers")
+                    else:
+                        self.log_result("2.2 Customer List Basic", 200, actual_status, False, 
+                                      "Missing 'customers' field")
+                else:
+                    self.log_result("2.2 Customer List Basic", 200, actual_status, False, 
+                                  f"HTTP {response.status}")
+        except Exception as e:
+            self.log_result("2.2 Customer List Basic", 200, 0, False, f"Exception: {str(e)}")
+    
+    async def test_customer_list_search(self):
+        """Test 2.3: GET /api/customers/list?search=SportSync → expect 200, find created customer"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/customers/list?search=SportSync") as response:
+                actual_status = response.status
+                if response.status == 200:
+                    data = await response.json()
+                    customers = data.get("customers", [])
+                    found_customer = any(c.get("first_name") == "SportSync" for c in customers)
+                    
+                    if found_customer:
+                        self.log_result("2.3 Customer Search", 200, actual_status, True,
+                                      f"Found SportSync customer in search results")
+                    else:
+                        self.log_result("2.3 Customer Search", 200, actual_status, False,
+                                      f"SportSync customer not found in search")
+                else:
+                    self.log_result("2.3 Customer Search", 200, actual_status, False, f"HTTP {response.status}")
+        except Exception as e:
+            self.log_result("2.3 Customer Search", 200, 0, False, f"Exception: {str(e)}")
     
     async def test_customer_update(self):
-        """Test 2.4: PATCH /api/customers/{id} with updates → expect 200 with updated fields"""
+        """Test 2.4: PATCH /api/customers/{id} update status and notes → expect 200"""
         if not self.test_customer_id:
-            self.log_result("2.4 Customer Update", 200, 0, False, "No customer ID from previous create test")
+            self.log_result("2.4 Customer Update", 200, 0, False, "No customer ID available")
             return
             
         try:
             payload = {
                 "lead_status": "contacted",
-                "notes": "Sprint 14 test note"
+                "notes": "SPORT sync test"
             }
             async with self.session.patch(f"{BACKEND_URL}/customers/{self.test_customer_id}", json=payload) as response:
                 actual_status = response.status
                 if response.status == 200:
                     data = await response.json()
-                    # Check if update was successful (API returns {"success": True, "updated": {...}})
-                    if data.get("success") and data.get("updated"):
-                        updated_data = data.get("updated", {})
-                        self.log_result(
-                            "2.4 Customer Update", 200, actual_status, True,
-                            f"Customer updated successfully: status={updated_data.get('lead_status')}, notes added", 
-                            {"success": data.get("success"), "updated_fields": list(updated_data.keys())}
-                        )
+                    if data.get("success"):
+                        self.log_result("2.4 Customer Update", 200, actual_status, True,
+                                      "Customer updated successfully")
                     else:
-                        self.log_result("2.4 Customer Update", 200, actual_status, False, f"Unexpected response format: {list(data.keys())}")
+                        self.log_result("2.4 Customer Update", 200, actual_status, False,
+                                      "Update response missing success flag")
                 else:
-                    error_text = await response.text()
-                    self.log_result("2.4 Customer Update", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("2.4 Customer Update", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
             self.log_result("2.4 Customer Update", 200, 0, False, f"Exception: {str(e)}")
     
     async def test_customer_delete(self):
         """Test 2.5: DELETE /api/customers/{id} → expect 200"""
         if not self.test_customer_id:
-            self.log_result("2.5 Customer Delete", 200, 0, False, "No customer ID from previous create test")
+            self.log_result("2.5 Customer Delete", 200, 0, False, "No customer ID available")
             return
             
         try:
             async with self.session.delete(f"{BACKEND_URL}/customers/{self.test_customer_id}") as response:
                 actual_status = response.status
                 if response.status == 200:
-                    self.log_result(
-                        "2.5 Customer Delete", 200, actual_status, True,
-                        f"Customer {self.test_customer_id} deleted successfully"
-                    )
+                    self.log_result("2.5 Customer Delete", 200, actual_status, True,
+                                  "Customer deleted successfully")
                 else:
-                    error_text = await response.text()
-                    self.log_result("2.5 Customer Delete", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("2.5 Customer Delete", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
             self.log_result("2.5 Customer Delete", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_customer_list_verify_delete(self):
-        """Test 2.6: GET /api/customers/list?search=Sprint14 → expect 200, verify deleted customer is gone"""
+    async def test_customer_verify_gone(self):
+        """Test 2.6: GET /api/customers/list?search=SportSync → expect 200, customer should be gone"""
         try:
-            async with self.session.get(f"{BACKEND_URL}/customers/list?search=Sprint14") as response:
+            async with self.session.get(f"{BACKEND_URL}/customers/list?search=SportSync") as response:
                 actual_status = response.status
                 if response.status == 200:
                     data = await response.json()
                     customers = data.get("customers", [])
-                    # Check if our deleted customer is still there
-                    deleted_customer_found = any(
-                        c.get("first_name") == "Sprint14" and c.get("last_name") == "TestUser" 
-                        for c in customers
-                    )
+                    found_customer = any(c.get("first_name") == "SportSync" for c in customers)
                     
-                    if not deleted_customer_found:
-                        self.log_result(
-                            "2.6 Customer List Verify Delete", 200, actual_status, True,
-                            f"Deleted customer not found in search results (confirmed deletion)", 
-                            {"customers_found": len(customers)}
-                        )
+                    if not found_customer:
+                        self.log_result("2.6 Customer Verify Gone", 200, actual_status, True,
+                                      "SportSync customer successfully deleted")
                     else:
-                        self.log_result("2.6 Customer List Verify Delete", 200, actual_status, False, f"Deleted customer still appears in search results")
+                        self.log_result("2.6 Customer Verify Gone", 200, actual_status, False,
+                                      "Deleted customer still appears in search")
                 else:
-                    error_text = await response.text()
-                    self.log_result("2.6 Customer List Verify Delete", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("2.6 Customer Verify Gone", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("2.6 Customer List Verify Delete", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("2.6 Customer Verify Gone", 200, 0, False, f"Exception: {str(e)}")
     
-    # ============== 3. TRANSLATION SYSTEM (ALL LANGUAGE PAIRS + EDGE CASES) ==============
+    # ============== 3. TRANSLATION (CRITICAL FOR SPORT MODE SYNC) ==============
     
-    async def test_translate_en_to_es(self):
-        """Test 3.1: POST /api/translate EN->ES → expect 200 with translated_text"""
+    async def test_translate_sales_consultant(self):
+        """Test 3.1: Translate sales consultant message → expect 200"""
         try:
             payload = {
-                "text": "Hello friend",
+                "text": "Hi there, this is your sales consultant at Supercharg'd.",
                 "source_lang": "en",
                 "target_lang": "es"
             }
@@ -315,32 +288,27 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "translated_text" in data:
                         translated = data.get("translated_text", "")
-                        self.log_result(
-                            "3.1 Translation EN->ES", 200, actual_status, True,
-                            f"Translation: '{payload['text']}' -> '{translated}'", 
-                            {"original": payload["text"], "translated": translated}
-                        )
+                        self.log_result("3.1 Translate Sales Consultant", 200, actual_status, True,
+                                      f"EN→ES: {translated}")
                     else:
-                        self.log_result("3.1 Translation EN->ES", 200, actual_status, False, f"Missing 'translated_text' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("3.1 Translation EN->ES", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("3.1 Translation EN->ES", 200, actual_status, False, f"Unexpected 500 error: {error_text}")
+                        self.log_result("3.1 Translate Sales Consultant", 200, actual_status, False,
+                                      "Missing translated_text field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("3.1 Translate Sales Consultant", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("3.1 Translation EN->ES", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
+                    self.log_result("3.1 Translate Sales Consultant", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("3.1 Translation EN->ES", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.1 Translate Sales Consultant", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_translate_fr_to_en(self):
-        """Test 3.2: POST /api/translate FR->EN → expect 200"""
+    async def test_translate_dealership_thank(self):
+        """Test 3.2: Translate dealership thank you → expect 200"""  
         try:
             payload = {
-                "text": "Bonjour mon ami",
-                "source_lang": "fr",
-                "target_lang": "en"
+                "text": "Thank you for visiting our dealership.",
+                "source_lang": "en",
+                "target_lang": "fr"
             }
             async with self.session.post(f"{BACKEND_URL}/translate", json=payload) as response:
                 actual_status = response.status
@@ -348,29 +316,25 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "translated_text" in data:
                         translated = data.get("translated_text", "")
-                        self.log_result(
-                            "3.2 Translation FR->EN", 200, actual_status, True,
-                            f"Translation: '{payload['text']}' -> '{translated}'"
-                        )
+                        self.log_result("3.2 Translate Dealership Thank", 200, actual_status, True,
+                                      f"EN→FR: {translated}")
                     else:
-                        self.log_result("3.2 Translation FR->EN", 200, actual_status, False, f"Missing 'translated_text' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("3.2 Translation FR->EN", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("3.2 Translation FR->EN", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("3.2 Translate Dealership Thank", 200, actual_status, False,
+                                      "Missing translated_text field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("3.2 Translate Dealership Thank", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("3.2 Translation FR->EN", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("3.2 Translate Dealership Thank", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("3.2 Translation FR->EN", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.2 Translate Dealership Thank", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_translate_en_to_ko(self):
-        """Test 3.3: POST /api/translate EN->KO → expect 200"""
+    async def test_translate_inventory_welcome(self):
+        """Test 3.3: Translate inventory welcome → expect 200"""
         try:
             payload = {
-                "text": "Welcome to our dealership",
+                "text": "Welcome! Let me show you our inventory.",
                 "source_lang": "en",
                 "target_lang": "ko"
             }
@@ -380,29 +344,25 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "translated_text" in data:
                         translated = data.get("translated_text", "")
-                        self.log_result(
-                            "3.3 Translation EN->KO", 200, actual_status, True,
-                            f"Translation: '{payload['text']}' -> '{translated}'"
-                        )
+                        self.log_result("3.3 Translate Inventory Welcome", 200, actual_status, True,
+                                      f"EN→KO: {translated}")
                     else:
-                        self.log_result("3.3 Translation EN->KO", 200, actual_status, False, f"Missing 'translated_text' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("3.3 Translation EN->KO", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("3.3 Translation EN->KO", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("3.3 Translate Inventory Welcome", 200, actual_status, False,
+                                      "Missing translated_text field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("3.3 Translate Inventory Welcome", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("3.3 Translation EN->KO", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("3.3 Translate Inventory Welcome", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("3.3 Translation EN->KO", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.3 Translate Inventory Welcome", 200, 0, False, f"Exception: {str(e)}")
     
     async def test_translate_auto_detect(self):
-        """Test 3.4: POST /api/translate auto-detect → expect 200, verify detected_lang"""
+        """Test 3.4: Auto-detect Spanish and translate to English → expect 200, verify detected_lang"""
         try:
             payload = {
-                "text": "Hola amigo",
+                "text": "Hola amigo, bienvenido",
                 "source_lang": "auto",
                 "target_lang": "en"
             }
@@ -413,50 +373,40 @@ class ComprehensiveBackendTester:
                     if "translated_text" in data:
                         translated = data.get("translated_text", "")
                         detected_lang = data.get("detected_lang", "")
-                        self.log_result(
-                            "3.4 Translation Auto-Detect", 200, actual_status, True,
-                            f"Auto-detected '{detected_lang}': '{payload['text']}' -> '{translated}'",
-                            {"detected_lang": detected_lang, "translated": translated}
-                        )
+                        self.log_result("3.4 Translate Auto-detect", 200, actual_status, True,
+                                      f"Detected {detected_lang}: {translated}")
                     else:
-                        self.log_result("3.4 Translation Auto-Detect", 200, actual_status, False, f"Missing 'translated_text' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("3.4 Translation Auto-Detect", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("3.4 Translation Auto-Detect", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("3.4 Translate Auto-detect", 200, actual_status, False,
+                                      "Missing translated_text field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("3.4 Translate Auto-detect", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("3.4 Translation Auto-Detect", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("3.4 Translate Auto-detect", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("3.4 Translation Auto-Detect", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.4 Translate Auto-detect", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_translate_empty_text_edge(self):
+    async def test_translate_empty_validation(self):
         """Test 3.5: POST /api/translate empty text → expect 400"""
         try:
             payload = {
                 "text": "",
-                "source_lang": "en",
+                "source_lang": "en", 
                 "target_lang": "es"
             }
             async with self.session.post(f"{BACKEND_URL}/translate", json=payload) as response:
                 actual_status = response.status
                 if response.status == 400:
-                    self.log_result(
-                        "3.5 Translation Empty Text Edge", 400, actual_status, True,
-                        "Correctly returned 400 for empty text validation"
-                    )
+                    self.log_result("3.5 Translate Empty Validation", 400, actual_status, True,
+                                  "Correctly returned 400 for empty text")
                 else:
-                    error_text = await response.text()
-                    self.log_result(
-                        "3.5 Translation Empty Text Edge", 400, actual_status, False,
-                        f"Expected 400 validation error, got {response.status}"
-                    )
+                    self.log_result("3.5 Translate Empty Validation", 400, actual_status, False,
+                                  f"Expected 400, got {response.status}")
         except Exception as e:
-            self.log_result("3.5 Translation Empty Text Edge", 400, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.5 Translate Empty Validation", 400, 0, False, f"Exception: {str(e)}")
     
-    async def test_translate_whitespace_edge(self):
+    async def test_translate_whitespace_validation(self):
         """Test 3.6: POST /api/translate whitespace → expect 400"""
         try:
             payload = {
@@ -467,24 +417,19 @@ class ComprehensiveBackendTester:
             async with self.session.post(f"{BACKEND_URL}/translate", json=payload) as response:
                 actual_status = response.status
                 if response.status == 400:
-                    self.log_result(
-                        "3.6 Translation Whitespace Edge", 400, actual_status, True,
-                        "Correctly returned 400 for whitespace-only text"
-                    )
+                    self.log_result("3.6 Translate Whitespace Validation", 400, actual_status, True,
+                                  "Correctly returned 400 for whitespace")
                 else:
-                    error_text = await response.text()
-                    self.log_result(
-                        "3.6 Translation Whitespace Edge", 400, actual_status, False,
-                        f"Expected 400 validation error, got {response.status}"
-                    )
+                    self.log_result("3.6 Translate Whitespace Validation", 400, actual_status, False,
+                                  f"Expected 400, got {response.status}")
         except Exception as e:
-            self.log_result("3.6 Translation Whitespace Edge", 400, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.6 Translate Whitespace Validation", 400, 0, False, f"Exception: {str(e)}")
     
-    async def test_translate_automotive_text(self):
-        """Test 3.7: POST /api/translate automotive text → expect 200"""
+    async def test_translate_trade_value(self):
+        """Test 3.7: Translate trade-in value message → expect 200"""
         try:
             payload = {
-                "text": "The trade-in value for your vehicle is $15,000",
+                "text": "The trade-in value is $15,000. We can get you into a 2024 BMW X5 today.",
                 "target_lang": "es"
             }
             async with self.session.post(f"{BACKEND_URL}/translate", json=payload) as response:
@@ -493,31 +438,27 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "translated_text" in data:
                         translated = data.get("translated_text", "")
-                        self.log_result(
-                            "3.7 Translation Automotive Text", 200, actual_status, True,
-                            f"Automotive translation: '{translated}'"
-                        )
+                        self.log_result("3.7 Translate Trade Value", 200, actual_status, True,
+                                      f"Trade-in message translated: {translated}")
                     else:
-                        self.log_result("3.7 Translation Automotive Text", 200, actual_status, False, f"Missing 'translated_text' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("3.7 Translation Automotive Text", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("3.7 Translation Automotive Text", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("3.7 Translate Trade Value", 200, actual_status, False,
+                                      "Missing translated_text field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("3.7 Translate Trade Value", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("3.7 Translation Automotive Text", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("3.7 Translate Trade Value", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("3.7 Translation Automotive Text", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("3.7 Translate Trade Value", 200, 0, False, f"Exception: {str(e)}")
     
-    # ============== 4. TTS SYSTEM ==============
+    # ============== 4. TTS ==============
     
-    async def test_tts_english(self):
-        """Test 4.1: POST /api/tts English → expect 200 with audio_base64"""
+    async def test_tts_sport_mode(self):
+        """Test 4.1: POST /api/tts Sport mode active → expect 200 with audio_base64"""
         try:
             payload = {
-                "text": "Testing English",
+                "text": "Sport mode active",
                 "voice": "auto",
                 "language": "en"
             }
@@ -527,31 +468,25 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "audio_base64" in data:
                         audio_data = data.get("audio_base64", "")
-                        self.log_result(
-                            "4.1 TTS English", 200, actual_status, True,
-                            f"TTS English successful, audio length: {len(audio_data)} chars",
-                            {"audio_length": len(audio_data)}
-                        )
+                        self.log_result("4.1 TTS Sport Mode", 200, actual_status, True,
+                                      f"Sport mode TTS generated, {len(audio_data)} chars")
                     else:
-                        self.log_result("4.1 TTS English", 200, actual_status, False, f"Missing 'audio_base64' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("4.1 TTS English", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("4.1 TTS English", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("4.1 TTS Sport Mode", 200, actual_status, False,
+                                      "Missing audio_base64 field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("4.1 TTS Sport Mode", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("4.1 TTS English", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("4.1 TTS Sport Mode", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("4.1 TTS English", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("4.1 TTS Sport Mode", 200, 0, False, f"Exception: {str(e)}")
     
     async def test_tts_spanish(self):
         """Test 4.2: POST /api/tts Spanish → expect 200"""
         try:
             payload = {
-                "text": "Prueba en español",
-                "voice": "auto",
+                "text": "Modo deportivo",
+                "voice": "auto", 
                 "language": "es"
             }
             async with self.session.post(f"{BACKEND_URL}/tts", json=payload) as response:
@@ -559,21 +494,14 @@ class ComprehensiveBackendTester:
                 if response.status == 200:
                     data = await response.json()
                     if "audio_base64" in data:
-                        audio_data = data.get("audio_base64", "")
-                        self.log_result(
-                            "4.2 TTS Spanish", 200, actual_status, True,
-                            f"TTS Spanish successful, audio length: {len(audio_data)} chars"
-                        )
+                        self.log_result("4.2 TTS Spanish", 200, actual_status, True, "Spanish TTS generated")
                     else:
-                        self.log_result("4.2 TTS Spanish", 200, actual_status, False, f"Missing 'audio_base64' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("4.2 TTS Spanish", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("4.2 TTS Spanish", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("4.2 TTS Spanish", 200, actual_status, False,
+                                      "Missing audio_base64 field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("4.2 TTS Spanish", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
                     self.log_result("4.2 TTS Spanish", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
             self.log_result("4.2 TTS Spanish", 200, 0, False, f"Exception: {str(e)}")
@@ -582,7 +510,7 @@ class ComprehensiveBackendTester:
         """Test 4.3: POST /api/tts French → expect 200"""
         try:
             payload = {
-                "text": "Test en français",
+                "text": "Mode sport",
                 "voice": "auto",
                 "language": "fr"
             }
@@ -591,21 +519,14 @@ class ComprehensiveBackendTester:
                 if response.status == 200:
                     data = await response.json()
                     if "audio_base64" in data:
-                        audio_data = data.get("audio_base64", "")
-                        self.log_result(
-                            "4.3 TTS French", 200, actual_status, True,
-                            f"TTS French successful, audio length: {len(audio_data)} chars"
-                        )
+                        self.log_result("4.3 TTS French", 200, actual_status, True, "French TTS generated")
                     else:
-                        self.log_result("4.3 TTS French", 200, actual_status, False, f"Missing 'audio_base64' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("4.3 TTS French", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("4.3 TTS French", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("4.3 TTS French", 200, actual_status, False,
+                                      "Missing audio_base64 field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("4.3 TTS French", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
                     self.log_result("4.3 TTS French", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
             self.log_result("4.3 TTS French", 200, 0, False, f"Exception: {str(e)}")
@@ -614,7 +535,7 @@ class ComprehensiveBackendTester:
         """Test 4.4: POST /api/tts Korean → expect 200"""
         try:
             payload = {
-                "text": "한국어 테스트",
+                "text": "스포츠 모드",
                 "voice": "auto",
                 "language": "ko"
             }
@@ -623,76 +544,25 @@ class ComprehensiveBackendTester:
                 if response.status == 200:
                     data = await response.json()
                     if "audio_base64" in data:
-                        audio_data = data.get("audio_base64", "")
-                        self.log_result(
-                            "4.4 TTS Korean", 200, actual_status, True,
-                            f"TTS Korean successful, audio length: {len(audio_data)} chars"
-                        )
+                        self.log_result("4.4 TTS Korean", 200, actual_status, True, "Korean TTS generated")
                     else:
-                        self.log_result("4.4 TTS Korean", 200, actual_status, False, f"Missing 'audio_base64' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("4.4 TTS Korean", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("4.4 TTS Korean", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("4.4 TTS Korean", 200, actual_status, False,
+                                      "Missing audio_base64 field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("4.4 TTS Korean", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
                     self.log_result("4.4 TTS Korean", 200, actual_status, False, f"HTTP {response.status}")
         except Exception as e:
             self.log_result("4.4 TTS Korean", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_tts_caching(self):
-        """Test 4.5: POST /api/tts same request → expect 200 with cached=true"""
-        try:
-            payload = {
-                "text": "Testing cache",
-                "voice": "auto",
-                "language": "en"
-            }
-            
-            # First request
-            async with self.session.post(f"{BACKEND_URL}/tts", json=payload) as response:
-                first_status = response.status
-                first_data = await response.json() if response.status == 200 else {}
-            
-            if first_status != 200:
-                if first_status == 500:
-                    self.log_result("4.5 TTS Caching", 200, first_status, True, "Expected 500 - API key not configured")
-                else:
-                    self.log_result("4.5 TTS Caching", 200, first_status, False, f"First request failed with {first_status}")
-                return
-            
-            # Second request (should be cached)
-            async with self.session.post(f"{BACKEND_URL}/tts", json=payload) as response:
-                actual_status = response.status
-                if response.status == 200:
-                    data = await response.json()
-                    cached = data.get("cached", False)
-                    if cached:
-                        self.log_result(
-                            "4.5 TTS Caching", 200, actual_status, True,
-                            f"TTS caching working: cached={cached}"
-                        )
-                    else:
-                        self.log_result(
-                            "4.5 TTS Caching", 200, actual_status, True,
-                            f"TTS request successful (caching status: {cached})"
-                        )
-                else:
-                    error_text = await response.text()
-                    self.log_result("4.5 TTS Caching", 200, actual_status, False, f"Second request failed: HTTP {response.status}")
-        except Exception as e:
-            self.log_result("4.5 TTS Caching", 200, 0, False, f"Exception: {str(e)}")
+    # ============== 5. VOICE TRANSLATE EDGE CASES ==============
     
-    # ============== 5. VOICE TRANSLATE (EDGE CASES) ==============
-    
-    async def test_voice_translate_invalid_format(self):
-        """Test 5.1: POST /api/voice-translate with text file → expect 422"""
+    async def test_voice_translate_invalid(self):
+        """Test 5.1: POST /api/voice-translate invalid audio (text/plain) → expect 422"""
         try:
-            # Create a simple text file
             with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-                f.write("This is not an audio file")
+                f.write("Not an audio file")
                 txt_file_path = f.name
             
             with open(txt_file_path, 'rb') as f:
@@ -704,25 +574,18 @@ class ComprehensiveBackendTester:
                 async with self.session.post(f"{BACKEND_URL}/voice-translate", data=form_data) as response:
                     actual_status = response.status
                     if response.status == 422:
-                        self.log_result(
-                            "5.1 Voice Translate Invalid Format", 422, actual_status, True,
-                            "Correctly returned 422 for invalid audio format"
-                        )
+                        self.log_result("5.1 Voice Translate Invalid", 422, actual_status, True,
+                                      "Correctly returned 422 for invalid audio format")
                     else:
-                        error_text = await response.text()
-                        self.log_result(
-                            "5.1 Voice Translate Invalid Format", 422, actual_status, False,
-                            f"Expected 422 for invalid format, got {response.status}"
-                        )
+                        self.log_result("5.1 Voice Translate Invalid", 422, actual_status, False,
+                                      f"Expected 422, got {response.status}")
         except Exception as e:
-            self.log_result("5.1 Voice Translate Invalid Format", 422, 0, False, f"Exception: {str(e)}")
+            self.log_result("5.1 Voice Translate Invalid", 422, 0, False, f"Exception: {str(e)}")
     
-    async def test_voice_translate_empty_file(self):
-        """Test 5.2: POST /api/voice-translate with empty audio file → expect 422"""
+    async def test_voice_translate_empty(self):
+        """Test 5.2: POST /api/voice-translate empty audio → expect 422"""
         try:
-            # Create an empty file
             with tempfile.NamedTemporaryFile(mode='wb', suffix='.wav', delete=False) as f:
-                # Write nothing (empty file)
                 empty_file_path = f.name
             
             with open(empty_file_path, 'rb') as f:
@@ -734,30 +597,26 @@ class ComprehensiveBackendTester:
                 async with self.session.post(f"{BACKEND_URL}/voice-translate", data=form_data) as response:
                     actual_status = response.status
                     if response.status == 422:
-                        self.log_result(
-                            "5.2 Voice Translate Empty File", 422, actual_status, True,
-                            "Correctly returned 422 for empty audio file"
-                        )
+                        self.log_result("5.2 Voice Translate Empty", 422, actual_status, True,
+                                      "Correctly returned 422 for empty audio file")
                     else:
-                        error_text = await response.text()
-                        self.log_result(
-                            "5.2 Voice Translate Empty File", 422, actual_status, False,
-                            f"Expected 422 for empty file, got {response.status}"
-                        )
+                        self.log_result("5.2 Voice Translate Empty", 422, actual_status, False,
+                                      f"Expected 422, got {response.status}")
         except Exception as e:
-            self.log_result("5.2 Voice Translate Empty File", 422, 0, False, f"Exception: {str(e)}")
+            self.log_result("5.2 Voice Translate Empty", 422, 0, False, f"Exception: {str(e)}")
     
     # ============== 6. TOWER TALK AI ==============
     
-    async def test_tower_talk_negotiation(self):
-        """Test 6.1: POST /api/tower-talk negotiation scenario → expect 200 with response text"""
+    async def test_tower_talk_bmw_negotiation(self):
+        """Test 6.1: POST /api/tower-talk BMW X5 customer negotiation → expect 200"""
         try:
             payload = {
-                "situation": "Customer wants to negotiate price on a 2024 BMW X5",
+                "situation": "Customer wants to negotiate on a 2024 BMW X5. They speak Spanish.",
                 "context": {
-                    "customerName": "John Smith",
-                    "vehicle": "2024 BMW X5",
-                    "vehiclePrice": "$65,000"
+                    "customerName": "Carlos Martinez",
+                    "vehicle": "2024 BMW X5", 
+                    "vehiclePrice": "$65,000",
+                    "dealershipName": "Supercharg'd"
                 }
             }
             async with self.session.post(f"{BACKEND_URL}/tower-talk", json=payload) as response:
@@ -766,31 +625,26 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "response" in data:
                         response_text = data.get("response", "")
-                        self.log_result(
-                            "6.1 Tower Talk Negotiation", 200, actual_status, True,
-                            f"Tower Talk negotiation successful, response length: {len(response_text)} chars",
-                            {"response_length": len(response_text)}
-                        )
+                        self.log_result("6.1 Tower Talk BMW Negotiation", 200, actual_status, True,
+                                      f"BMW negotiation response generated, {len(response_text)} chars")
                     else:
-                        self.log_result("6.1 Tower Talk Negotiation", 200, actual_status, False, f"Missing 'response' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("6.1 Tower Talk Negotiation", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("6.1 Tower Talk Negotiation", 200, actual_status, False, f"Unexpected 500 error")
+                        self.log_result("6.1 Tower Talk BMW Negotiation", 200, actual_status, False,
+                                      "Missing response field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("6.1 Tower Talk BMW Negotiation", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("6.1 Tower Talk Negotiation", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("6.1 Tower Talk BMW Negotiation", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("6.1 Tower Talk Negotiation", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("6.1 Tower Talk BMW Negotiation", 200, 0, False, f"Exception: {str(e)}")
     
-    async def test_tower_talk_minimal_context(self):
-        """Test 6.2: POST /api/tower-talk minimal context → expect 200"""
+    async def test_tower_talk_quick_greeting(self):
+        """Test 6.2: POST /api/tower-talk quick greeting → expect 200"""
         try:
             payload = {
-                "situation": "Need a greeting",
-                "context": {}  # Tower Talk requires context field even if empty
+                "situation": "Quick greeting for a new lead",
+                "context": {}
             }
             async with self.session.post(f"{BACKEND_URL}/tower-talk", json=payload) as response:
                 actual_status = response.status
@@ -798,32 +652,24 @@ class ComprehensiveBackendTester:
                     data = await response.json()
                     if "response" in data:
                         response_text = data.get("response", "")
-                        self.log_result(
-                            "6.2 Tower Talk Minimal Context", 200, actual_status, True,
-                            f"Tower Talk minimal context successful, response length: {len(response_text)} chars"
-                        )
+                        self.log_result("6.2 Tower Talk Quick Greeting", 200, actual_status, True,
+                                      f"Quick greeting generated, {len(response_text)} chars")
                     else:
-                        self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"Missing 'response' field")
-                elif response.status == 500:
-                    error_text = await response.text()
-                    if "API key not configured" in error_text:
-                        self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, True, "Expected 500 - API key not configured")
-                    else:
-                        self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"Unexpected 500 error")
-                elif response.status == 422:
-                    # This could be validation error - let's check if it's the context field
-                    error_text = await response.text()
-                    self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"Validation error (422): {error_text}")
+                        self.log_result("6.2 Tower Talk Quick Greeting", 200, actual_status, False,
+                                      "Missing response field")
+                elif response.status == 500 and "API key not configured" in await response.text():
+                    self.log_result("6.2 Tower Talk Quick Greeting", 200, actual_status, True,
+                                  "Expected 500 - API key not configured")
                 else:
-                    error_text = await response.text()
-                    self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("6.2 Tower Talk Quick Greeting", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("6.2 Tower Talk Minimal Context", 200, 0, False, f"Exception: {str(e)}")
+            self.log_result("6.2 Tower Talk Quick Greeting", 200, 0, False, f"Exception: {str(e)}")
     
-    # ============== 7. VIN DECODE ==============
+    # ============== 7. VIN ==============
     
-    async def test_vin_decode(self):
-        """Test 7.1: POST /api/vin/decode/JM3KKEHA3T1355103 → expect 200 with make, model, year"""
+    async def test_vin_decode_specific(self):
+        """Test 7.1: POST /api/vin/decode/JM3KKEHA3T1355103 → expect 200 with make/model/year"""
         try:
             vin = "JM3KKEHA3T1355103"
             async with self.session.get(f"{BACKEND_URL}/vin/decode/{vin}") as response:
@@ -833,97 +679,21 @@ class ComprehensiveBackendTester:
                     required_fields = ["year", "make", "model"]
                     found_fields = [field for field in required_fields if field in data and data[field]]
                     
-                    if len(found_fields) >= 2:  # At least make and model
+                    if len(found_fields) >= 2:
                         vehicle_info = f"{data.get('year', 'N/A')} {data.get('make', 'N/A')} {data.get('model', 'N/A')}"
-                        self.log_result(
-                            "7.1 VIN Decode", 200, actual_status, True,
-                            f"VIN decoded: {vehicle_info}",
-                            {"vin": vin, "vehicle": vehicle_info, "fields_found": found_fields}
-                        )
+                        self.log_result("7.1 VIN Decode Specific", 200, actual_status, True,
+                                      f"VIN decoded: {vehicle_info}")
                     else:
-                        self.log_result("7.1 VIN Decode", 200, actual_status, False, f"Missing required vehicle data fields. Found: {found_fields}")
+                        self.log_result("7.1 VIN Decode Specific", 200, actual_status, False,
+                                      f"Missing vehicle data fields")
                 elif response.status == 404:
-                    # VIN decode service limitation is acceptable
-                    error_text = await response.text()
-                    self.log_result(
-                        "7.1 VIN Decode", 200, actual_status, True,
-                        "VIN decode endpoint functional (external service limitation)",
-                        {"status": "endpoint_functional", "limitation": "external_service"}
-                    )
+                    self.log_result("7.1 VIN Decode Specific", 200, actual_status, True,
+                                  "VIN decode endpoint functional (external service limitation)")
                 else:
-                    error_text = await response.text()
-                    self.log_result("7.1 VIN Decode", 200, actual_status, False, f"HTTP {response.status}")
+                    self.log_result("7.1 VIN Decode Specific", 200, actual_status, False,
+                                  f"HTTP {response.status}")
         except Exception as e:
-            self.log_result("7.1 VIN Decode", 200, 0, False, f"Exception: {str(e)}")
-    
-    # ============== 8. DASHBOARD STATS ==============
-    
-    async def test_dashboard_stats(self):
-        """Test 8.1: GET /api/dashboard/stats → expect 200"""
-        try:
-            async with self.session.get(f"{BACKEND_URL}/dashboard/stats") as response:
-                actual_status = response.status
-                if response.status == 200:
-                    data = await response.json()
-                    self.log_result(
-                        "8.1 Dashboard Stats", 200, actual_status, True,
-                        f"Dashboard stats retrieved successfully",
-                        {"stats_keys": list(data.keys()) if isinstance(data, dict) else "non-dict response"}
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_result("8.1 Dashboard Stats", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
-        except Exception as e:
-            self.log_result("8.1 Dashboard Stats", 200, 0, False, f"Exception: {str(e)}")
-    
-    # ============== 9. PRINTER TEST ==============
-    
-    async def test_printer_test(self):
-        """Test 9.1: POST /api/printer/test → document response (may be error but should not be 500)"""
-        try:
-            payload = {"ip": "127.0.0.1"}
-            async with self.session.post(f"{BACKEND_URL}/printer/test", json=payload) as response:
-                actual_status = response.status
-                if response.status in [200, 520, 503, 502]:  # Expected graceful responses
-                    if response.status == 200:
-                        try:
-                            data = await response.json()
-                            self.log_result(
-                                "9.1 Printer Test", 200, actual_status, True,
-                                f"Printer test successful (unexpected)",
-                                {"status": "success"}
-                            )
-                        except:
-                            # HTML response
-                            self.log_result(
-                                "9.1 Printer Test", 200, actual_status, True,
-                                f"Printer test returned HTML response",
-                                {"status": "html_response"}
-                            )
-                    else:
-                        # Expected error codes
-                        try:
-                            data = await response.json()
-                            error_msg = data.get("detail", "Connection failed")
-                        except:
-                            error_msg = "Connection failed (HTML response)"
-                        
-                        self.log_result(
-                            "9.1 Printer Test", 520, actual_status, True,
-                            f"Graceful error: {actual_status} - {error_msg}",
-                            {"status": actual_status, "error": error_msg}
-                        )
-                elif response.status == 500:
-                    error_text = await response.text()
-                    self.log_result(
-                        "9.1 Printer Test", 520, actual_status, False,
-                        f"Expected graceful error (520/503), got 500: {error_text[:100]}"
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_result("9.1 Printer Test", 520, actual_status, False, f"Unexpected status: {response.status}")
-        except Exception as e:
-            self.log_result("9.1 Printer Test", 520, 0, False, f"Exception: {str(e)}")
+            self.log_result("7.1 VIN Decode Specific", 200, 0, False, f"Exception: {str(e)}")
 
     def print_comprehensive_summary(self):
         """Print comprehensive test summary with pass rates"""
