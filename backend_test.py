@@ -3321,9 +3321,9 @@ class BackendTester:
         # Core health check first
         await self.test_health_check()
         
-        # PRIORITY: Customer Management Endpoints for Sprint 2 (Review Request)
-        print("\n🎯 CUSTOMER MANAGEMENT ENDPOINTS (Sprint 2 Review Request Priority):")
-        await self.test_customer_management_endpoints()
+        # PRIORITY: Comprehensive Customer Management Endpoints Testing (Review Request)
+        print("\n🎯 COMPREHENSIVE CUSTOMER MANAGEMENT ENDPOINTS TESTING (Review Request Priority):")
+        await self.test_comprehensive_customer_endpoints()
         
         # SECONDARY: Mobile overlay endpoints (tower-talk, translate, TTS)
         print("\n📱 MOBILE OVERLAY ENDPOINTS:")
