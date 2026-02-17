@@ -474,7 +474,7 @@ const PRESET_RESPONSES = {
                 {reply ? (
                   <View style={styles.replySection}>
                     <View style={styles.replySectionHeader}>
-                      <Text style={styles.sectionLabel}>RESPONSE</Text>
+                      <Text style={styles.sectionLabel}>AI RESPONSE</Text>
                       <View style={styles.replyActions}>
                         <Pressable onPress={() => copyToClipboard(reply)} style={styles.actionIcon}>
                           <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={16} color={copied ? colors.green : colors.textMute} />
