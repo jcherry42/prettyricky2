@@ -118,6 +118,17 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
           </LinearGradient>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Validation error banner */}
+            {validationError && (
+              <View style={styles.validationBanner}>
+                <Ionicons name="alert-circle" size={16} color={colors.red} />
+                <Text style={styles.validationText}>{validationError}</Text>
+                <Pressable onPress={() => setValidationError(null)} hitSlop={8}>
+                  <Ionicons name="close" size={14} color={colors.textMute} />
+                </Pressable>
+              </View>
+            )}
+
             {/* Basic Info */}
             <Text style={styles.sectionTitle}>BASIC INFORMATION</Text>
             <View style={styles.row}>
