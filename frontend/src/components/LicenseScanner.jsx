@@ -314,6 +314,10 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
         
         const optimizedImage = canvas.toDataURL('image/jpeg', 0.95);
         setCapturedImage(optimizedImage);
+        setSaved(false);
+        setSavedCustomerId(null);
+        resetExtractionState();
+        runExtraction(optimizedImage);
         toast.success('Image loaded');
       };
       img.src = event.target.result;
