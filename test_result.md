@@ -1033,7 +1033,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive Scan - SPORT Translation Sync + SMS Integration"
+    - "Comprehensive Backend Scan - SPORT Translation Sync + SMS Integration - COMPLETED"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
