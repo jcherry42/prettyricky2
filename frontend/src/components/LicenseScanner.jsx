@@ -59,6 +59,116 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   // Get printer IP
   const getPrinterIP = () => localStorage.getItem('printerIP');
 
+  const getOcrWorker = useCallback(async () => {
+    if (ocrWorkerRef.current) return ocrWorkerRef.current;
+    const worker = await createWorker('eng');
+    ocrWorkerRef.current = worker;
+    return worker;
+  }, []);
+
+  const destroyOcrWorker = useCallback(async () => {
+    if (!ocrWorkerRef.current) return;
+    try {
+      await ocrWorkerRef.current.terminate();
+    } finally {
+      ocrWorkerRef.current = null;
+    }
+  }, []);
+
+  const resetExtractionState = useCallback(() => {
+    setLicenseData(EMPTY_LICENSE_DATA);
+    setScanMethod('');
+    setScanConfidence(0);
+    setScanError('');
+    setUploadProgress(0);
+  }, []);
+
+  const dataUrlToBlob = useCallback(async (dataUrl) => {
+    const response = await fetch(dataUrl);
+    return response.blob();
+  }, []);
+
+  const detectBarcodeData = useCallback(async (blob) => {
+    if (!('BarcodeDetector' in window)) return null;
+
+    try {
+      const preferredFormats = [
+        'pdf417',
+        'code_128',
+        'code_39',
+        'code_93',
+        'ean_13',
+        'ean_8',
+        'upc_a',
+        'upc_e',
+        'itf',
+        'qr_code',
+        'aztec',
+        'data_matrix'
+      ];
+      const supported = await window.BarcodeDetector.getSupportedFormats?.().catch(() => []);
+      const formats = supported?.length
+        ? preferredFormats.filter((format) => supported.includes(format))
+        : preferredFormats;
+
+      if (!formats.length) return null;
+
+      const detector = new window.BarcodeDetector({ formats });
+      const bitmap = await createImageBitmap(blob);
+      const barcodes = await detector.detect(bitmap);
+      if (!barcodes || barcodes.length === 0) return null;
+      return barcodes.map((barcode) => barcode.rawValue).find(Boolean) || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const runExtraction = useCallback(async (dataUrl) => {
+    if (!dataUrl) return;
+
+    setIsExtracting(true);
+    setScanError('');
+    setScanMethod('');
+    setScanConfidence(0);
+
+    try {
+      const blob = await dataUrlToBlob(dataUrl);
+
+      const barcodeRaw = await detectBarcodeData(blob);
+      if (barcodeRaw) {
+        const parsedBarcode = parseAamvaBarcode(barcodeRaw);
+        if (parsedBarcode) {
+          setLicenseData((prev) => ({ ...prev, ...parsedBarcode }));
+          setScanMethod('PDF417');
+          setScanConfidence(scoreLicenseData(parsedBarcode));
+          setIsExtracting(false);
+          return;
+        }
+      }
+
+      const worker = await getOcrWorker();
+      const { data } = await worker.recognize(dataUrl);
+      const parsedOcr = parseLicenseOcrText(data?.text || '');
+
+      if (!parsedOcr) {
+        setScanError('Could not read license. Try the barcode side or adjust lighting.');
+        return;
+      }
+
+      setLicenseData((prev) => ({ ...prev, ...parsedOcr }));
+      setScanMethod('OCR');
+      setScanConfidence(scoreLicenseData(parsedOcr));
+    } catch (err) {
+      setScanError(err?.message || 'License extraction failed');
+    } finally {
+      setIsExtracting(false);
+    }
+  }, [dataUrlToBlob, detectBarcodeData, getOcrWorker]);
+
+  const handleFieldChange = useCallback((field, value) => {
+    setLicenseData((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
   // Initialize camera
   const initCamera = useCallback(async () => {
     try {
