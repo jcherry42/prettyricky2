@@ -778,6 +778,10 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+
+agent_communication:
+  - agent: "main"
+    message: "User approved frontend testing for license scanner UI; running UI tests now."
 agent_communication:
   - agent: "main"
     message: "Please test license upload chunked endpoints and license create-customer flow; validate OCR/barcode extraction UX and retry/error handling."
