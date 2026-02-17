@@ -88,7 +88,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
 }
 
 export function CommandCenterModal({ visible, onClose }) {
-  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
+  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity } = useAppSettings();
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
