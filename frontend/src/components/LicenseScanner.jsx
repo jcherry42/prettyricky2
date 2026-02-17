@@ -269,7 +269,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     }
     
     toast.success('Image captured');
-  }, [stream]);
+  }, [resetExtractionState, runExtraction, stream]);
 
   // Handle file upload
   const handleFileUpload = useCallback((e) => {
