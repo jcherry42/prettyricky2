@@ -477,10 +477,10 @@ const PRESET_RESPONSES = {
                       <Text style={styles.sectionLabel}>AI RESPONSE</Text>
                       <View style={styles.replyActions}>
                         <Pressable onPress={() => copyToClipboard(reply)} style={styles.actionIcon}>
-                          <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={16} color={copied ? colors.green : colors.textMute} />
+                          <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={16} color={copied ? colors.green : colors.textDim} />
                         </Pressable>
                         <Pressable onPress={() => speak(reply, 'en')} style={styles.actionIcon}>
-                          <Ionicons name="volume-high-outline" size={16} color={colors.textMute} />
+                          <Ionicons name="volume-high-outline" size={16} color={colors.textDim} />
                         </Pressable>
                         <Pressable onPress={() => sendAsSms(reply)} style={styles.actionIcon}>
                           <Ionicons name="send" size={16} color={colors.gold} />
