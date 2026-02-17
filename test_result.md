@@ -255,6 +255,7 @@ agent_communication:
 
 test_plan:
   current_focus:
+    - "Translation System & PTT - Sprint 6 - COMPLETED"
     - "Customer Management Endpoints for Sprint 2 - COMPLETED"
     - "License Scanner UI Testing - COMPLETED"
   stuck_tasks: 
