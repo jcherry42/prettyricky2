@@ -875,7 +875,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
               {!saved && (
                 <button 
                   onClick={saveToNewCustomer}
-                  disabled={isSaving}
+                  disabled={isSaving || isExtracting}
                   className="save-customer-btn"
                 >
                   {isSaving ? (
