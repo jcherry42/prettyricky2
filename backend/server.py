@@ -915,10 +915,14 @@ CRITICAL INSTRUCTIONS:
 async def create_customer_from_license(
     first_name: str = Form(...),
     last_name: str = Form(...),
+    middle_name: Optional[str] = Form(None),
     address: Optional[str] = Form(None),
     city: Optional[str] = Form(None),
     state: Optional[str] = Form(None),
     zip_code: Optional[str] = Form(None),
+    license_number: Optional[str] = Form(None),
+    expiration: Optional[str] = Form(None),
+    dob: Optional[str] = Form(None),
     image_url: str = Form(...),
 ):
     """
