@@ -518,7 +518,7 @@ export function CommandCenterModal({ visible, onClose }) {
               <GlassCard style={{ marginTop: 14 }}>
                 <View style={styles.ambientHeader}>
                   <SectionTitle>Ambient Lighting</SectionTitle>
-                  <View style={[styles.ambientPreview, { backgroundColor: settings.ambientLightingEnabled ? (require('../theme/designo').designoColors.ambient[0] || '#FF0000') : 'rgba(255,255,255,0.10)' }]} />
+                  <View style={[styles.ambientPreview, { backgroundColor: settings.ambientLightingEnabled ? (designoColors.ambient[0] || '#FF0000') : 'rgba(255,255,255,0.10)' }]} />
                 </View>
                 <View style={{ height: 12 }} />
 
