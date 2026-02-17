@@ -698,42 +698,37 @@ class ComprehensiveBackendTester:
     def print_comprehensive_summary(self):
         """Print comprehensive test summary with pass rates"""
         print("\n" + "="*80)
-        print("📊 SPRINT 14 - COMPREHENSIVE BACKEND TEST RESULTS")
+        print("📊 COMPREHENSIVE BACKEND SCAN - FINAL RESULTS")
         print("="*80)
         
         # Group results by category
         categories = {
-            "Health Check": [],
+            "Health": [],
             "Customer CRUD": [],
-            "Translation System": [],
-            "TTS System": [],
+            "Translation": [],
+            "TTS": [],
             "Voice Translate": [],
-            "Tower Talk AI": [],
-            "VIN Decode": [],
-            "Dashboard Stats": [],
-            "Printer Test": []
+            "Tower Talk": [],
+            "VIN": []
         }
         
         for result in self.results:
             test_name = result['test']
-            if "Health Check" in test_name:
-                categories["Health Check"].append(result)
+            if "Health" in test_name:
+                categories["Health"].append(result)
             elif "Customer" in test_name:
                 categories["Customer CRUD"].append(result)
-            elif "Translation" in test_name:
-                categories["Translation System"].append(result)
+            elif "Translation" in test_name or "Translate" in test_name:
+                if "Voice" in test_name:
+                    categories["Voice Translate"].append(result)
+                else:
+                    categories["Translation"].append(result)
             elif "TTS" in test_name:
-                categories["TTS System"].append(result)
-            elif "Voice Translate" in test_name:
-                categories["Voice Translate"].append(result)
+                categories["TTS"].append(result)
             elif "Tower Talk" in test_name:
-                categories["Tower Talk AI"].append(result)
-            elif "VIN Decode" in test_name:
-                categories["VIN Decode"].append(result)
-            elif "Dashboard" in test_name:
-                categories["Dashboard Stats"].append(result)
-            elif "Printer" in test_name:
-                categories["Printer Test"].append(result)
+                categories["Tower Talk"].append(result)
+            elif "VIN" in test_name:
+                categories["VIN"].append(result)
         
         total_passed = 0
         total_tests = 0
@@ -758,35 +753,34 @@ class ComprehensiveBackendTester:
         
         # Overall summary
         pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
-        print(f"\n🎯 OVERALL RESULTS: {total_passed}/{total_tests} PASS ({pass_rate:.1f}%)")
+        print(f"\n🎯 OVERALL PASS RATE: {total_passed}/{total_tests} ({pass_rate:.1f}%)")
         
         if self.failed_tests:
             print(f"\n❌ FAILED TESTS ({len(self.failed_tests)}):")
             for test_name in self.failed_tests:
                 print(f"   • {test_name}")
         else:
-            print("\n🎉 ALL TESTS PASSED!")
+            print("\n🎉 100% PASS RATE ACHIEVED!")
         
-        return len(self.failed_tests) == 0
+        return pass_rate >= 100.0
 
 
 async def main():
-    """Main test runner for Sprint 14 comprehensive backend testing"""
-    print("🚀 SPRINT 14 - MOST COMPREHENSIVE BACKEND TESTING POSSIBLE")
-    print("Testing EVERY endpoint exhaustively for 'Rolls Royce' quality")
+    """Main test runner for comprehensive backend scan"""
+    print("🚀 COMPREHENSIVE BACKEND SCAN - Final quality gate after SPORT translation sync + SMS integration")
     print(f"Backend URL: {BACKEND_URL.replace('/api', '')}")
-    print("Target: Final quality gate with exhaustive endpoint coverage")
+    print("Target: 100% pass rate")
     
     async with ComprehensiveBackendTester() as tester:
         try:
-            await tester.run_comprehensive_sprint14_tests()
-            success = tester.print_comprehensive_summary()
+            success = await tester.run_comprehensive_backend_scan()
+            tester.print_comprehensive_summary()
             
             if success:
-                print("\n🎉 ALL COMPREHENSIVE TESTS PASSED! 'Rolls Royce' quality achieved!")
+                print("\n🎉 100% PASS RATE ACHIEVED! Final quality gate passed!")
                 return 0
             else:
-                print("\n💥 SOME TESTS FAILED! Quality gate not met.")
+                print("\n💥 QUALITY GATE NOT MET. Some tests failed.")
                 return 1
                 
         except KeyboardInterrupt:
