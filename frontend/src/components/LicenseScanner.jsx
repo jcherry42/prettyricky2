@@ -1258,6 +1258,154 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
             gap: 16px;
           }
 
+          .extraction-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+          }
+
+          .extraction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+          }
+
+          .extraction-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+          }
+
+          .extraction-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+          }
+
+          .extraction-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(59,130,246,0.2);
+            color: rgba(147,197,253,0.9);
+          }
+
+          .extraction-confidence {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(34,197,94,0.2);
+            color: rgba(74,222,128,0.9);
+          }
+
+          .extraction-retry {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+
+          .extraction-retry:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          .extraction-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+          }
+
+          .extraction-error {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: rgba(254,202,202,0.9);
+            font-size: 12px;
+          }
+
+          .extraction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+          }
+
+          .extraction-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+
+          .extraction-field label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.5);
+          }
+
+          .extraction-field input {
+            background: rgba(15,15,15,0.6);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.9);
+          }
+
+          .extraction-field input:focus {
+            outline: none;
+            border-color: rgba(59,130,246,0.4);
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+          }
+
+          .extraction-hint {
+            font-size: 11px;
+            color: rgba(255,255,255,0.55);
+          }
+
+          .upload-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+          }
+
+          .upload-progress-bar {
+            flex: 1;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            overflow: hidden;
+          }
+
+          .upload-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, rgba(59,130,246,0.6), rgba(16,185,129,0.7));
+            transition: width 0.2s ease;
+          }
+
           .printer-status {
             display: flex;
             align-items: center;
