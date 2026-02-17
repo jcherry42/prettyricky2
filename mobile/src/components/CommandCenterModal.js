@@ -113,7 +113,7 @@ export function CommandCenterModal({ visible, onClose }) {
 
   const fullIp = useMemo(() => ipParts.join('.'), [ipParts]);
 
-  const selectedLang = settings.defaultTargetLanguage || 'es';
+  const selectedLang = settings.defaultTargetLanguage;
   const canTestPrinter = useMemo(() => Boolean(activePrinter?.ip), [activePrinter]);
 
   const canSavePrinter = useMemo(() => {
