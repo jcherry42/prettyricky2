@@ -1,0 +1,357 @@
+import React, { useState, useEffect } from 'react';
+import { Modal, View, Text, StyleSheet, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '../theme/colors';
+import { type } from '../theme/typography';
+import { impactMedium, notificationSuccess } from '../lib/haptics';
+
+const STATUS_OPTIONS = [
+  { value: 'new', label: 'New', color: colors.blue },
+  { value: 'contacted', label: 'Contacted', color: colors.gold },
+  { value: 'appointment', label: 'Appointment', color: colors.green },
+  { value: 'negotiating', label: 'Negotiating', color: '#FF9500' },
+  { value: 'sold', label: 'Sold', color: colors.green },
+  { value: 'lost', label: 'Lost', color: colors.red },
+];
+
+export function CustomerFormModal({ visible, customer, onClose, onSave }) {
+  const isEditing = Boolean(customer);
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [vehicleInterest, setVehicleInterest] = useState('');
+  const [notes, setNotes] = useState('');
+  const [leadStatus, setLeadStatus] = useState('new');
+  const [saving, setSaving] = useState(false);
+
+  // Load customer data when editing
+  useEffect(() => {
+    if (customer) {
+      setFirstName(customer.first_name || '');
+      setLastName(customer.last_name || '');
+      setPhone(customer.phone || '');
+      setEmail(customer.email || '');
+      setAddress(customer.address || '');
+      setVehicleInterest(customer.vehicle_interest || '');
+      setNotes(customer.notes || '');
+      setLeadStatus(customer.lead_status || 'new');
+    } else {
+      // Reset form for new customer
+      setFirstName('');
+      setLastName('');
+      setPhone('');
+      setEmail('');
+      setAddress('');
+      setVehicleInterest('');
+      setNotes('');
+      setLeadStatus('new');
+    }
+  }, [customer]);
+
+  const handleSave = async () => {
+    if (!firstName.trim() || !lastName.trim()) {
+      impactMedium();
+      alert('Please enter first and last name');
+      return;
+    }
+
+    if (!phone.trim()) {
+      impactMedium();
+      alert('Please enter a phone number');
+      return;
+    }
+
+    setSaving(true);
+    impactMedium();
+
+    try {
+      const customerData = {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        address: address.trim(),
+        vehicle_interest: vehicleInterest.trim(),
+        notes: notes.trim(),
+        lead_status: leadStatus,
+      };
+
+      await onSave(customerData, customer);
+      notificationSuccess();
+      onClose();
+    } catch (error) {
+      alert(`Failed to save customer: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <LinearGradient colors={[colors.bg0, colors.bg1]} style={styles.container}>
+          {/* Header with wood bezel */}
+          <LinearGradient
+            colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.header}
+          >
+            <Pressable onPress={onClose} style={styles.closeButton} disabled={saving}>
+              <Ionicons name="close" size={28} color={colors.text} />
+            </Pressable>
+            <Text style={styles.headerTitle}>{isEditing ? 'Edit Customer' : 'New Customer'}</Text>
+            <View style={{ width: 28 }} />
+          </LinearGradient>
+
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Basic Info */}
+            <Text style={styles.sectionTitle}>BASIC INFORMATION</Text>
+            <View style={styles.row}>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>First Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="John"
+                  placeholderTextColor={colors.textMute}
+                  editable={!saving}
+                />
+              </View>
+              <View style={styles.halfInput}>
+                <Text style={styles.label}>Last Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Doe"
+                  placeholderTextColor={colors.textMute}
+                  editable={!saving}
+                />
+              </View>
+            </View>
+
+            <Text style={styles.label}>Phone *</Text>
+            <TextInput
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="(555) 123-4567"
+              placeholderTextColor={colors.textMute}
+              keyboardType="phone-pad"
+              editable={!saving}
+            />
+
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="john.doe@example.com"
+              placeholderTextColor={colors.textMute}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!saving}
+            />
+
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={styles.input}
+              value={address}
+              onChangeText={setAddress}
+              placeholder="123 Main St, City, State ZIP"
+              placeholderTextColor={colors.textMute}
+              editable={!saving}
+            />
+
+            {/* Vehicle Interest */}
+            <Text style={styles.sectionTitle}>VEHICLE INTEREST</Text>
+            <TextInput
+              style={styles.input}
+              value={vehicleInterest}
+              onChangeText={setVehicleInterest}
+              placeholder="2024 Honda Accord"
+              placeholderTextColor={colors.textMute}
+              editable={!saving}
+            />
+
+            {/* Status */}
+            <Text style={styles.sectionTitle}>LEAD STATUS</Text>
+            <View style={styles.statusGrid}>
+              {STATUS_OPTIONS.map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => {
+                    impactMedium();
+                    setLeadStatus(option.value);
+                  }}
+                  disabled={saving}
+                  style={({ pressed }) => [
+                    styles.statusButton,
+                    leadStatus === option.value && styles.statusButtonActive,
+                    { borderColor: option.color },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusButtonText,
+                      leadStatus === option.value && { color: option.color },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Notes */}
+            <Text style={styles.sectionTitle}>NOTES</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Additional notes about this customer..."
+              placeholderTextColor={colors.textMute}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              editable={!saving}
+            />
+
+            {/* Save Button */}
+            <Pressable
+              onPress={handleSave}
+              disabled={saving}
+              style={({ pressed }) => [
+                styles.saveButton,
+                (pressed || saving) && styles.saveButtonPressed,
+              ]}
+            >
+              {saving ? (
+                <ActivityIndicator color={colors.bg0} />
+              ) : (
+                <>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.bg0} />
+                  <Text style={styles.saveButtonText}>{isEditing ? 'Save Changes' : 'Create Customer'}</Text>
+                </>
+              )}
+            </Pressable>
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </LinearGradient>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 60,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.gold,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  headerTitle: {
+    ...type.h1,
+    color: colors.text,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  sectionTitle: {
+    ...type.label,
+    fontSize: 11,
+    color: colors.gold,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  label: {
+    ...type.body,
+    color: colors.textDim,
+    marginBottom: 8,
+  },
+  input: {
+    ...type.body,
+    color: colors.text,
+    backgroundColor: colors.panel,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  textArea: {
+    height: 100,
+    paddingTop: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  halfInput: {
+    flex: 1,
+  },
+  statusGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  statusButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    backgroundColor: colors.panel,
+  },
+  statusButtonActive: {
+    backgroundColor: colors.panel2,
+  },
+  statusButtonText: {
+    ...type.label,
+    fontSize: 10,
+    color: colors.textDim,
+  },
+  saveButton: {
+    marginTop: 24,
+    backgroundColor: colors.gold,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  saveButtonPressed: {
+    opacity: 0.7,
+  },
+  saveButtonText: {
+    ...type.body,
+    fontFamily: 'SpaceGrotesk_700Bold',
+    color: colors.bg0,
+    fontSize: 16,
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+});
