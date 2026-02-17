@@ -17,6 +17,8 @@ import { sendTowerTalkSms } from '../lib/sms';
 export function TowerTalkOverlay({ visible, onClose }) {
   const { settings } = useAppSettings();
   const lang = settings.defaultTargetLanguage || 'es';
+  const sportOn = Boolean(settings.sportMode);
+  const flag = flagFor(lang);
 
   const [situation, setSituation] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -26,6 +28,7 @@ export function TowerTalkOverlay({ visible, onClose }) {
 
   const [state, setState] = useState({ status: 'idle', error: null });
   const [reply, setReply] = useState('');
+  const autoTranslateRef = useRef(null);
   const [translated, setTranslated] = useState('');
   const [copied, setCopied] = useState(false);
 
