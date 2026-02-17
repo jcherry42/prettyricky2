@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
 
 export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }) {
   const { settings } = useAppSettings();
-  const lang = settings.defaultTargetLanguage || 'es';
+  const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
 
