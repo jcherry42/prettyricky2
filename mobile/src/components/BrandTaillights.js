@@ -4,7 +4,7 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 
-const ELECTRIC_BLUE = '#00D4FF';
+const ELECTRIC_BLUE = colors.electricBlue;
 
 function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }) {
   const pts = useMemo(() => {
