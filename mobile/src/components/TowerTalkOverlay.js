@@ -70,6 +70,11 @@ export function TowerTalkOverlay({ visible, onClose }) {
       setReply(responseText);
       setState({ status: 'done', error: null });
       notificationSuccess();
+
+      // Auto-translate when SPORT mode is active
+      if (sportOn && lang) {
+        autoTranslateRef.current = responseText;
+      }
     } catch (e) {
       const errorMsg = e?.message || String(e) || 'Tower Talk request failed';
       setState({ status: 'error', error: errorMsg });
