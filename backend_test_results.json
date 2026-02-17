@@ -1,11 +1,12 @@
 {
   "test_type": "mobile_print_center_sanity",
-  "timestamp": "2026-02-13T17:37:33.743589",
+  "timestamp": "2026-02-17T15:11:17.572212",
   "backend_url": "https://swift-refactor-1.preview.emergentagent.com/api",
-  "total_tests": 48,
-  "passed": 47,
-  "failed": 1,
+  "total_tests": 55,
+  "passed": 53,
+  "failed": 2,
   "failed_tests": [
+    "POST /print/customer (real customer_id)",
     "Printer endpoints"
   ],
   "detailed_results": [
@@ -13,13 +14,13 @@
       "test": "Health Check",
       "success": true,
       "details": "Status: healthy",
-      "timestamp": "2026-02-13T17:37:16.509371",
+      "timestamp": "2026-02-17T15:10:59.374368",
       "response_data": {
         "status": "healthy",
-        "timestamp": "2026-02-13T17:37:16.471549+00:00",
+        "timestamp": "2026-02-17T15:10:59.354208+00:00",
         "scheduler": {
           "isRunning": true,
-          "nextRefresh": "2026-02-14T10:00:00-05:00",
+          "nextRefresh": "2026-02-18T10:00:00-05:00",
           "schedule": "Mon-Sat 10:00 AM ET"
         },
         "dataSources": {
@@ -33,21 +34,21 @@
     {
       "test": "POST /tower-talk (mobile overlay)",
       "success": true,
-      "details": "Generated response (327 chars)",
-      "timestamp": "2026-02-13T17:37:19.276873",
+      "details": "Generated response (364 chars)",
+      "timestamp": "2026-02-17T15:11:02.170071",
       "response_data": {
-        "response_length": 327,
+        "response_length": 364,
         "has_response_field": true
       }
     },
     {
       "test": "POST /translate (mobile overlay)",
       "success": true,
-      "details": "Translation successful: 'Puedo tenerlo listo para ti en 10 minutos. \u00bfCu\u00e1ndo puedes venir?'",
-      "timestamp": "2026-02-13T17:37:20.241348",
+      "details": "Translation successful: 'Puedo tenerlo listo para ti en 10 minutos. \u00bfCu\u00e1ndo puedes pasar?'",
+      "timestamp": "2026-02-17T15:11:03.059572",
       "response_data": {
         "original": "I can have it ready for you in 10 minutes. When can you swing by?",
-        "translated": "Puedo tenerlo listo para ti en 10 minutos. \u00bfCu\u00e1ndo puedes venir?",
+        "translated": "Puedo tenerlo listo para ti en 10 minutos. \u00bfCu\u00e1ndo puedes pasar?",
         "detected_lang": "en",
         "confidence": 0.95,
         "has_required_fields": true
@@ -57,24 +58,24 @@
       "test": "POST /tts (mobile overlay)",
       "success": true,
       "details": "TTS generated successfully (voice: coral, format: mp3)",
-      "timestamp": "2026-02-13T17:37:22.669134",
+      "timestamp": "2026-02-17T15:11:06.547171",
       "response_data": {
         "text": "Hola, \u00bfcu\u00e1ndo puedes venir?",
         "voice_used": "coral",
         "format": "mp3",
-        "audio_size": 44800,
+        "audio_size": 39040,
         "cached": false
       }
     },
     {
       "test": "GET /customers/list?limit=5&skip=0",
       "success": true,
-      "details": "\u2705 Status: 200, customers: 5, total: 7",
-      "timestamp": "2026-02-13T17:37:22.752430",
+      "details": "\u2705 Status: 200, customers: 0, total: 0",
+      "timestamp": "2026-02-17T15:11:06.625732",
       "response_data": {
         "status_code": 200,
-        "customers_count": 5,
-        "total": 7,
+        "customers_count": 0,
+        "total": 0,
         "structure_valid": true
       }
     },
@@ -82,7 +83,7 @@
       "test": "POST /printer/test {ip:127.0.0.1}",
       "success": true,
       "details": "\u2705 Status: 520, Clear error response (no stack trace)",
-      "timestamp": "2026-02-13T17:37:22.900775",
+      "timestamp": "2026-02-17T15:11:06.748041",
       "response_data": {
         "status_code": 520,
         "has_stack_trace": false,
@@ -91,20 +92,16 @@
     },
     {
       "test": "POST /print/customer (real customer_id)",
-      "success": true,
-      "details": "\u2705 Status: 200, Customer fetch working, printer connectivity issue expected",
-      "timestamp": "2026-02-13T17:37:23.149861",
-      "response_data": {
-        "status_code": 200,
-        "customer_id": "0cc82172-20df-48f2-b595-da1c70088ca4",
-        "response_preview": "{\"success\":true,\"message\":\"Print job sent to printer\",\"customer\":\"Maria Rodriguez\",\"bytes\":1682}"
-      }
+      "success": false,
+      "details": "\u274c No real customer_id available from previous test",
+      "timestamp": "2026-02-17T15:11:06.748087",
+      "response_data": null
     },
     {
       "test": "POST /print/license (fake base64)",
       "success": true,
       "details": "\u2705 Status: 200, PDF generation successful, stable schema",
-      "timestamp": "2026-02-13T17:37:23.276685",
+      "timestamp": "2026-02-17T15:11:07.070260",
       "response_data": {
         "status_code": 200,
         "response_fields": [
@@ -119,120 +116,58 @@
       "test": "GET /customers/list (basic)",
       "success": true,
       "details": "Retrieved 0 customers",
-      "timestamp": "2026-02-13T17:37:23.342897",
+      "timestamp": "2026-02-17T15:11:07.130579",
       "response_data": {
         "count": 0,
-        "sample": [
-          {
-            "first_name": "Maria",
-            "last_name": "Rodriguez",
-            "phone": "555-0123",
-            "email": "maria.rodriguez@email.com",
-            "address": "123 Main St, Austin, TX 78701",
-            "lead_source": "web",
-            "lead_status": "new",
-            "notes": "Interested in SUVs",
-            "vehicle_interests": [],
-            "trade_in_vehicle_id": null,
-            "id": "0cc82172-20df-48f2-b595-da1c70088ca4",
-            "created_at": "2026-02-10T18:07:53.403000",
-            "updated_at": "2026-02-10T18:07:53.403000",
-            "interactions": []
-          },
-          {
-            "first_name": "Jane",
-            "last_name": "Doe",
-            "phone": "555-0188",
-            "email": "jane.doe@test.com",
-            "address": null,
-            "lead_source": "manual",
-            "lead_status": "new",
-            "notes": null,
-            "vehicle_interests": [],
-            "trade_in_vehicle_id": null,
-            "id": "42ad77c9-d488-4c62-926a-aa8bafa0b2ea",
-            "created_at": "2026-02-10T18:07:50.583000",
-            "updated_at": "2026-02-10T18:07:50.657000",
-            "interactions": []
-          }
-        ]
+        "sample": []
       }
     },
     {
       "test": "GET /customers/list (limit=5)",
       "success": true,
-      "details": "Retrieved 5 customers with limit",
-      "timestamp": "2026-02-13T17:37:23.416029",
+      "details": "Retrieved 0 customers with limit",
+      "timestamp": "2026-02-17T15:11:07.198326",
       "response_data": {
-        "count": 5
+        "count": 0
       }
     },
     {
       "test": "GET /customers/list (search)",
       "success": true,
-      "details": "Search returned 2 customers",
-      "timestamp": "2026-02-13T17:37:23.481662",
+      "details": "Search returned 0 customers",
+      "timestamp": "2026-02-17T15:11:07.280908",
       "response_data": {
         "search_term": "test",
-        "results": 2
+        "results": 0
       }
     },
     {
       "test": "GET /customers (merged list)",
       "success": true,
-      "details": "Retrieved 14 customers from merged list",
-      "timestamp": "2026-02-13T17:37:23.558153",
+      "details": "Retrieved 0 customers from merged list",
+      "timestamp": "2026-02-17T15:11:07.370459",
       "response_data": {
-        "count": 14,
-        "sample": [
-          {
-            "id": "0cc82172-20df-48f2-b595-da1c70088ca4",
-            "name": "Maria Rodriguez",
-            "firstName": "Maria",
-            "lastName": "Rodriguez",
-            "phone": "555-0123",
-            "email": "maria.rodriguez@email.com",
-            "address": "123 Main St, Austin, TX 78701",
-            "vehicleInterest": null,
-            "status": "new",
-            "notes": "Interested in SUVs",
-            "currentVehicle": null,
-            "tradeIn": null
-          },
-          {
-            "id": "42ad77c9-d488-4c62-926a-aa8bafa0b2ea",
-            "name": "Jane Doe",
-            "firstName": "Jane",
-            "lastName": "Doe",
-            "phone": "555-0188",
-            "email": "jane.doe@test.com",
-            "address": null,
-            "vehicleInterest": null,
-            "status": "new",
-            "notes": null,
-            "currentVehicle": null,
-            "tradeIn": null
-          }
-        ]
+        "count": 0,
+        "sample": []
       }
     },
     {
       "test": "GET /customers (merged list with search)",
       "success": true,
-      "details": "Search returned 4 customers",
-      "timestamp": "2026-02-13T17:37:23.671569",
+      "details": "Search returned 0 customers",
+      "timestamp": "2026-02-17T15:11:07.473223",
       "response_data": {
         "search_term": "test",
-        "results": 4
+        "results": 0
       }
     },
     {
       "test": "GET /customers/{id}",
       "success": true,
       "details": "Retrieved customer: John Smith",
-      "timestamp": "2026-02-13T17:37:23.826819",
+      "timestamp": "2026-02-17T15:11:07.632360",
       "response_data": {
-        "customer_id": "36016638-cb98-4cac-b698-5c36f2600cbf",
+        "customer_id": "99f41c35-b980-4bf3-b3ae-047608be0293",
         "name": "John Smith"
       }
     },
@@ -240,12 +175,12 @@
       "test": "PATCH /customers/{id}",
       "success": true,
       "details": "Customer updated successfully",
-      "timestamp": "2026-02-13T17:37:23.885647",
+      "timestamp": "2026-02-17T15:11:07.720406",
       "response_data": {
         "updated_fields": {
           "lead_status": "contacted",
           "notes": "Updated via PATCH test",
-          "updated_at": "2026-02-13T17:37:23.868402+00:00"
+          "updated_at": "2026-02-17T15:11:07.682818+00:00"
         }
       }
     },
@@ -253,53 +188,53 @@
       "test": "DELETE /customers/{id}",
       "success": true,
       "details": "Customer deleted successfully",
-      "timestamp": "2026-02-13T17:37:23.975676",
+      "timestamp": "2026-02-17T15:11:07.824940",
       "response_data": {
-        "customer_id": "36016638-cb98-4cac-b698-5c36f2600cbf"
+        "customer_id": "99f41c35-b980-4bf3-b3ae-047608be0293"
       }
     },
     {
       "test": "POST /customers/{id}/attach-vehicle",
       "success": true,
       "details": "Vehicle attached successfully",
-      "timestamp": "2026-02-13T17:37:24.262426",
+      "timestamp": "2026-02-17T15:11:08.068780",
       "response_data": {
-        "customer_id": "3d80fc26-b07a-48ac-8083-5ad780c4e14a",
-        "vehicle_id": "37c46146-d663-4129-baff-1205b1b16392"
+        "customer_id": "c6d7fb2b-2c25-497f-be3b-c743dac038a9",
+        "vehicle_id": "05e9b4b2-1e41-4588-901b-3a0219f02052"
       }
     },
     {
       "test": "DELETE /customers/{id}/detach-vehicle/{vehicle_id}",
       "success": true,
       "details": "Vehicle detached successfully",
-      "timestamp": "2026-02-13T17:37:24.338481",
+      "timestamp": "2026-02-17T15:11:08.139706",
       "response_data": {
-        "customer_id": "3d80fc26-b07a-48ac-8083-5ad780c4e14a",
-        "vehicle_id": "37c46146-d663-4129-baff-1205b1b16392"
+        "customer_id": "c6d7fb2b-2c25-497f-be3b-c743dac038a9",
+        "vehicle_id": "05e9b4b2-1e41-4588-901b-3a0219f02052"
       }
     },
     {
       "test": "GET /customers/stats",
       "success": true,
       "details": "Customer stats loaded with 2/2 expected fields",
-      "timestamp": "2026-02-13T17:37:24.425919",
+      "timestamp": "2026-02-17T15:11:08.220018",
       "response_data": {
-        "total": 8,
+        "total": 1,
         "byStatus": {
-          "new": 8
+          "new": 1
         }
       }
     },
     {
       "test": "GET /vehicles",
       "success": true,
-      "details": "Retrieved 5 vehicles",
-      "timestamp": "2026-02-13T17:37:24.492635",
+      "details": "Retrieved 1 vehicles",
+      "timestamp": "2026-02-17T15:11:08.300205",
       "response_data": {
-        "count": 5,
+        "count": 1,
         "sample": [
           {
-            "id": "698b6ee2b779f5260e279cb0",
+            "id": "6994850b002439506da2f455",
             "year": 2023,
             "make": "Honda",
             "model": "Accord",
@@ -321,30 +256,6 @@
             "status": "available",
             "isNew": true,
             "imageUrl": ""
-          },
-          {
-            "id": "698b6ee3b779f5260e279cb2",
-            "year": 2023,
-            "make": "Honda",
-            "model": "Civic",
-            "trim": "LX",
-            "title": "2023 Honda Civic",
-            "price": null,
-            "formattedPrice": "Call",
-            "msrp": null,
-            "vin": "1HGBH41JXMN983146",
-            "stockNumber": "",
-            "mileage": null,
-            "exteriorColor": "",
-            "interiorColor": "",
-            "transmission": null,
-            "engine": "",
-            "fuelType": null,
-            "bodyStyle": "",
-            "drivetrain": "",
-            "status": "available",
-            "isNew": true,
-            "imageUrl": ""
           }
         ]
       }
@@ -353,7 +264,7 @@
       "test": "GET /vehicles/stats",
       "success": true,
       "details": "Vehicle stats retrieved successfully",
-      "timestamp": "2026-02-13T17:37:24.586458",
+      "timestamp": "2026-02-17T15:11:08.369606",
       "response_data": {
         "stats_keys": [
           "total",
@@ -367,24 +278,24 @@
     {
       "test": "GET /vehicles/inventory",
       "success": true,
-      "details": "Retrieved inventory: 5 total vehicles",
-      "timestamp": "2026-02-13T17:37:24.655850",
+      "details": "Retrieved inventory: 1 total vehicles",
+      "timestamp": "2026-02-17T15:11:08.456588",
       "response_data": {
         "counts": {
-          "active_inventory": 5,
+          "active_inventory": 1,
           "trade_in": 0,
-          "total": 5
+          "total": 1
         },
-        "vehicle_count": 5
+        "vehicle_count": 1
       }
     },
     {
       "test": "POST /vehicles/create",
       "success": true,
       "details": "Created vehicle: 2024 Toyota Camry",
-      "timestamp": "2026-02-13T17:37:24.741939",
+      "timestamp": "2026-02-17T15:11:08.539459",
       "response_data": {
-        "vehicle_id": "74c16e13-fc37-4043-add3-1f2871101c34",
+        "vehicle_id": "0a13c688-2b7d-47f3-a331-abb0eebbafd3",
         "stock_number": "TOY2024001"
       }
     },
@@ -392,12 +303,12 @@
       "test": "PATCH /vehicles/{id}",
       "success": true,
       "details": "Vehicle updated successfully",
-      "timestamp": "2026-02-13T17:37:24.812613",
+      "timestamp": "2026-02-17T15:11:08.628015",
       "response_data": {
         "updated_fields": {
           "price": 29000.0,
           "notes": "Updated price",
-          "updated_at": "2026-02-13T17:37:24.794360+00:00"
+          "updated_at": "2026-02-17T15:11:08.603085+00:00"
         }
       }
     },
@@ -405,16 +316,16 @@
       "test": "DELETE /vehicles/{id}",
       "success": true,
       "details": "Vehicle deleted successfully",
-      "timestamp": "2026-02-13T17:37:24.874023",
+      "timestamp": "2026-02-17T15:11:08.691565",
       "response_data": {
-        "vehicle_id": "74c16e13-fc37-4043-add3-1f2871101c34"
+        "vehicle_id": "0a13c688-2b7d-47f3-a331-abb0eebbafd3"
       }
     },
     {
       "test": "GET /vin/decode/JM3KKEHA3T1355103",
       "success": true,
       "details": "VIN decoded successfully - 2026 MAZDA CX-90 (confidence: 100%, source: NHTSA vPIC)",
-      "timestamp": "2026-02-13T17:37:25.310019",
+      "timestamp": "2026-02-17T15:11:09.052126",
       "response_data": {
         "vin": "JM3KKEHA3T1355103",
         "vehicle": {
@@ -438,7 +349,7 @@
       "test": "GET /vin/decode/7MMVAADW5TN144528",
       "success": true,
       "details": "VIN decoded successfully - 2026 MAZDA CX-50 (confidence: 100%, source: NHTSA vPIC)",
-      "timestamp": "2026-02-13T17:37:25.568110",
+      "timestamp": "2026-02-17T15:11:09.303881",
       "response_data": {
         "vin": "7MMVAADW5TN144528",
         "vehicle": {
@@ -462,20 +373,20 @@
       "test": "POST /vin/save-to-inventory (first save)",
       "success": true,
       "details": "VIN saved to inventory successfully",
-      "timestamp": "2026-02-13T17:37:25.629006",
+      "timestamp": "2026-02-17T15:11:09.361811",
       "response_data": {
-        "vin": "1HGBH41JXMN145555",
+        "vin": "1HGBH41JXMN985635",
         "message": "Vehicle saved to inventory",
-        "id": "331318b8-e7e0-44fc-9972-0289a33ee67f"
+        "id": "61b94f3c-17a2-406b-9526-47157cfddbe5"
       }
     },
     {
       "test": "POST /vin/save-to-inventory (duplicate rejection)",
       "success": true,
       "details": "Duplicate VIN correctly rejected with 409 status",
-      "timestamp": "2026-02-13T17:37:25.695469",
+      "timestamp": "2026-02-17T15:11:09.427105",
       "response_data": {
-        "vin": "1HGBH41JXMN145555",
+        "vin": "1HGBH41JXMN985635",
         "error": "This VIN already exists in inventory. Vehicle: 2023 Honda Civic",
         "status": 409
       }
@@ -484,7 +395,7 @@
       "test": "GET /vin/decode (invalid VIN: TOOSHORT...)",
       "success": true,
       "details": "Clear validation error returned: VIN must be exactly 17 characters",
-      "timestamp": "2026-02-13T17:37:25.752323",
+      "timestamp": "2026-02-17T15:11:09.485905",
       "response_data": {
         "vin": "TOOSHORT",
         "error": "VIN must be exactly 17 characters",
@@ -495,7 +406,7 @@
       "test": "GET /vin/decode (invalid VIN: TOOLONGVIN...)",
       "success": true,
       "details": "Clear validation error returned: VIN must be exactly 17 characters",
-      "timestamp": "2026-02-13T17:37:25.817209",
+      "timestamp": "2026-02-17T15:11:09.551560",
       "response_data": {
         "vin": "TOOLONGVINTOBEVALID123",
         "error": "VIN must be exactly 17 characters",
@@ -506,7 +417,7 @@
       "test": "GET /vin/decode (invalid VIN: 1HGBH41JXM...)",
       "success": true,
       "details": "Clear validation error returned: VIN contains invalid characters (I, O, Q are not allowed)",
-      "timestamp": "2026-02-13T17:37:25.876920",
+      "timestamp": "2026-02-17T15:11:09.601140",
       "response_data": {
         "vin": "1HGBH41JXMN12345I",
         "error": "VIN contains invalid characters (I, O, Q are not allowed)",
@@ -517,7 +428,7 @@
       "test": "GET /vin/decode (invalid VIN: 1HGBH41JXM...)",
       "success": true,
       "details": "Clear validation error returned: VIN contains invalid characters (I, O, Q are not allowed)",
-      "timestamp": "2026-02-13T17:37:25.943833",
+      "timestamp": "2026-02-17T15:11:09.657667",
       "response_data": {
         "vin": "1HGBH41JXMN12345O",
         "error": "VIN contains invalid characters (I, O, Q are not allowed)",
@@ -528,7 +439,7 @@
       "test": "GET /vin/decode (invalid VIN: 1HGBH41JXM...)",
       "success": true,
       "details": "Clear validation error returned: VIN contains invalid characters (I, O, Q are not allowed)",
-      "timestamp": "2026-02-13T17:37:26.230731",
+      "timestamp": "2026-02-17T15:11:09.716929",
       "response_data": {
         "vin": "1HGBH41JXMN12345Q",
         "error": "VIN contains invalid characters (I, O, Q are not allowed)",
@@ -539,7 +450,7 @@
       "test": "VIN v2 regression sweep",
       "success": true,
       "details": "VIN functionality regression test passed (4/4 tests)",
-      "timestamp": "2026-02-13T17:37:27.043173",
+      "timestamp": "2026-02-17T15:11:10.510933",
       "response_data": {
         "decode_success": 2,
         "save_success": true,
@@ -551,18 +462,18 @@
     {
       "test": "POST /tower-talk (refactored)",
       "success": true,
-      "details": "Generated response (294 chars) - refactor working",
-      "timestamp": "2026-02-13T17:37:29.845208",
+      "details": "Generated response (274 chars) - refactor working",
+      "timestamp": "2026-02-17T15:11:13.031140",
       "response_data": {
-        "response_length": 294,
-        "preview": "Hi Alex, I understand the concern about the price of the 2024 BMW X3. It\u2019s important to get the best..."
+        "response_length": 274,
+        "preview": "Hi Alex, I understand that the price of the 2024 BMW X3 is a consideration for you. It's a fantastic..."
       }
     },
     {
       "test": "POST /translate (refactored)",
       "success": true,
       "details": "Translation successful - refactor working (confidence: 0.95)",
-      "timestamp": "2026-02-13T17:37:30.529670",
+      "timestamp": "2026-02-17T15:11:13.595408",
       "response_data": {
         "original": "hello",
         "translated": "hola",
@@ -572,10 +483,89 @@
       }
     },
     {
+      "test": "POST /license/upload/init",
+      "success": true,
+      "details": "Upload initialized with ID: ccdaa683215f4ae2ab4d8bf9ac4aeaf3",
+      "timestamp": "2026-02-17T15:11:13.666026",
+      "response_data": {
+        "upload_id": "ccdaa683215f4ae2ab4d8bf9ac4aeaf3",
+        "expires_at": "2026-02-17T16:11:13.643191+00:00"
+      }
+    },
+    {
+      "test": "POST /license/upload/chunk (chunk 0)",
+      "success": true,
+      "details": "Chunk 1/3 uploaded successfully",
+      "timestamp": "2026-02-17T15:11:13.742092",
+      "response_data": {
+        "upload_id": "ccdaa683215f4ae2ab4d8bf9ac4aeaf3",
+        "received": 1,
+        "total_chunks": 3
+      }
+    },
+    {
+      "test": "POST /license/upload/chunk (chunk 1)",
+      "success": true,
+      "details": "Chunk 2/3 uploaded successfully",
+      "timestamp": "2026-02-17T15:11:13.799665",
+      "response_data": {
+        "upload_id": "ccdaa683215f4ae2ab4d8bf9ac4aeaf3",
+        "received": 2,
+        "total_chunks": 3
+      }
+    },
+    {
+      "test": "POST /license/upload/chunk (chunk 2)",
+      "success": true,
+      "details": "Chunk 3/3 uploaded successfully",
+      "timestamp": "2026-02-17T15:11:13.859728",
+      "response_data": {
+        "upload_id": "ccdaa683215f4ae2ab4d8bf9ac4aeaf3",
+        "received": 3,
+        "total_chunks": 3
+      }
+    },
+    {
+      "test": "POST /license/upload/complete",
+      "success": true,
+      "details": "Upload completed successfully, image_url: /api/uploads/license_e0032fd78b40.png",
+      "timestamp": "2026-02-17T15:11:13.916325",
+      "response_data": {
+        "success": true,
+        "image_url": "/api/uploads/license_e0032fd78b40.png"
+      }
+    },
+    {
+      "test": "POST /license/create-customer (new fields)",
+      "success": true,
+      "details": "Customer created with new license fields: Jane Smith",
+      "timestamp": "2026-02-17T15:11:13.977776",
+      "response_data": {
+        "customer_id": "4d417d35-88b1-4cf1-906f-9a2d6771f43a",
+        "name": "Jane Smith",
+        "license_fields": {
+          "license_number": "TX123456789",
+          "license_expiration": "12/31/2025",
+          "license_dob": "01/15/1990",
+          "license_image_url": "/api/uploads/license_e0032fd78b40.png"
+        }
+      }
+    },
+    {
+      "test": "POST /license/upload (single-part sanity)",
+      "success": true,
+      "details": "Single-part upload still works: /api/uploads/license_84e03dd5eb2e.png",
+      "timestamp": "2026-02-17T15:11:14.039238",
+      "response_data": {
+        "success": true,
+        "image_url": "/api/uploads/license_84e03dd5eb2e.png"
+      }
+    },
+    {
       "test": "GET /health (license scan test)",
       "success": true,
       "details": "Health check passed: healthy",
-      "timestamp": "2026-02-13T17:37:30.737702",
+      "timestamp": "2026-02-17T15:11:14.096610",
       "response_data": {
         "status": "healthy"
       }
@@ -583,22 +573,22 @@
     {
       "test": "POST /license/scan (normal image - OCR failed)",
       "success": true,
-      "details": "OCR failed but image_url preserved: /api/uploads/license_36aec37b0639.jpg",
-      "timestamp": "2026-02-13T17:37:30.833613",
+      "details": "OCR failed but image_url preserved: /api/uploads/license_630a10500cdd.jpg",
+      "timestamp": "2026-02-17T15:11:14.154034",
       "response_data": {
         "success": false,
-        "image_url": "/api/uploads/license_36aec37b0639.jpg",
+        "image_url": "/api/uploads/license_630a10500cdd.jpg",
         "error": "Image appears too small or low quality for OCR. Please take a clearer photo (avoid glare/shadows)."
       }
     },
     {
       "test": "POST /license/scan (small image - low quality path)",
       "success": true,
-      "details": "Small image correctly failed OCR but preserved image_url: /api/uploads/license_6adf4694e51c.png",
-      "timestamp": "2026-02-13T17:37:30.922377",
+      "details": "Small image correctly failed OCR but preserved image_url: /api/uploads/license_2268aff340ca.png",
+      "timestamp": "2026-02-17T15:11:14.221604",
       "response_data": {
         "success": false,
-        "image_url": "/api/uploads/license_6adf4694e51c.png",
+        "image_url": "/api/uploads/license_2268aff340ca.png",
         "error": "Image appears too small or low quality for OCR. Please take a clearer photo (avoid glare/shadows)."
       }
     },
@@ -606,35 +596,35 @@
       "test": "POST /license/create-customer",
       "success": true,
       "details": "Customer created successfully: John Doe",
-      "timestamp": "2026-02-13T17:37:31.070084",
+      "timestamp": "2026-02-17T15:11:14.281599",
       "response_data": {
-        "customer_id": "d77bcaab-e504-4039-ba86-4509a23569a0",
+        "customer_id": "a6184053-d82c-48c5-bc88-ecc05ed59be0",
         "name": "John Doe",
-        "image_url": "/api/uploads/license_36aec37b0639.jpg"
+        "image_url": "/api/uploads/license_630a10500cdd.jpg"
       }
     },
     {
       "test": "Printer endpoints",
       "success": false,
       "details": "Exception: 520, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://swift-refactor-1.preview.emergentagent.com/api/printer/test'",
-      "timestamp": "2026-02-13T17:37:31.134913",
+      "timestamp": "2026-02-17T15:11:14.370272",
       "response_data": null
     },
     {
       "test": "GET /health (quality audit)",
       "success": true,
       "details": "Health check passed: healthy",
-      "timestamp": "2026-02-13T17:37:31.200637",
+      "timestamp": "2026-02-17T15:11:14.424338",
       "response_data": {
         "status": "healthy",
-        "timestamp": "2026-02-13T17:37:31.183563+00:00"
+        "timestamp": "2026-02-17T15:11:14.401569+00:00"
       }
     },
     {
       "test": "GET /dashboard/stats (quality audit)",
       "success": true,
       "details": "Dashboard stats endpoint responding",
-      "timestamp": "2026-02-13T17:37:31.290463",
+      "timestamp": "2026-02-17T15:11:14.492121",
       "response_data": {
         "sections": [
           "sales_performance",
@@ -648,26 +638,26 @@
     {
       "test": "GET /customers/list (quality audit)",
       "success": true,
-      "details": "Customers list endpoint responding with 18 customers",
-      "timestamp": "2026-02-13T17:37:31.353936",
+      "details": "Customers list endpoint responding with 6 customers",
+      "timestamp": "2026-02-17T15:11:14.567602",
       "response_data": {
-        "count": 18
+        "count": 6
       }
     },
     {
       "test": "GET /vehicles (quality audit)",
       "success": true,
-      "details": "Vehicles endpoint responding with 8 vehicles",
-      "timestamp": "2026-02-13T17:37:31.420390",
+      "details": "Vehicles endpoint responding with 4 vehicles",
+      "timestamp": "2026-02-17T15:11:14.620230",
       "response_data": {
-        "count": 8
+        "count": 4
       }
     },
     {
       "test": "GET /translate (quality audit)",
       "success": true,
       "details": "Translation endpoint responding: Hola mundo",
-      "timestamp": "2026-02-13T17:37:32.035418",
+      "timestamp": "2026-02-17T15:11:15.308911",
       "response_data": {
         "translated": "Hola mundo"
       }
@@ -675,10 +665,10 @@
     {
       "test": "GET /tower-talk (quality audit)",
       "success": true,
-      "details": "Tower Talk endpoint responding with 290 chars",
-      "timestamp": "2026-02-13T17:37:33.743413",
+      "details": "Tower Talk endpoint responding with 296 chars",
+      "timestamp": "2026-02-17T15:11:17.572047",
       "response_data": {
-        "response_length": 290
+        "response_length": 296
       }
     }
   ]
