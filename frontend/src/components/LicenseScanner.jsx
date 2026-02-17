@@ -338,6 +338,9 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
 
     const blob = await dataUrlToBlob(dataUrl);
     const totalChunks = Math.ceil(blob.size / LICENSE_UPLOAD_CHUNK_SIZE);
+    if (!totalChunks) {
+      throw new Error('Empty image file');
+    }
 
     setUploadProgress(0);
 
