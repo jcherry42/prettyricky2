@@ -54,6 +54,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
+  const ocrWorkerRef = useRef(null);
 
   // Get printer IP
   const getPrinterIP = () => localStorage.getItem('printerIP');
