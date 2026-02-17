@@ -781,4 +781,24 @@ const styles = StyleSheet.create({
     ...type.label,
     fontSize: 11,
   },
+  presetsContainer: {
+    marginTop: 0,
+  },
+  presetNumber: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(214,178,94,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  presetNumberText: {
+    color: colors.gold,
+    fontSize: 9,
+    fontWeight: '800',
+  },
 });
