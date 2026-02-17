@@ -746,6 +746,14 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
                     />
                   </div>
                   <div className="extraction-field">
+                    <label>Middle Name</label>
+                    <input
+                      value={licenseData.middle_name}
+                      onChange={(e) => handleFieldChange('middle_name', e.target.value)}
+                      placeholder="Middle name"
+                    />
+                  </div>
+                  <div className="extraction-field">
                     <label>Last Name</label>
                     <input
                       value={licenseData.last_name}
