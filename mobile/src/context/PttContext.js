@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Audio } from 'expo-av'; // TODO: migrate to expo-audio to remove deprecation warnings
+import { Audio } from 'expo-av';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
 import { useAppSettings } from './AppSettingsContext';
