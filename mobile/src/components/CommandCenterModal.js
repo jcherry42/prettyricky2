@@ -619,13 +619,14 @@ const styles = StyleSheet.create({
   },
   tabBtn: {
     flex: 1,
-    height: 40,
+    height: 50,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(0,0,0,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
   },
   tabBtnActive: {
     borderColor: 'rgba(214,178,94,0.60)',
@@ -633,9 +634,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: colors.textMute,
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 1.1,
+    letterSpacing: 0.8,
   },
   tabTextActive: {
     color: colors.gold,
