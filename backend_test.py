@@ -885,7 +885,7 @@ class BackendTester:
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*60)
-        print("📊 SPRINT 12 REGRESSION TEST SUMMARY")
+        print("📊 SPRINT 13 FINAL POLISH REGRESSION TEST SUMMARY")
         print("="*60)
         
         passed = len([r for r in self.results if r['success']])
