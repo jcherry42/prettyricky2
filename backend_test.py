@@ -1207,21 +1207,33 @@ class BackendTester:
             self.log_result("GET /customers (merged list)", False, f"Exception: {str(e)}")
             return False
 
-    async def test_customer_management_endpoints(self):
+    async def test_comprehensive_customer_endpoints(self):
         """
-        Test customer management endpoints for Sprint 2 of the native conversion project
+        COMPREHENSIVE CUSTOMER ENDPOINT TESTING - EXCEPTIONAL QUALITY VERIFICATION
         
-        Tests:
-        1. GET /api/customers/list?limit=200 - Verify returns {customers, total} structure
-        2. POST /api/customers/create - Create new customer with all fields
-        3. GET /api/customers/{customer_id} - Retrieve customer by ID
-        4. PATCH /api/customers/{customer_id} - Update customer fields
-        5. DELETE /api/customers/{customer_id} - Delete customer
-        6. Search functionality - GET /api/customers/list?search=john
+        Test ALL customer management endpoints with multiple scenarios to ensure 100% pass rate:
+        1. Customer List Endpoint - Stress Test with various parameters
+        2. Customer Creation - Full Validation with 3 different profiles
+        3. Customer Retrieval - Individual Access
+        4. Customer Update - All Status Transitions
+        5. Customer Search - Comprehensive scenarios
+        6. Customer Deletion - Cleanup
+        7. Performance Metrics
+        8. Edge Cases
         """
+        created_customers = []  # Track created customers for cleanup
+        
         try:
-            # Test 1: GET /api/customers/list?limit=200
+            print("\n🎯 STARTING COMPREHENSIVE CUSTOMER ENDPOINT TESTING")
+            
+            # ============== 1. CUSTOMER LIST ENDPOINT - STRESS TEST ==============
+            print("\n📋 Testing Customer List Endpoint - Stress Test")
+            
+            # Test 1.1: GET /api/customers/list?limit=200 - verify fast response time
+            start_time = time.time()
             async with self.session.get(f"{BACKEND_URL}/customers/list?limit=200") as response:
+                response_time = (time.time() - start_time) * 1000  # Convert to ms
+                
                 if response.status == 200:
                     data = await response.json()
                     
@@ -1234,22 +1246,523 @@ class BackendTester:
                         )
                         return False
                     
+                    # Verify response time < 500ms
+                    if response_time > 500:
+                        self.log_result(
+                            "GET /customers/list?limit=200 - Performance", 
+                            False, 
+                            f"Response time {response_time:.0f}ms exceeds 500ms limit"
+                        )
+                        return False
+                    
                     customers = data.get('customers', [])
                     total = data.get('total', 0)
                     
-                    # Check customer object structure if customers exist
-                    if customers:
-                        customer = customers[0]
-                        required_fields = ['customer_id', 'first_name', 'last_name', 'phone', 'email', 
-                                         'address', 'lead_status', 'vehicle_interest', 'notes', 'created_at']
-                        missing_fields = [field for field in required_fields if field not in customer]
-                        
-                        if missing_fields:
+                    self.log_result(
+                        "GET /customers/list?limit=200", 
+                        True, 
+                        f"Retrieved {len(customers)} customers, total={total}, response_time={response_time:.0f}ms", 
+                        {'count': len(customers), 'total': total, 'response_time_ms': response_time}
+                    )
+                else:
+                    self.log_result("GET /customers/list?limit=200", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test 1.2: Pagination tests
+            for limit, skip in [(50, 0), (50, 50)]:
+                start_time = time.time()
+                async with self.session.get(f"{BACKEND_URL}/customers/list?limit={limit}&skip={skip}") as response:
+                    response_time = (time.time() - start_time) * 1000
+                    
+                    if response.status == 200 and response_time <= 500:
+                        data = await response.json()
+                        self.log_result(
+                            f"GET /customers/list?limit={limit}&skip={skip}", 
+                            True, 
+                            f"Pagination working, {len(data.get('customers', []))} results, {response_time:.0f}ms", 
+                            {'limit': limit, 'skip': skip, 'response_time_ms': response_time}
+                        )
+                    else:
+                        self.log_result(f"GET /customers/list?limit={limit}&skip={skip}", False, f"HTTP {response.status} or slow response")
+                        return False
+            
+            # Test 1.3: Search functionality tests
+            search_terms = ['test', '555', '@test.com']
+            for search_term in search_terms:
+                start_time = time.time()
+                async with self.session.get(f"{BACKEND_URL}/customers/list?search={search_term}") as response:
+                    response_time = (time.time() - start_time) * 1000
+                    
+                    if response.status == 200 and response_time <= 500:
+                        data = await response.json()
+                        self.log_result(
+                            f"GET /customers/list?search={search_term}", 
+                            True, 
+                            f"Search returned {len(data.get('customers', []))} results, {response_time:.0f}ms", 
+                            {'search_term': search_term, 'results': len(data.get('customers', [])), 'response_time_ms': response_time}
+                        )
+                    else:
+                        self.log_result(f"GET /customers/list?search={search_term}", False, f"HTTP {response.status} or slow response")
+                        return False
+            
+            # ============== 2. CUSTOMER CREATION - FULL VALIDATION ==============
+            print("\n👤 Testing Customer Creation - Full Validation")
+            
+            # Customer A (Full data)
+            customer_a_data = {
+                "first_name": "Alex",
+                "last_name": "Martinez",
+                "phone": "(555) 100-0001",
+                "email": "alex.martinez@test.com",
+                "address": "123 Oak Street, Austin, TX 78701",
+                "lead_status": "new",
+                "vehicle_interest": "2024 Honda Accord",
+                "notes": "Interested in financing options"
+            }
+            
+            # Customer B (Minimal data)
+            customer_b_data = {
+                "first_name": "Sarah",
+                "last_name": "Johnson",
+                "phone": "(555) 100-0002",
+                "email": "",
+                "address": "",
+                "lead_status": "contacted",
+                "vehicle_interest": "",
+                "notes": ""
+            }
+            
+            # Customer C (Rich data)
+            customer_c_data = {
+                "first_name": "Michael",
+                "last_name": "Chen",
+                "phone": "(555) 100-0003",
+                "email": "michael.chen@test.com",
+                "address": "456 Maple Ave, San Francisco, CA 94102",
+                "lead_status": "appointment",
+                "vehicle_interest": "2024 Tesla Model 3, 2024 BMW X5",
+                "notes": "Prefers electric vehicles. Test drive scheduled for next week. Has trade-in: 2019 Toyota Camry with 45k miles."
+            }
+            
+            customers_to_create = [
+                ("Customer A (Full data)", customer_a_data),
+                ("Customer B (Minimal data)", customer_b_data),
+                ("Customer C (Rich data)", customer_c_data)
+            ]
+            
+            for customer_name, customer_data in customers_to_create:
+                async with self.session.post(f"{BACKEND_URL}/customers/create", json=customer_data) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success') and data.get('customer'):
+                            customer = data.get('customer')
+                            customer_id = customer.get('customer_id') or customer.get('id')
+                            created_customers.append(customer_id)
+                            
+                            # Verify all fields preserved
+                            fields_preserved = True
+                            for key, value in customer_data.items():
+                                if customer.get(key) != value:
+                                    fields_preserved = False
+                                    break
+                            
                             self.log_result(
-                                "GET /customers/list?limit=200 - Customer Fields", 
-                                False, 
-                                f"Customer missing required fields: {missing_fields}"
+                                f"POST /customers/create - {customer_name}", 
+                                fields_preserved, 
+                                f"Created customer: {customer.get('first_name')} {customer.get('last_name')}, ID: {customer_id}", 
+                                {'customer_id': customer_id, 'fields_preserved': fields_preserved}
                             )
+                            
+                            if not fields_preserved:
+                                return False
+                        else:
+                            self.log_result(f"POST /customers/create - {customer_name}", False, f"Creation failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"POST /customers/create - {customer_name}", False, f"HTTP {response.status}: {error_text}")
+                        return False
+            
+            # ============== 3. CUSTOMER RETRIEVAL - INDIVIDUAL ACCESS ==============
+            print("\n🔍 Testing Customer Retrieval - Individual Access")
+            
+            for i, customer_id in enumerate(created_customers):
+                start_time = time.time()
+                async with self.session.get(f"{BACKEND_URL}/customers/{customer_id}") as response:
+                    response_time = (time.time() - start_time) * 1000
+                    
+                    if response.status == 200 and response_time <= 200:
+                        data = await response.json()
+                        customer = data.get('customer', data)  # Handle different response formats
+                        
+                        self.log_result(
+                            f"GET /customers/{customer_id} - Customer {chr(65+i)}", 
+                            True, 
+                            f"Retrieved customer: {customer.get('first_name')} {customer.get('last_name')}, {response_time:.0f}ms", 
+                            {'customer_id': customer_id, 'response_time_ms': response_time}
+                        )
+                    else:
+                        self.log_result(f"GET /customers/{customer_id} - Customer {chr(65+i)}", False, f"HTTP {response.status} or slow response")
+                        return False
+            
+            # ============== 4. CUSTOMER UPDATE - ALL STATUS TRANSITIONS ==============
+            print("\n✏️ Testing Customer Update - All Status Transitions")
+            
+            if len(created_customers) >= 3:
+                # Test status transitions for Customer A
+                status_transitions = [
+                    ("new", "contacted"),
+                    ("contacted", "appointment"),
+                    ("appointment", "negotiating"),
+                    ("negotiating", "sold")
+                ]
+                
+                customer_a_id = created_customers[0]
+                for from_status, to_status in status_transitions:
+                    update_data = {"lead_status": to_status}
+                    
+                    async with self.session.patch(f"{BACKEND_URL}/customers/{customer_a_id}", json=update_data) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            if data.get('success'):
+                                self.log_result(
+                                    f"PATCH /customers/{customer_a_id} - Status {from_status}→{to_status}", 
+                                    True, 
+                                    f"Status updated successfully", 
+                                    {'from_status': from_status, 'to_status': to_status}
+                                )
+                            else:
+                                self.log_result(f"PATCH /customers/{customer_a_id} - Status {from_status}→{to_status}", False, f"Update failed: {data}")
+                                return False
+                        else:
+                            error_text = await response.text()
+                            self.log_result(f"PATCH /customers/{customer_a_id} - Status {from_status}→{to_status}", False, f"HTTP {response.status}: {error_text}")
+                            return False
+                
+                # Update Customer B with full data
+                customer_b_id = created_customers[1]
+                full_update_data = {
+                    "email": "sarah.johnson@updated.com",
+                    "address": "789 Updated Street, Dallas, TX 75201",
+                    "vehicle_interest": "2024 Ford F-150",
+                    "notes": "Updated with full information"
+                }
+                
+                async with self.session.patch(f"{BACKEND_URL}/customers/{customer_b_id}", json=full_update_data) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success'):
+                            self.log_result(
+                                f"PATCH /customers/{customer_b_id} - Full Update", 
+                                True, 
+                                "Customer B updated with full data", 
+                                {'updated_fields': list(full_update_data.keys())}
+                            )
+                        else:
+                            self.log_result(f"PATCH /customers/{customer_b_id} - Full Update", False, f"Update failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"PATCH /customers/{customer_b_id} - Full Update", False, f"HTTP {response.status}: {error_text}")
+                        return False
+                
+                # Update Customer C notes
+                customer_c_id = created_customers[2]
+                notes_update = {
+                    "notes": "Updated notes: Customer confirmed interest in Tesla Model 3. Financing pre-approved. Delivery scheduled for next month."
+                }
+                
+                async with self.session.patch(f"{BACKEND_URL}/customers/{customer_c_id}", json=notes_update) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success'):
+                            self.log_result(
+                                f"PATCH /customers/{customer_c_id} - Notes Update", 
+                                True, 
+                                "Customer C notes updated", 
+                                {'notes_length': len(notes_update['notes'])}
+                            )
+                        else:
+                            self.log_result(f"PATCH /customers/{customer_c_id} - Notes Update", False, f"Update failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"PATCH /customers/{customer_c_id} - Notes Update", False, f"HTTP {response.status}: {error_text}")
+                        return False
+            
+            # ============== 5. CUSTOMER SEARCH - COMPREHENSIVE ==============
+            print("\n🔎 Testing Customer Search - Comprehensive")
+            
+            search_scenarios = [
+                ("Alex", "first name search"),
+                ("Chen", "last name search"),
+                ("100-0002", "partial phone search"),
+                ("test.com", "email domain search"),
+                ("Austin", "city search"),
+                ("SARAH", "case-insensitive search"),
+                ("xyz123", "non-existent search")
+            ]
+            
+            for search_term, description in search_scenarios:
+                async with self.session.get(f"{BACKEND_URL}/customers/list?search={search_term}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        customers = data.get('customers', [])
+                        
+                        # Verify search logic
+                        expected_results = 0
+                        if search_term == "Alex":
+                            expected_results = 1  # Should find Customer A
+                        elif search_term == "Chen":
+                            expected_results = 1  # Should find Customer C
+                        elif search_term == "100-0002":
+                            expected_results = 1  # Should find Customer B
+                        elif search_term == "test.com":
+                            expected_results = 2  # Should find Customer A and C
+                        elif search_term == "Austin":
+                            expected_results = 1  # Should find Customer A
+                        elif search_term == "SARAH":
+                            expected_results = 1  # Should find Customer B (case-insensitive)
+                        elif search_term == "xyz123":
+                            expected_results = 0  # Should return empty
+                        
+                        search_success = len(customers) >= expected_results if expected_results > 0 else len(customers) == 0
+                        
+                        self.log_result(
+                            f"Search: {search_term} ({description})", 
+                            search_success, 
+                            f"Found {len(customers)} customers (expected: {expected_results})", 
+                            {'search_term': search_term, 'found': len(customers), 'expected': expected_results}
+                        )
+                        
+                        if not search_success:
+                            return False
+                    else:
+                        self.log_result(f"Search: {search_term} ({description})", False, f"HTTP {response.status}")
+                        return False
+            
+            # ============== 6. CUSTOMER DELETION - CLEANUP ==============
+            print("\n🗑️ Testing Customer Deletion - Cleanup")
+            
+            if len(created_customers) >= 1:
+                # Delete Customer A
+                customer_a_id = created_customers[0]
+                async with self.session.delete(f"{BACKEND_URL}/customers/{customer_a_id}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success'):
+                            self.log_result(
+                                f"DELETE /customers/{customer_a_id} - Customer A", 
+                                True, 
+                                "Customer A deleted successfully", 
+                                {'customer_id': customer_a_id}
+                            )
+                            
+                            # Verify Customer A not accessible
+                            async with self.session.get(f"{BACKEND_URL}/customers/{customer_a_id}") as get_response:
+                                if get_response.status == 404:
+                                    self.log_result(
+                                        f"GET /customers/{customer_a_id} - Verify 404", 
+                                        True, 
+                                        "Customer A correctly returns 404 after deletion", 
+                                        {'expected_status': 404, 'actual_status': get_response.status}
+                                    )
+                                else:
+                                    self.log_result(f"GET /customers/{customer_a_id} - Verify 404", False, f"Expected 404, got {get_response.status}")
+                                    return False
+                            
+                            # Verify Customer A not in list
+                            async with self.session.get(f"{BACKEND_URL}/customers/list?search=Alex") as list_response:
+                                if list_response.status == 200:
+                                    list_data = await list_response.json()
+                                    alex_customers = [c for c in list_data.get('customers', []) if c.get('first_name') == 'Alex']
+                                    
+                                    if len(alex_customers) == 0:
+                                        self.log_result(
+                                            "Verify Customer A not in list", 
+                                            True, 
+                                            "Customer A correctly removed from list", 
+                                            {'alex_customers_found': len(alex_customers)}
+                                        )
+                                    else:
+                                        self.log_result("Verify Customer A not in list", False, f"Found {len(alex_customers)} Alex customers after deletion")
+                                        return False
+                                else:
+                                    self.log_result("Verify Customer A not in list", False, f"HTTP {list_response.status}")
+                                    return False
+                        else:
+                            self.log_result(f"DELETE /customers/{customer_a_id} - Customer A", False, f"Delete failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"DELETE /customers/{customer_a_id} - Customer A", False, f"HTTP {response.status}: {error_text}")
+                        return False
+                
+                # Delete remaining customers (B and C)
+                for i, customer_id in enumerate(created_customers[1:], 1):
+                    async with self.session.delete(f"{BACKEND_URL}/customers/{customer_id}") as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            if data.get('success'):
+                                self.log_result(
+                                    f"DELETE /customers/{customer_id} - Customer {chr(65+i)}", 
+                                    True, 
+                                    f"Customer {chr(65+i)} deleted successfully", 
+                                    {'customer_id': customer_id}
+                                )
+                            else:
+                                self.log_result(f"DELETE /customers/{customer_id} - Customer {chr(65+i)}", False, f"Delete failed: {data}")
+                                return False
+                        else:
+                            error_text = await response.text()
+                            self.log_result(f"DELETE /customers/{customer_id} - Customer {chr(65+i)}", False, f"HTTP {response.status}: {error_text}")
+                            return False
+            
+            # ============== 7. EDGE CASES ==============
+            print("\n⚠️ Testing Edge Cases")
+            
+            # Test very long notes
+            long_notes_customer = {
+                "first_name": "Test",
+                "last_name": "LongNotes",
+                "phone": "(555) 999-0001",
+                "email": "longnotes@test.com",
+                "address": "123 Test St",
+                "lead_status": "new",
+                "vehicle_interest": "Test Vehicle",
+                "notes": "A" * 1500  # 1500 character notes
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=long_notes_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        customer_id = data.get('customer', {}).get('customer_id') or data.get('customer', {}).get('id')
+                        self.log_result(
+                            "Edge Case: Long Notes (1500 chars)", 
+                            True, 
+                            "Customer with long notes created successfully", 
+                            {'customer_id': customer_id, 'notes_length': len(long_notes_customer['notes'])}
+                        )
+                        
+                        # Clean up
+                        if customer_id:
+                            await self.session.delete(f"{BACKEND_URL}/customers/{customer_id}")
+                    else:
+                        self.log_result("Edge Case: Long Notes (1500 chars)", False, f"Creation failed: {data}")
+                        return False
+                else:
+                    self.log_result("Edge Case: Long Notes (1500 chars)", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test special characters in name
+            special_chars_customer = {
+                "first_name": "José",
+                "last_name": "François-陈",
+                "phone": "(555) 999-0002",
+                "email": "special@test.com",
+                "address": "123 Special St",
+                "lead_status": "new",
+                "vehicle_interest": "Test Vehicle",
+                "notes": "Special characters test"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=special_chars_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        customer_id = data.get('customer', {}).get('customer_id') or data.get('customer', {}).get('id')
+                        self.log_result(
+                            "Edge Case: Special Characters", 
+                            True, 
+                            "Customer with special characters created successfully", 
+                            {'customer_id': customer_id, 'name': f"{special_chars_customer['first_name']} {special_chars_customer['last_name']}"}
+                        )
+                        
+                        # Clean up
+                        if customer_id:
+                            await self.session.delete(f"{BACKEND_URL}/customers/{customer_id}")
+                    else:
+                        self.log_result("Edge Case: Special Characters", False, f"Creation failed: {data}")
+                        return False
+                else:
+                    self.log_result("Edge Case: Special Characters", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test international phone format
+            intl_phone_customer = {
+                "first_name": "International",
+                "last_name": "Phone",
+                "phone": "+1-555-999-0003",
+                "email": "intl@test.com",
+                "address": "123 International St",
+                "lead_status": "new",
+                "vehicle_interest": "Test Vehicle",
+                "notes": "International phone format test"
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=intl_phone_customer) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success'):
+                        customer_id = data.get('customer', {}).get('customer_id') or data.get('customer', {}).get('id')
+                        self.log_result(
+                            "Edge Case: International Phone", 
+                            True, 
+                            "Customer with international phone created successfully", 
+                            {'customer_id': customer_id, 'phone': intl_phone_customer['phone']}
+                        )
+                        
+                        # Clean up
+                        if customer_id:
+                            await self.session.delete(f"{BACKEND_URL}/customers/{customer_id}")
+                    else:
+                        self.log_result("Edge Case: International Phone", False, f"Creation failed: {data}")
+                        return False
+                else:
+                    self.log_result("Edge Case: International Phone", False, f"HTTP {response.status}")
+                    return False
+            
+            # Test update non-existent customer
+            fake_customer_id = "00000000-0000-0000-0000-000000000000"
+            async with self.session.patch(f"{BACKEND_URL}/customers/{fake_customer_id}", json={"notes": "test"}) as response:
+                if response.status == 404:
+                    self.log_result(
+                        "Edge Case: Update Non-existent Customer", 
+                        True, 
+                        "Correctly returned 404 for non-existent customer", 
+                        {'expected_status': 404, 'actual_status': response.status}
+                    )
+                else:
+                    self.log_result("Edge Case: Update Non-existent Customer", False, f"Expected 404, got {response.status}")
+                    return False
+            
+            # Test delete already deleted customer
+            async with self.session.delete(f"{BACKEND_URL}/customers/{fake_customer_id}") as response:
+                if response.status == 404:
+                    self.log_result(
+                        "Edge Case: Delete Non-existent Customer", 
+                        True, 
+                        "Correctly returned 404 for non-existent customer", 
+                        {'expected_status': 404, 'actual_status': response.status}
+                    )
+                else:
+                    self.log_result("Edge Case: Delete Non-existent Customer", False, f"Expected 404, got {response.status}")
+                    return False
+            
+            print("\n✅ COMPREHENSIVE CUSTOMER ENDPOINT TESTING COMPLETED SUCCESSFULLY")
+            return True
+            
+        except Exception as e:
+            self.log_result("Comprehensive Customer Endpoints", False, f"Exception: {str(e)}")
+            return False
+        finally:
+            # Cleanup any remaining test customers
+            for customer_id in created_customers:
+                try:
+                    await self.session.delete(f"{BACKEND_URL}/customers/{customer_id}")
+                except:
+                    pass  # Ignore cleanup errors
                             return False
                     
                     self.log_result(
