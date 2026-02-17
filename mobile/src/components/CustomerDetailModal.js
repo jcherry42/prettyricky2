@@ -1,11 +1,14 @@
-import React from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, impactLight, notificationSuccess, notificationError } from '../lib/haptics';
-import { textCustomer } from '../lib/sms';
+import { textCustomer, sendTowerTalkSms } from '../lib/sms';
+import { apiFetch } from '../lib/api';
+import { useAppSettings } from '../context/AppSettingsContext';
+import { flagFor, langName } from '../utils/language';
 
 const STATUS_CONFIG = {
   new: { label: 'NEW', color: colors.blue },
@@ -17,37 +20,101 @@ const STATUS_CONFIG = {
 };
 
 export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }) {
+  const { settings } = useAppSettings();
+  const lang = settings.defaultTargetLanguage || 'es';
+  const flag = flagFor(lang);
+  const sportOn = Boolean(settings.sportMode);
+
+  // Translation state for SMS/Email messages
+  const [translating, setTranslating] = useState(false);
+  const [translatedSms, setTranslatedSms] = useState('');
+  const [translatedEmail, setTranslatedEmail] = useState('');
+
   if (!customer) return null;
 
   const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
   const status = customer.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
   const hasPhone = customer.phone && customer.phone !== '—';
+  const hasEmail = customer.email && customer.email !== '—';
 
-  const handleDelete = () => {
-    impactMedium();
-    Alert.alert(
-      'Delete Customer',
-      `Are you sure you want to delete ${name}? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            notificationSuccess();
-            onDelete?.(customer);
-          },
-        },
-      ]
-    );
+  // ---------- Message templates ----------
+  const smsGreeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
+  const emailSubject = `Follow-up from Supercharg'd`;
+  const emailBody = `Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
+
+  // ---------- Translate helper ----------
+  const translateText = useCallback(async (text) => {
+    const res = await apiFetch('/api/translate', {
+      method: 'POST',
+      timeout: 15000,
+      body: JSON.stringify({
+        text: text.trim(),
+        source_lang: 'en',
+        target_lang: lang,
+      }),
+    });
+    if (!res?.translated_text) throw new Error('Translation returned empty');
+    return res.translated_text;
+  }, [lang]);
+
+  // ---------- SMS handlers ----------
+  const handleSms = async (useTranslation = false) => {
+    if (!hasPhone) {
+      Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
+      return;
+    }
+    impactLight();
+    const message = useTranslation && translatedSms ? translatedSms : smsGreeting;
+    const result = await textCustomer(customer.phone, message);
+    if (result.success) notificationSuccess();
   };
 
-  const handleEdit = () => {
-    impactMedium();
-    onEdit?.(customer);
+  const handleTranslateSms = async () => {
+    try {
+      impactLight();
+      setTranslating(true);
+      const result = await translateText(smsGreeting);
+      setTranslatedSms(result);
+      notificationSuccess();
+    } catch (e) {
+      notificationError();
+      Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
+    } finally {
+      setTranslating(false);
+    }
   };
 
+  // ---------- Email handlers ----------
+  const handleEmail = (useTranslation = false) => {
+    if (!hasEmail) {
+      Alert.alert('No Email', 'This customer does not have an email on file.');
+      return;
+    }
+    impactLight();
+    const subject = encodeURIComponent(emailSubject);
+    const body = encodeURIComponent(useTranslation && translatedEmail ? translatedEmail : emailBody);
+    Linking.openURL(`mailto:${customer.email}?subject=${subject}&body=${body}`).catch(() => {
+      Alert.alert('Email Failed', 'Unable to open email app on this device.');
+    });
+  };
+
+  const handleTranslateEmail = async () => {
+    try {
+      impactLight();
+      setTranslating(true);
+      const result = await translateText(emailBody);
+      setTranslatedEmail(result);
+      notificationSuccess();
+    } catch (e) {
+      notificationError();
+      Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  // ---------- Call handler ----------
   const handleCall = () => {
     if (!hasPhone) {
       Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
@@ -60,47 +127,57 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     });
   };
 
-  const handleSms = async () => {
-    if (!hasPhone) {
-      Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
-      return;
-    }
-    impactLight();
-    const greeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
-    const result = await textCustomer(customer.phone, greeting);
-    if (result.success) {
-      notificationSuccess();
-    }
+  // ---------- Edit/Delete ----------
+  const handleDelete = () => {
+    impactMedium();
+    Alert.alert(
+      'Delete Customer',
+      `Are you sure you want to delete ${name}? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => { notificationSuccess(); onDelete?.(customer); },
+        },
+      ]
+    );
   };
 
-  const handleEmail = () => {
-    if (!customer.email || customer.email === '—') {
-      Alert.alert('No Email', 'This customer does not have an email on file.');
-      return;
-    }
-    impactLight();
-    const subject = encodeURIComponent(`Follow-up from Supercharg'd`);
-    const body = encodeURIComponent(`Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership.\n\n`);
-    Linking.openURL(`mailto:${customer.email}?subject=${subject}&body=${body}`).catch(() => {
-      Alert.alert('Email Failed', 'Unable to open email app on this device.');
-    });
+  const handleEdit = () => {
+    impactMedium();
+    onEdit?.(customer);
+  };
+
+  // Reset translation state when modal opens/closes
+  const handleClose = () => {
+    setTranslatedSms('');
+    setTranslatedEmail('');
+    onClose();
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <LinearGradient colors={[colors.bg0, colors.bg1]} style={styles.container}>
-        {/* Header with wood bezel effect */}
+        {/* Header */}
         <LinearGradient
           colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
         >
-          <Pressable onPress={onClose} style={styles.closeButton} accessibilityLabel="Close">
+          <Pressable onPress={handleClose} style={styles.closeButton} accessibilityLabel="Close">
             <Ionicons name="close" size={28} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>Customer Details</Text>
-          <View style={{ width: 28 }} />
+          {/* SPORT mode indicator */}
+          {sportOn && (
+            <View style={styles.sportBadge}>
+              <Ionicons name="flame" size={14} color="#FF5000" />
+              <Text style={styles.sportBadgeText}>{flag}</Text>
+            </View>
+          )}
+          {!sportOn && <View style={{ width: 28 }} />}
         </LinearGradient>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -112,8 +189,9 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
           {/* Name */}
           <Text style={styles.customerName}>{name || 'Unknown Customer'}</Text>
 
-          {/* Quick Actions - Call, Text, Email */}
+          {/* ======== QUICK ACTIONS: Call / Text / Email ======== */}
           <View style={styles.quickActions}>
+            {/* CALL */}
             <Pressable
               onPress={handleCall}
               style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
@@ -125,28 +203,128 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
               <Text style={styles.quickActionLabel}>Call</Text>
             </Pressable>
 
-            <Pressable
-              onPress={handleSms}
-              style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
-              accessibilityLabel="Text customer"
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(0,122,255,0.15)', borderColor: 'rgba(0,122,255,0.40)' }]}>
-                <Ionicons name="chatbubble" size={20} color={colors.blue} />
-              </View>
-              <Text style={styles.quickActionLabel}>Text</Text>
-            </Pressable>
+            {/* TEXT with translate option */}
+            <View style={styles.quickActionGroup}>
+              <Pressable
+                onPress={() => handleSms(!!translatedSms)}
+                style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
+                accessibilityLabel="Text customer"
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(0,122,255,0.15)', borderColor: 'rgba(0,122,255,0.40)' }]}>
+                  <Ionicons name="chatbubble" size={20} color={colors.blue} />
+                </View>
+                <Text style={styles.quickActionLabel}>
+                  {translatedSms ? `Text ${flag}` : 'Text'}
+                </Text>
+              </Pressable>
+              {/* Translate flag button */}
+              <Pressable
+                onPress={handleTranslateSms}
+                disabled={translating}
+                style={({ pressed }) => [
+                  styles.translateFlagBtn,
+                  translatedSms && styles.translateFlagBtnActive,
+                  pressed && { opacity: 0.7 },
+                ]}
+                accessibilityLabel={`Translate text to ${langName(lang)}`}
+              >
+                {translating ? (
+                  <ActivityIndicator size="small" color={colors.gold} />
+                ) : (
+                  <Text style={styles.translateFlagText}>{flag}</Text>
+                )}
+              </Pressable>
+            </View>
 
-            <Pressable
-              onPress={handleEmail}
-              style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
-              accessibilityLabel="Email customer"
-            >
-              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(214,178,94,0.15)', borderColor: 'rgba(214,178,94,0.40)' }]}>
-                <Ionicons name="mail" size={20} color={colors.gold} />
-              </View>
-              <Text style={styles.quickActionLabel}>Email</Text>
-            </Pressable>
+            {/* EMAIL with translate option */}
+            <View style={styles.quickActionGroup}>
+              <Pressable
+                onPress={() => handleEmail(!!translatedEmail)}
+                style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
+                accessibilityLabel="Email customer"
+              >
+                <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(214,178,94,0.15)', borderColor: 'rgba(214,178,94,0.40)' }]}>
+                  <Ionicons name="mail" size={20} color={colors.gold} />
+                </View>
+                <Text style={styles.quickActionLabel}>
+                  {translatedEmail ? `Email ${flag}` : 'Email'}
+                </Text>
+              </Pressable>
+              {/* Translate flag button */}
+              <Pressable
+                onPress={handleTranslateEmail}
+                disabled={translating}
+                style={({ pressed }) => [
+                  styles.translateFlagBtn,
+                  translatedEmail && styles.translateFlagBtnActive,
+                  pressed && { opacity: 0.7 },
+                ]}
+                accessibilityLabel={`Translate email to ${langName(lang)}`}
+              >
+                {translating ? (
+                  <ActivityIndicator size="small" color={colors.gold} />
+                ) : (
+                  <Text style={styles.translateFlagText}>{flag}</Text>
+                )}
+              </Pressable>
+            </View>
           </View>
+
+          {/* SPORT mode translation indicator */}
+          {sportOn && (
+            <View style={styles.sportTranslateBar}>
+              <Ionicons name="flame" size={12} color="#FF5000" />
+              <Text style={styles.sportTranslateText}>
+                SPORT MODE — messages translate to {langName(lang)} {flag}
+              </Text>
+            </View>
+          )}
+
+          {/* Translation preview for SMS */}
+          {translatedSms ? (
+            <View style={styles.translationPreview}>
+              <View style={styles.translationHeader}>
+                <Ionicons name="chatbubble" size={12} color={colors.blue} />
+                <Text style={styles.translationLabel}>TEXT PREVIEW ({langName(lang).toUpperCase()})</Text>
+              </View>
+              <Text style={styles.translationText}>{translatedSms}</Text>
+              <View style={styles.translationActions}>
+                <Pressable
+                  onPress={() => handleSms(true)}
+                  style={({ pressed }) => [styles.sendTranslatedBtn, pressed && { opacity: 0.8 }]}
+                >
+                  <Ionicons name="send" size={12} color="#000" />
+                  <Text style={styles.sendTranslatedText}>Send {flag}</Text>
+                </Pressable>
+                <Pressable onPress={() => setTranslatedSms('')} style={styles.clearBtn}>
+                  <Ionicons name="close-circle" size={14} color={colors.textMute} />
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
+
+          {/* Translation preview for Email */}
+          {translatedEmail ? (
+            <View style={styles.translationPreview}>
+              <View style={styles.translationHeader}>
+                <Ionicons name="mail" size={12} color={colors.gold} />
+                <Text style={styles.translationLabel}>EMAIL PREVIEW ({langName(lang).toUpperCase()})</Text>
+              </View>
+              <Text style={styles.translationText} numberOfLines={4}>{translatedEmail}</Text>
+              <View style={styles.translationActions}>
+                <Pressable
+                  onPress={() => handleEmail(true)}
+                  style={({ pressed }) => [styles.sendTranslatedBtn, { backgroundColor: colors.gold }, pressed && { opacity: 0.8 }]}
+                >
+                  <Ionicons name="send" size={12} color="#000" />
+                  <Text style={styles.sendTranslatedText}>Send {flag}</Text>
+                </Pressable>
+                <Pressable onPress={() => setTranslatedEmail('')} style={styles.clearBtn}>
+                  <Ionicons name="close-circle" size={14} color={colors.textMute} />
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
 
           {/* Info sections */}
           <View style={styles.section}>
@@ -156,19 +334,19 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             <InfoRow icon="location" label="Address" value={customer.address || '—'} />
           </View>
 
-          {customer.vehicle_interest && (
+          {customer.vehicle_interest ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>VEHICLE INTEREST</Text>
               <InfoRow icon="car" label="Vehicle" value={customer.vehicle_interest} />
             </View>
-          )}
+          ) : null}
 
-          {customer.notes && (
+          {customer.notes ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>NOTES</Text>
               <Text style={styles.notesText}>{customer.notes}</Text>
             </View>
-          )}
+          ) : null}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>METADATA</Text>
@@ -209,17 +387,13 @@ function InfoRow({ icon, label, value }) {
     <View style={styles.infoRow}>
       <Ionicons name={icon} size={16} color={colors.gold} />
       <Text style={styles.infoLabel}>{label}:</Text>
-      <Text style={styles.infoValue} numberOfLines={2}>
-        {value}
-      </Text>
+      <Text style={styles.infoValue} numberOfLines={2}>{value}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -230,17 +404,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: colors.gold,
   },
-  closeButton: {
-    padding: 4,
+  closeButton: { padding: 4 },
+  headerTitle: { ...type.h1, color: colors.text },
+  sportBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,80,0,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,80,0,0.40)',
   },
-  headerTitle: {
-    ...type.h1,
-    color: colors.text,
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
+  sportBadgeText: { fontSize: 12 },
+  content: { flex: 1, padding: 20 },
   statusBadgeLarge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 16,
@@ -248,23 +426,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
   },
-  statusLabel: {
-    ...type.label,
-    fontSize: 12,
-    color: '#000',
-    fontWeight: '700',
-  },
-  customerName: {
-    ...type.h1,
-    fontSize: 28,
-    color: colors.text,
-    marginBottom: 20,
-  },
-  // Quick Action buttons
+  statusLabel: { ...type.label, fontSize: 12, color: '#000', fontWeight: '700' },
+  customerName: { ...type.h1, fontSize: 28, color: colors.text, marginBottom: 20 },
+
+  // Quick Actions
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 24,
+    marginBottom: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,
     borderRadius: 16,
@@ -272,11 +441,8 @@ const styles = StyleSheet.create({
     borderColor: colors.stroke,
     backgroundColor: colors.panel,
   },
-  quickActionBtn: {
-    alignItems: 'center',
-    gap: 6,
-    minWidth: 64,
-  },
+  quickActionBtn: { alignItems: 'center', gap: 6, minWidth: 56 },
+  quickActionGroup: { alignItems: 'center', gap: 4 },
   quickActionIcon: {
     width: 48,
     height: 48,
@@ -285,12 +451,98 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickActionLabel: {
-    ...type.label,
-    fontSize: 10,
-    color: colors.textDim,
-    letterSpacing: 0.5,
+  quickActionLabel: { ...type.label, fontSize: 10, color: colors.textDim, letterSpacing: 0.5 },
+
+  // Flag translate button
+  translateFlagBtn: {
+    width: 32,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  translateFlagBtnActive: {
+    borderColor: 'rgba(214,178,94,0.60)',
+    backgroundColor: 'rgba(214,178,94,0.12)',
+  },
+  translateFlagText: { fontSize: 12 },
+
+  // SPORT mode translate bar
+  sportTranslateBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,80,0,0.30)',
+    backgroundColor: 'rgba(255,80,0,0.06)',
+    marginBottom: 16,
+  },
+  sportTranslateText: {
+    color: 'rgba(255,150,80,0.90)',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    flex: 1,
+  },
+
+  // Translation preview cards
+  translationPreview: {
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.25)',
+    backgroundColor: 'rgba(214,178,94,0.05)',
+  },
+  translationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  translationLabel: {
+    color: colors.gold,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+  },
+  translationText: {
+    color: colors.text,
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '500',
+  },
+  translationActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  sendTranslatedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: colors.blue,
+  },
+  sendTranslatedText: {
+    color: '#000',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  clearBtn: {
+    padding: 6,
+  },
+
+  // Info sections
   section: {
     marginBottom: 24,
     padding: 16,
@@ -299,37 +551,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.stroke,
   },
-  sectionTitle: {
-    ...type.label,
-    fontSize: 11,
-    color: colors.gold,
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 10,
-    gap: 8,
-  },
-  infoLabel: {
-    ...type.body,
-    color: colors.textDim,
-    width: 80,
-  },
-  infoValue: {
-    ...type.body,
-    color: colors.text,
-    flex: 1,
-  },
-  notesText: {
-    ...type.body,
-    color: colors.text,
-    lineHeight: 20,
-  },
-  actions: {
-    gap: 12,
-    marginTop: 8,
-  },
+  sectionTitle: { ...type.label, fontSize: 11, color: colors.gold, marginBottom: 12 },
+  infoRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 8 },
+  infoLabel: { ...type.body, color: colors.textDim, width: 80 },
+  infoValue: { ...type.body, color: colors.text, flex: 1 },
+  notesText: { ...type.body, color: colors.text, lineHeight: 20 },
+
+  // Action buttons
+  actions: { gap: 12, marginTop: 8 },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -339,20 +568,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  editButton: {
-    backgroundColor: colors.panel2,
-    borderColor: colors.stroke2,
-  },
-  deleteButton: {
-    backgroundColor: 'rgba(255,45,45,0.1)',
-    borderColor: colors.red,
-  },
-  actionButtonText: {
-    ...type.body,
-    fontFamily: 'SpaceGrotesk_600SemiBold',
-    color: colors.text,
-  },
-  pressed: {
-    opacity: 0.6,
-  },
+  editButton: { backgroundColor: colors.panel2, borderColor: colors.stroke2 },
+  deleteButton: { backgroundColor: 'rgba(255,45,45,0.1)', borderColor: colors.red },
+  actionButtonText: { ...type.body, fontFamily: 'SpaceGrotesk_600SemiBold', color: colors.text },
+  pressed: { opacity: 0.6 },
 });
