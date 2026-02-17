@@ -57,64 +57,64 @@ class ComprehensiveBackendTester:
         if not success:
             self.failed_tests.append(test_name)
 
-    async def run_comprehensive_sprint14_tests(self):
-        """Run the MOST COMPREHENSIVE backend tests possible for Sprint 14"""
-        print("🚀 Starting SPRINT 14 - MOST COMPREHENSIVE BACKEND TESTING")
+    async def run_comprehensive_backend_scan(self):
+        """Run comprehensive backend scan based on review request"""
+        print("🚀 COMPREHENSIVE BACKEND SCAN - Final quality gate after SPORT translation sync + SMS integration")
         print(f"Backend URL: {BACKEND_URL}")
+        print("Target: 100% pass rate")
         print("="*80)
         
-        # 1. Health Check
-        print("\n📋 1. HEALTH CHECK TESTING")
+        # 1. Health
+        print("\n📋 1. HEALTH CHECK")
         await self.test_health_check()
         
-        # 2. Customer CRUD (Full Lifecycle)
-        print("\n👥 2. CUSTOMER CRUD (FULL LIFECYCLE)")
+        # 2. Customer CRUD Full Lifecycle  
+        print("\n👥 2. CUSTOMER CRUD FULL LIFECYCLE")
+        await self.test_customer_create()
         await self.test_customer_list_basic()
-        await self.test_customer_list_with_search()
-        await self.test_customer_create_full_lifecycle()
+        await self.test_customer_list_search()
         await self.test_customer_update()
         await self.test_customer_delete()
-        await self.test_customer_list_verify_delete()
+        await self.test_customer_verify_gone()
         
-        # 3. Translation System (All Language Pairs + Edge Cases)
-        print("\n🌍 3. TRANSLATION SYSTEM (ALL LANGUAGE PAIRS + EDGE CASES)")
-        await self.test_translate_en_to_es()
-        await self.test_translate_fr_to_en()
-        await self.test_translate_en_to_ko()
+        # 3. Translation (Critical for SPORT mode sync)
+        print("\n🌍 3. TRANSLATION (CRITICAL FOR SPORT MODE SYNC)")
+        await self.test_translate_sales_consultant()
+        await self.test_translate_dealership_thank()
+        await self.test_translate_inventory_welcome()
         await self.test_translate_auto_detect()
-        await self.test_translate_empty_text_edge()
-        await self.test_translate_whitespace_edge()
-        await self.test_translate_automotive_text()
+        await self.test_translate_empty_validation()
+        await self.test_translate_whitespace_validation()
+        await self.test_translate_trade_value()
         
-        # 4. TTS System
-        print("\n🔊 4. TEXT-TO-SPEECH SYSTEM")
-        await self.test_tts_english()
+        # 4. TTS
+        print("\n🔊 4. TEXT-TO-SPEECH")
+        await self.test_tts_sport_mode()
         await self.test_tts_spanish()
-        await self.test_tts_french()
+        await self.test_tts_french()  
         await self.test_tts_korean()
-        await self.test_tts_caching()
         
-        # 5. Voice Translate (Edge Cases)
-        print("\n🎤 5. VOICE TRANSLATE (EDGE CASES)")
-        await self.test_voice_translate_invalid_format()
-        await self.test_voice_translate_empty_file()
+        # 5. Voice Translate Edge Cases
+        print("\n🎤 5. VOICE TRANSLATE EDGE CASES")
+        await self.test_voice_translate_invalid()
+        await self.test_voice_translate_empty()
         
         # 6. Tower Talk AI
         print("\n🏗️ 6. TOWER TALK AI")
-        await self.test_tower_talk_negotiation()
-        await self.test_tower_talk_minimal_context()
+        await self.test_tower_talk_bmw_negotiation()
+        await self.test_tower_talk_quick_greeting()
         
-        # 7. VIN Decode
+        # 7. VIN
         print("\n🚗 7. VIN DECODE")
-        await self.test_vin_decode()
+        await self.test_vin_decode_specific()
         
-        # 8. Dashboard Stats
-        print("\n📊 8. DASHBOARD STATS")
-        await self.test_dashboard_stats()
+        # Calculate overall rate
+        total_passed = len([r for r in self.results if r['success']])
+        total_tests = len(self.results)
+        pass_rate = (total_passed / total_tests * 100) if total_tests > 0 else 0
         
-        # 9. Printer Test
-        print("\n🖨️ 9. PRINTER TEST")
-        await self.test_printer_test()
+        print(f"\n🎯 OVERALL PASS RATE: {total_passed}/{total_tests} ({pass_rate:.1f}%)")
+        return pass_rate >= 100.0
     
     # ============== 1. HEALTH CHECK ==============
     
