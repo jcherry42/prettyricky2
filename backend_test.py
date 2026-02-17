@@ -59,53 +59,41 @@ class ComprehensiveBackendTester:
 
     async def run_comprehensive_backend_scan(self):
         """Run comprehensive backend scan based on review request"""
-        print("🚀 COMPREHENSIVE BACKEND SCAN - Final quality gate after SPORT translation sync + SMS integration")
+        print("🚀 COMPREHENSIVE BACKEND SCAN - HomeScreen Features Testing (QuickCompose, EmergencyButton, EmergencyInquiryModal)")
         print(f"Backend URL: {BACKEND_URL}")
         print("Target: 100% pass rate")
         print("="*80)
         
-        # 1. Health
+        # 1. Health Check
         print("\n📋 1. HEALTH CHECK")
         await self.test_health_check()
         
-        # 2. Customer CRUD Full Lifecycle  
-        print("\n👥 2. CUSTOMER CRUD FULL LIFECYCLE")
-        await self.test_customer_create()
-        await self.test_customer_list_basic()
-        await self.test_customer_list_search()
-        await self.test_customer_update()
-        await self.test_customer_delete()
-        await self.test_customer_verify_gone()
-        
-        # 3. Translation (Critical for SPORT mode sync)
-        print("\n🌍 3. TRANSLATION (CRITICAL FOR SPORT MODE SYNC)")
-        await self.test_translate_sales_consultant()
-        await self.test_translate_dealership_thank()
-        await self.test_translate_inventory_welcome()
-        await self.test_translate_auto_detect()
+        # 2. Translation API (Critical - used by QuickCompose and Emergency Modal)
+        print("\n🌍 2. TRANSLATION API (CRITICAL - used by QuickCompose and Emergency Modal)")
+        await self.test_translate_dealership_welcome()
+        await self.test_translate_negotiate_price()
+        await self.test_translate_show_deals()
         await self.test_translate_empty_validation()
-        await self.test_translate_whitespace_validation()
-        await self.test_translate_trade_value()
         
-        # 4. TTS
-        print("\n🔊 4. TEXT-TO-SPEECH")
-        await self.test_tts_sport_mode()
-        await self.test_tts_spanish()
-        await self.test_tts_french()  
-        await self.test_tts_korean()
+        # 3. Customer List API (used by QuickCompose customer dropdown)
+        print("\n👥 3. CUSTOMER LIST API (used by QuickCompose customer dropdown)")
+        await self.test_customer_list_with_limit()
+        await self.test_customer_search_alex()
         
-        # 5. Voice Translate Edge Cases
-        print("\n🎤 5. VOICE TRANSLATE EDGE CASES")
-        await self.test_voice_translate_invalid()
-        await self.test_voice_translate_empty()
+        # 4. Vehicle Inventory API (used by QuickCompose vehicle dropdown)
+        print("\n🚗 4. VEHICLE INVENTORY API (used by QuickCompose vehicle dropdown)")
+        await self.test_vehicles_inventory()
         
-        # 6. Tower Talk AI
-        print("\n🏗️ 6. TOWER TALK AI")
-        await self.test_tower_talk_bmw_negotiation()
-        await self.test_tower_talk_quick_greeting()
+        # 5. Tower Talk AI (related feature)
+        print("\n🏗️ 5. TOWER TALK AI (related feature)")
+        await self.test_tower_talk_price_inquiry()
         
-        # 7. VIN
-        print("\n🚗 7. VIN DECODE")
+        # 6. TTS (related feature)
+        print("\n🔊 6. TTS (related feature)")
+        await self.test_tts_dealership_welcome()
+        
+        # 7. VIN Decode (related feature)
+        print("\n🔍 7. VIN DECODE (related feature)")
         await self.test_vin_decode_specific()
         
         # Calculate overall rate
