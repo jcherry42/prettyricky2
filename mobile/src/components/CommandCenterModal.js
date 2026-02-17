@@ -568,7 +568,7 @@ export function CommandCenterModal({ visible, onClose }) {
                     <Text style={styles.ambientLabel}>SPECTRUM PREVIEW</Text>
                     <View style={{ height: 8 }} />
                     <View style={styles.spectrumRow}>
-                      {require('../theme/designo').designoColors.ambient.filter((_, i) => i % 4 === 0).map((color, i) => (
+                      {designoColors.ambient.filter((_, i) => i % 4 === 0).map((color, i) => (
                         <View key={i} style={[styles.spectrumDot, { backgroundColor: color }]} />
                       ))}
                     </View>
