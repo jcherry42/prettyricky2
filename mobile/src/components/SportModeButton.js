@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useAppSettings } from '../context/AppSettingsContext';
-import { impactHeavy } from '../lib/haptics';
+import { playActivationSound, playDeactivationSound, SOUND_PROFILES } from '../lib/soundProfiles';
+import { SportModeActivation } from './SportModeActivation';
 
 /* ---------- Animated flame element ---------- */
 function Flame({ style, delay = 0, active }) {
@@ -41,20 +42,37 @@ function Flame({ style, delay = 0, active }) {
 }
 
 function flagFor(lang) {
-  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
-  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
-  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
-  return '\ud83c\udff3\ufe0f';
+  if (lang === 'es') return '\uD83C\uDDF2\uD83C\uDDFD';
+  if (lang === 'fr') return '\uD83C\uDDEB\uD83C\uDDF7';
+  if (lang === 'ko') return '\uD83C\uDDF0\uD83C\uDDF7';
+  return '\uD83C\uDFF3\uFE0F';
 }
 
 export function SportModeButton() {
   const { settings, toggleSportMode } = useAppSettings();
   const active = Boolean(settings.sportMode);
   const flag = flagFor(settings.defaultTargetLanguage || 'es');
+  const profileId = settings.soundProfile || 'merica';
+  const profile = SOUND_PROFILES[profileId] || SOUND_PROFILES.merica;
+
+  const [showActivation, setShowActivation] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(0)).current;
+  const iconSizeAnim = useRef(new Animated.Value(active ? 1 : 0)).current;
+  const fadeOutAnim = useRef(new Animated.Value(1)).current;
 
+  // Icon size animation: 26px -> 52px when active
+  useEffect(() => {
+    Animated.spring(iconSizeAnim, {
+      toValue: active ? 1 : 0,
+      friction: 6,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  }, [active, iconSizeAnim]);
+
+  // Pulse glow when active
   useEffect(() => {
     if (active) {
       Animated.loop(
@@ -69,37 +87,74 @@ export function SportModeButton() {
     }
   }, [active, pulseAnim]);
 
-  const handlePress = useCallback(() => {
-    impactHeavy();
+  const handlePress = useCallback(async () => {
     // Punch animation
     Animated.sequence([
-      Animated.timing(scaleAnim, { toValue: 0.88, duration: 80, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 0.85, duration: 80, useNativeDriver: true }),
       Animated.spring(scaleAnim, { toValue: 1, friction: 3, tension: 200, useNativeDriver: true }),
     ]).start();
-    toggleSportMode();
-  }, [toggleSportMode, scaleAnim]);
+
+    if (!active) {
+      // Activating SPORT mode
+      setShowActivation(true);
+      playActivationSound(profileId);
+      toggleSportMode();
+    } else {
+      // Deactivating SPORT mode - 1.2s fade-out
+      playDeactivationSound(profileId);
+      Animated.timing(fadeOutAnim, {
+        toValue: 0,
+        duration: 1200,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        toggleSportMode();
+        fadeOutAnim.setValue(1);
+      });
+    }
+  }, [active, toggleSportMode, scaleAnim, profileId, fadeOutAnim]);
 
   const glowOpacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.85] });
 
+  // Icon scale: interpolate from 1.0 (26px) to 2.0 (52px)
+  const iconScale = iconSizeAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.8] });
+
+  // Profile color for flames and glow
+  const profileColor = profile.color || '#FF5000';
+
   return (
     <View style={styles.sportWrap}>
-      {/* Glow behind button */}
+      {/* Glow behind button - colored by sound profile */}
       {active && (
-        <Animated.View style={[styles.sportGlow, { opacity: glowOpacity }]} />
+        <Animated.View style={[
+          styles.sportGlow,
+          { opacity: glowOpacity, backgroundColor: `${profileColor}40`, shadowColor: profileColor },
+        ]} />
       )}
 
-      {/* Flames */}
-      <Flame active={active} delay={0} style={{ bottom: -6, left: 4, width: 18, height: 32, backgroundColor: 'rgba(255,180,50,0.85)' }} />
-      <Flame active={active} delay={40} style={{ bottom: -4, right: 6, width: 15, height: 28, backgroundColor: 'rgba(255,120,30,0.80)' }} />
-      <Flame active={active} delay={80} style={{ top: -8, left: '38%', width: 20, height: 36, backgroundColor: 'rgba(255,200,60,0.75)' }} />
-      <Flame active={active} delay={120} style={{ bottom: -3, left: '28%', width: 12, height: 22, backgroundColor: 'rgba(255,80,20,0.70)' }} />
-      <Flame active={active} delay={60} style={{ top: -4, right: 8, width: 14, height: 26, backgroundColor: 'rgba(255,160,40,0.65)' }} />
+      {/* Flames - colored by sound profile */}
+      <Flame active={active} delay={0} style={{ bottom: -6, left: 4, width: 18, height: 32, backgroundColor: `${profileColor}DD` }} />
+      <Flame active={active} delay={40} style={{ bottom: -4, right: 6, width: 15, height: 28, backgroundColor: `${profileColor}CC` }} />
+      <Flame active={active} delay={80} style={{ top: -8, left: '38%', width: 20, height: 36, backgroundColor: `${profileColor}BB` }} />
+      <Flame active={active} delay={120} style={{ bottom: -3, left: '28%', width: 12, height: 22, backgroundColor: `${profileColor}AA` }} />
+      <Flame active={active} delay={60} style={{ top: -4, right: 8, width: 14, height: 26, backgroundColor: `${profileColor}99` }} />
 
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Animated.View style={{ transform: [{ scale: scaleAnim }], opacity: fadeOutAnim }}>
         <Pressable onPress={handlePress} style={({ pressed }) => [pressed && { opacity: 0.92 }]}>
-          <View style={[styles.sportBtn, active && styles.sportBtnActive]}>
-            <Ionicons name="flame" size={26} color={active ? '#FFD84A' : colors.textMute} />
+          <View style={[
+            styles.sportBtn,
+            active && styles.sportBtnActive,
+            active && { borderColor: `${profileColor}BB`, shadowColor: `${profileColor}CC` },
+          ]}>
+            {/* Animated icon - grows when SPORT active */}
+            <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+              <Ionicons name="flame" size={26} color={active ? profileColor : colors.textMute} />
+            </Animated.View>
+
+            {/* Label hidden when active */}
             {!active && <Text style={styles.sportLabel}>SPORT</Text>}
+
+            {/* Flag badge shown when active */}
             {active && (
               <View style={styles.flagBadge}>
                 <Text style={{ fontSize: 11 }}>{flag}</Text>
@@ -108,6 +163,18 @@ export function SportModeButton() {
           </View>
         </Pressable>
       </Animated.View>
+
+      {/* Profile indicator dot */}
+      {active && (
+        <View style={[styles.profileDot, { backgroundColor: profileColor }]} />
+      )}
+
+      {/* Full-screen activation overlay */}
+      <SportModeActivation
+        visible={showActivation}
+        profileId={profileId}
+        onComplete={() => setShowActivation(false)}
+      />
     </View>
   );
 }
@@ -148,7 +215,6 @@ const styles = StyleSheet.create({
   sportBtnActive: {
     backgroundColor: 'rgba(80,15,5,0.95)',
     borderColor: 'rgba(255,80,0,0.75)',
-    shadowColor: 'rgba(255,80,0,0.80)',
     shadowOpacity: 0.7,
     shadowRadius: 20,
   },
@@ -167,5 +233,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 3,
     paddingVertical: 1,
+  },
+  profileDot: {
+    position: 'absolute',
+    bottom: -4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
 });
