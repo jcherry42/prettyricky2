@@ -9,6 +9,7 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
 import { apiFetch } from '../lib/api';
+import { designoColors } from '../theme/designo';
 
 const TABS = [
   { key: 'dashboard', label: 'DASHBOARD', icon: 'stats-chart' },
