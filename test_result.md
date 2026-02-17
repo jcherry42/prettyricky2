@@ -1006,4 +1006,4 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Sprint 11 complete. Quick backend regression check on all core endpoints: /api/health, /api/customers, /api/translate, /api/tts, /api/tower-talk. Backend at http://localhost:8001. Verify no regressions. Test translate with valid text and empty text edge case."
+    message: "Sprint 12 complete. Run quick backend regression on core endpoints: /api/health, /api/customers/list, /api/customers/create, /api/translate, /api/tts, /api/tower-talk. Backend at http://localhost:8001."
