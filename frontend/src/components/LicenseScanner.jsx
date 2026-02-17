@@ -863,6 +863,15 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
                 </button>
               </div>
 
+              {uploadProgress > 0 && (
+                <div className="upload-progress">
+                  <div className="upload-progress-bar">
+                    <div className="upload-progress-fill" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                  <span>{uploadProgress}% uploaded</span>
+                </div>
+              )}
+
               {!saved && (
                 <button 
                   onClick={saveToNewCustomer}
