@@ -7,12 +7,12 @@ import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
-import { apiFetch } from '../lib/api';
+import { useInventory } from '../context/InventoryContext';
 
 const TABS = [
   { key: 'dashboard', label: 'DASHBOARD', icon: 'stats-chart' },
   { key: 'customers', label: 'CUSTOMERS', icon: 'people' },
-  { key: 'import', label: 'IMPORT', icon: 'cloud-upload' },
+  { key: 'inventory', label: 'INVENTORY', icon: 'car-sport' },
   { key: 'printers', label: 'PRINTERS', icon: 'print' },
   { key: 'settings', label: 'SETTINGS', icon: 'settings' },
 ];
@@ -90,6 +90,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
 export function CommandCenterModal({ visible, onClose }) {
   const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
+  const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const [printerName, setPrinterName] = useState('');
@@ -102,6 +103,9 @@ export function CommandCenterModal({ visible, onClose }) {
 
   // Customer search
   const [customerSearch, setCustomerSearch] = useState('');
+
+  // Inventory search
+  const [inventorySearch, setInventorySearch] = useState('');
 
   const ipInputRefs = useRef([]);
 
@@ -178,12 +182,56 @@ export function CommandCenterModal({ visible, onClose }) {
     });
   }, [customers, customerSearch]);
 
+  // Filtered inventory for search
+  const filteredVehicles = useMemo(() => {
+    if (!inventorySearch.trim()) return vehicles;
+    const query = inventorySearch.toLowerCase();
+    return vehicles.filter((v) => {
+      const vin = (v.vin || '').toLowerCase();
+      const year = (v.year || '').toString().toLowerCase();
+      const make = (v.make || '').toLowerCase();
+      const model = (v.model || '').toLowerCase();
+      const label = `${year} ${make} ${model}`.toLowerCase();
+      return vin.includes(query) || label.includes(query);
+    });
+  }, [vehicles, inventorySearch]);
+
   // Load stats when dashboard tab is selected
   React.useEffect(() => {
     if (visible && activeTab === 'dashboard' && !stats) {
       loadDashboardStats();
     }
   }, [visible, activeTab, stats, loadDashboardStats]);
+
+  // Load inventory when inventory tab is selected
+  React.useEffect(() => {
+    if (visible && activeTab === 'inventory') {
+      fetchInventory();
+    }
+  }, [visible, activeTab, fetchInventory]);
+
+  const handleDeleteVehicle = useCallback(async (vehicle) => {
+    Alert.alert(
+      'Delete Vehicle',
+      `Remove ${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''} from inventory?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              impactMedium();
+              await deleteVehicle(vehicle.vehicle_id);
+              notificationSuccess();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete vehicle');
+            }
+          },
+        },
+      ]
+    );
+  }, [deleteVehicle]);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="overFullScreen" transparent>
@@ -334,80 +382,102 @@ export function CommandCenterModal({ visible, onClose }) {
             </ScrollView>
           ) : null}
 
-          {/* IMPORT */}
-          {activeTab === 'import' ? (
+          {/* INVENTORY */}
+          {activeTab === 'inventory' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>Import Data</SectionTitle>
-                <View style={{ height: 16 }} />
-                
-                {/* W140 Instrument Cluster Style - 3 Circular Buttons */}
-                <View style={styles.importGrid}>
-                  <Pressable
-                    onPress={() => {
-                      impactMedium();
-                      Alert.alert('File Upload', 'CSV/JSON file upload coming soon');
-                    }}
-                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
-                  >
-                    <LinearGradient
-                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
-                      style={StyleSheet.absoluteFill}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                    <View style={styles.circularInner}>
-                      <Ionicons name="document-text" size={32} color={colors.gold} />
-                      <Text style={styles.circularLabel}>FILE</Text>
-                      <Text style={styles.circularSubLabel}>Upload</Text>
-                    </View>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={() => {
-                      impactMedium();
-                      Alert.alert('Manual Entry', 'Manual data entry coming soon');
-                    }}
-                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
-                  >
-                    <LinearGradient
-                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
-                      style={StyleSheet.absoluteFill}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                    <View style={styles.circularInner}>
-                      <Ionicons name="create" size={32} color={colors.gold} />
-                      <Text style={styles.circularLabel}>MANUAL</Text>
-                      <Text style={styles.circularSubLabel}>Entry</Text>
-                    </View>
-                  </Pressable>
-
-                  <Pressable
-                    onPress={() => {
-                      impactMedium();
-                      Alert.alert('Vision Extract', 'GPT Vision extraction coming soon');
-                    }}
-                    style={({ pressed }) => [styles.circularButton, pressed && { opacity: 0.8 }]}
-                  >
-                    <LinearGradient
-                      colors={['rgba(214,178,94,0.20)', 'rgba(214,178,94,0.05)', 'rgba(0,0,0,0.30)']}
-                      style={StyleSheet.absoluteFill}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                    <View style={styles.circularInner}>
-                      <Ionicons name="eye" size={32} color={colors.gold} />
-                      <Text style={styles.circularLabel}>VISION</Text>
-                      <Text style={styles.circularSubLabel}>Extract</Text>
-                    </View>
-                  </Pressable>
+                <View style={styles.searchHeader}>
+                  <Ionicons name="search" size={16} color={colors.gold} />
+                  <TextInput
+                    value={inventorySearch}
+                    onChangeText={setInventorySearch}
+                    placeholder="Search VIN, year, make, model..."
+                    placeholderTextColor={colors.textMute}
+                    style={styles.searchInput}
+                  />
+                  {inventorySearch.length > 0 && (
+                    <Pressable onPress={() => setInventorySearch('')}>
+                      <Ionicons name="close-circle" size={16} color={colors.textMute} />
+                    </Pressable>
+                  )}
                 </View>
+              </GlassCard>
 
-                <View style={{ height: 16 }} />
-                <Text style={styles.importHint}>
-                  Import customer and vehicle data using CSV/JSON files, manual entry, or AI-powered vision extraction
-                </Text>
+              <GlassCard style={{ marginTop: 14 }}>
+                <View style={styles.inventoryHeader}>
+                  <SectionTitle>Vehicle Inventory</SectionTitle>
+                  <View style={[styles.countBadge, isAtLimit && { backgroundColor: colors.red }]}>
+                    <Text style={styles.countText}>{vehicles.length}/{maxInventory}</Text>
+                  </View>
+                </View>
+                {isAtLimit && (
+                  <View style={styles.limitWarning}>
+                    <Ionicons name="warning" size={14} color={colors.red} />
+                    <Text style={styles.limitText}>Inventory limit reached</Text>
+                  </View>
+                )}
+                <View style={{ height: 10 }} />
+
+                {vehiclesLoading ? (
+                  <View style={styles.centerContent}>
+                    <ActivityIndicator color={colors.gold} />
+                  </View>
+                ) : filteredVehicles.length === 0 ? (
+                  <View style={styles.emptyBox}>
+                    <Ionicons name="car-sport-outline" size={32} color={colors.textMute} />
+                    <Text style={styles.emptyText}>
+                      {inventorySearch ? 'No vehicles found' : 'No vehicles in inventory'}
+                    </Text>
+                    <Text style={styles.emptySubtext}>
+                      {inventorySearch ? 'Try a different search' : 'Scan VINs to add vehicles'}
+                    </Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    data={filteredVehicles}
+                    keyExtractor={(item) => item.vehicle_id || item.vin}
+                    renderItem={({ item }) => (
+                      <View style={styles.vehicleCard}>
+                        <View style={styles.quiltedPattern} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.vehicleLabel}>
+                            {[item.year, item.make, item.model].filter(Boolean).join(' ') || 'Unknown Vehicle'}
+                          </Text>
+                          {item.trim && (
+                            <Text style={styles.vehicleTrim}>{item.trim}</Text>
+                          )}
+                          <View style={styles.vinRow}>
+                            <Ionicons name="barcode" size={12} color={colors.gold} />
+                            <Text style={styles.vinText}>{item.vin}</Text>
+                          </View>
+                          {item.saved_at && (
+                            <Text style={styles.vehicleDate}>
+                              Added {new Date(item.saved_at).toLocaleDateString()}
+                            </Text>
+                          )}
+                        </View>
+                        <Pressable
+                          onPress={() => handleDeleteVehicle(item)}
+                          style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.6 }]}
+                        >
+                          <Ionicons name="trash" size={18} color={colors.red} />
+                        </Pressable>
+                        <View style={styles.stitchingTop} />
+                        <View style={styles.stitchingBottom} />
+                      </View>
+                    )}
+                    ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                    scrollEnabled={false}
+                  />
+                )}
+
+                {filteredVehicles.length > 0 && !inventorySearch && (
+                  <View style={styles.inventoryFooter}>
+                    <Text style={styles.inventoryFooterText}>
+                      {maxInventory - vehicles.length} slots remaining
+                    </Text>
+                  </View>
+                )}
               </GlassCard>
             </ScrollView>
           ) : null}
