@@ -42,12 +42,7 @@ function Flame({ style, delay = 0, active }) {
   );
 }
 
-function flagFor(lang) {
-  if (lang === 'es') return '\uD83C\uDDF2\uD83C\uDDFD';
-  if (lang === 'fr') return '\uD83C\uDDEB\uD83C\uDDF7';
-  if (lang === 'ko') return '\uD83C\uDDF0\uD83C\uDDF7';
-  return '\uD83C\uDFF3\uFE0F';
-}
+import { flagFor } from '../utils/language';
 
 export function SportModeButton() {
   const { settings, toggleSportMode } = useAppSettings();
