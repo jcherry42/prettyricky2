@@ -169,7 +169,11 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   }, [dataUrlToBlob, detectBarcodeData, getOcrWorker]);
 
   const handleFieldChange = useCallback((field, value) => {
-    setLicenseData((prev) => ({ ...prev, [field]: value }));
+    let nextValue = value;
+    if (field === 'state') nextValue = value.toUpperCase().slice(0, 2);
+    if (field === 'zip_code') nextValue = value.toUpperCase();
+    if (field === 'license_number') nextValue = value.toUpperCase();
+    setLicenseData((prev) => ({ ...prev, [field]: nextValue }));
   }, []);
 
   // Initialize camera
