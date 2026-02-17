@@ -1,136 +1,88 @@
-# Supercharg'd — Beta Testing Guide
-
-## Overview
-Supercharg'd is a premium automotive CRM tool built with React Native / Expo.
-Target platforms: **iOS** and **Android**.
-
----
+# Supercharg'd — Build & Test on Your iPhone via Xcode
 
 ## Prerequisites
-
-1. **Node.js** >= 18
-2. **Yarn** (package manager)
-3. **Expo CLI**: `npm install -g eas-cli`
-4. **Expo Account**: Sign up at https://expo.dev
-5. **Apple Developer Account** (for iOS builds)
-6. **Backend deployed** and accessible from the test device
+- **Mac** with **Xcode** installed (App Store → Xcode)
+- **iPhone** plugged in via USB
+- **Apple ID** (free — no $99 developer account needed for personal testing)
+- **Node.js 18+** — install from [nodejs.org](https://nodejs.org)
+- **Yarn** — `npm install -g yarn`
+- **CocoaPods** — `sudo gem install cocoapods`
 
 ---
 
-## Quick Start (Development Build via Expo Go)
+## Steps (copy-paste these in order)
 
 ```bash
-cd /app/mobile
+# 1. Clone repo and enter mobile folder
+git clone YOUR_GITHUB_REPO_URL
+cd YOUR_REPO_NAME/mobile
 
-# 1. Install dependencies
+# 2. Install JavaScript dependencies
 yarn install
 
-# 2. Set your backend URL
-cp .env.example .env
-# Edit .env and set EXPO_PUBLIC_BACKEND_URL to your backend URL
+# 3. Set your backend URL
+echo "EXPO_PUBLIC_BACKEND_URL=https://automotive-sales-app.preview.emergentagent.com" > .env
 
-# 3. Start Expo dev server
-npx expo start
+# 4. Generate the native iOS project
+npx expo prebuild --platform ios
 
-# 4. Scan the QR code with:
-#    - iOS: Camera app → opens Expo Go
-#    - Android: Expo Go app → scan QR
+# 5. Install native dependencies (CocoaPods)
+cd ios
+pod install
+cd ..
+
+# 6. Open in Xcode
+open ios/.xcworkspace
 ```
 
----
+## In Xcode
 
-## Building for Real Devices (EAS Build)
+1. **Select your iPhone** as the build target (dropdown at the top)
+2. **Set your signing team:**
+   - Click on the project name in the left sidebar (blue icon)
+   - Go to **Signing & Capabilities** tab
+   - Check **Automatically manage signing**
+   - Select your **Team** (your Apple ID)
+3. **Hit ▶ Run** (or Cmd+R)
+4. **Trust the developer on your iPhone:**
+   - First run will fail on the phone with "Untrusted Developer"
+   - On your iPhone: Settings → General → VPN & Device Management → tap your Apple ID → Trust
+   - Hit ▶ Run again in Xcode
 
-### Android APK (for internal testers)
-```bash
-# Login to Expo
-eas login
-
-# Build preview APK
-eas build --platform android --profile preview
-
-# Download the .apk and install on device
-```
-
-### iOS (TestFlight / Internal Distribution)
-```bash
-# Build for internal distribution (ad-hoc)
-eas build --platform ios --profile preview
-
-# OR build for TestFlight
-eas build --platform ios --profile production
-
-# Submit to TestFlight
-eas submit --platform ios
-```
-
-### Development Client (for debugging)
-```bash
-# iOS Simulator
-eas build --platform ios --profile development
-
-# Android device
-eas build --platform android --profile development
-```
+The app installs directly on your phone. Done.
 
 ---
 
-## Environment Configuration
+## Features to Test on Device
 
-| Variable | Description | Example |
-|---|---|---|
-| `EXPO_PUBLIC_BACKEND_URL` | Backend API base URL | `https://api.superchargd.com` |
+### Core
+- [ ] Customer Management — create, edit, delete, search, pull-to-refresh
+- [ ] VIN Scanner — camera scan + manual entry + decode
+- [ ] License Scanner — camera capture + OCR + save to customer
+- [ ] Tower Talk AI — generate responses, translate, speak, copy, SMS
+- [ ] Quick Compose — write message, translate (SPORT mode), send SMS/email
+- [ ] Emergency Responses — 8 inquiry types, 3 responses each
 
----
+### Translation (activate SPORT mode first)
+- [ ] Quick Compose translate button appears
+- [ ] Emergency Modal translate button appears
+- [ ] Language matches Settings selection (master control)
 
-## Features to Test
-
-### Core Features
-- [ ] **Customer Management**: Create, edit, delete, search customers
-- [ ] **VIN Scanner**: Camera scan + manual entry + VIN decode
-- [ ] **License Scanner**: Camera capture + OCR + manual edit + save to customer
-- [ ] **Tower Talk AI**: Generate sales responses, translate, speak, copy, SMS
-- [ ] **Quick Compose**: Write message, translate (SPORT mode), send SMS/email
-- [ ] **Emergency Responses**: 8 inquiry types, 3 responses each, copy/SMS/translate
-
-### Translation System
-- [ ] **SPORT Mode**: Activate → auto-translate enabled
-- [ ] **Languages**: Spanish, French, Korean
-- [ ] **Master Control**: Settings language is the only source of truth
-- [ ] **Quick Compose translate**: Visible only in SPORT mode
-- [ ] **Emergency Modal translate**: Visible only in SPORT mode
-
-### UI/UX
-- [ ] **Portrait Lock**: App stays portrait on all orientations
-- [ ] **Ambient Lighting**: Color cycling animation on HomeScreen
-- [ ] **Sound Profiles**: V8 / Euro / JDM activation sounds
-- [ ] **Haptic Feedback**: Taps, button presses, notifications
-- [ ] **Offline Support**: Banner appears, queue syncs when back online
-- [ ] **Toast Notifications**: Success, error, offline messages
-- [ ] **Skeleton Loaders**: During data loading
-- [ ] **Pull-to-Refresh**: On customer list
-
-### Floating UI Elements
-- [ ] **SPORT Button**: Center top, flame animation when active
-- [ ] **Quick Add (+)**: Bottom-right, gold gradient
-- [ ] **Emergency (!)**: Bottom-left, red pulse animation
-- [ ] **Command Center**: Floating pill cluster, center bottom
-- [ ] **Bluetooth Customer**: Left side, blue glow
-- [ ] **PTT Button**: Visible in SPORT mode only
+### Native Features (only work on real device)
+- [ ] Camera (VIN + License scan)
+- [ ] Haptic feedback on button presses
+- [ ] SMS composer (opens iMessage)
+- [ ] Audio playback (TTS)
+- [ ] Portrait lock
 
 ---
 
-## Known Limitations
-- Camera features require a real device (not available in simulator/emulator)
-- SMS integration uses `expo-sms` which opens the native composer
-- Push-to-Talk requires microphone permission
-- Backend must be network-accessible from the test device
+## Troubleshooting
 
----
+**"No bundle URL present"** → In Xcode: Product → Clean Build Folder, then Run again
 
-## Reporting Issues
-Please include:
-1. Device model and OS version
-2. Steps to reproduce
-3. Expected vs actual behavior
-4. Screenshots/screen recordings if possible
+**Pod install fails** → Run `cd ios && pod deintegrate && pod install`
+
+**Signing error** → Make sure you selected a team in Signing & Capabilities
+
+**App crashes on launch** → Check the Xcode console (bottom pane) for the error message
