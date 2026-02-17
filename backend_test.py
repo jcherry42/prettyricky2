@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
 """
-COMPREHENSIVE BACKEND SCAN - Final quality gate after SPORT translation sync + SMS integration
-Backend URL: http://localhost:8001
+COMPREHENSIVE BACKEND TESTING - HomeScreen Features
+Backend URL: https://automotive-sales-app.preview.emergentagent.com/api
 Target: 100% pass rate
+
+Testing endpoints that support HomeScreen features:
+1. Health Check: GET /api/health
+2. Translation API: POST /api/translate (QuickCompose & Emergency Modal translation)  
+3. Customer List API: GET /api/customers/list (QuickCompose customer dropdown)
+4. Vehicle Inventory API: GET /api/vehicles/inventory (QuickCompose vehicle dropdown)
+5. Tower Talk AI: POST /api/tower-talk (related feature)
+6. TTS: POST /api/tts (related feature)  
+7. VIN Decode: GET /api/vin/decode (related feature)
 """
 
 import asyncio
