@@ -25,6 +25,7 @@ class ComprehensiveBackendTester:
         self.results = []
         self.failed_tests = []
         self.test_customer_id = None
+        self.test_customer_name = "SportSync"
         
     async def __aenter__(self):
         self.session = aiohttp.ClientSession(
