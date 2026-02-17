@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Regression Test - Sprint 12 (Offline & Error Handling)
-Quick regression test after Sprint 12 focusing on offline and error handling features
+Backend Regression Test - Sprint 13 Final Polish
+Comprehensive regression test after Sprint 13 Final Polish focusing on 8 core endpoints
 """
 
 import asyncio
