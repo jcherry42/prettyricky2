@@ -687,7 +687,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   inquiryBlock: {
-    marginTop: 12,
+    marginBottom: 12,
+  },
+  presetsContainer: {
+    marginBottom: 4,
   },
   inquiryLabel: {
     ...type.label,
@@ -742,7 +745,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
   },
   presetsRow: {
-    marginTop: 10,
     flexDirection: 'row',
     gap: 6,
   },
@@ -754,15 +756,33 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.stroke,
     backgroundColor: 'rgba(15,23,42,0.9)',
+    position: 'relative',
   },
   presetChipActive: {
     borderColor: colors.gold,
     backgroundColor: 'rgba(251,191,36,0.12)',
   },
+  presetNumber: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetNumberText: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: '900',
+  },
   presetText: {
     color: colors.textDim,
     fontSize: 11,
     fontWeight: '600',
+    paddingRight: 20,
   },
   replyActions: {
     flexDirection: 'row',
