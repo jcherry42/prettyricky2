@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing Suite for Closr Sales Automation Tool
-Tests performance optimization fixes and core functionality
+Backend Regression Test - Sprint 10
+Tests core endpoints after Sprint 10 implementation
 """
 
 import asyncio
