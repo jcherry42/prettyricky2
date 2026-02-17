@@ -932,7 +932,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Sprint 6 Translation & TTS Backend Endpoints - Comprehensive 100% Pass Rate"
+    - "Sprint 10 Ambient Lighting & Visual Polish - Backend Regression"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -940,4 +940,4 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "Phase A - Sprint 6 Backend Re-test after fixes: Fixed 3 issues: 1) Translation endpoint now returns 400 for empty/whitespace text instead of 200, 2) Voice-translate now returns 422 for invalid audio format instead of 200+success=false, 3) Voice-translate now returns 422 for empty audio files. Re-run ALL Sprint 6 tests to verify 100% pass rate. Same test matrix as before: POST /api/translate (all language pairs + edge cases), POST /api/tts (all languages + caching), POST /api/voice-translate (invalid formats should return 422, empty files should return 422), POST /api/tower-talk (all scenarios). Backend URL: http://localhost:8001."
+    message: "Sprint 10 complete. Run backend regression on all core endpoints: /api/customers, /api/translate, /api/tts, /api/tower-talk, /api/vin, /api/health. Backend at http://localhost:8001. Verify no regressions from Sprint 6 fixes and Sprint 10 changes."
