@@ -10,6 +10,8 @@ const DEFAULT_SETTINGS = {
   pttDirection: 'en_to_target', // 'en_to_target' | 'target_to_en'
   printers: [], // {id,name,ip}
   activePrinterId: null,
+  ambientLightingEnabled: true,
+  ambientLightingIntensity: 'medium', // 'subtle' | 'medium' | 'vivid'
 };
 
 const AppSettingsContext = createContext(null);
