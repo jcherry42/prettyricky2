@@ -5,6 +5,7 @@ import { colors } from '../theme/colors';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { playActivationSound, playDeactivationSound, SOUND_PROFILES } from '../lib/soundProfiles';
 import { SportModeActivation } from './SportModeActivation';
+import { flagFor } from '../utils/language';
 
 /* ---------- Animated flame element ---------- */
 function Flame({ style, delay = 0, active }) {
