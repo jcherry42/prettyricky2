@@ -11,6 +11,8 @@ import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
 import { SportModeButton } from '../components/SportModeButton';
+import { useAmbientLighting } from '../hooks/useAmbientLighting';
+import { ChromeAccent } from '../components/DesignoTextures';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium } from '../lib/haptics';
