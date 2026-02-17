@@ -255,7 +255,12 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     // Get high quality JPEG
     const imageData = canvas.toDataURL('image/jpeg', 0.95);
     setCapturedImage(imageData);
+    setSaved(false);
+    setSavedCustomerId(null);
+    resetExtractionState();
     setIsCapturing(false);
+
+    runExtraction(imageData);
     
     // Stop camera to save battery
     if (stream) {
