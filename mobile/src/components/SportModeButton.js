@@ -42,8 +42,6 @@ function Flame({ style, delay = 0, active }) {
   );
 }
 
-import { flagFor } from '../utils/language';
-
 export function SportModeButton() {
   const { settings, toggleSportMode } = useAppSettings();
   const active = Boolean(settings.sportMode);
