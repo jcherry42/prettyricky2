@@ -14,6 +14,8 @@ import { useToast } from '../context/ToastContext';
 import { SportModeButton } from '../components/SportModeButton';
 import { useAmbientLighting } from '../hooks/useAmbientLighting';
 import { ChromeAccent } from '../components/DesignoTextures';
+import { NetworkStatusDot } from '../components/NetworkStatusDot';
+import { CustomerListSkeleton } from '../components/LoadingSkeleton';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium } from '../lib/haptics';
