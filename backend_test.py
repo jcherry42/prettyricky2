@@ -1428,8 +1428,8 @@ class BackendTester:
                 # Test status transitions for Customer A
                 status_transitions = [
                     ("new", "contacted"),
-                    ("contacted", "appointment"),
-                    ("appointment", "negotiating"),
+                    ("contacted", "qualified"),  # Changed from "appointment" to "qualified"
+                    ("qualified", "negotiating"),  # Changed from "appointment" to "qualified"
                     ("negotiating", "sold")
                 ]
                 
