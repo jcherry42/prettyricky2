@@ -1009,7 +1009,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Sprint 12 Offline Sync & Error Handling - Backend Regression"
+    - "License scanner chunked upload + customer creation fields"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
