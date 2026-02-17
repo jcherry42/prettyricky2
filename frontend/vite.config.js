@@ -7,7 +7,7 @@ export default defineConfig({
   // Force environment variable replacement for Capacitor builds
   define: {
     'import.meta.env.VITE_BACKEND_URL': JSON.stringify(
-      process.env.VITE_BACKEND_URL || 'https://multilingual-app-58.preview.emergentagent.com'
+      process.env.VITE_BACKEND_URL || 'https://swift-refactor-1.preview.emergentagent.com'
     )
   },
   plugins: [

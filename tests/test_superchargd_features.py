@@ -7,7 +7,7 @@ import requests
 import time
 import os
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://multilingual-app-58.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://swift-refactor-1.preview.emergentagent.com')
 
 
 class TestHealthEndpoints:
