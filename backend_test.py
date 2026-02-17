@@ -392,8 +392,7 @@ class ComprehensiveBackendTester:
         except Exception as e:
             self.log_result("7.1 VIN Decode - Specific", 200, 0, False, f"Exception: {str(e)}")
     
-    # Remove old test methods that are no longer needed
-    # ============== LEGACY METHODS (keeping for compatibility) ==============
+    # ============== 1. HEALTH CHECK ==============
     
     async def test_health_check(self):
         """Test 1: GET /api/health → expect 200"""
