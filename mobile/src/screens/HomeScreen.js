@@ -200,12 +200,7 @@ export function HomeScreen() {
 
   const renderEmpty = () => {
     if (loading) {
-      return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color={colors.gold} />
-          <Text style={styles.emptyText}>Loading customers...</Text>
-        </View>
-      );
+      return <CustomerListSkeleton count={5} />;
     }
 
     if (error) {
@@ -214,7 +209,13 @@ export function HomeScreen() {
           <Ionicons name="alert-circle" size={48} color={colors.red} />
           <Text style={styles.emptyText}>Failed to load customers</Text>
           <Text style={styles.emptySubtext}>{error}</Text>
-          <Pressable onPress={handleRefresh} style={styles.retryButton}>
+          <Pressable
+            onPress={handleRefresh}
+            style={styles.retryButton}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading customers"
+          >
+            <Ionicons name="refresh" size={14} color={colors.gold} />
             <Text style={styles.retryButtonText}>Retry</Text>
           </Pressable>
         </View>
