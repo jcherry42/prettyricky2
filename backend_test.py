@@ -610,14 +610,14 @@ class BackendTester:
 
 
 async def main():
-    """Main test runner for Sprint 10 regression tests"""
-    print("🚀 Sprint 10 Backend Regression Test Suite")
-    print("Testing 8 core endpoints after Sprint 10 implementation")
+    """Main test runner for Sprint 12 regression tests"""
+    print("🚀 Sprint 12 Backend Regression Test Suite - Offline & Error Handling")
+    print("Testing 7 core endpoints after Sprint 12 implementation")
     print(f"Backend URL: {BACKEND_URL.replace('/api', '')}")
     
     async with BackendTester() as tester:
         try:
-            await tester.run_sprint_10_regression_tests()
+            await tester.run_sprint_12_regression_tests()
             success = tester.print_summary()
             
             if success:
