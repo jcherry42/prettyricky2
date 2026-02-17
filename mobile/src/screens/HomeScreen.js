@@ -59,6 +59,7 @@ export function HomeScreen() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
 
   const sportActive = Boolean(settings.sportMode);
   // Use ambient lighting color if active, otherwise fallback to SPORT/default
