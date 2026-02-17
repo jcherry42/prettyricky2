@@ -976,6 +976,17 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Added chunked upload init/chunk/complete endpoints and extended license customer fields (middle name, license number, DOB, expiration)."
+  - task: "Sprint 12 Backend Regression Test"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ SPRINT 12 BACKEND REGRESSION COMPLETED - PERFECT 7/7 PASS RATE: Tested all 7 core endpoints as requested after Sprint 12 (Offline & Error Handling). All endpoints working correctly: 1) /api/health returning status 'healthy', 2) /api/customers/list returning proper array structure, 3) /api/customers/create successfully creating customers with ID, 4) /api/translate working with proper French translation, 5) /api/translate validation correctly returning 400 for empty text, 6) /api/tts generating audio successfully, 7) /api/tower-talk generating AI responses. No regressions detected, backend is production-ready and stable."
 
 frontend:
   - task: "License scanner on-device OCR + barcode extraction"
