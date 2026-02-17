@@ -134,7 +134,7 @@ export function RootNavigator() {
       {settings.sportMode ? (
         <>
           <FloatingPttButton
-            flagLabel={flagFor(settings.defaultTargetLanguage || 'es')}
+            flagLabel={flagFor(settings.defaultTargetLanguage)}
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
             recording={ptt.status === 'recording'}
             disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
