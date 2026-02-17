@@ -532,7 +532,9 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     setCapturedImage(null);
     setSaved(false);
     setSavedCustomerId(null);
+    resetExtractionState();
     setCameraError(null);
+    destroyOcrWorker();
     onClose();
   };
 
