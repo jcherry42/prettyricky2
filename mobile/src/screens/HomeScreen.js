@@ -98,8 +98,9 @@ export function HomeScreen() {
     try {
       await deleteCustomer(customer.customer_id);
       setShowDetailModal(false);
-    } catch (error) {
-      alert(`Failed to delete customer: ${error.message}`);
+      toast.showSuccess('Customer deleted');
+    } catch (e) {
+      toast.showError(`Delete failed: ${e.message}`);
     }
   };
 
@@ -107,11 +108,18 @@ export function HomeScreen() {
     try {
       if (existingCustomer) {
         await updateCustomer(existingCustomer.customer_id, customerData);
+        toast.showSuccess('Customer updated');
       } else {
         await createCustomer(customerData);
+        toast.showSuccess('Customer created');
       }
-    } catch (error) {
-      throw error;
+    } catch (e) {
+      if (e._queued) {
+        toast.showOffline('Saved offline - will sync when connected');
+      } else {
+        toast.showError(`Save failed: ${e.message}`);
+      }
+      throw e;
     }
   };
 
@@ -119,10 +127,14 @@ export function HomeScreen() {
     setRefreshing(true);
     try {
       await fetchCustomers();
+    } catch (e) {
+      if (e.message?.includes('offline')) {
+        toast.showOffline('Showing cached customers');
+      }
     } finally {
       setRefreshing(false);
     }
-  }, [fetchCustomers]);
+  }, [fetchCustomers, toast]);
 
   const renderCustomer = ({ item }) => (
     <CustomerCard customer={item} onPress={handleCustomerPress} />
