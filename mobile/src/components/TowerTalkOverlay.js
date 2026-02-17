@@ -84,7 +84,18 @@ export function TowerTalkOverlay({ visible, onClose }) {
       notificationError();
       console.error('[TowerTalk] Error:', errorMsg);
     }
-  }, [situation, customerName, vehicle, tradeVin, tradeMileage, selectedInquiry]);
+  }, [situation, customerName, vehicle, tradeVin, tradeMileage, selectedInquiry, sportOn, lang]);
+
+  // Auto-translate when SPORT mode triggers
+  useEffect(() => {
+    if (autoTranslateRef.current && sportOn) {
+      const text = autoTranslateRef.current;
+      autoTranslateRef.current = null;
+      // Small delay for UX so user sees the original first
+      const timer = setTimeout(() => translateReply(), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [reply, sportOn]);
 
   const translateReply = useCallback(async () => {
     try {
