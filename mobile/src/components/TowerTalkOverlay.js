@@ -12,6 +12,7 @@ import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
 import { impactMedium, notificationSuccess, notificationError, selectionTap } from '../lib/haptics';
 import { flagFor } from '../utils/language';
+import { sendTowerTalkSms } from '../lib/sms';
 
 export function TowerTalkOverlay({ visible, onClose }) {
   const { settings } = useAppSettings();
