@@ -536,6 +536,25 @@ class LicenseUploadResponse(BaseModel):
     error: Optional[str] = None
 
 
+class LicenseUploadInitRequest(BaseModel):
+    filename: str
+    content_type: Optional[str] = None
+    total_size: int
+    total_chunks: int
+
+
+class LicenseUploadInitResponse(BaseModel):
+    upload_id: str
+    expires_at: Optional[str] = None
+
+
+class LicenseUploadChunkResponse(BaseModel):
+    success: bool
+    upload_id: str
+    received: int
+    total_chunks: int
+
+
 def normalize_name(name: str) -> str:
     """Normalize a name to proper title case"""
     if not name:
