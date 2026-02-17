@@ -516,6 +516,8 @@ async def voice_translate(
 # Configure uploads directory
 UPLOADS_DIR = ROOT_DIR / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
+LICENSE_CHUNKS_DIR = UPLOADS_DIR / "chunks"
+LICENSE_CHUNKS_DIR.mkdir(exist_ok=True)
 
 class LicenseScanResponse(BaseModel):
     """Response for license scan with OCR extraction"""
