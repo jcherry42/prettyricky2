@@ -83,6 +83,7 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     setScanConfidence(0);
     setScanError('');
     setUploadProgress(0);
+    setIsExtracting(false);
   }, []);
 
   const dataUrlToBlob = useCallback(async (dataUrl) => {
