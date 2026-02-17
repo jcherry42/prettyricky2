@@ -182,6 +182,7 @@ export function AppSettingsProvider({ children }) {
       setAmbientLightingEnabled,
       setAmbientLightingIntensity,
       toggleAmbientLighting,
+      setSoundProfile,
     }),
     [
       loaded,
@@ -197,6 +198,7 @@ export function AppSettingsProvider({ children }) {
       setAmbientLightingEnabled,
       setAmbientLightingIntensity,
       toggleAmbientLighting,
+      setSoundProfile,
     ]
   );
 
