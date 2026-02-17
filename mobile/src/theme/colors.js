@@ -39,4 +39,7 @@ export const colors = {
   picassoDustyRose: '#C49B9B',
   picassoSageGreen: '#8BB09B',
   picassoIvory: '#F5F1E8',
+
+  // Branded accent colors
+  electricBlue: '#00D4FF',
 };
