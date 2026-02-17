@@ -16,7 +16,7 @@ import { sendTowerTalkSms } from '../lib/sms';
 
 export function TowerTalkOverlay({ visible, onClose }) {
   const { settings } = useAppSettings();
-  const lang = settings.defaultTargetLanguage || 'es';
+  const lang = settings.defaultTargetLanguage;
   const sportOn = Boolean(settings.sportMode);
   const flag = flagFor(lang);
 
