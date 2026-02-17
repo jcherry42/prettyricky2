@@ -199,6 +199,9 @@ export function HomeScreen() {
           </View>
         </View>
       </View>
+
+      {/* QuickCompose box */}
+      <QuickCompose />
     </View>
   );
 
