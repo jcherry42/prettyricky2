@@ -54,15 +54,19 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
   }, [customer]);
 
   const handleSave = async () => {
+    setValidationError(null);
+
     if (!firstName.trim() || !lastName.trim()) {
       impactMedium();
-      alert('Please enter first and last name');
+      notificationError();
+      setValidationError('Please enter first and last name');
       return;
     }
 
     if (!phone.trim()) {
       impactMedium();
-      alert('Please enter a phone number');
+      notificationError();
+      setValidationError('Please enter a phone number');
       return;
     }
 
@@ -85,7 +89,8 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
       notificationSuccess();
       onClose();
     } catch (error) {
-      alert(`Failed to save customer: ${error.message}`);
+      notificationError();
+      setValidationError(`Save failed: ${error.message}`);
     } finally {
       setSaving(false);
     }
