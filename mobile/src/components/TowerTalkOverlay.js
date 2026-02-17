@@ -485,45 +485,51 @@ const PRESET_RESPONSES = {
                     </View>
                     <Text style={styles.replyText}>{reply}</Text>
 
-                    {sportOn && (
-                      <>
-                        <View style={{ height: 12 }} />
-                        <Pressable
-                          onPress={translateReply}
-                          disabled={state.status === 'translating'}
-                          style={({ pressed }) => [styles.translateBtn, (state.status === 'translating' || pressed) && { opacity: 0.8 }]}
-                        >
-                          {state.status === 'translating' ? (
-                            <ActivityIndicator color={colors.gold} size="small" />
-                          ) : (
-                            <>
-                              <Ionicons name="language" size={14} color={colors.gold} />
-                              <Text style={styles.translateBtnText}>Translate to {flag}</Text>
-                            </>
-                          )}
-                        </Pressable>
+                    {/* Translation section - always available, auto-triggered in SPORT mode */}
+                    <>
+                      <View style={{ height: 12 }} />
+                      <Pressable
+                        onPress={translateReply}
+                        disabled={state.status === 'translating'}
+                        style={({ pressed }) => [
+                          styles.translateBtn,
+                          sportOn && styles.translateBtnSport,
+                          (state.status === 'translating' || pressed) && { opacity: 0.8 },
+                        ]}
+                      >
+                        {state.status === 'translating' ? (
+                          <ActivityIndicator color={colors.gold} size="small" />
+                        ) : (
+                          <>
+                            {sportOn && <Ionicons name="flame" size={13} color="#FF5000" />}
+                            <Ionicons name="language" size={14} color={colors.gold} />
+                            <Text style={styles.translateBtnText}>
+                              {sportOn ? `Translate to ${flag}` : `Translate ${flag}`}
+                            </Text>
+                          </>
+                        )}
+                      </Pressable>
 
-                        {translated ? (
-                          <View style={{ marginTop: 12 }}>
-                            <View style={styles.replySectionHeader}>
-                              <Text style={styles.sectionLabel}>TRANSLATION ({lang.toUpperCase()})</Text>
-                              <View style={styles.replyActions}>
-                                <Pressable onPress={() => copyToClipboard(translated)} style={styles.actionIcon}>
-                                  <Ionicons name="copy-outline" size={16} color={colors.textDim} />
-                                </Pressable>
-                                <Pressable onPress={() => speak(translated, lang)} style={styles.actionIcon}>
-                                  <Ionicons name="volume-high-outline" size={16} color={colors.textDim} />
-                                </Pressable>
-                                <Pressable onPress={() => sendAsSms(translated)} style={styles.actionIcon}>
-                                  <Ionicons name="send" size={16} color={colors.gold} />
-                                </Pressable>
-                              </View>
+                      {translated ? (
+                        <View style={{ marginTop: 12 }}>
+                          <View style={styles.replySectionHeader}>
+                            <Text style={styles.sectionLabel}>TRANSLATION ({lang.toUpperCase()}) {flag}</Text>
+                            <View style={styles.replyActions}>
+                              <Pressable onPress={() => copyToClipboard(translated)} style={styles.actionIcon} accessibilityLabel="Copy translation">
+                                <Ionicons name="copy-outline" size={16} color={colors.textDim} />
+                              </Pressable>
+                              <Pressable onPress={() => speak(translated, lang)} style={styles.actionIcon} accessibilityLabel="Speak translation">
+                                <Ionicons name="volume-high-outline" size={16} color={colors.textDim} />
+                              </Pressable>
+                              <Pressable onPress={() => sendAsSms(translated)} style={styles.actionIcon} accessibilityLabel="Send translation as SMS">
+                                <Ionicons name="send" size={16} color={colors.gold} />
+                              </Pressable>
                             </View>
-                            <Text style={styles.replyText}>{translated}</Text>
                           </View>
-                        ) : null}
-                      </>
-                    )}
+                          <Text style={styles.replyText}>{translated}</Text>
+                        </View>
+                      ) : null}
+                    </>
                   </View>
                 ) : null}
               </ScrollView>
