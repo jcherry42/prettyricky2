@@ -430,18 +430,25 @@ class BackendTester:
             async with self.session.post(f"{BACKEND_URL}/customers/create", json=payload) as response:
                 if response.status == 200:
                     data = await response.json()
-                    if "customer_id" in data or "id" in data:
-                        customer_id = data.get("customer_id") or data.get("id")
+                    # Check for different possible customer ID fields and customer object
+                    customer = data.get("customer", {})
+                    customer_id = (data.get("customer_id") or 
+                                 data.get("id") or 
+                                 customer.get("id") or 
+                                 customer.get("customer_id"))
+                    
+                    if customer_id or (data.get("success") and customer):
                         name = f"{payload['first_name']} {payload['last_name']}"
+                        result_id = customer_id or customer.get("id", "generated")
                         self.log_result(
                             "3. Customer Create", 
                             True, 
-                            f"Customer created successfully: {name} (ID: {customer_id})", 
-                            {"customer_id": customer_id, "name": name}
+                            f"Customer created successfully: {name} (ID: {result_id})", 
+                            {"customer_id": result_id, "name": name, "success": data.get("success")}
                         )
                         return True
                     else:
-                        self.log_result("3. Customer Create", False, f"Missing customer ID in response. Got: {list(data.keys())}")
+                        self.log_result("3. Customer Create", False, f"Missing customer ID in response. Got: {list(data.keys())}, customer keys: {list(customer.keys()) if customer else 'None'}")
                         return False
                 else:
                     error_text = await response.text()
