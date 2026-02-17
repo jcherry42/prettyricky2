@@ -5,9 +5,9 @@ import { type } from '../theme/typography';
 
 export function ScreenHeader({ title, subtitle, right }) {
   return (
-    <View style={styles.wrap}>
+    <View style={styles.wrap} accessibilityRole="header">
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title} accessibilityRole="header">{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
       {right ? <View style={styles.right}>{right}</View> : null}
