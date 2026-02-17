@@ -1286,4 +1286,37 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
   },
+  // Sound Profile styles
+  soundProfileBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  soundEmoji: {
+    fontSize: 20,
+  },
+  soundName: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  soundDesc: {
+    color: colors.textMute,
+    fontSize: 8,
+    fontWeight: '600',
+    opacity: 0.7,
+  },
+  soundActiveDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 2,
+  },
 });
