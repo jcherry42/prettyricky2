@@ -1,59 +1,94 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, KeyboardAvoidingView, Platform, Alert, Modal, ActivityIndicator } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
-import { addToInventory, countryFlagForVehicle } from '../lib/inventory';
+import { useInventory } from '../context/InventoryContext';
+import { validateVin, validateVinChecksum } from '../utils/vinChecksum';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { GlassCard } from '../components/GlassCard';
-import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError, impactLight } from '../lib/haptics';
 
 const STORAGE_KEY = 'sc_v1_vins';
+const MAX_HISTORY = 75;
 
 function cleanVin(s) {
   return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
 }
 
-function HistoryItem({ item, onDecode }) {
+function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit }) {
   const decoded = item.decoded?.vehicle;
   const label = decoded ? `${decoded.year || ''} ${decoded.make || ''} ${decoded.model || ''}`.trim() : null;
+  const isInInventory = Boolean(item.savedToInventoryAt);
 
   return (
     <Pressable
-      onPress={() => onDecode(item)}
-      style={({ pressed }) => [styles.row, pressed && { opacity: 0.86 }]}
+      onPress={() => onPress(item)}
+      style={({ pressed }) => [styles.historyCard, pressed && styles.pressed]}
     >
-      <View style={styles.rowLeft}>
-        <Text style={styles.vin}>{item.vin}</Text>
-        <Text style={styles.meta}>{item.source} · {new Date(item.savedAt).toLocaleDateString()}</Text>
-        {label ? <Text style={styles.decodedLine}>{label}</Text> : null}
-        {item.savedToInventoryAt ? (
-          <View style={styles.savedBadge}>
-            <Ionicons name="checkmark-circle" size={12} color={colors.green} />
-            <Text style={[styles.meta, { color: colors.green, marginTop: 0, marginLeft: 4 }]}>Saved to Inventory</Text>
+      <LinearGradient
+        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.historyGradient}
+      >
+        {/* Quilted pattern overlay */}
+        <View style={styles.quiltedPattern} />
+        
+        <View style={styles.historyContent}>
+          <View style={styles.historyLeft}>
+            <Text style={styles.vinText}>{item.vin}</Text>
+            {label && <Text style={styles.vinLabel}>{label}</Text>}
+            <View style={styles.historyMeta}>
+              <Ionicons name={item.source === 'barcode' ? 'scan' : 'keypad'} size={12} color={colors.textMute} />
+              <Text style={styles.metaText}>{new Date(item.savedAt).toLocaleDateString()}</Text>
+            </View>
+            {item.decodeError && (
+              <Text style={[styles.metaText, { color: colors.red }]} numberOfLines={1}>
+                {item.decodeError}
+              </Text>
+            )}
           </View>
-        ) : null}
-        {item.decodeError ? (
-          <Text style={[styles.meta, { color: colors.red }]} numberOfLines={1}>{item.decodeError}</Text>
-        ) : null}
-      </View>
-      <Ionicons name="chevron-forward" size={16} color={colors.textMute} />
+
+          <View style={styles.historyRight}>
+            {isInInventory ? (
+              <View style={styles.savedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+                <Text style={styles.savedText}>SAVED</Text>
+              </View>
+            ) : decoded && !isAtLimit ? (
+              <Pressable
+                onPress={() => onSaveToInventory(item)}
+                style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
+              >
+                <Ionicons name="save" size={16} color={colors.gold} />
+              </Pressable>
+            ) : null}
+            <Ionicons name="chevron-forward" size={18} color={colors.gold} style={{ marginLeft: 8 }} />
+          </View>
+        </View>
+
+        {/* Contrast stitching */}
+        <View style={styles.stitchingTop} />
+        <View style={styles.stitchingBottom} />
+      </LinearGradient>
     </Pressable>
   );
 }
 
 export function VinScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const { addVehicle, isAtLimit, maxInventory, vehicles } = useInventory();
+
   const [scanning, setScanning] = useState(false);
   const [manualVin, setManualVin] = useState('');
   const [history, setHistory] = useState([]);
   const [decoding, setDecoding] = useState(null);
   const [scannerOpen, setScannerOpen] = useState(false);
-
-
   const [lastScan, setLastScan] = useState(null);
+  const [vinValidation, setVinValidation] = useState(null);
 
   const canScan = useMemo(() => permission?.granted === true, [permission]);
 
@@ -65,14 +100,25 @@ export function VinScanScreen() {
   const saveVin = useCallback(async (vin, source) => {
     const v = cleanVin(vin);
     if (v.length !== 17) return null;
+
+    // Validate VIN checksum
+    const validation = validateVin(v);
+    if (!validation.valid) {
+      setVinValidation(validation);
+      notificationError();
+      Alert.alert('Invalid VIN', validation.error || 'VIN validation failed');
+      return null;
+    }
+
     const without = history.filter((h) => h.vin !== v);
     const entry = {
       id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
       vin: v,
       source,
       savedAt: new Date().toISOString(),
+      checksumValid: validateVinChecksum(v),
     };
-    const next = [entry, ...without].slice(0, 75);
+    const next = [entry, ...without].slice(0, MAX_HISTORY);
     setHistory(next);
     await saveJson(STORAGE_KEY, next);
     impactMedium();
@@ -83,14 +129,13 @@ export function VinScanScreen() {
     try {
       setDecoding(item.id);
       const decoded = await decodeVinWithBackend(item.vin);
-      await addToInventory({ vin: item.vin, decoded });
+      
       const entry = {
         ...item,
         decoded,
         decodedAt: new Date().toISOString(),
-        savedToInventoryAt: new Date().toISOString(),
       };
-      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, MAX_HISTORY);
       setHistory(next);
       await saveJson(STORAGE_KEY, next);
       setLastScan({ vin: item.vin, decoded });
@@ -101,16 +146,48 @@ export function VinScanScreen() {
         decodeError: String(e?.message || e),
         decodedAt: new Date().toISOString(),
       };
-      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, 50);
+      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, MAX_HISTORY);
       setHistory(next);
       await saveJson(STORAGE_KEY, next);
       setLastScan({ vin: item.vin, error: String(e?.message || e) });
       notificationError();
-      Alert.alert('Decode Failed', String(e?.message || e));
     } finally {
       setDecoding(null);
     }
   }, [history]);
+
+  const saveToInventory = useCallback(async (item) => {
+    if (isAtLimit) {
+      Alert.alert('Inventory Full', `Maximum ${maxInventory} vehicles reached. Please delete some vehicles first.`);
+      return;
+    }
+
+    if (!item.decoded) {
+      Alert.alert('Decode First', 'Please decode this VIN before adding to inventory');
+      return;
+    }
+
+    try {
+      impactMedium();
+      await addVehicle({
+        vin: item.vin,
+        ...item.decoded.vehicle,
+      });
+
+      const entry = {
+        ...item,
+        savedToInventoryAt: new Date().toISOString(),
+      };
+      const next = [entry, ...history.filter((h) => h.id !== item.id)].slice(0, MAX_HISTORY);
+      setHistory(next);
+      await saveJson(STORAGE_KEY, next);
+      notificationSuccess();
+      Alert.alert('Success', 'Vehicle added to inventory');
+    } catch (e) {
+      notificationError();
+      Alert.alert('Save Failed', String(e?.message || e));
+    }
+  }, [history, addVehicle, isAtLimit, maxInventory]);
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
@@ -118,46 +195,111 @@ export function VinScanScreen() {
     async ({ data }) => {
       if (!scanning) return;
       const v = cleanVin(data);
-      if (!v || v.length !== 17 || !/^[A-HJ-NPR-Z0-9]{17}$/.test(v)) return;
+      if (!v || v.length !== 17) return;
+
+      // Validate VIN format
+      const validation = validateVin(v);
+      if (!validation.valid) {
+        impactLight();
+        return; // Silent fail on invalid VINs during scanning
+      }
+
       setScanning(false);
       setScannerOpen(false);
       const entry = await saveVin(v, 'barcode');
       if (entry) {
         await decodeAndSave(entry);
-        notificationSuccess();
-        setLastScan((prev) => ({ vin: entry.vin, decoded: null, flag: '🏁' }));
       }
     },
     [scanning, saveVin, decodeAndSave]
   );
 
+  const handleManualEntry = async () => {
+    if (manualVin.length !== 17) return;
+    const entry = await saveVin(manualVin, 'manual');
+    if (entry) {
+      await decodeAndSave(entry);
+    }
+    setManualVin('');
+    setVinValidation(null);
+  };
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.container}>
-        {/* Camera Scanner */}
-        <GlassCard>
-          <View style={styles.sectionRow}>
-            <Ionicons name="camera-outline" size={16} color={colors.gold} />
-            <Text style={styles.section}>Camera Scan</Text>
-          </View>
+        {/* Camera Scanner Card */}
+        <LinearGradient
+          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionBezel}
+        >
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="camera" size={18} color={colors.gold} />
+              <Text style={styles.sectionTitle}>CAMERA SCAN</Text>
+            </View>
 
-          {!canScan && (
-            <Text style={[styles.body, { color: colors.red }]}>Camera permission not granted.</Text>
-          )}
+            {!canScan && (
+              <Text style={[styles.body, { color: colors.red }]}>Camera permission required</Text>
+            )}
 
-          <Modal
-            visible={scannerOpen && canScan}
-            animationType="slide"
-            presentationStyle="fullScreen"
-            transparent={false}
-          >
-            <View style={styles.modalRoot}>
-              <View style={styles.modalHeader}>
-                <Pressable onPress={() => { setScannerOpen(false); setScanning(false); }} style={styles.modalClose}>
-                  <Ionicons name="close" size={20} color={colors.text} />
-                </Pressable>
-                <Text style={styles.modalTitle}>VIN SCAN</Text>
+            {lastScan?.vin && (
+              <View style={styles.lastScanCard}>
+                <Text style={styles.lastScanLabel}>Last Scanned VIN</Text>
+                <Text style={styles.lastScanVin}>{lastScan.vin}</Text>
+                {lastScan.decoded?.vehicle && (
+                  <Text style={styles.lastScanDetail}>
+                    {[lastScan.decoded.vehicle.year, lastScan.decoded.vehicle.make, lastScan.decoded.vehicle.model]
+                      .filter(Boolean)
+                      .join(' ')}
+                  </Text>
+                )}
+                {lastScan.error && (
+                  <Text style={[styles.lastScanDetail, { color: colors.red }]}>{lastScan.error}</Text>
+                )}
               </View>
+            )}
+
+            <Pressable
+              onPress={async () => {
+                if (!permission?.granted) {
+                  const result = await requestPermission();
+                  if (!result.granted) return;
+                }
+                impactMedium();
+                setScanning(true);
+                setScannerOpen(true);
+              }}
+              style={({ pressed }) => [styles.scanButton, scanning && styles.scanButtonActive, pressed && styles.pressed]}
+            >
+              <Ionicons name="scan" size={20} color={scanning ? colors.text : colors.gold} />
+              <Text style={[styles.scanButtonText, scanning && { color: colors.text }]}>
+                {scanning ? 'Scanning...' : 'Scan VIN from Windshield'}
+              </Text>
+            </Pressable>
+          </View>
+        </LinearGradient>
+
+        {/* Camera Modal */}
+        <Modal visible={scannerOpen && canScan} animationType="slide" presentationStyle="fullScreen">
+          <View style={styles.modalRoot}>
+            <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
+              {/* Header */}
+              <View style={styles.modalHeader}>
+                <Pressable
+                  onPress={() => {
+                    setScannerOpen(false);
+                    setScanning(false);
+                  }}
+                  style={styles.modalClose}
+                >
+                  <Ionicons name="close" size={24} color={colors.text} />
+                </Pressable>
+                <Text style={styles.modalTitle}>VIN WINDSHIELD SCANNER</Text>
+              </View>
+
+              {/* Camera View */}
               <View style={styles.modalBody}>
                 <View style={styles.scannerWrap}>
                   <CameraView
@@ -168,121 +310,161 @@ export function VinScanScreen() {
                         'code39',
                         'code128',
                         'code93',
-                        'codabar',
                         'datamatrix',
+                        'qr',
                         'ean13',
                         'ean8',
-                        'itf14',
                         'pdf417',
-                        'qr',
-                        'upc_a',
                         'upc_e',
                         'aztec',
+                        'interleaved2of5',
+                        'itf14',
                       ],
                     }}
                   />
+                  {/* Mask overlay */}
                   <View style={styles.scanMaskTop} />
-                  <View style={styles.scanFrame} />
-                  <View style={styles.scanMaskHole} pointerEvents="none" />
+                  
+                  {/* Windshield guide frame */}
+                  <View style={styles.scanFrame}>
+                    {/* Corner guides */}
+                    <View style={[styles.corner, styles.cornerTL]} />
+                    <View style={[styles.corner, styles.cornerTR]} />
+                    <View style={[styles.corner, styles.cornerBL]} />
+                    <View style={[styles.corner, styles.cornerBR]} />
+                    
+                    {/* Center crosshair */}
+                    <View style={styles.crosshair}>
+                      <View style={styles.crosshairH} />
+                      <View style={styles.crosshairV} />
+                    </View>
+                  </View>
+                  
+                  <View style={styles.scanMaskBottom} />
                 </View>
-                <Text style={styles.modalHint}>Align the VIN window stamp in the frame. The scanner will capture all 17 characters.</Text>
+
+                <View style={styles.scanHintCard}>
+                  <Ionicons name="information-circle" size={20} color={colors.gold} />
+                  <Text style={styles.scanHint}>
+                    Position the VIN plate in the frame. Look for the small sticker on the windshield near the dashboard. All 17 characters will be captured automatically.
+                  </Text>
+                </View>
               </View>
-            </View>
-          </Modal>
-
-          {!scanning && lastScan?.vin && (
-            <View style={{ marginTop: 10 }}>
-              <Text style={styles.lastScanLabel}>Last VIN</Text>
-              <Text style={styles.lastScanVin}>{lastScan.vin}</Text>
-              {lastScan.decoded?.vehicle ? (
-                <Text style={styles.lastScanDetail}>
-                  {[lastScan.decoded.vehicle.year, lastScan.decoded.vehicle.make, lastScan.decoded.vehicle.model].filter(Boolean).join(' ')}
-                </Text>
-              ) : null}
-              {lastScan.error ? (
-                <Text style={[styles.lastScanDetail, { color: colors.red }]} numberOfLines={1}>{lastScan.error}</Text>
-              ) : null}
-            </View>
-          )}
-
-          <View style={{ height: 10 }} />
-
-          <Pressable
-            onPress={async () => {
-              if (!permission?.granted) {
-                const result = await requestPermission();
-                if (!result.granted) return;
-              }
-              impactMedium();
-              setScanning(true);
-              setScannerOpen(true);
-            }}
-            style={({ pressed }) => [styles.btn, scanning && styles.btnActive, pressed && { opacity: 0.85 }]}
-          >
-            <Ionicons name="scan" size={16} color={colors.gold} />
-            <Text style={styles.btnText}>Scan VIN</Text>
-          </Pressable>
-        </GlassCard>
+            </LinearGradient>
+          </View>
+        </Modal>
 
         <View style={{ height: 12 }} />
 
-        {/* Manual Entry */}
-        <GlassCard>
-          <View style={styles.sectionRow}>
-            <Ionicons name="keypad-outline" size={16} color={colors.gold} />
-            <Text style={styles.section}>Manual Entry</Text>
+        {/* Manual Entry Card */}
+        <LinearGradient
+          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.sectionBezel}
+        >
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="keypad" size={18} color={colors.gold} />
+              <Text style={styles.sectionTitle}>MANUAL ENTRY</Text>
+            </View>
+
+            <View style={styles.inputRow}>
+              <TextInput
+                value={manualVin}
+                onChangeText={(t) => {
+                  setManualVin(cleanVin(t));
+                  setVinValidation(null);
+                }}
+                placeholder="Enter 17-digit VIN"
+                placeholderTextColor={colors.textMute}
+                autoCapitalize="characters"
+                style={styles.vinInput}
+                maxLength={17}
+              />
+              <Pressable
+                onPress={handleManualEntry}
+                disabled={manualVin.length !== 17 || Boolean(decoding)}
+                style={({ pressed }) => [
+                  styles.addButton,
+                  (manualVin.length !== 17 || decoding) && styles.addButtonDisabled,
+                  pressed && styles.pressed,
+                ]}
+              >
+                {decoding ? (
+                  <ActivityIndicator size="small" color={colors.gold} />
+                ) : (
+                  <Ionicons name="arrow-forward-circle" size={24} color={colors.gold} />
+                )}
+              </Pressable>
+            </View>
+
+            {manualVin.length > 0 && manualVin.length < 17 && (
+              <Text style={styles.charCount}>{manualVin.length}/17 characters</Text>
+            )}
+
+            {vinValidation && !vinValidation.valid && (
+              <View style={styles.validationError}>
+                <Ionicons name="alert-circle" size={16} color={colors.red} />
+                <Text style={styles.validationText}>{vinValidation.error}</Text>
+              </View>
+            )}
           </View>
-          <View style={{ height: 8 }} />
-          <View style={styles.inputRow}>
-            <TextInput
-              value={manualVin}
-              onChangeText={(t) => setManualVin(cleanVin(t))}
-              placeholder="Enter 17-digit VIN"
-              placeholderTextColor={colors.textMute}
-              autoCapitalize="characters"
-              style={[styles.input, { flex: 1 }]}
-              maxLength={17}
-            />
-            <Pressable
-              onPress={async () => {
-                if (manualVin.length !== 17) return;
-                const entry = await saveVin(manualVin, 'manual');
-                if (entry) {
-                  await decodeAndSave(entry);
-                }
-                setManualVin('');
-              }}
-              disabled={manualVin.length !== 17}
-              style={({ pressed }) => [styles.iconBtn, (manualVin.length !== 17 || pressed) && { opacity: 0.6 }]}
-            >
-              <Ionicons name="add-circle" size={22} color={colors.gold} />
-            </Pressable>
-          </View>
-          {manualVin.length > 0 && manualVin.length < 17 && (
-            <Text style={styles.charCount}>{manualVin.length}/17</Text>
-          )}
-        </GlassCard>
+        </LinearGradient>
 
         <View style={{ height: 12 }} />
+
+        {/* Inventory Status */}
+        <View style={styles.inventoryStatus}>
+          <Ionicons name="car-sport" size={16} color={isAtLimit ? colors.red : colors.gold} />
+          <Text style={[styles.inventoryText, isAtLimit && { color: colors.red }]}>
+            Inventory: {vehicles.length}/{maxInventory}
+          </Text>
+          {isAtLimit && (
+            <View style={styles.fullBadge}>
+              <Text style={styles.fullBadgeText}>FULL</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={{ height: 8 }} />
 
         {/* History */}
-        <GlassCard style={{ flex: 1 }}>
-          <View style={styles.sectionRow}>
-            <Ionicons name="time-outline" size={16} color={colors.textMute} />
-            <Text style={styles.section}>Recent</Text>
-            <Text style={[styles.body, { marginTop: 0, marginLeft: 'auto' }]}>{history.length}</Text>
+        <View style={styles.historyContainer}>
+          <View style={styles.historyHeader}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="time" size={18} color={colors.textMute} />
+              <Text style={styles.sectionTitle}>RECENT SCANS</Text>
+            </View>
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{history.length}</Text>
+            </View>
           </View>
-          <View style={{ height: 8 }} />
 
-          <FlatList
-            data={history}
-            keyExtractor={(i) => i.id}
-            renderItem={({ item }) => <HistoryItem item={item} onDecode={decodeAndSave} />}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-            contentContainerStyle={{ paddingBottom: 14 }}
-            showsVerticalScrollIndicator={false}
-          />
-        </GlassCard>
+          {history.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="scan" size={48} color={colors.textMute} />
+              <Text style={styles.emptyText}>No VIN scans yet</Text>
+              <Text style={styles.emptySubtext}>Scan or enter a VIN to get started</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={history}
+              keyExtractor={(i) => i.id}
+              renderItem={({ item }) => (
+                <HistoryItem
+                  item={item}
+                  onPress={decodeAndSave}
+                  onSaveToInventory={saveToInventory}
+                  isAtLimit={isAtLimit}
+                />
+              )}
+              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+              contentContainerStyle={{ paddingBottom: 16 }}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -295,40 +477,297 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
-  sectionRow: {
+  sectionBezel: {
+    padding: 3,
+    borderRadius: 12,
+  },
+  sectionCard: {
+    backgroundColor: colors.panel,
+    borderRadius: 9,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+  },
+  sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  section: {
-    color: colors.text,
+  sectionTitle: {
     ...type.label,
-    fontSize: 12,
+    fontSize: 11,
+    color: colors.gold,
   },
   body: {
-    marginTop: 6,
+    ...type.bodyDim,
     color: colors.textMute,
-    fontSize: 12,
-    lineHeight: 16,
+    marginTop: 6,
   },
-  btn: {
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
+  lastScanCard: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  lastScanLabel: {
+    ...type.label,
+    fontSize: 10,
+    color: colors.textMute,
+    marginBottom: 6,
+  },
+  lastScanVin: {
+    ...type.h2,
+    color: colors.text,
+    letterSpacing: 2,
+    marginBottom: 4,
+  },
+  lastScanDetail: {
+    ...type.body,
+    color: colors.textDim,
+    marginTop: 2,
+  },
+  scanButton: {
+    height: 50,
+    borderRadius: 10,
+    borderWidth: 1.5,
     borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 10,
+  },
+  scanButtonActive: {
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+  },
+  scanButtonText: {
+    ...type.label,
+    fontSize: 12,
+    color: colors.gold,
+  },
+  inputRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  vinInput: {
+    ...type.body,
+    flex: 1,
+    height: 48,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke2,
+    paddingHorizontal: 14,
+    color: colors.text,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
+  addButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonDisabled: {
+    opacity: 0.3,
+  },
+  charCount: {
+    ...type.bodyDim,
+    fontSize: 11,
+    color: colors.textMute,
+    marginTop: 6,
+  },
+  validationError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: 'rgba(255,45,45,0.1)',
+    borderRadius: 6,
+  },
+  validationText: {
+    ...type.bodyDim,
+    fontSize: 11,
+    color: colors.red,
+    flex: 1,
+  },
+  inventoryStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.panel,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+  },
+  inventoryText: {
+    ...type.label,
+    fontSize: 11,
+    color: colors.gold,
+  },
+  fullBadge: {
+    marginLeft: 'auto',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: colors.red,
+    borderRadius: 4,
+  },
+  fullBadgeText: {
+    ...type.label,
+    fontSize: 9,
+    color: '#000',
+  },
+  historyContainer: {
+    flex: 1,
+    backgroundColor: colors.panel,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    padding: 14,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  countBadge: {
+    backgroundColor: colors.gold,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  countText: {
+    ...type.label,
+    fontSize: 10,
+    color: colors.bg0,
+  },
+  historyCard: {
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  historyGradient: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    borderRadius: 10,
+    position: 'relative',
+  },
+  quiltedPattern: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.03)',
+  },
+  historyContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  historyLeft: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  vinText: {
+    ...type.h2,
+    fontSize: 16,
+    color: colors.text,
+    letterSpacing: 1.5,
+    marginBottom: 4,
+  },
+  vinLabel: {
+    ...type.body,
+    color: colors.textDim,
+    marginBottom: 4,
+  },
+  historyMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  metaText: {
+    ...type.bodyDim,
+    fontSize: 11,
+    color: colors.textMute,
+  },
+  historyRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  savedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(64,255,155,0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  savedText: {
+    ...type.label,
+    fontSize: 9,
+    color: colors.green,
+  },
+  saveButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stitchingTop: {
+    position: 'absolute',
+    top: 4,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: colors.contrastStitching,
+    opacity: 0.15,
+  },
+  stitchingBottom: {
+    position: 'absolute',
+    bottom: 4,
+    left: 8,
+    right: 8,
+    height: 1,
+    backgroundColor: colors.contrastStitching,
+    opacity: 0.15,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    ...type.h2,
+    color: colors.textDim,
+    marginTop: 12,
+  },
+  emptySubtext: {
+    ...type.bodyDim,
+    color: colors.textMute,
+    marginTop: 6,
   },
   modalRoot: {
     flex: 1,
-    backgroundColor: colors.bg0,
   },
   modalHeader: {
-    height: 64,
+    height: 80,
+    paddingTop: 40,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -337,161 +776,138 @@ const styles = StyleSheet.create({
   modalClose: {
     position: 'absolute',
     left: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    top: 40,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.stroke2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.40)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalTitle: {
-    color: colors.text,
     ...type.label,
-    fontSize: 13,
-    letterSpacing: 2.0,
+    fontSize: 14,
+    color: colors.text,
+    letterSpacing: 2,
   },
   modalBody: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  modalHint: {
-    marginTop: 12,
-    color: colors.textMute,
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  btnActive: {
-    borderColor: 'rgba(255,45,45,0.45)',
-    backgroundColor: 'rgba(255,45,45,0.08)',
-  },
-  btnText: {
-    color: colors.gold,
-    ...type.label,
-    fontSize: 12,
-  },
-  input: {
-    height: 48,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    paddingHorizontal: 14,
-    color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.28)',
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 2.0,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  iconBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  charCount: {
-    marginTop: 6,
-    color: colors.textMute,
-    fontSize: 11,
-    textAlign: 'right',
-    letterSpacing: 0.5,
+    padding: 16,
   },
   scannerWrap: {
-    marginTop: 8,
-    height: 200,
-    borderRadius: 18,
+    flex: 1,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.85)',
-  },
-  scanFrame: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    top: 54,
-    bottom: 54,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(214,178,94,0.95)',
+    position: 'relative',
   },
   scanMaskTop: {
     position: 'absolute',
+    top: 0,
     left: 0,
     right: 0,
+    height: '35%',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  scanMaskBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '35%',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  scanFrame: {
+    position: 'absolute',
+    top: '35%',
+    left: 20,
+    right: 20,
+    height: '30%',
+    borderWidth: 2,
+    borderColor: colors.gold,
+    borderRadius: 8,
+  },
+  corner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: colors.gold,
+    borderWidth: 3,
+  },
+  cornerTL: {
+    top: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 8,
+  },
+  cornerTR: {
+    top: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 8,
+  },
+  cornerBL: {
+    bottom: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+  },
+  cornerBR: {
+    bottom: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 8,
+  },
+  crosshair: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 40,
+    height: 40,
+    marginLeft: -20,
+    marginTop: -20,
+  },
+  crosshairH: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: colors.gold,
+    opacity: 0.8,
+  },
+  crosshairV: {
+    position: 'absolute',
     top: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    left: '50%',
+    width: 2,
+    backgroundColor: colors.gold,
+    opacity: 0.8,
   },
-  scanMaskHole: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    top: 54,
-    bottom: 54,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    backgroundColor: 'transparent',
-  },
-  row: {
+  scanHintCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 16,
     padding: 12,
-    borderRadius: 16,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.22)',
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderColor: colors.gold,
   },
-  rowLeft: {
+  scanHint: {
+    ...type.body,
     flex: 1,
-  },
-  vin: {
     color: colors.text,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 2.0,
+    lineHeight: 18,
   },
-  meta: {
-    marginTop: 6,
-    color: colors.textMute,
-    fontSize: 11,
-  },
-  decodedLine: {
-    marginTop: 6,
-    color: colors.textDim,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  savedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  lastScanLabel: {
-    color: colors.textMute,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.2,
-  },
-  lastScanVin: {
-    marginTop: 4,
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: '900',
-    letterSpacing: 2.0,
-  },
-  lastScanDetail: {
-    marginTop: 4,
-    color: colors.textDim,
-    fontSize: 12,
-    fontWeight: '700',
+  pressed: {
+    opacity: 0.7,
   },
 });
