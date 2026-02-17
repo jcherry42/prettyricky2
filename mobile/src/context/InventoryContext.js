@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { loadJson, saveJson } from '../lib/storage';
+import { queueOperation } from '../utils/offlineQueue';
 
 const CACHE_KEY = 'sc_v1_inventory_cache';
 const MAX_INVENTORY = 150;
@@ -40,6 +41,13 @@ export function InventoryProvider({ children }) {
 
       return list;
     } catch (e) {
+      // If network error, serve from cache
+      const cached = await loadJson(CACHE_KEY, null);
+      if (cached?.vehicles) {
+        setVehicles(cached.vehicles);
+        setError('Serving cached data (offline)');
+        return cached.vehicles;
+      }
       setError(e.message || 'Failed to fetch inventory');
       throw e;
     } finally {
@@ -62,14 +70,29 @@ export function InventoryProvider({ children }) {
       const newVehicle = data?.vehicle;
       if (newVehicle) {
         setVehicles(prev => [newVehicle, ...prev]);
+        // Update cache
+        await saveJson(CACHE_KEY, {
+          vehicles: [newVehicle, ...vehicles],
+          timestamp: Date.now(),
+        });
       }
 
       return newVehicle;
     } catch (e) {
+      // Queue for offline
+      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+        await queueOperation('/api/vin/save-to-inventory', {
+          method: 'POST',
+          body: JSON.stringify(vehicleData),
+        });
+        const tempVehicle = { ...vehicleData, vehicle_id: `temp_${Date.now()}`, _queued: true };
+        setVehicles(prev => [tempVehicle, ...prev]);
+        return tempVehicle;
+      }
       setError(e.message || 'Failed to add vehicle');
       throw e;
     }
-  }, [vehicles.length]);
+  }, [vehicles]);
 
   const updateVehicle = useCallback(async (id, updates) => {
     try {
@@ -85,6 +108,15 @@ export function InventoryProvider({ children }) {
 
       return updatedVehicle;
     } catch (e) {
+      // Queue for offline
+      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+        await queueOperation(`/api/vehicles/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(updates),
+        });
+        setVehicles(prev => prev.map(v => v.vehicle_id === id ? { ...v, ...updates, _queued: true } : v));
+        return { ...updates, vehicle_id: id, _queued: true };
+      }
       setError(e.message || 'Failed to update vehicle');
       throw e;
     }
@@ -98,6 +130,12 @@ export function InventoryProvider({ children }) {
 
       setVehicles(prev => prev.filter(v => v.vehicle_id !== id));
     } catch (e) {
+      // Queue for offline
+      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+        await queueOperation(`/api/vehicles/${id}`, { method: 'DELETE' });
+        setVehicles(prev => prev.filter(v => v.vehicle_id !== id));
+        return;
+      }
       setError(e.message || 'Failed to delete vehicle');
       throw e;
     }
