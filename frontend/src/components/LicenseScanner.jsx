@@ -407,31 +407,61 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   // Save to new customer
   const saveToNewCustomer = async () => {
     if (!capturedImage) return;
-    
+
+    if (isExtracting) {
+      toast.error('Scan in progress', { description: 'Please wait for extraction to finish.' });
+      return;
+    }
+
+    if (!licenseData.first_name?.trim() && !licenseData.last_name?.trim()) {
+      toast.error('Missing name', { description: 'Please scan again or enter name manually.' });
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/customers`, {
+      const imageUrl = await uploadLicenseImage(capturedImage);
+
+      const formData = new FormData();
+      formData.append('first_name', licenseData.first_name || 'Unknown');
+      formData.append('last_name', licenseData.last_name || 'Unknown');
+      if (licenseData.middle_name) formData.append('middle_name', licenseData.middle_name);
+      if (licenseData.address) formData.append('address', licenseData.address);
+      if (licenseData.city) formData.append('city', licenseData.city);
+      if (licenseData.state) formData.append('state', licenseData.state);
+      if (licenseData.zip_code) formData.append('zip_code', licenseData.zip_code);
+      if (licenseData.license_number) formData.append('license_number', licenseData.license_number);
+      if (licenseData.expiration) formData.append('expiration', licenseData.expiration);
+      if (licenseData.dob) formData.append('dob', licenseData.dob);
+      formData.append('image_url', imageUrl);
+
+      const res = await fetch(`${BACKEND_URL}/api/license/create-customer`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: 'License',
-          lastName: 'Scan',
-          name: 'License Scan - ' + new Date().toLocaleDateString(),
-          license_image: capturedImage,
-          leadStatus: 'new',
-          source: 'license_scan'
-        })
+        body: formData
       });
-      
-      if (!res.ok) throw new Error('Failed to save');
-      
-      const newCustomer = await res.json();
-      setCustomers([...customers, newCustomer]);
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || 'Failed to save');
+      }
+
+      const data = await res.json();
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to save');
+      }
+
+      const newCustomer = data.customer;
+      if (newCustomer) {
+        setCustomers([...customers, newCustomer]);
+        setSavedCustomerId(newCustomer.id);
+      }
+
       setSaved(true);
-      setSavedCustomerId(newCustomer.id);
-      toast.success('License saved to new customer profile');
+      toast.success('License saved to customer profile');
     } catch (err) {
-      toast.error('Failed to save license');
+      toast.error('Failed to save license', {
+        description: err?.message || 'Please try again.'
+      });
     } finally {
       setIsSaving(false);
     }
