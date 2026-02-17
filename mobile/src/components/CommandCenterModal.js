@@ -511,6 +511,69 @@ export function CommandCenterModal({ visible, onClose }) {
                   <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}>{settings.ecoMode ? 'ON' : 'OFF'}</Text>
                 </Pressable>
               </GlassCard>
+
+              {/* Ambient Lighting Section */}
+              <GlassCard style={{ marginTop: 14 }}>
+                <View style={styles.ambientHeader}>
+                  <SectionTitle>Ambient Lighting</SectionTitle>
+                  <View style={[styles.ambientPreview, { backgroundColor: settings.ambientLightingEnabled ? (require('../theme/designo').designoColors.ambient[0] || '#FF0000') : 'rgba(255,255,255,0.10)' }]} />
+                </View>
+                <View style={{ height: 12 }} />
+
+                {/* Enable/Disable Toggle */}
+                <Pressable
+                  onPress={() => { impactLight(); toggleAmbientLighting(); }}
+                  style={({ pressed }) => [styles.toggle, settings.ambientLightingEnabled && styles.toggleAmbientOn, pressed && { opacity: 0.9 }]}
+                >
+                  <View style={[styles.toggleDot, settings.ambientLightingEnabled && styles.toggleDotAmbientOn]} />
+                  <Text style={[styles.toggleText, settings.ambientLightingEnabled && { color: '#00FFCC' }]}>
+                    {settings.ambientLightingEnabled ? '64-COLOR ACTIVE' : 'OFF'}
+                  </Text>
+                </Pressable>
+
+                {/* Intensity Selector (only shown when enabled) */}
+                {settings.ambientLightingEnabled && (
+                  <>
+                    <View style={{ height: 14 }} />
+                    <Text style={styles.ambientLabel}>INTENSITY</Text>
+                    <View style={{ height: 8 }} />
+                    <View style={styles.intensityRow}>
+                      {[
+                        { key: 'subtle', label: 'SUBTLE', pct: '4%' },
+                        { key: 'medium', label: 'MEDIUM', pct: '8%' },
+                        { key: 'vivid', label: 'VIVID', pct: '12%' },
+                      ].map((level) => {
+                        const active = settings.ambientLightingIntensity === level.key;
+                        return (
+                          <Pressable
+                            key={level.key}
+                            onPress={() => { impactLight(); setAmbientLightingIntensity(level.key); }}
+                            style={({ pressed }) => [
+                              styles.intensityBtn,
+                              active && styles.intensityBtnActive,
+                              pressed && { opacity: 0.85 },
+                            ]}
+                          >
+                            <Text style={[styles.intensityLabel, active && styles.intensityLabelActive]}>{level.label}</Text>
+                            <Text style={[styles.intensityPct, active && styles.intensityPctActive]}>{level.pct}</Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+
+                    {/* Color spectrum preview */}
+                    <View style={{ height: 14 }} />
+                    <Text style={styles.ambientLabel}>SPECTRUM PREVIEW</Text>
+                    <View style={{ height: 8 }} />
+                    <View style={styles.spectrumRow}>
+                      {require('../theme/designo').designoColors.ambient.filter((_, i) => i % 4 === 0).map((color, i) => (
+                        <View key={i} style={[styles.spectrumDot, { backgroundColor: color }]} />
+                      ))}
+                    </View>
+                    <Text style={styles.ambientSubtext}>30-second full spectrum cycle</Text>
+                  </>
+                )}
+              </GlassCard>
             </ScrollView>
           ) : null}
 
