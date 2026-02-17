@@ -576,6 +576,38 @@ export function CommandCenterModal({ visible, onClose }) {
                   </>
                 )}
               </GlassCard>
+
+              {/* Sound Profile Section */}
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>SPORT Sound Profile</SectionTitle>
+                <View style={{ height: 12 }} />
+                <View style={styles.intensityRow}>
+                  {[
+                    { key: 'merica', name: 'V8', emoji: '\uD83C\uDDFA\uD83C\uDDF8', desc: 'American V8', color: '#FF4444' },
+                    { key: 'euro', name: 'EURO', emoji: '\uD83C\uDDEA\uD83C\uDDFA', desc: 'Exotic', color: '#FFD700' },
+                    { key: 'jdm', name: 'JDM', emoji: '\uD83C\uDDEF\uD83C\uDDF5', desc: 'Turbo', color: '#00CCFF' },
+                  ].map((p) => {
+                    const active = settings.soundProfile === p.key;
+                    return (
+                      <Pressable
+                        key={p.key}
+                        onPress={() => { impactLight(); setSoundProfile(p.key); }}
+                        style={({ pressed }) => [
+                          styles.soundProfileBtn,
+                          active && { borderColor: `${p.color}80`, backgroundColor: `${p.color}12` },
+                          pressed && { opacity: 0.85 },
+                        ]}
+                      >
+                        <Text style={styles.soundEmoji}>{p.emoji}</Text>
+                        <Text style={[styles.soundName, active && { color: p.color }]}>{p.name}</Text>
+                        <Text style={styles.soundDesc}>{p.desc}</Text>
+                        {active && <View style={[styles.soundActiveDot, { backgroundColor: p.color }]} />}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <Text style={styles.ambientSubtext}>Haptic feedback plays on SPORT mode toggle</Text>
+              </GlassCard>
             </ScrollView>
           ) : null}
 
