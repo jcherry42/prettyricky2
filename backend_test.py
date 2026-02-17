@@ -17,7 +17,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Backend URL from frontend .env (use production URL)
-BACKEND_URL = "https://automotive-crm-pro.preview.emergentagent.com/api"
+BACKEND_URL = "https://automotive-sales-app.preview.emergentagent.com/api"
 
 class ComprehensiveBackendTester:
     def __init__(self):
