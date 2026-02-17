@@ -13,6 +13,19 @@ import { parseAamvaBarcode, parseLicenseOcrText, scoreLicenseData } from '../uti
 
 const BACKEND_URL = getBackendUrl();
 
+const EMPTY_LICENSE_DATA = {
+  first_name: '',
+  last_name: '',
+  middle_name: '',
+  license_number: '',
+  expiration: '',
+  dob: '',
+  address: '',
+  city: '',
+  state: '',
+  zip_code: '',
+};
+
 export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const { customers, setCustomers } = useSales();
   
