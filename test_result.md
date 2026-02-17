@@ -720,3 +720,49 @@ metadata:
   version: "1.0"
   test_sequence: 1
   run_ui: true
+
+
+user_problem_statement: "Driver's license scanner must work reliably on-device with PDF417 barcode + OCR fallback, support editable fields, chunked upload, and customer creation."
+
+backend:
+  - task: "License scanner chunked upload + customer creation fields"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added chunked upload init/chunk/complete endpoints and extended license customer fields (middle name, license number, DOB, expiration)."
+
+frontend:
+  - task: "License scanner on-device OCR + barcode extraction"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/LicenseScanner.jsx, /app/frontend/src/utils/licenseParsing.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented PDF417 barcode detection fallback to OCR, editable field form, upload progress, and chunked upload integration."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 2
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Driver's license scanner OCR + barcode extraction + chunked upload"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Please test license upload chunked endpoints and license create-customer flow; validate OCR/barcode extraction UX and retry/error handling."
