@@ -1339,7 +1339,7 @@ class BackendTester:
                 "phone": "(555) 100-0003",
                 "email": "michael.chen@test.com",
                 "address": "456 Maple Ave, San Francisco, CA 94102",
-                "lead_status": "appointment",
+                "lead_status": "qualified",  # Changed from "appointment" to valid status
                 "vehicle_interest": "2024 Tesla Model 3, 2024 BMW X5",
                 "notes": "Prefers electric vehicles. Test drive scheduled for next week. Has trade-in: 2019 Toyota Camry with 45k miles."
             }
