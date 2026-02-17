@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactLight } from '../lib/haptics';
+import { useAmbientLighting } from '../hooks/useAmbientLighting';
+import { PicassoAccent } from './PicassoSwirls';
 
 /**
  * Customer status badges
@@ -21,6 +23,7 @@ const STATUS_CONFIG = {
 export function CustomerCard({ customer, onPress }) {
   const status = customer?.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const { isEnabled, currentColor, opacity } = useAmbientLighting();
 
   const name = `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown Customer';
   const phone = customer?.phone || 'No phone';
@@ -31,16 +34,64 @@ export function CustomerCard({ customer, onPress }) {
     onPress?.(customer);
   };
 
+  // Ambient glow border color
+  const glowBorder = isEnabled && currentColor
+    ? `${currentColor}${Math.round(opacity * 1.5 * 255).toString(16).padStart(2, '0')}`
+    : colors.stroke;
+
   return (
     <Pressable onPress={handlePress} style={({ pressed }) => [styles.container, pressed && styles.pressed]}>
       <LinearGradient
         colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.gradient}
+        style={[styles.gradient, { borderColor: glowBorder }]}
       >
         {/* Quilted leather pattern overlay */}
-        <View style={styles.quiltedPattern} />
+        <View style={styles.quiltedPattern}>
+          {/* Diamond quilted lines */}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <View
+              key={`ql-${i}`}
+              style={[
+                styles.quiltLine,
+                {
+                  top: i * 24,
+                  transform: [{ rotate: '45deg' }],
+                },
+              ]}
+            />
+          ))}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <View
+              key={`qr-${i}`}
+              style={[
+                styles.quiltLine,
+                {
+                  top: i * 24,
+                  transform: [{ rotate: '-45deg' }],
+                },
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* Picasso accent overlay */}
+        <PicassoAccent mode="dark" />
+
+        {/* Ambient glow top edge */}
+        {isEnabled && currentColor && (
+          <LinearGradient
+            colors={[
+              `${currentColor}${Math.round(opacity * 1.2 * 255).toString(16).padStart(2, '0')}`,
+              'transparent',
+            ]}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 0.5 }}
+            style={styles.ambientGlow}
+            pointerEvents="none"
+          />
+        )}
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
@@ -98,6 +149,7 @@ const styles = StyleSheet.create({
     borderColor: colors.stroke,
     borderRadius: 12,
     position: 'relative',
+    overflow: 'hidden',
   },
   quiltedPattern: {
     position: 'absolute',
@@ -105,11 +157,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'transparent',
-    borderRadius: 12,
-    // Diamond quilted pattern (simulated with borders)
-    borderWidth: 0.5,
-    borderColor: 'rgba(255,255,255,0.03)',
+    overflow: 'hidden',
+  },
+  quiltLine: {
+    position: 'absolute',
+    left: -50,
+    right: -50,
+    height: 0.5,
+    backgroundColor: 'rgba(214,178,94,0.05)',
+  },
+  ambientGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 30,
   },
   statusBadge: {
     position: 'absolute',
@@ -121,6 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    zIndex: 2,
   },
   statusText: {
     ...type.label,
@@ -131,6 +194,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingRight: 40,
+    zIndex: 1,
   },
   name: {
     ...type.h2,
@@ -153,6 +217,7 @@ const styles = StyleSheet.create({
     right: 12,
     top: '50%',
     marginTop: -10,
+    zIndex: 2,
   },
   stitchingTop: {
     position: 'absolute',
