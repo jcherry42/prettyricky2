@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { impactLight } from '../lib/haptics';
+import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
+import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
 
 const TABS = [
@@ -88,11 +89,19 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
 
 export function CommandCenterModal({ visible, onClose }) {
   const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter } = useAppSettings();
-  const [activeTab, setActiveTab] = useState('settings');
+  const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   const [printerName, setPrinterName] = useState('');
   const [ipParts, setIpParts] = useState(['', '', '', '']);
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
+
+  // Dashboard stats
+  const [stats, setStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  // Customer search
+  const [customerSearch, setCustomerSearch] = useState('');
 
   const ipInputRefs = useRef([]);
 
