@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { AmbientLightingSystem } from './AmbientLightingSystem';
 
 export function InfotainmentShell({ children }) {
   return (
@@ -12,7 +13,7 @@ export function InfotainmentShell({ children }) {
         style={StyleSheet.absoluteFill}
       />
 
-      {/* subtle “machined” highlight */}
+      {/* subtle "machined" highlight */}
       <LinearGradient
         colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.00)', 'rgba(255,255,255,0.06)']}
         locations={[0, 0.4, 1]}
@@ -21,6 +22,9 @@ export function InfotainmentShell({ children }) {
         end={{ x: 1.0, y: 1.0 }}
         pointerEvents="none"
       />
+
+      {/* 64-color ambient lighting system */}
+      <AmbientLightingSystem />
 
       <View style={styles.content}>{children}</View>
     </View>
