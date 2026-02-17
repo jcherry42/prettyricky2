@@ -486,6 +486,8 @@ async def voice_translate(
             success=True
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Voice translation error: {str(e)}", exc_info=True)
         return VoiceTranslateResponse(
