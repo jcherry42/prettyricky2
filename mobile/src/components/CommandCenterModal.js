@@ -153,6 +153,38 @@ export function CommandCenterModal({ visible, onClose }) {
     }
   }, [activePrinter]);
 
+  // Load dashboard stats
+  const loadDashboardStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      const data = await apiFetch('/api/dashboard/stats');
+      setStats(data);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to load dashboard stats');
+    } finally {
+      setLoadingStats(false);
+    }
+  }, []);
+
+  // Filtered customers for search
+  const filteredCustomers = useMemo(() => {
+    if (!customerSearch.trim()) return customers;
+    const query = customerSearch.toLowerCase();
+    return customers.filter((c) => {
+      const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
+      const phone = (c.phone || '').toLowerCase();
+      const email = (c.email || '').toLowerCase();
+      return name.includes(query) || phone.includes(query) || email.includes(query);
+    });
+  }, [customers, customerSearch]);
+
+  // Load stats when dashboard tab is selected
+  React.useEffect(() => {
+    if (visible && activeTab === 'dashboard' && !stats) {
+      loadDashboardStats();
+    }
+  }, [visible, activeTab, stats, loadDashboardStats]);
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="overFullScreen" transparent>
       <View style={styles.backdrop}>
