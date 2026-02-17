@@ -46,6 +46,7 @@ export function HomeScreen() {
   const { settings } = useAppSettings();
   const { customers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const { isEnabled: ambientEnabled, currentColor: ambientColor, opacity: ambientOpacity } = useAmbientLighting();
+  const toast = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
