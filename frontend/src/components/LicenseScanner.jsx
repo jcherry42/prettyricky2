@@ -8,8 +8,10 @@ import {
 } from 'lucide-react';
 import { useSales } from '../context/SalesContext';
 import { toast } from 'sonner';
+import { getBackendUrl } from '../utils/backendUrl';
+import { parseAamvaBarcode, parseLicenseOcrText, scoreLicenseData } from '../utils/licenseParsing';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || window.location.origin;
+const BACKEND_URL = getBackendUrl();
 
 export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const { customers, setCustomers } = useSales();
