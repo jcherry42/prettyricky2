@@ -26,6 +26,8 @@ const EMPTY_LICENSE_DATA = {
   zip_code: '',
 };
 
+const LICENSE_UPLOAD_CHUNK_SIZE = 512 * 1024;
+
 export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
   const { customers, setCustomers } = useSales();
   
