@@ -510,13 +510,16 @@ const PRESET_RESPONSES = {
                         {translated ? (
                           <View style={{ marginTop: 12 }}>
                             <View style={styles.replySectionHeader}>
-                              <Text style={styles.sectionLabel}>TRANSLATION</Text>
+                              <Text style={styles.sectionLabel}>TRANSLATION ({lang.toUpperCase()})</Text>
                               <View style={styles.replyActions}>
                                 <Pressable onPress={() => copyToClipboard(translated)} style={styles.actionIcon}>
-                                  <Ionicons name="copy-outline" size={16} color={colors.textMute} />
+                                  <Ionicons name="copy-outline" size={16} color={colors.textDim} />
                                 </Pressable>
                                 <Pressable onPress={() => speak(translated, lang)} style={styles.actionIcon}>
-                                  <Ionicons name="volume-high-outline" size={16} color={colors.textMute} />
+                                  <Ionicons name="volume-high-outline" size={16} color={colors.textDim} />
+                                </Pressable>
+                                <Pressable onPress={() => sendAsSms(translated)} style={styles.actionIcon}>
+                                  <Ionicons name="send" size={16} color={colors.gold} />
                                 </Pressable>
                               </View>
                             </View>
