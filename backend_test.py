@@ -2800,26 +2800,30 @@ class BackendTester:
             return False
 
     async def run_all_tests(self):
-        """Run backend tests with priority on Mobile Print Center sanity tests"""
-        print("🚀 Backend API Testing Suite - Mobile Overlay Endpoints Focus")
+        """Run backend tests with priority on Customer Management Endpoints for Sprint 2"""
+        print("🚀 Backend API Testing Suite - Customer Management Endpoints Focus")
         print(f"Backend URL: {BACKEND_URL}")
         print("=" * 80)
         
         # Core health check first
         await self.test_health_check()
         
-        # PRIORITY: Mobile overlay endpoints (tower-talk, translate, TTS) as requested in review
-        print("\n🎯 MOBILE OVERLAY ENDPOINTS (Review Request Priority):")
+        # PRIORITY: Customer Management Endpoints for Sprint 2 (Review Request)
+        print("\n🎯 CUSTOMER MANAGEMENT ENDPOINTS (Sprint 2 Review Request Priority):")
+        await self.test_customer_management_endpoints()
+        
+        # SECONDARY: Mobile overlay endpoints (tower-talk, translate, TTS)
+        print("\n📱 MOBILE OVERLAY ENDPOINTS:")
         await self.test_mobile_overlay_endpoints()
         
-        # SECONDARY: Mobile Print Center sanity tests
-        print("\n📱 MOBILE PRINT CENTER SANITY TESTS:")
+        # TERTIARY: Mobile Print Center sanity tests
+        print("\n🖨️ MOBILE PRINT CENTER SANITY TESTS:")
         await self.test_mobile_print_center_endpoints()
         
         print("\n📋 ADDITIONAL REGRESSION TESTS:")
         
         # Customer endpoints regression testing
-        print("\n1️⃣ Testing Customer Endpoints...")
+        print("\n1️⃣ Testing Additional Customer Endpoints...")
         await self.test_customers_list_endpoint()
         await self.test_customers_merged_list()
         await self.test_customer_crud_operations()
