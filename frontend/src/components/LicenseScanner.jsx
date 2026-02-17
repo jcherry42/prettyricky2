@@ -695,6 +695,124 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
           {/* Action Buttons (after capture) */}
           {capturedImage && (
             <div className="action-section">
+              <div className="extraction-panel">
+                <div className="extraction-header">
+                  <div className="extraction-title-row">
+                    <span className="extraction-title">Extracted Data</span>
+                    {scanMethod && <span className="extraction-badge">{scanMethod}</span>}
+                    {scanConfidence > 0 && (
+                      <span className="extraction-confidence">{scanConfidence}%</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="extraction-retry"
+                    onClick={() => runExtraction(capturedImage)}
+                    disabled={isExtracting}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {isExtracting ? 'Scanning...' : 'Retry Scan'}
+                  </button>
+                </div>
+
+                {isExtracting && (
+                  <div className="extraction-loading">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Scanning license...</span>
+                  </div>
+                )}
+
+                {scanError && (
+                  <div className="extraction-error">
+                    <p>{scanError}</p>
+                    <button
+                      type="button"
+                      className="extraction-retry"
+                      onClick={() => runExtraction(capturedImage)}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                <div className="extraction-grid">
+                  <div className="extraction-field">
+                    <label>First Name</label>
+                    <input
+                      value={licenseData.first_name}
+                      onChange={(e) => handleFieldChange('first_name', e.target.value)}
+                      placeholder="First name"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>Last Name</label>
+                    <input
+                      value={licenseData.last_name}
+                      onChange={(e) => handleFieldChange('last_name', e.target.value)}
+                      placeholder="Last name"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>License #</label>
+                    <input
+                      value={licenseData.license_number}
+                      onChange={(e) => handleFieldChange('license_number', e.target.value)}
+                      placeholder="License number"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>Expiration</label>
+                    <input
+                      value={licenseData.expiration}
+                      onChange={(e) => handleFieldChange('expiration', e.target.value)}
+                      placeholder="MM/DD/YYYY"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>Date of Birth</label>
+                    <input
+                      value={licenseData.dob}
+                      onChange={(e) => handleFieldChange('dob', e.target.value)}
+                      placeholder="MM/DD/YYYY"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>Address</label>
+                    <input
+                      value={licenseData.address}
+                      onChange={(e) => handleFieldChange('address', e.target.value)}
+                      placeholder="Street address"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>City</label>
+                    <input
+                      value={licenseData.city}
+                      onChange={(e) => handleFieldChange('city', e.target.value)}
+                      placeholder="City"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>State</label>
+                    <input
+                      value={licenseData.state}
+                      onChange={(e) => handleFieldChange('state', e.target.value)}
+                      placeholder="State"
+                    />
+                  </div>
+                  <div className="extraction-field">
+                    <label>ZIP</label>
+                    <input
+                      value={licenseData.zip_code}
+                      onChange={(e) => handleFieldChange('zip_code', e.target.value)}
+                      placeholder="ZIP"
+                    />
+                  </div>
+                </div>
+                <div className="extraction-hint">Tip: scan the barcode on the back for fastest results.</div>
+              </div>
+
               {/* Printer status */}
               <div className="printer-status">
                 {getPrinterIP() ? (
