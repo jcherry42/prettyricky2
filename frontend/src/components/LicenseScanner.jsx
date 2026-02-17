@@ -327,6 +327,74 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     reader.readAsDataURL(file);
   }, [resetExtractionState, runExtraction]);
 
+  const uploadLicenseImage = useCallback(async (dataUrl) => {
+    if (!dataUrl) throw new Error('No image to upload');
+    if (!BACKEND_URL) throw new Error('Backend URL not configured');
+
+    const blob = await dataUrlToBlob(dataUrl);
+    const totalChunks = Math.ceil(blob.size / LICENSE_UPLOAD_CHUNK_SIZE);
+
+    setUploadProgress(0);
+
+    const initRes = await fetch(`${BACKEND_URL}/api/license/upload/init`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: `license-${Date.now()}.jpg`,
+        content_type: blob.type || 'image/jpeg',
+        total_size: blob.size,
+        total_chunks: totalChunks,
+      })
+    });
+
+    if (!initRes.ok) {
+      const errData = await initRes.json().catch(() => ({}));
+      throw new Error(errData.detail || errData.error || 'Failed to initialize upload');
+    }
+
+    const initData = await initRes.json();
+    const uploadId = initData.upload_id;
+
+    for (let i = 0; i < totalChunks; i += 1) {
+      const start = i * LICENSE_UPLOAD_CHUNK_SIZE;
+      const end = Math.min(start + LICENSE_UPLOAD_CHUNK_SIZE, blob.size);
+      const chunk = blob.slice(start, end);
+
+      const formData = new FormData();
+      formData.append('upload_id', uploadId);
+      formData.append('chunk_index', String(i));
+      formData.append('total_chunks', String(totalChunks));
+      formData.append('chunk', chunk, `chunk-${i}.jpg`);
+
+      const chunkRes = await fetch(`${BACKEND_URL}/api/license/upload/chunk`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!chunkRes.ok) {
+        const errData = await chunkRes.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.error || `Chunk ${i + 1} failed`);
+      }
+
+      setUploadProgress(Math.round(((i + 1) / totalChunks) * 100));
+    }
+
+    const completeData = new FormData();
+    completeData.append('upload_id', uploadId);
+
+    const completeRes = await fetch(`${BACKEND_URL}/api/license/upload/complete`, {
+      method: 'POST',
+      body: completeData,
+    });
+
+    const completeJson = await completeRes.json().catch(() => ({}));
+    if (!completeRes.ok || !completeJson.success) {
+      throw new Error(completeJson.error || 'Upload failed');
+    }
+
+    return completeJson.image_url;
+  }, [dataUrlToBlob]);
+
   // Retake photo
   const retake = useCallback(() => {
     setCapturedImage(null);
