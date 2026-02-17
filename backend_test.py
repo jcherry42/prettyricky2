@@ -289,10 +289,10 @@ class BackendTester:
             return False
     
     async def test_vin_decode(self):
-        """Test 7: POST /api/vin/decode/JM3KKEHA3T1355103 → expect 200 with vehicle data"""
+        """Test 7: GET /api/vin/decode/JM3KKEHA3T1355103 → expect 200 with vehicle data"""
         try:
             vin = "JM3KKEHA3T1355103"
-            async with self.session.post(f"{BACKEND_URL}/vin/decode/{vin}") as response:
+            async with self.session.get(f"{BACKEND_URL}/vin/decode/{vin}") as response:
                 if response.status == 200:
                     data = await response.json()
                     required_fields = ["year", "make", "model"]
