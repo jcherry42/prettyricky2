@@ -787,7 +787,8 @@ class ComprehensiveBackendTester:
         """Test 6.2: POST /api/tower-talk minimal context → expect 200"""
         try:
             payload = {
-                "situation": "Need a greeting"
+                "situation": "Need a greeting",
+                "context": {}  # Tower Talk requires context field even if empty
             }
             async with self.session.post(f"{BACKEND_URL}/tower-talk", json=payload) as response:
                 actual_status = response.status
@@ -807,6 +808,10 @@ class ComprehensiveBackendTester:
                         self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, True, "Expected 500 - API key not configured")
                     else:
                         self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"Unexpected 500 error")
+                elif response.status == 422:
+                    # This could be validation error - let's check if it's the context field
+                    error_text = await response.text()
+                    self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"Validation error (422): {error_text}")
                 else:
                     error_text = await response.text()
                     self.log_result("6.2 Tower Talk Minimal Context", 200, actual_status, False, f"HTTP {response.status}")
