@@ -154,6 +154,18 @@ export function AppSettingsProvider({ children }) {
     [settings, persist]
   );
 
+  const setSoundProfile = useCallback(
+    async (profile) => {
+      const validProfiles = ['merica', 'euro', 'jdm'];
+      const next = {
+        ...settings,
+        soundProfile: validProfiles.includes(profile) ? profile : 'merica',
+      };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
   const value = useMemo(
     () => ({
       loaded,
