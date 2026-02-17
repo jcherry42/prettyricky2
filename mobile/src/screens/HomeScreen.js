@@ -8,6 +8,7 @@ import { CustomerDetailModal } from '../components/CustomerDetailModal';
 import { CustomerFormModal } from '../components/CustomerFormModal';
 import { QuickAddButton } from '../components/QuickAddButton';
 import { QuickCompose } from '../components/QuickCompose';
+import { EmergencyButton } from '../components/EmergencyButton';
 import { EmergencyInquiryModal } from '../components/EmergencyInquiryModal';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
