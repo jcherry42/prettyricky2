@@ -18,9 +18,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.superchargd.mobile",
       "buildNumber": "1.0.0",
+      "requireFullScreen": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan VINs and driver's licenses.",
-        "NSMicrophoneUsageDescription": "This app uses the microphone for voice translation features."
+        "NSMicrophoneUsageDescription": "This app uses the microphone for voice translation features.",
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
+        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait"]
       }
     },
     "android": {
