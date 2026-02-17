@@ -275,6 +275,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  validationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,59,48,0.30)',
+    backgroundColor: 'rgba(255,59,48,0.08)',
+  },
+  validationText: {
+    flex: 1,
+    color: colors.red,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
