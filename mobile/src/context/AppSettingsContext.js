@@ -125,6 +125,34 @@ export function AppSettingsProvider({ children }) {
     [settings, persist]
   );
 
+  const setAmbientLightingEnabled = useCallback(
+    async (enabled) => {
+      const next = { ...settings, ambientLightingEnabled: !!enabled };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
+  const setAmbientLightingIntensity = useCallback(
+    async (intensity) => {
+      const validIntensities = ['subtle', 'medium', 'vivid'];
+      const next = {
+        ...settings,
+        ambientLightingIntensity: validIntensities.includes(intensity) ? intensity : 'medium',
+      };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
+  const toggleAmbientLighting = useCallback(
+    async () => {
+      const next = { ...settings, ambientLightingEnabled: !settings.ambientLightingEnabled };
+      await persist(next);
+    },
+    [settings, persist]
+  );
+
   const value = useMemo(
     () => ({
       loaded,
