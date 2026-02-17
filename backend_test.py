@@ -1632,6 +1632,217 @@ class BackendTester:
             self.log_result("Previous refactor sanity check", False, f"Exception: {str(e)}")
             return False
 
+    async def test_license_upload_chunked_workflow(self):
+        """Test new license scanner backend changes: chunked upload workflow"""
+        import base64
+        import io
+        
+        try:
+            # Test 1: /api/license/upload/init with JSON for small sample image
+            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            image_bytes = base64.b64decode(tiny_png_base64)
+            
+            init_payload = {
+                "filename": "test_license.png",
+                "content_type": "image/png",
+                "total_size": len(image_bytes),
+                "total_chunks": 3
+            }
+            
+            async with self.session.post(f"{BACKEND_URL}/license/upload/init", json=init_payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    upload_id = data.get('upload_id')
+                    if upload_id:
+                        self.log_result(
+                            "POST /license/upload/init", 
+                            True, 
+                            f"Upload initialized with ID: {upload_id}", 
+                            {'upload_id': upload_id, 'expires_at': data.get('expires_at')}
+                        )
+                    else:
+                        self.log_result("POST /license/upload/init", False, "No upload_id returned")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/upload/init", False, f"HTTP {response.status}: {error_text}")
+                    return False
+            
+            # Test 2: /api/license/upload/chunk - send 3 chunks
+            chunk_size = len(image_bytes) // 3
+            chunks_uploaded = 0
+            
+            for chunk_index in range(3):
+                start = chunk_index * chunk_size
+                end = start + chunk_size if chunk_index < 2 else len(image_bytes)
+                chunk_data = image_bytes[start:end]
+                
+                form_data = aiohttp.FormData()
+                form_data.add_field('upload_id', upload_id)
+                form_data.add_field('chunk_index', str(chunk_index))
+                form_data.add_field('total_chunks', str(3))
+                form_data.add_field('chunk', io.BytesIO(chunk_data), filename=f'chunk_{chunk_index}.part')
+                
+                async with self.session.post(f"{BACKEND_URL}/license/upload/chunk", data=form_data) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('success'):
+                            chunks_uploaded += 1
+                            self.log_result(
+                                f"POST /license/upload/chunk (chunk {chunk_index})", 
+                                True, 
+                                f"Chunk {chunk_index + 1}/3 uploaded successfully", 
+                                {'upload_id': data.get('upload_id'), 'received': data.get('received'), 'total_chunks': data.get('total_chunks')}
+                            )
+                        else:
+                            self.log_result(f"POST /license/upload/chunk (chunk {chunk_index})", False, f"Chunk upload failed: {data}")
+                            return False
+                    else:
+                        error_text = await response.text()
+                        self.log_result(f"POST /license/upload/chunk (chunk {chunk_index})", False, f"HTTP {response.status}: {error_text}")
+                        return False
+            
+            # Test 3: /api/license/upload/complete
+            form_data = aiohttp.FormData()
+            form_data.add_field('upload_id', upload_id)
+            
+            async with self.session.post(f"{BACKEND_URL}/license/upload/complete", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success') and data.get('image_url'):
+                        self.log_result(
+                            "POST /license/upload/complete", 
+                            True, 
+                            f"Upload completed successfully, image_url: {data.get('image_url')}", 
+                            {'success': data.get('success'), 'image_url': data.get('image_url')}
+                        )
+                        
+                        # Store image_url for customer creation test
+                        self.chunked_upload_image_url = data.get('image_url')
+                        return True
+                    else:
+                        self.log_result("POST /license/upload/complete", False, f"Upload completion failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/upload/complete", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("License upload chunked workflow", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_license_create_customer_with_new_fields(self):
+        """Test /api/license/create-customer with FormData including new license_* fields"""
+        try:
+            # Use image_url from chunked upload test
+            if not hasattr(self, 'chunked_upload_image_url') or not self.chunked_upload_image_url:
+                # Fallback: use image_url from regular scan test
+                if not hasattr(self, 'test_image_url') or not self.test_image_url:
+                    self.log_result("POST /license/create-customer (new fields)", False, "No image_url available from upload tests")
+                    return False
+                image_url = self.test_image_url
+            else:
+                image_url = self.chunked_upload_image_url
+            
+            # Create FormData with all fields including new license_* fields
+            form_data = aiohttp.FormData()
+            form_data.add_field('first_name', 'Jane')
+            form_data.add_field('last_name', 'Smith')
+            form_data.add_field('middle_name', 'Marie')
+            form_data.add_field('address', '789 Pine St')
+            form_data.add_field('city', 'Houston')
+            form_data.add_field('state', 'TX')
+            form_data.add_field('zip_code', '77001')
+            form_data.add_field('license_number', 'TX123456789')
+            form_data.add_field('expiration', '12/31/2025')
+            form_data.add_field('dob', '01/15/1990')
+            form_data.add_field('image_url', image_url)
+            
+            async with self.session.post(f"{BACKEND_URL}/license/create-customer", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success') and data.get('customer'):
+                        customer = data.get('customer', {})
+                        
+                        # Verify new license_* fields are included in response
+                        license_fields = {
+                            'license_number': customer.get('license_number'),
+                            'license_expiration': customer.get('license_expiration'),
+                            'license_dob': customer.get('license_dob'),
+                            'license_image_url': customer.get('license_image_url')
+                        }
+                        
+                        missing_fields = [field for field, value in license_fields.items() if value is None]
+                        
+                        if not missing_fields:
+                            self.log_result(
+                                "POST /license/create-customer (new fields)", 
+                                True, 
+                                f"Customer created with new license fields: {customer.get('name')}", 
+                                {
+                                    'customer_id': customer.get('id'), 
+                                    'name': customer.get('name'),
+                                    'license_fields': license_fields
+                                }
+                            )
+                            return True
+                        else:
+                            self.log_result(
+                                "POST /license/create-customer (new fields)", 
+                                False, 
+                                f"Missing new license fields in response: {missing_fields}",
+                                {'customer': customer, 'missing_fields': missing_fields}
+                            )
+                            return False
+                    else:
+                        self.log_result("POST /license/create-customer (new fields)", False, f"Customer creation failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/create-customer (new fields)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("POST /license/create-customer (new fields)", False, f"Exception: {str(e)}")
+            return False
+
+    async def test_license_single_upload_sanity(self):
+        """Test /api/license/upload (single-part) still works with small image"""
+        import base64
+        import io
+        
+        try:
+            # Create a small test image
+            tiny_png_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            image_bytes = base64.b64decode(tiny_png_base64)
+            
+            form_data = aiohttp.FormData()
+            form_data.add_field('image', io.BytesIO(image_bytes), filename='single_license.png', content_type='image/png')
+            
+            async with self.session.post(f"{BACKEND_URL}/license/upload", data=form_data) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data.get('success') and data.get('image_url'):
+                        self.log_result(
+                            "POST /license/upload (single-part sanity)", 
+                            True, 
+                            f"Single-part upload still works: {data.get('image_url')}", 
+                            {'success': data.get('success'), 'image_url': data.get('image_url')}
+                        )
+                        return True
+                    else:
+                        self.log_result("POST /license/upload (single-part sanity)", False, f"Single-part upload failed: {data}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("POST /license/upload (single-part sanity)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+                    
+        except Exception as e:
+            self.log_result("POST /license/upload (single-part sanity)", False, f"Exception: {str(e)}")
+            return False
+
     async def run_cleanup_regression_tests(self):
         """Run focused regression tests after backend cleanup"""
         print("🎯 BACKEND REGRESSION TESTS AFTER STRICT CLEANUP")
