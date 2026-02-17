@@ -998,7 +998,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Sprint 10 Ambient Lighting & Visual Polish - Backend Regression"
+    - "Sprint 12 Offline Sync & Error Handling - Backend Regression"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
