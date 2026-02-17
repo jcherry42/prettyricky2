@@ -49,32 +49,35 @@ class BackendTester:
         if not success:
             self.failed_tests.append(test_name)
 
-    async def run_sprint_12_regression_tests(self):
-        """Run the 7 specific Sprint 12 regression tests as requested"""
-        print("🚀 Starting Sprint 12 Backend Regression Tests - Offline & Error Handling")
+    async def run_sprint_13_final_polish_tests(self):
+        """Run the 8 specific Sprint 13 Final Polish regression tests as requested"""
+        print("🚀 Starting Sprint 13 Final Polish Backend Regression Tests")
         print(f"Backend URL: {BACKEND_URL}")
         print("="*60)
         
-        # Test 1: GET /api/health → expect 200, status "healthy"
-        await self.test_health_check()
+        # Test 1: GET /api/health → expect 200
+        await self.test_health_check_sprint13()
         
-        # Test 2: GET /api/customers/list?limit=3 → expect 200 with customers array
-        await self.test_customers_list_sprint12()
+        # Test 2: GET /api/customers/list?limit=5 → expect 200 with customers array
+        await self.test_customers_list_sprint13()
         
-        # Test 3: POST /api/customers/create → expect 200 with customer
-        await self.test_customers_create()
+        # Test 3: POST /api/customers/create with {"first_name":"Sprint13","last_name":"Final","phone":"555-1313"} → expect 200
+        await self.test_customers_create_sprint13()
         
-        # Test 4: POST /api/translate success case → expect 200
-        await self.test_translate_success_sprint12()
+        # Test 4: POST /api/translate with {"text":"Final polish testing","target_lang":"es"} → expect 200 with translated_text
+        await self.test_translate_success_sprint13()
         
-        # Test 5: POST /api/translate empty validation → expect 400
-        await self.test_translate_empty_validation()
+        # Test 5: POST /api/translate with {"text":"","target_lang":"es"} → expect 400
+        await self.test_translate_empty_validation_sprint13()
         
-        # Test 6: POST /api/tts → expect 200
-        await self.test_tts_sprint12()
+        # Test 6: POST /api/tts with {"text":"Sprint thirteen complete","voice":"auto","language":"en"} → expect 200 with audio_base64
+        await self.test_tts_sprint13()
         
-        # Test 7: POST /api/tower-talk → expect 200
-        await self.test_tower_talk_sprint12()
+        # Test 7: POST /api/tower-talk with {"situation":"Final sprint polish","context":{"customerName":"Test"}} → expect 200
+        await self.test_tower_talk_sprint13()
+        
+        # Test 8: POST /api/vin/decode/JM3KKEHA3T1355103 → expect 200 with vehicle data
+        await self.test_vin_decode_sprint13()
         
     async def test_health_check(self):
         """Test 1: GET /api/health → expect 200 with {"status": "healthy"}"""
