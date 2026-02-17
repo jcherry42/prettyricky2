@@ -185,11 +185,14 @@ export function HomeScreen() {
         </LinearGradient>
       </View>
 
-      {/* Header with customer count */}
+      {/* Header with customer count + network status */}
       <View style={styles.listHeader}>
         <Text style={styles.listTitle}>CUSTOMERS</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{filteredCustomers.length}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <NetworkStatusDot />
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{filteredCustomers.length}</Text>
+          </View>
         </View>
       </View>
     </View>
