@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   activePrinterId: null,
   ambientLightingEnabled: true,
   ambientLightingIntensity: 'medium', // 'subtle' | 'medium' | 'vivid'
+  soundProfile: 'merica', // 'merica' | 'euro' | 'jdm'
 };
 
 const AppSettingsContext = createContext(null);
