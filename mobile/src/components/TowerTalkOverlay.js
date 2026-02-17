@@ -11,13 +11,7 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
 import { impactMedium, notificationSuccess, notificationError, selectionTap } from '../lib/haptics';
-
-function flagFor(lang) {
-  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
-  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
-  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
-  return '\ud83c\udff3\ufe0f';
-}
+import { flagFor } from '../utils/language';
 
 export function TowerTalkOverlay({ visible, onClose }) {
   const { settings } = useAppSettings();
