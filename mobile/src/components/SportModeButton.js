@@ -45,7 +45,7 @@ function Flame({ style, delay = 0, active }) {
 export function SportModeButton() {
   const { settings, toggleSportMode } = useAppSettings();
   const active = Boolean(settings.sportMode);
-  const flag = flagFor(settings.defaultTargetLanguage || 'es');
+  const flag = flagFor(settings.defaultTargetLanguage);
   const profileId = settings.soundProfile || 'merica';
   const profile = SOUND_PROFILES[profileId] || SOUND_PROFILES.merica;
 
