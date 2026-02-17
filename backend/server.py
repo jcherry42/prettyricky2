@@ -930,6 +930,22 @@ async def create_customer_from_license(
     Saves both the extracted info and the license image.
     """
     try:
+        # Normalize key fields
+        first_name = normalize_name(first_name)
+        last_name = normalize_name(last_name)
+        if middle_name:
+            middle_name = normalize_name(middle_name)
+        if city:
+            city = normalize_name(city)
+        if state:
+            state = normalize_state(state)
+        if license_number:
+            license_number = str(license_number).strip()
+        if expiration:
+            expiration = normalize_date_mmddyyyy(expiration)
+        if dob:
+            dob = normalize_date_mmddyyyy(dob)
+
         # Build full address string
         address_parts = []
         if address:
