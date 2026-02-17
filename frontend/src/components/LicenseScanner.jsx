@@ -520,8 +520,9 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      destroyOcrWorker();
     };
-  }, [isOpen, capturedImage, initCamera, stream]);
+  }, [isOpen, capturedImage, destroyOcrWorker, initCamera, stream]);
 
   // Cleanup on close
   const handleClose = () => {
