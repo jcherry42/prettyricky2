@@ -5,13 +5,7 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { usePtt } from '../context/PttContext';
 import { impactLight, impactMedium } from '../lib/haptics';
-
-function flagFor(lang) {
-  if (lang === 'es') return '\ud83c\uddf2\ud83c\uddfd';
-  if (lang === 'fr') return '\ud83c\uddeb\ud83c\uddf7';
-  if (lang === 'ko') return '\ud83c\uddf0\ud83c\uddf7';
-  return '\ud83c\udff3\ufe0f';
-}
+import { flagFor } from '../utils/language';
 
 function langName(lang) {
   if (lang === 'es') return 'Spanish';
