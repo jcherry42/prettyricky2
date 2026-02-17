@@ -7,6 +7,8 @@ export default ({ config }) => ({
   slug: "superchargd",
   scheme: "superchargd",
   extra: {
+    ...config.extra,
+    eas: config.extra?.eas,
     backendUrl: process.env.EXPO_PUBLIC_BACKEND_URL || "",
   },
   ios: {
