@@ -392,10 +392,201 @@ class BackendTester:
             self.log_result("8. Printer Test - Graceful Error", False, f"Exception: {str(e)}")
             return False
     
+    async def test_customers_list_sprint12(self):
+        """Test 2: GET /api/customers/list?limit=3 → expect 200 with customers array"""
+        try:
+            async with self.session.get(f"{BACKEND_URL}/customers/list?limit=3") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "customers" in data and "total" in data:
+                        customers = data.get("customers", [])
+                        total = data.get("total", 0)
+                        self.log_result(
+                            "2. Customer List (limit=3)", 
+                            True, 
+                            f"Retrieved {len(customers)} customers, total: {total}", 
+                            {"count": len(customers), "total": total}
+                        )
+                        return True
+                    else:
+                        self.log_result("2. Customer List (limit=3)", False, f"Missing 'customers' or 'total' fields. Got: {list(data.keys())}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("2. Customer List (limit=3)", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("2. Customer List (limit=3)", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_customers_create(self):
+        """Test 3: POST /api/customers/create → expect 200 with customer"""
+        try:
+            payload = {
+                "first_name": "Offline",
+                "last_name": "Test",
+                "phone": "555-0099"
+            }
+            async with self.session.post(f"{BACKEND_URL}/customers/create", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "customer_id" in data or "id" in data:
+                        customer_id = data.get("customer_id") or data.get("id")
+                        name = f"{payload['first_name']} {payload['last_name']}"
+                        self.log_result(
+                            "3. Customer Create", 
+                            True, 
+                            f"Customer created successfully: {name} (ID: {customer_id})", 
+                            {"customer_id": customer_id, "name": name}
+                        )
+                        return True
+                    else:
+                        self.log_result("3. Customer Create", False, f"Missing customer ID in response. Got: {list(data.keys())}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("3. Customer Create", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("3. Customer Create", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_translate_success_sprint12(self):
+        """Test 4: POST /api/translate with "Error handling test" → expect 200"""
+        try:
+            payload = {
+                "text": "Error handling test",
+                "target_lang": "fr"
+            }
+            async with self.session.post(f"{BACKEND_URL}/translate", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "translated_text" in data:
+                        translated = data.get("translated_text", "")
+                        self.log_result(
+                            "4. Translation - Error Handling Test", 
+                            True, 
+                            f"Translation successful: '{translated}'", 
+                            {"original": payload["text"], "translated": translated}
+                        )
+                        return True
+                    else:
+                        self.log_result("4. Translation - Error Handling Test", False, f"Missing 'translated_text' field. Got: {list(data.keys())}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "4. Translation - Error Handling Test", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {"expected_error": "API key not configured"}
+                        )
+                        return True
+                    else:
+                        self.log_result("4. Translation - Error Handling Test", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("4. Translation - Error Handling Test", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("4. Translation - Error Handling Test", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_tts_sprint12(self):
+        """Test 6: POST /api/tts with "Sync test" → expect 200"""
+        try:
+            payload = {
+                "text": "Sync test",
+                "voice": "auto",
+                "language": "en"
+            }
+            async with self.session.post(f"{BACKEND_URL}/tts", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "audio_base64" in data:
+                        audio_data = data.get("audio_base64", "")
+                        self.log_result(
+                            "6. Text-to-Speech - Sync Test", 
+                            True, 
+                            f"TTS successful, audio data length: {len(audio_data)}", 
+                            {"audio_length": len(audio_data), "format": data.get("format")}
+                        )
+                        return True
+                    else:
+                        self.log_result("6. Text-to-Speech - Sync Test", False, f"Missing 'audio_base64' field. Got: {list(data.keys())}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "6. Text-to-Speech - Sync Test", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {"expected_error": "API key not configured"}
+                        )
+                        return True
+                    else:
+                        self.log_result("6. Text-to-Speech - Sync Test", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("6. Text-to-Speech - Sync Test", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("6. Text-to-Speech - Sync Test", False, f"Exception: {str(e)}")
+            return False
+    
+    async def test_tower_talk_sprint12(self):
+        """Test 7: POST /api/tower-talk with "Test offline" → expect 200"""
+        try:
+            payload = {
+                "situation": "Test offline",
+                "context": {
+                    "customerName": "Test"
+                }
+            }
+            async with self.session.post(f"{BACKEND_URL}/tower-talk", json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "response" in data:
+                        response_text = data.get("response", "")
+                        self.log_result(
+                            "7. Tower Talk - Test Offline", 
+                            True, 
+                            f"Tower Talk successful, response length: {len(response_text)}", 
+                            {"response_length": len(response_text), "preview": response_text[:100] + "..."}
+                        )
+                        return True
+                    else:
+                        self.log_result("7. Tower Talk - Test Offline", False, f"Missing 'response' field. Got: {list(data.keys())}")
+                        return False
+                elif response.status == 500:
+                    error_text = await response.text()
+                    if "API key not configured" in error_text:
+                        self.log_result(
+                            "7. Tower Talk - Test Offline", 
+                            True, 
+                            "Expected 500 - API key not configured (EMERGENT_LLM_KEY missing)", 
+                            {"expected_error": "API key not configured"}
+                        )
+                        return True
+                    else:
+                        self.log_result("7. Tower Talk - Test Offline", False, f"HTTP 500 but unexpected error: {error_text}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    self.log_result("7. Tower Talk - Test Offline", False, f"HTTP {response.status}: {error_text}")
+                    return False
+        except Exception as e:
+            self.log_result("7. Tower Talk - Test Offline", False, f"Exception: {str(e)}")
+            return False
+
     def print_summary(self):
         """Print test summary"""
         print("\n" + "="*60)
-        print("📊 SPRINT 10 REGRESSION TEST SUMMARY")
+        print("📊 SPRINT 12 REGRESSION TEST SUMMARY")
         print("="*60)
         
         passed = len([r for r in self.results if r['success']])
