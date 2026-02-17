@@ -377,36 +377,24 @@ async def voice_translate(
         
         if content_type not in allowed_types and ext not in allowed_exts:
             logger.warning(f"Invalid audio type: {content_type}, ext: {ext}")
-            return VoiceTranslateResponse(
-                transcript="",
-                translated_text="",
-                source_lang=source_lang,
-                target_lang=target_lang,
-                success=False,
-                error="Invalid audio format. Supported: webm, mp3, mp4, wav, m4a"
+            raise HTTPException(
+                status_code=422,
+                detail="Invalid audio format. Supported: webm, mp3, mp4, wav, m4a, ogg, aac"
             )
         
         # Read audio data
         audio_data = await audio.read()
         
         if len(audio_data) == 0:
-            return VoiceTranslateResponse(
-                transcript="",
-                translated_text="",
-                source_lang=source_lang,
-                target_lang=target_lang,
-                success=False,
-                error="Empty audio file received"
+            raise HTTPException(
+                status_code=422,
+                detail="Empty audio file received"
             )
         
         if len(audio_data) > 25 * 1024 * 1024:  # 25MB limit
-            return VoiceTranslateResponse(
-                transcript="",
-                translated_text="",
-                source_lang=source_lang,
-                target_lang=target_lang,
-                success=False,
-                error="Audio file too large. Max 25MB."
+            raise HTTPException(
+                status_code=422,
+                detail="Audio file too large. Max 25MB."
             )
         
         logger.info(f"Audio size: {len(audio_data)} bytes")
