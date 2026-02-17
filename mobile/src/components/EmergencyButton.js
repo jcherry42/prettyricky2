@@ -63,7 +63,7 @@ export function EmergencyButton({ onPress }) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 90,
+    bottom: 160,
     left: 20,
     width: 60,
     height: 60,
