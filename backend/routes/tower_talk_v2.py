@@ -149,7 +149,7 @@ async def translate_text(request: TranslateRequest):
     try:
         text = request.text.strip()
         if not text:
-            return TranslateResponse(translated_text="", detected_lang=None, confidence=0.0)
+            raise HTTPException(status_code=400, detail="Text is required for translation")
 
         cache_key = f"{request.source_lang}:{request.target_lang}:{text[:200]}"
         if cache_key in _translation_cache:
