@@ -9,13 +9,17 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { apiFetch } from '../lib/api';
 
 const TABS = [
-  { key: 'settings', label: 'SETTINGS' },
-  { key: 'printers', label: 'PRINTERS' },
+  { key: 'dashboard', label: 'DASHBOARD', icon: 'stats-chart' },
+  { key: 'customers', label: 'CUSTOMERS', icon: 'people' },
+  { key: 'import', label: 'IMPORT', icon: 'cloud-upload' },
+  { key: 'printers', label: 'PRINTERS', icon: 'print' },
+  { key: 'settings', label: 'SETTINGS', icon: 'settings' },
 ];
 
-function TabButton({ label, active, onPress }) {
+function TabButton({ label, icon, active, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9 }]}>
+      <Ionicons name={icon} size={14} color={active ? colors.gold : colors.textMute} />
       <Text style={[styles.tabText, active && styles.tabTextActive]}>{label}</Text>
     </Pressable>
   );
