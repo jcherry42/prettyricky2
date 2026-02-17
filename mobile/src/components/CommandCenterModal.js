@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
@@ -1021,47 +1021,92 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
   },
-  // Import tab styles
-  importGrid: {
+  // Inventory tab styles
+  inventoryHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  circularButton: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: 1000,
-    borderWidth: 2,
-    borderColor: 'rgba(214,178,94,0.40)',
-    backgroundColor: 'rgba(20,24,30,0.60)',
-    overflow: 'hidden',
-    shadowColor: 'rgba(214,178,94,0.30)',
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  circularInner: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
-  circularLabel: {
-    color: colors.gold,
-    fontSize: 11,
-    fontWeight: '900',
+  limitWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 8,
-    letterSpacing: 1.2,
+    padding: 8,
+    backgroundColor: 'rgba(255,45,45,0.1)',
+    borderRadius: 8,
   },
-  circularSubLabel: {
+  limitText: {
+    color: colors.red,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  vehicleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  vehicleLabel: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  vehicleTrim: {
     color: colors.textDim,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '700',
     marginTop: 2,
   },
-  importHint: {
+  vinRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  vinText: {
+    color: colors.gold,
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  vehicleDate: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  deleteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,45,45,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  inventoryFooter: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+  },
+  inventoryFooterText: {
+    color: colors.textDim,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  emptySubtext: {
     color: colors.textMute,
     fontSize: 11,
-    lineHeight: 16,
     textAlign: 'center',
+    marginTop: 4,
   },
 });
