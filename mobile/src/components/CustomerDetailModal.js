@@ -1,10 +1,11 @@
 import React from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { impactMedium, notificationSuccess } from '../lib/haptics';
+import { impactMedium, impactLight, notificationSuccess, notificationError } from '../lib/haptics';
+import { textCustomer } from '../lib/sms';
 
 const STATUS_CONFIG = {
   new: { label: 'NEW', color: colors.blue },
@@ -21,6 +22,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
   const status = customer.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const hasPhone = customer.phone && customer.phone !== '—';
 
   const handleDelete = () => {
     impactMedium();
@@ -46,6 +48,44 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     onEdit?.(customer);
   };
 
+  const handleCall = () => {
+    if (!hasPhone) {
+      Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
+      return;
+    }
+    impactLight();
+    const cleanPhone = customer.phone.replace(/[^\d+]/g, '');
+    Linking.openURL(`tel:${cleanPhone}`).catch(() => {
+      Alert.alert('Call Failed', 'Unable to initiate a phone call on this device.');
+    });
+  };
+
+  const handleSms = async () => {
+    if (!hasPhone) {
+      Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
+      return;
+    }
+    impactLight();
+    const greeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
+    const result = await textCustomer(customer.phone, greeting);
+    if (result.success) {
+      notificationSuccess();
+    }
+  };
+
+  const handleEmail = () => {
+    if (!customer.email || customer.email === '—') {
+      Alert.alert('No Email', 'This customer does not have an email on file.');
+      return;
+    }
+    impactLight();
+    const subject = encodeURIComponent(`Follow-up from Supercharg'd`);
+    const body = encodeURIComponent(`Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership.\n\n`);
+    Linking.openURL(`mailto:${customer.email}?subject=${subject}&body=${body}`).catch(() => {
+      Alert.alert('Email Failed', 'Unable to open email app on this device.');
+    });
+  };
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <LinearGradient colors={[colors.bg0, colors.bg1]} style={styles.container}>
@@ -56,7 +96,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
           end={{ x: 1, y: 1 }}
           style={styles.header}
         >
-          <Pressable onPress={onClose} style={styles.closeButton}>
+          <Pressable onPress={onClose} style={styles.closeButton} accessibilityLabel="Close">
             <Ionicons name="close" size={28} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>Customer Details</Text>
@@ -71,6 +111,42 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
 
           {/* Name */}
           <Text style={styles.customerName}>{name || 'Unknown Customer'}</Text>
+
+          {/* Quick Actions - Call, Text, Email */}
+          <View style={styles.quickActions}>
+            <Pressable
+              onPress={handleCall}
+              style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
+              accessibilityLabel="Call customer"
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(52,199,89,0.15)', borderColor: 'rgba(52,199,89,0.40)' }]}>
+                <Ionicons name="call" size={20} color={colors.green} />
+              </View>
+              <Text style={styles.quickActionLabel}>Call</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleSms}
+              style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
+              accessibilityLabel="Text customer"
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(0,122,255,0.15)', borderColor: 'rgba(0,122,255,0.40)' }]}>
+                <Ionicons name="chatbubble" size={20} color={colors.blue} />
+              </View>
+              <Text style={styles.quickActionLabel}>Text</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleEmail}
+              style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
+              accessibilityLabel="Email customer"
+            >
+              <View style={[styles.quickActionIcon, { backgroundColor: 'rgba(214,178,94,0.15)', borderColor: 'rgba(214,178,94,0.40)' }]}>
+                <Ionicons name="mail" size={20} color={colors.gold} />
+              </View>
+              <Text style={styles.quickActionLabel}>Email</Text>
+            </Pressable>
+          </View>
 
           {/* Info sections */}
           <View style={styles.section}>
@@ -97,7 +173,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>METADATA</Text>
             <InfoRow icon="calendar" label="Created" value={new Date(customer.created_at || Date.now()).toLocaleDateString()} />
-            <InfoRow icon="pricetag" label="Customer ID" value={customer.customer_id || '—'} />
+            <InfoRow icon="pricetag" label="Customer ID" value={customer.customer_id || customer.id || '—'} />
           </View>
 
           {/* Action buttons */}
@@ -105,6 +181,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             <Pressable
               onPress={handleEdit}
               style={({ pressed }) => [styles.actionButton, styles.editButton, pressed && styles.pressed]}
+              accessibilityLabel="Edit customer"
             >
               <Ionicons name="pencil" size={20} color={colors.text} />
               <Text style={styles.actionButtonText}>Edit Customer</Text>
@@ -113,6 +190,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             <Pressable
               onPress={handleDelete}
               style={({ pressed }) => [styles.actionButton, styles.deleteButton, pressed && styles.pressed]}
+              accessibilityLabel="Delete customer"
             >
               <Ionicons name="trash" size={20} color={colors.red} />
               <Text style={[styles.actionButtonText, { color: colors.red }]}>Delete Customer</Text>
@@ -180,7 +258,38 @@ const styles = StyleSheet.create({
     ...type.h1,
     fontSize: 28,
     color: colors.text,
+    marginBottom: 20,
+  },
+  // Quick Action buttons
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 24,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: colors.panel,
+  },
+  quickActionBtn: {
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 64,
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionLabel: {
+    ...type.label,
+    fontSize: 10,
+    color: colors.textDim,
+    letterSpacing: 0.5,
   },
   section: {
     marginBottom: 24,
