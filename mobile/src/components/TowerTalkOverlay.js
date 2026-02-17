@@ -228,11 +228,18 @@ const PRESET_RESPONSES = {
 
   const sendAsSms = useCallback(async (text) => {
     try {
-      // TODO: Implement SMS sending functionality
-      console.log('Sending SMS:', text);
-      selectionTap();
+      impactMedium();
+      const smsUrl = `sms:?body=${encodeURIComponent(text)}`;
+      const canOpen = await Linking.canOpenURL(smsUrl);
+      if (canOpen) {
+        await Linking.openURL(smsUrl);
+        notificationSuccess();
+      } else {
+        Alert.alert('SMS Not Available', 'Unable to open SMS on this device');
+      }
     } catch (e) {
-      // silently fail
+      notificationError();
+      Alert.alert('SMS Error', 'Failed to open SMS application');
     }
   }, []);
 
