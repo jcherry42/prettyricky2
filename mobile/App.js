@@ -21,6 +21,11 @@ import { View } from 'react-native';
 export default function App() {
   const fontsReady = useFontsReady();
 
+  // Hard lock to portrait mode
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
+  }, []);
+
   if (!fontsReady) {
     return <View style={{ flex: 1, backgroundColor: '#040608' }} />;
   }
