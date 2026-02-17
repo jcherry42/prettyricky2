@@ -800,3 +800,5 @@ agent_communication:
     message: "User approved frontend testing for license scanner UI; running UI tests now."
   - agent: "main"
     message: "Please test license upload chunked endpoints and license create-customer flow; validate OCR/barcode extraction UX and retry/error handling."
+  - agent: "main"
+    message: "User requested re-run of License Scanner UI tests before proceeding to translation and VIN scanner tasks."
