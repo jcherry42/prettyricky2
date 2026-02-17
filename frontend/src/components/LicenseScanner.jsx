@@ -330,8 +330,9 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
     setCapturedImage(null);
     setSaved(false);
     setSavedCustomerId(null);
+    resetExtractionState();
     initCamera();
-  }, [initCamera]);
+  }, [initCamera, resetExtractionState]);
 
   // Save to new customer
   const saveToNewCustomer = async () => {
