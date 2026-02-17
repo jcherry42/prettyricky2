@@ -289,9 +289,9 @@ export const LicenseScanner = ({ isOpen, onClose, onBack }) => {
       return;
     }
     
-    // Validate file size (max 20MB)
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error('Image too large. Max 20MB.');
+    // Validate file size (max 15MB)
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error('Image too large. Max 15MB.');
       return;
     }
     
