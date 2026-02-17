@@ -8,6 +8,8 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
 import { PttProvider } from './src/context/PttContext';
 import { TaillightFlashProvider } from './src/context/TaillightFlashContext';
+import { CustomerProvider } from './src/context/CustomerContext';
+import { InventoryProvider } from './src/context/InventoryContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
 import { View } from 'react-native';
 
@@ -22,16 +24,20 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppSettingsProvider>
-          <PttProvider>
-            <TaillightFlashProvider>
-              <InfotainmentShell>
-                <NavigationContainer>
-                  <RootNavigator />
-                </NavigationContainer>
-                <StatusBar style="light" />
-              </InfotainmentShell>
-            </TaillightFlashProvider>
-          </PttProvider>
+          <CustomerProvider>
+            <InventoryProvider>
+              <PttProvider>
+                <TaillightFlashProvider>
+                  <InfotainmentShell>
+                    <NavigationContainer>
+                      <RootNavigator />
+                    </NavigationContainer>
+                    <StatusBar style="light" />
+                  </InfotainmentShell>
+                </TaillightFlashProvider>
+              </PttProvider>
+            </InventoryProvider>
+          </CustomerProvider>
         </AppSettingsProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
