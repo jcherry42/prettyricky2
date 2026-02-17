@@ -5,7 +5,7 @@
 
 ## CURRENT STATUS ✅
 
-**Backend:** Running at `https://native-dealerapp.preview.emergentagent.com`
+**Backend:** Running at `https://automotive-crm-pro.preview.emergentagent.com`
 **Expo Metro:** Running on port 8081 with tunnel mode
 **Configuration:** `.env` file created with backend URL
 
@@ -70,7 +70,7 @@ If you have a Mac or PC locally:
 
 3. **Create .env file:**
    ```
-   EXPO_PUBLIC_BACKEND_URL=https://native-dealerapp.preview.emergentagent.com
+   EXPO_PUBLIC_BACKEND_URL=https://automotive-crm-pro.preview.emergentagent.com
    ```
 
 4. **Start Expo:**
@@ -113,7 +113,7 @@ Opens in Android Emulator automatically.
 ### ✅ Backend Connection
 **File:** `/app/mobile/.env`
 ```
-EXPO_PUBLIC_BACKEND_URL=https://native-dealerapp.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://automotive-crm-pro.preview.emergentagent.com
 ```
 
 ### ✅ Expo Metro Bundler

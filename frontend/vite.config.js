@@ -7,7 +7,7 @@ export default defineConfig({
   // Force environment variable replacement for Capacitor builds
   define: {
     'import.meta.env.VITE_BACKEND_URL': JSON.stringify(
-      process.env.VITE_BACKEND_URL || 'https://native-dealerapp.preview.emergentagent.com'
+      process.env.VITE_BACKEND_URL || 'https://automotive-crm-pro.preview.emergentagent.com'
     )
   },
   plugins: [
