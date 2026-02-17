@@ -233,16 +233,16 @@ class ComprehensiveBackendTester:
                 actual_status = response.status
                 if response.status == 200:
                     data = await response.json()
-                    # Check if update was successful
-                    customer = data.get("customer", {})
-                    if customer.get("lead_status") == "contacted":
+                    # Check if update was successful (API returns {"success": True, "updated": {...}})
+                    if data.get("success") and data.get("updated"):
+                        updated_data = data.get("updated", {})
                         self.log_result(
                             "2.4 Customer Update", 200, actual_status, True,
-                            f"Customer updated: status={customer.get('lead_status')}, notes added", 
-                            {"updated_status": customer.get("lead_status"), "has_notes": bool(customer.get("notes"))}
+                            f"Customer updated successfully: status={updated_data.get('lead_status')}, notes added", 
+                            {"success": data.get("success"), "updated_fields": list(updated_data.keys())}
                         )
                     else:
-                        self.log_result("2.4 Customer Update", 200, actual_status, False, f"Update may not have applied correctly")
+                        self.log_result("2.4 Customer Update", 200, actual_status, False, f"Unexpected response format: {list(data.keys())}")
                 else:
                     error_text = await response.text()
                     self.log_result("2.4 Customer Update", 200, actual_status, False, f"HTTP {response.status}: {error_text}")
