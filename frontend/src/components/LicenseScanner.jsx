@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { createWorker } from 'tesseract.js';
 import { createPortal } from 'react-dom';
 import { 
   X, Camera, Image as ImageIcon, RotateCcw, Check, Loader2, 
