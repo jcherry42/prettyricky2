@@ -27,6 +27,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
   const [notes, setNotes] = useState('');
   const [leadStatus, setLeadStatus] = useState('new');
   const [saving, setSaving] = useState(false);
+  const [validationError, setValidationError] = useState(null);
 
   // Load customer data when editing
   useEffect(() => {
