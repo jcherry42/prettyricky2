@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { impactMedium, notificationSuccess } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New', color: colors.blue },
