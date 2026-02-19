@@ -825,7 +825,7 @@ const styles = StyleSheet.create({
   },
   langGlassOuter: {
     flex: 1,
-    marginHorizontal: 1,
+    marginHorizontal: 0,
     height: 86,
     borderRadius: 26,
     borderWidth: 1,
