@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+
+import { CustomerEntryMenuModal } from '../components/CustomerEntryMenuModal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../theme/colors';
