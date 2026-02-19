@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
   tabs: {
     marginTop: 12,
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   tabBtn: {
     flex: 1,
