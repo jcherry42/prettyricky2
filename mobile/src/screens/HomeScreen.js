@@ -286,9 +286,6 @@ export function HomeScreen() {
           }
         />
 
-        {/* QuickAdd button */}
-        <QuickAddButton onPress={handleAddNew} />
-
         {/* Emergency Button */}
         <EmergencyButton onPress={() => setEmergencyModalVisible(true)} />
 
