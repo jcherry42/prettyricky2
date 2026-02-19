@@ -20,7 +20,7 @@ export function getBackendUrl() {
   const rawEnvUrl = import.meta.env.VITE_BACKEND_URL;
   
   // Fallback for iOS Capacitor runtime where import.meta.env may not work
-  const hardcodedFallback = 'https://automotive-sales-app.preview.emergentagent.com';
+  const hardcodedFallback = 'https://pwa-native-preview.preview.emergentagent.com';
   
   const envUrl = normalizeBackendUrl(rawEnvUrl || hardcodedFallback);
   

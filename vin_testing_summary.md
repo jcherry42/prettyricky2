@@ -4,7 +4,7 @@
 Comprehensive testing of VIN decode and inventory endpoints for mobile VinScanScreen integration.
 
 ## Test Environment
-- **Backend URL**: https://automotive-sales-app.preview.emergentagent.com/api
+- **Backend URL**: https://pwa-native-preview.preview.emergentagent.com/api
 - **Source**: REACT_APP_BACKEND_URL from /app/frontend/.env
 - **Mobile Integration**: VinScanScreen calls decodeVinWithBackend(vin) and addToInventory({ vin, decoded })
 
@@ -12,7 +12,7 @@ Comprehensive testing of VIN decode and inventory endpoints for mobile VinScanSc
 
 ### Test Case 1: Realistic VIN - JM3KKEHA3T1355103
 ```bash
-curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/decode/JM3KKEHA3T1355103"
+curl -X GET "https://pwa-native-preview.preview.emergentagent.com/api/vin/decode/JM3KKEHA3T1355103"
 ```
 
 **Response (200 OK):**
@@ -46,7 +46,7 @@ curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/deco
 
 ### Test Case 2: Realistic VIN - 7MMVAADW5TN144528
 ```bash
-curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/decode/7MMVAADW5TN144528"
+curl -X GET "https://pwa-native-preview.preview.emergentagent.com/api/vin/decode/7MMVAADW5TN144528"
 ```
 
 **Response (200 OK):**
@@ -82,7 +82,7 @@ curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/deco
 
 ### Test Case 3: Save VIN to Inventory
 ```bash
-curl -X POST "https://automotive-sales-app.preview.emergentagent.com/api/vin/save-to-inventory" \
+curl -X POST "https://pwa-native-preview.preview.emergentagent.com/api/vin/save-to-inventory" \
   -H "Content-Type: application/json" \
   -d '{
     "vin": "1HGBH41JXMN123456",
@@ -111,7 +111,7 @@ curl -X POST "https://automotive-sales-app.preview.emergentagent.com/api/vin/sav
 
 ### Test Case 4: Duplicate VIN Rejection
 ```bash
-curl -X POST "https://automotive-sales-app.preview.emergentagent.com/api/vin/save-to-inventory" \
+curl -X POST "https://pwa-native-preview.preview.emergentagent.com/api/vin/save-to-inventory" \
   -H "Content-Type: application/json" \
   -d '{
     "vin": "1HGBH41JXMN123456",
@@ -140,7 +140,7 @@ curl -X POST "https://automotive-sales-app.preview.emergentagent.com/api/vin/sav
 
 ### Test Case 5: Invalid VIN (Too Short)
 ```bash
-curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/decode/TOOSHORT"
+curl -X GET "https://pwa-native-preview.preview.emergentagent.com/api/vin/decode/TOOSHORT"
 ```
 
 **Response (400 Bad Request):**
@@ -152,7 +152,7 @@ curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/deco
 
 ### Test Case 6: Invalid VIN (Contains Invalid Characters)
 ```bash
-curl -X GET "https://automotive-sales-app.preview.emergentagent.com/api/vin/decode/1HGBH41JXMN12345I"
+curl -X GET "https://pwa-native-preview.preview.emergentagent.com/api/vin/decode/1HGBH41JXMN12345I"
 ```
 
 **Response (400 Bad Request):**

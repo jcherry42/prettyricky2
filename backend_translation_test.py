@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 
 # Backend URL from frontend .env
-BACKEND_URL = "https://automotive-sales-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://pwa-native-preview.preview.emergentagent.com/api"
 
 class ComprehensiveTranslationTester:
     def __init__(self):
