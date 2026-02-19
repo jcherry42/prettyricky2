@@ -6,7 +6,6 @@ import { Screen } from '../components/Screen';
 import { CustomerCard } from '../components/CustomerCard';
 import { CustomerDetailModal } from '../components/CustomerDetailModal';
 import { CustomerFormModal } from '../components/CustomerFormModal';
-import { QuickAddButton } from '../components/QuickAddButton';
 import { QuickCompose } from '../components/QuickCompose';
 import { EmergencyButton } from '../components/EmergencyButton';
 import { EmergencyInquiryModal } from '../components/EmergencyInquiryModal';
