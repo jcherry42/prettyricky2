@@ -122,7 +122,7 @@ export function HomeScreen() {
   const handleSave = async (customerData, existingCustomer) => {
     try {
       if (existingCustomer) {
-        await updateCustomer(existingCustomer.customer_id, customerData);
+        await updateCustomer(existingCustomer.customer_id || existingCustomer.id, customerData);
         toast.showSuccess('Customer updated');
       } else {
         await createCustomer(customerData);
