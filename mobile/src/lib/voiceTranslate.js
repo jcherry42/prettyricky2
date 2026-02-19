@@ -1,8 +1,8 @@
-import { buildApiUrl } from '../config/backend';
+import { buildApiUrlAsync } from '../config/backend';
 
 export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en', mimeType }) {
   if (!targetLang) throw new Error('Target language is required');
-  const url = buildApiUrl('/api/voice-translate');
+  const url = await buildApiUrlAsync('/api/voice-translate');
   if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
 
   const form = new FormData();
