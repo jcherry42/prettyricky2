@@ -88,10 +88,20 @@ export function HomeScreen() {
     setShowDetailModal(true);
   };
 
-  const handleAddNew = () => {
+  const handleAddNew = useCallback(() => {
     setEditingCustomer(null);
     setShowFormModal(true);
-  };
+  }, []);
+
+  // Exposed to RootNavigator so the Bluetooth "Customer Entry" menu can open this form.
+  useEffect(() => {
+    globalThis.__sc_open_new_customer = handleAddNew;
+    return () => {
+      if (globalThis.__sc_open_new_customer === handleAddNew) {
+        globalThis.__sc_open_new_customer = null;
+      }
+    };
+  }, [handleAddNew]);
 
   const handleEdit = (customer) => {
     setShowDetailModal(false);
