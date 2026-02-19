@@ -164,18 +164,19 @@ export function CustomerProvider({ children }) {
   }, []);
 
   const deleteCustomer = useCallback(async (id) => {
+    const cid = id;
     try {
-      await apiFetch(`/api/customers/${id}`, {
+      await apiFetch(`/api/customers/${cid}`, {
         method: 'DELETE',
       });
 
-      setCustomers(prev => prev.filter(c => c.customer_id !== id));
+      setCustomers((prev) => prev.filter((c) => (c.customer_id || c.id) !== cid));
     } catch (e) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
-        await queueOperation(`/api/customers/${id}`, { method: 'DELETE' });
+        await queueOperation(`/api/customers/${cid}`, { method: 'DELETE' });
         // Optimistic delete
-        setCustomers(prev => prev.filter(c => c.customer_id !== id));
+        setCustomers((prev) => prev.filter((c) => (c.customer_id || c.id) !== cid));
         return;
       }
       setError(e.message || 'Failed to delete customer');
