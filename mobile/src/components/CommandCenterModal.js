@@ -23,7 +23,9 @@ function TabButton({ label, icon, active, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9 }]}>
       <Ionicons name={icon} size={14} color={active ? colors.gold : colors.textMute} />
-      <Text style={[styles.tabText, active && styles.tabTextActive]}>{label}</Text>
+      <Text style={[styles.tabText, active && styles.tabTextActive]} numberOfLines={1} ellipsizeMode="tail">
+        {label}
+      </Text>
     </Pressable>
   );
 }
