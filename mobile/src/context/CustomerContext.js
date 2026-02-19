@@ -28,6 +28,13 @@ export function CustomerProvider({ children }) {
     })();
   }, []);
 
+  function normalizeCustomer(c) {
+    if (!c || typeof c !== 'object') return c;
+    // Backend uses `id` (UUID). Some UI code historically used `customer_id`.
+    const id = c.customer_id || c.id;
+    return { ...c, id, customer_id: id };
+  }
+
   const fetchCustomers = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
@@ -38,8 +45,8 @@ export function CustomerProvider({ children }) {
       if (search) path += `&search=${encodeURIComponent(search)}`;
 
       const data = await apiFetch(path);
-      const list = data?.customers || [];
-      
+      const list = (data?.customers || []).map(normalizeCustomer);
+
       setCustomers(list);
       setLastFetch(Date.now());
 
@@ -54,9 +61,10 @@ export function CustomerProvider({ children }) {
       // If network error, serve from cache
       const cached = await loadJson(CACHE_KEY, null);
       if (cached?.customers) {
-        setCustomers(cached.customers);
+        const normalized = cached.customers.map(normalizeCustomer);
+        setCustomers(normalized);
         setError('Serving cached data (offline)');
-        return cached.customers;
+        return normalized;
       }
       setError(e.message || 'Failed to fetch customers');
       throw e;
