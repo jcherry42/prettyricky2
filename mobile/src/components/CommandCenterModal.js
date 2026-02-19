@@ -39,7 +39,7 @@ function LangGlass({ flag, active, onPress }) {
   return (
     <Pressable
       onPress={() => { impactLight(); onPress(); }}
-      style={({ pressed }) => [pressed && { transform: [{ scale: 0.95 }] }]}
+      style={({ pressed }) => [styles.langPressable, pressed && { transform: [{ scale: 0.97 }] }]}
     >
       <View style={[styles.langGlassOuter, active && styles.langGlassOuterActive]}>
         <LinearGradient
