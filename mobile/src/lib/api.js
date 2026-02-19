@@ -1,5 +1,4 @@
 import { buildApiUrlAsync } from '../config/backend';
-import { useToast } from '../context/ToastContext';
 
 const DEFAULT_TIMEOUT = 15000;
 const MAX_RETRIES = 3;
@@ -31,7 +30,7 @@ function delay(ms) {
  * - Clean error objects with status codes
  */
 export async function apiFetch(path, options = {}) {
-  const url = buildApiUrl(path);
+  const url = await buildApiUrlAsync(path);
   if (!url) {
     const err = new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
     err.code = 'BACKEND_URL_MISSING';
