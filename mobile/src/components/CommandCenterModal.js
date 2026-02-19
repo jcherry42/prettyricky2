@@ -803,9 +803,9 @@ const styles = StyleSheet.create({
   },
   tabText: {
     color: colors.textMute,
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '900',
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
   tabTextActive: {
     color: colors.gold,
