@@ -76,10 +76,11 @@ export function CustomerProvider({ children }) {
   const getCustomer = useCallback(async (id) => {
     try {
       const data = await apiFetch(`/api/customers/${id}`);
-      return data?.customer || null;
+      // Backend returns the customer object directly (not wrapped).
+      return normalizeCustomer(data) || null;
     } catch (e) {
       // Try to find in cached list
-      const found = customers.find(c => c.customer_id === id);
+      const found = customers.find((c) => (c.customer_id || c.id) === id);
       if (found) return found;
       setError(e.message || 'Failed to fetch customer');
       throw e;
