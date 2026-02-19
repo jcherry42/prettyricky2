@@ -111,7 +111,7 @@ export function HomeScreen() {
 
   const handleDelete = async (customer) => {
     try {
-      await deleteCustomer(customer.customer_id);
+      await deleteCustomer(customer.customer_id || customer.id);
       setShowDetailModal(false);
       toast.showSuccess('Customer deleted');
     } catch (e) {
