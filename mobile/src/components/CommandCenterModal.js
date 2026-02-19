@@ -818,6 +818,10 @@ const styles = StyleSheet.create({
   langRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+  },
+  langPressable: {
+    flex: 1,
   },
   langGlassOuter: {
     flex: 1,
