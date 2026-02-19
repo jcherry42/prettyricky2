@@ -50,6 +50,7 @@ export function RootNavigator() {
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
   const [customersOpen, setCustomersOpen] = useState(false);
+  const [customerEntryOpen, setCustomerEntryOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState('Home');
 
   const { settings } = useAppSettings();
