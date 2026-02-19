@@ -127,28 +127,36 @@ export function CustomerProvider({ children }) {
   }, [customers]);
 
   const updateCustomer = useCallback(async (id, updates) => {
+    const cid = id;
     try {
-      const data = await apiFetch(`/api/customers/${id}`, {
+      const data = await apiFetch(`/api/customers/${cid}`, {
         method: 'PATCH',
         body: JSON.stringify(updates),
       });
 
-      const updatedCustomer = data?.customer;
-      if (updatedCustomer) {
-        setCustomers(prev => prev.map(c => c.customer_id === id ? updatedCustomer : c));
+      // Backend returns {success, updated}. We then refetch the updated record to keep UI consistent.
+      if (data?.success) {
+        const refreshed = await apiFetch(`/api/customers/${cid}`);
+        const updatedCustomer = normalizeCustomer(refreshed);
+        if (updatedCustomer) {
+          setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? updatedCustomer : c)));
+        }
+        return updatedCustomer;
       }
 
-      return updatedCustomer;
+      // Fallback: try to merge locally
+      setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? normalizeCustomer({ ...c, ...updates }) : c)));
+      return null;
     } catch (e) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
-        await queueOperation(`/api/customers/${id}`, {
+        await queueOperation(`/api/customers/${cid}`, {
           method: 'PATCH',
           body: JSON.stringify(updates),
         });
         // Optimistic update
-        setCustomers(prev => prev.map(c => c.customer_id === id ? { ...c, ...updates, _queued: true } : c));
-        return { ...updates, customer_id: id, _queued: true };
+        setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? { ...c, ...updates, _queued: true } : c)));
+        return { ...updates, customer_id: cid, id: cid, _queued: true };
       }
       setError(e.message || 'Failed to update customer');
       throw e;
