@@ -127,10 +127,24 @@ export function RootNavigator() {
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
       <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
       <CustomerListModal visible={customersOpen} onClose={() => setCustomersOpen(false)} />
+      <CustomerEntryMenuModal
+        visible={customerEntryOpen}
+        onClose={() => setCustomerEntryOpen(false)}
+        onAddCustomer={() => {
+          setCustomerEntryOpen(false);
+          // Let HomeScreen's existing "New Customer" modal handle the actual form.
+          // We trigger via a global event bridge.
+          globalThis.__sc_open_new_customer?.();
+        }}
+        onLicenseScans={() => {
+          setCustomerEntryOpen(false);
+          setCustomersOpen(true);
+        }}
+      />
 
       {/* Bluetooth customer button - always on Home */}
       {isHome && (
-        <FloatingCustomerButton onPress={() => setCustomersOpen(true)} />
+        <FloatingCustomerButton onPress={() => setCustomerEntryOpen(true)} />
       )}
 
       {/* PTT (only in SPORT mode) */}
