@@ -95,12 +95,12 @@ export function CustomerProvider({ children }) {
         body: JSON.stringify(customerData),
       });
 
-      const newCustomer = data?.customer;
+      const newCustomer = normalizeCustomer(data?.customer);
       if (newCustomer) {
-        setCustomers(prev => [newCustomer, ...prev]);
+        setCustomers((prev) => [newCustomer, ...prev]);
         // Update cache
         await saveJson(CACHE_KEY, {
-          customers: [newCustomer, ...customers],
+          customers: [newCustomer, ...customers.map(normalizeCustomer)],
           timestamp: Date.now(),
         });
       }
@@ -114,8 +114,9 @@ export function CustomerProvider({ children }) {
           body: JSON.stringify(customerData),
         });
         // Optimistic update
-        const tempCustomer = { ...customerData, customer_id: `temp_${Date.now()}`, _queued: true };
-        setCustomers(prev => [tempCustomer, ...prev]);
+        const tempId = `temp_${Date.now()}`;
+        const tempCustomer = normalizeCustomer({ ...customerData, id: tempId, customer_id: tempId, _queued: true });
+        setCustomers((prev) => [tempCustomer, ...prev]);
         return tempCustomer;
       }
       setError(e.message || 'Failed to create customer');
