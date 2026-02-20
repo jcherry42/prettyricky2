@@ -318,12 +318,12 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    height: 48,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.30)',
-    paddingHorizontal: 12,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(0,0,0,0.38)',
+    paddingHorizontal: 14,
     gap: 8,
   },
   searchInput: {
