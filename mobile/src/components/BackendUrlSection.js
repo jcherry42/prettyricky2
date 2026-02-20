@@ -78,8 +78,14 @@ export function BackendUrlSection() {
           placeholderTextColor={colors.textMute}
           autoCapitalize="none"
           autoCorrect={false}
+          autoComplete="off"
+          spellCheck={false}
           keyboardType="url"
+          textContentType="URL"
+          returnKeyType="done"
+          onSubmitEditing={handleSave}
           style={styles.input}
+          selectTextOnFocus
         />
 
         <View style={{ height: 10 }} />
