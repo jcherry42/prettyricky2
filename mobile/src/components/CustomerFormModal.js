@@ -229,11 +229,14 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
             {/* Vehicle Interest */}
             <Text style={styles.sectionTitle}>VEHICLE INTEREST</Text>
             <TextInput
+              ref={vehicleRef}
               style={styles.input}
               value={vehicleInterest}
               onChangeText={setVehicleInterest}
               placeholder="2024 Honda Accord"
               placeholderTextColor={colors.textMute}
+              autoCapitalize="words"
+              returnKeyType="done"
               editable={!saving}
             />
 
