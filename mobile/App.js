@@ -55,6 +55,7 @@ export default function App() {
                   </InventoryProvider>
                 </CustomerProvider>
               </AppSettingsProvider>
+                </AmbientLightingProvider>
             </ToastProvider>
           </NetworkProvider>
         </ErrorBoundary>
