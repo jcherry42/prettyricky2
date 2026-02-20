@@ -1,400 +1,394 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend API Test for Supercharg'd Mobile App
-Testing all core endpoints with detailed reporting
+Backend Testing Script for Supercharg'd Tower Talk and Translation Upgrades
+
+Tests the following endpoints that were just upgraded:
+1. Tower Talk with new inquiryType field - POST /api/tower-talk
+2. Translation with gpt-4o upgrade - POST /api/translate  
+3. Health check - GET /api/health
+
+As requested in the review, testing against backend at:
+https://pwa-native.preview.emergentagent.com/api
 """
 
-import requests
+import asyncio
+import aiohttp
 import json
 import time
-import base64
-import tempfile
-import os
-from io import BytesIO
+from datetime import datetime
+from typing import Dict, Any, List
 
-# Backend base URL
-BASE_URL = "https://pwa-native.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
-        self.test_results = []
-        self.passed = 0
-        self.failed = 0
+        self.base_url = "https://pwa-native.preview.emergentagent.com/api"
+        self.session = None
+        self.results = []
         
-    def log_result(self, test_name, status_code, expected_code, response_data, notes=""):
-        """Log test result with details"""
-        success = status_code == expected_code
-        if success:
-            self.passed += 1
-        else:
-            self.failed += 1
-            
-        self.test_results.append({
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+    
+    def log_result(self, test_name: str, success: bool, details: str, response_data: Any = None):
+        """Log test result with timestamp"""
+        result = {
             "test": test_name,
-            "status_code": status_code,
-            "expected": expected_code,
             "success": success,
-            "response": response_data,
-            "notes": notes
-        })
+            "details": details,
+            "timestamp": datetime.now().isoformat(),
+            "response_data": response_data
+        }
+        self.results.append(result)
         
-        # Print immediate feedback
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} {test_name} - Status: {status_code} (expected {expected_code})")
-        if notes:
-            print(f"    Notes: {notes}")
-        if not success and isinstance(response_data, dict) and 'detail' in response_data:
-            print(f"    Error: {response_data['detail']}")
+        print(f"{status}: {test_name}")
+        print(f"   Details: {details}")
+        if response_data:
+            print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
+        print()
+    
+    async def test_health_check(self):
+        """Test health check endpoint"""
+        try:
+            start_time = time.time()
+            async with self.session.get(f"{self.base_url}/health") as response:
+                response_time = time.time() - start_time
+                
+                if response.status == 200:
+                    data = await response.json()
+                    self.log_result(
+                        "Health Check",
+                        True,
+                        f"Status: {data.get('status')} - Response time: {response_time:.2f}s",
+                        data
+                    )
+                else:
+                    self.log_result(
+                        "Health Check", 
+                        False,
+                        f"HTTP {response.status} - Response time: {response_time:.2f}s"
+                    )
+        except Exception as e:
+            self.log_result("Health Check", False, f"Exception: {str(e)}")
+    
+    async def test_tower_talk_with_inquiry_type(self, inquiry_type: str, situation: str, context: Dict[str, Any]):
+        """Test Tower Talk endpoint with specific inquiry type"""
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "situation": situation,
+                "inquiryType": inquiry_type,
+                "context": context
+            }
+            
+            async with self.session.post(
+                f"{self.base_url}/tower-talk",
+                json=payload
+            ) as response:
+                response_time = time.time() - start_time
+                
+                if response.status == 200:
+                    data = await response.json()
+                    response_text = data.get("response", "")
+                    
+                    # Validate response quality
+                    sentences = response_text.split('. ')
+                    sentence_count = len([s for s in sentences if s.strip()])
+                    
+                    # Check for quality indicators
+                    has_brackets = '[' in response_text or ']' in response_text
+                    has_placeholders = '{' in response_text or '}' in response_text
+                    has_emojis = any(ord(char) > 127 for char in response_text)
+                    
+                    quality_issues = []
+                    if sentence_count < 2 or sentence_count > 4:
+                        quality_issues.append(f"Sentence count: {sentence_count} (expected 2-4)")
+                    if has_brackets:
+                        quality_issues.append("Contains brackets")
+                    if has_placeholders:
+                        quality_issues.append("Contains placeholders")
+                    if has_emojis:
+                        quality_issues.append("Contains emojis")
+                    
+                    success = len(quality_issues) == 0
+                    details = f"inquiryType: {inquiry_type}, Response length: {len(response_text)}, Sentences: {sentence_count}, Time: {response_time:.2f}s"
+                    if quality_issues:
+                        details += f" - Issues: {', '.join(quality_issues)}"
+                    
+                    self.log_result(
+                        f"Tower Talk - {inquiry_type}",
+                        success,
+                        details,
+                        {
+                            "inquiry_type": inquiry_type,
+                            "situation": situation[:50] + "..." if len(situation) > 50 else situation,
+                            "response_length": len(response_text),
+                            "sentence_count": sentence_count,
+                            "response_preview": response_text[:100] + "..." if len(response_text) > 100 else response_text,
+                            "quality_issues": quality_issues,
+                            "response_time": f"{response_time:.2f}s"
+                        }
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_result(
+                        f"Tower Talk - {inquiry_type}",
+                        False,
+                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
+                    )
+                    
+        except Exception as e:
+            self.log_result(f"Tower Talk - {inquiry_type}", False, f"Exception: {str(e)}")
+    
+    async def test_tower_talk_backwards_compatibility(self):
+        """Test Tower Talk without inquiryType field for backwards compatibility"""
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "situation": "Customer texting asking about our 2024 Tesla Model 3 inventory",
+                "context": {
+                    "customerName": "Mike Chen",
+                    "vehicle": "2024 Tesla Model 3",
+                    "dealershipName": "Premier Auto",
+                    "salespersonName": "Jake"
+                }
+            }
+            
+            async with self.session.post(
+                f"{self.base_url}/tower-talk",
+                json=payload
+            ) as response:
+                response_time = time.time() - start_time
+                
+                if response.status == 200:
+                    data = await response.json()
+                    response_text = data.get("response", "")
+                    
+                    self.log_result(
+                        "Tower Talk - Backwards Compatibility (no inquiryType)",
+                        True,
+                        f"Response length: {len(response_text)}, Time: {response_time:.2f}s",
+                        {
+                            "response_length": len(response_text),
+                            "response_preview": response_text[:100] + "..." if len(response_text) > 100 else response_text,
+                            "response_time": f"{response_time:.2f}s"
+                        }
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_result(
+                        "Tower Talk - Backwards Compatibility",
+                        False,
+                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
+                    )
+                    
+        except Exception as e:
+            self.log_result("Tower Talk - Backwards Compatibility", False, f"Exception: {str(e)}")
+    
+    async def test_translation(self, source_lang: str, target_lang: str, text: str, test_name: str):
+        """Test translation endpoint with gpt-4o upgrade"""
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "text": text,
+                "source_lang": source_lang,
+                "target_lang": target_lang
+            }
+            
+            async with self.session.post(
+                f"{self.base_url}/translate",
+                json=payload
+            ) as response:
+                response_time = time.time() - start_time
+                
+                if response.status == 200:
+                    data = await response.json()
+                    translated_text = data.get("translated_text", "")
+                    detected_lang = data.get("detected_lang")
+                    confidence = data.get("confidence")
+                    
+                    # Check if translation looks automotive-appropriate
+                    automotive_terms = ["vehicle", "car", "drive", "price", "warranty", "financing", "trade", "appraise"]
+                    has_automotive_context = any(term in text.lower() or term in translated_text.lower() for term in automotive_terms)
+                    
+                    self.log_result(
+                        f"Translation - {test_name}",
+                        True,
+                        f"{source_lang}→{target_lang}, Length: {len(translated_text)}, Time: {response_time:.2f}s, Automotive context: {has_automotive_context}",
+                        {
+                            "source_lang": source_lang,
+                            "target_lang": target_lang,
+                            "original": text[:50] + "..." if len(text) > 50 else text,
+                            "translated": translated_text[:50] + "..." if len(translated_text) > 50 else translated_text,
+                            "detected_lang": detected_lang,
+                            "confidence": confidence,
+                            "automotive_context": has_automotive_context,
+                            "response_time": f"{response_time:.2f}s"
+                        }
+                    )
+                else:
+                    error_text = await response.text()
+                    self.log_result(
+                        f"Translation - {test_name}",
+                        False,
+                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
+                    )
+                    
+        except Exception as e:
+            self.log_result(f"Translation - {test_name}", False, f"Exception: {str(e)}")
+    
+    async def run_all_tests(self):
+        """Run all requested tests from the review"""
+        print("🚀 Starting Comprehensive Backend Testing for Tower Talk & Translation Upgrades")
+        print(f"Backend URL: {self.base_url}")
+        print("=" * 80)
         print()
         
-    def test_customer_crud(self):
-        """Test Customer CRUD operations"""
-        print("=== TESTING CUSTOMER CRUD ===")
+        # 1. Health Check
+        await self.test_health_check()
         
-        # 1. Test customer list
-        try:
-            response = requests.get(f"{BASE_URL}/customers/list", timeout=10)
-            data = response.json()
-            
-            # Check response structure
-            has_customers_key = 'customers' in data
-            has_total_key = 'total' in data
-            structure_ok = has_customers_key and has_total_key
-            
-            self.log_result(
-                "GET /customers/list", 
-                response.status_code, 
-                200, 
-                data,
-                f"Structure check: customers={has_customers_key}, total={has_total_key}, structure_ok={structure_ok}"
-            )
-        except Exception as e:
-            self.log_result("GET /customers/list", 0, 200, {"error": str(e)}, "Request failed")
-            
-        # 2. Create a test customer
-        test_customer_data = {
-            "first_name": "John",
-            "last_name": "Doe", 
-            "phone": "+1-555-123-4567",
-            "email": "john.doe@example.com",
-            "lead_status": "new"
-        }
+        # 2. Tower Talk with NEW inquiryType field - All requested scenarios
+        print("Testing Tower Talk with NEW inquiryType field...")
         
-        try:
-            response = requests.post(f"{BASE_URL}/customers/create", json=test_customer_data, timeout=10)
-            data = response.json()
-            
-            # Check if response has both id and customer_id
-            has_id = 'id' in data
-            has_customer_id = 'customer_id' in data
-            normalized_ids = has_id and has_customer_id
-            
-            customer_id = data.get('id') or data.get('customer_id')
-            
-            self.log_result(
-                "POST /customers/create",
-                response.status_code,
-                201,
-                data,
-                f"ID normalization: has_id={has_id}, has_customer_id={has_customer_id}, normalized={normalized_ids}"
-            )
-            
-            if response.status_code == 201 and customer_id:
-                # Store for further testing
-                self.test_customer_id = customer_id
-                
-                # 3. Test get customer by ID
-                try:
-                    response = requests.get(f"{BASE_URL}/customers/{customer_id}", timeout=10)
-                    data = response.json()
-                    self.log_result(f"GET /customers/{customer_id}", response.status_code, 200, data)
-                except Exception as e:
-                    self.log_result(f"GET /customers/{customer_id}", 0, 200, {"error": str(e)})
-                    
-                # 4. Test update customer
-                try:
-                    update_data = {"lead_status": "contacted"}
-                    response = requests.patch(f"{BASE_URL}/customers/{customer_id}", json=update_data, timeout=10)
-                    data = response.json()
-                    self.log_result(f"PATCH /customers/{customer_id}", response.status_code, 200, data)
-                except Exception as e:
-                    self.log_result(f"PATCH /customers/{customer_id}", 0, 200, {"error": str(e)})
-                    
-                # 5. Test delete customer
-                try:
-                    response = requests.delete(f"{BASE_URL}/customers/{customer_id}", timeout=10)
-                    data = response.json() if response.content else {}
-                    self.log_result(f"DELETE /customers/{customer_id}", response.status_code, 200, data)
-                except Exception as e:
-                    self.log_result(f"DELETE /customers/{customer_id}", 0, 200, {"error": str(e)})
-                    
-        except Exception as e:
-            self.log_result("POST /customers/create", 0, 201, {"error": str(e)})
-            
-    def test_translation(self):
-        """Test Translation API"""
-        print("=== TESTING TRANSLATION ===")
-        
-        test_cases = [
+        await self.test_tower_talk_with_inquiry_type(
+            "new_lead",
+            "Customer texted asking about our 2024 Tesla Model 3 inventory",
             {
-                "text": "Good morning, how can I help you today?",
-                "source_lang": "en",
-                "target_lang": "es",
-                "name": "EN→ES"
-            },
+                "customerName": "Mike Chen",
+                "vehicle": "2024 Tesla Model 3",
+                "dealershipName": "Premier Auto",
+                "salespersonName": "Jake"
+            }
+        )
+        
+        await self.test_tower_talk_with_inquiry_type(
+            "price_question",
+            "Customer asking why the price is higher than another dealer",
             {
-                "text": "Buenos días, ¿cómo puedo ayudarle hoy?",
-                "source_lang": "es", 
-                "target_lang": "en",
-                "name": "ES→EN"
-            },
+                "customerName": "Sarah",
+                "vehicle": "2023 BMW M3",
+                "vehiclePrice": "$65,000"
+            }
+        )
+        
+        await self.test_tower_talk_with_inquiry_type(
+            "trade_in",
+            "Customer wants to trade in her 2019 Honda Civic",
             {
-                "text": "Good morning, how can I help you today?",
-                "source_lang": "en",
-                "target_lang": "fr", 
-                "name": "EN→FR"
-            },
+                "customerName": "Lisa",
+                "vehicle": "2024 Mazda CX-5",
+                "tradeVin": "1HGBH41JXMN109186",
+                "tradeMileage": "55000"
+            }
+        )
+        
+        await self.test_tower_talk_with_inquiry_type(
+            "test_drive",
+            "Customer wants to schedule a test drive this weekend",
             {
-                "text": "Good morning, how can I help you today?",
-                "source_lang": "en",
-                "target_lang": "ko",
-                "name": "EN→KO"
+                "customerName": "Tom"
             }
-        ]
+        )
         
-        for test_case in test_cases:
-            try:
-                payload = {
-                    "text": test_case["text"],
-                    "source_lang": test_case["source_lang"],
-                    "target_lang": test_case["target_lang"]
-                }
-                
-                response = requests.post(f"{BASE_URL}/translate", json=payload, timeout=15)
-                data = response.json()
-                
-                # Check for translated_text field
-                has_translated_text = 'translated_text' in data
-                
-                self.log_result(
-                    f"POST /translate ({test_case['name']})",
-                    response.status_code,
-                    200,
-                    data,
-                    f"Has translated_text field: {has_translated_text}"
-                )
-                
-            except Exception as e:
-                self.log_result(f"POST /translate ({test_case['name']})", 0, 200, {"error": str(e)})
-                
-    def test_tower_talk(self):
-        """Test Tower Talk API"""
-        print("=== TESTING TOWER TALK ===")
+        # Test backwards compatibility
+        await self.test_tower_talk_backwards_compatibility()
         
-        payload = {
-            "situation": "Customer is asking about financing options for a 2024 Honda Accord",
-            "context": {
-                "customerName": "John Smith",
-                "vehicle": "2024 Honda Accord", 
-                "tradeVin": "",
-                "tradeMileage": ""
-            }
-        }
+        # 3. Translation with gpt-4o upgrade - All requested language pairs
+        print("Testing Translation with gpt-4o upgrade...")
         
-        try:
-            response = requests.post(f"{BASE_URL}/tower-talk", json=payload, timeout=20)
-            data = response.json()
-            
-            # Check for response field
-            has_response = 'response' in data
-            
-            self.log_result(
-                "POST /tower-talk",
-                response.status_code,
-                200,
-                data,
-                f"Has response field: {has_response}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /tower-talk", 0, 200, {"error": str(e)})
-            
-    def test_tts(self):
-        """Test Text-to-Speech API"""
-        print("=== TESTING TEXT-TO-SPEECH ===")
+        await self.test_translation(
+            "en", "es",
+            "The 2024 BMW X5 is priced at $65,000 and includes a 4-year warranty. When can you come in for a test drive?",
+            "EN→ES BMW X5 Warranty"
+        )
         
-        payload = {
-            "text": "Welcome to Supercharg'd",
-            "language": "en",
-            "voice": "auto"
-        }
+        await self.test_translation(
+            "en", "ko",
+            "We have financing available with rates as low as 2.9% APR. Come in today to lock in this rate.",
+            "EN→KO Financing Rate"
+        )
         
-        try:
-            response = requests.post(f"{BASE_URL}/tts", json=payload, timeout=15)
-            data = response.json()
-            
-            # Check for audio_base64 field
-            has_audio_base64 = 'audio_base64' in data
-            audio_length = len(data.get('audio_base64', '')) if has_audio_base64 else 0
-            
-            self.log_result(
-                "POST /tts",
-                response.status_code,
-                200,
-                {"has_audio_base64": has_audio_base64, "audio_length": audio_length},
-                f"Audio data present: {has_audio_base64}, length: {audio_length}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /tts", 0, 200, {"error": str(e)})
-            
-    def test_voice_translate(self):
-        """Test Voice Translate endpoint existence"""
-        print("=== TESTING VOICE TRANSLATE ===")
+        await self.test_translation(
+            "en", "fr",
+            "Your trade-in has been appraised at $18,500 which is $2,000 above book value.",
+            "EN→FR Trade-in Appraisal"
+        )
         
-        # Test with empty form data to check endpoint existence
-        try:
-            # Create a minimal audio file for testing
-            files = {'audio': ('test.txt', b'not_audio_data', 'text/plain')}
-            data = {'source_lang': 'en', 'target_lang': 'es'}
-            
-            response = requests.post(f"{BASE_URL}/voice-translate", files=files, data=data, timeout=15)
-            
-            # We expect 422 for invalid audio format, not 404
-            expected_codes = [200, 400, 422, 500]  # Any but 404
-            success = response.status_code in expected_codes
-            
-            self.log_result(
-                "POST /voice-translate (endpoint check)",
-                response.status_code,
-                422,  # Expected for invalid audio
-                response.json() if response.content else {},
-                f"Endpoint exists (not 404): {response.status_code != 404}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /voice-translate", 0, 422, {"error": str(e)})
-            
-    def test_print_endpoints(self):
-        """Test Print endpoints"""
-        print("=== TESTING PRINT ENDPOINTS ===")
+        await self.test_translation(
+            "en", "ja",
+            "The vehicle is available for immediate delivery. I'll have it detailed and ready when you arrive.",
+            "EN→JA Immediate Delivery"
+        )
         
-        # Test customer print
-        try:
-            payload = {
-                "customer_id": "test-id",
-                "printer_ip": "192.168.1.100"
-            }
-            
-            response = requests.post(f"{BASE_URL}/print/customer", json=payload, timeout=10)
-            
-            # We expect any status but 404 (endpoint should exist)
-            success = response.status_code != 404
-            expected_codes = [200, 400, 404, 500]  # 404 would mean customer not found, which is ok
-            
-            self.log_result(
-                "POST /print/customer",
-                response.status_code,
-                200 if response.status_code in [200, 404] else response.status_code,
-                response.json() if response.content else {},
-                f"Endpoint exists: {success}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /print/customer", 0, 200, {"error": str(e)})
-            
-        # Test license print
-        try:
-            payload = {
-                "image_data": "base64string",
-                "printer_ip": "192.168.1.100"
-            }
-            
-            response = requests.post(f"{BASE_URL}/print/license", json=payload, timeout=10)
-            success = response.status_code != 404
-            
-            self.log_result(
-                "POST /print/license",
-                response.status_code,
-                200 if response.status_code in [200, 400, 500] else response.status_code,
-                response.json() if response.content else {},
-                f"Endpoint exists: {success}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /print/license", 0, 200, {"error": str(e)})
-            
-    def test_printer_test(self):
-        """Test Printer test endpoint"""
-        print("=== TESTING PRINTER TEST ===")
+        # Summary
+        print("=" * 80)
+        print("🏁 TESTING COMPLETE")
+        print("=" * 80)
         
-        payload = {
-            "printer_ip": "192.168.1.1"
-        }
+        total_tests = len(self.results)
+        passed_tests = sum(1 for r in self.results if r["success"])
+        failed_tests = total_tests - passed_tests
         
-        try:
-            response = requests.post(f"{BASE_URL}/printer/test", json=payload, timeout=10)
-            
-            # We expect structured error, not 404
-            success = response.status_code != 404
-            
-            self.log_result(
-                "POST /printer/test",
-                response.status_code,
-                520 if response.status_code in [520, 400, 500] else response.status_code,
-                response.json() if response.content else {},
-                f"Returns structured error (not 404): {success}"
-            )
-            
-        except Exception as e:
-            self.log_result("POST /printer/test", 0, 520, {"error": str(e)})
-            
-    def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 STARTING COMPREHENSIVE BACKEND API TESTING")
-        print(f"Backend URL: {BASE_URL}")
-        print("=" * 60)
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
         
-        start_time = time.time()
+        if failed_tests > 0:
+            print("\n🔍 FAILED TESTS:")
+            for result in self.results:
+                if not result["success"]:
+                    print(f"  • {result['test']}: {result['details']}")
         
-        # Run all test suites
-        self.test_customer_crud()
-        self.test_translation()
-        self.test_tower_talk()
-        self.test_tts()
-        self.test_voice_translate()
-        self.test_print_endpoints()
-        self.test_printer_test()
+        print("\n📊 QUALITY ASSESSMENT:")
         
-        end_time = time.time()
-        duration = end_time - start_time
+        # Tower Talk Quality Assessment
+        tower_talk_results = [r for r in self.results if "Tower Talk" in r["test"] and r["success"]]
+        if tower_talk_results:
+            print("\n🗣️  Tower Talk Response Quality:")
+            for result in tower_talk_results:
+                if result.get("response_data", {}).get("response_preview"):
+                    print(f"  • {result['test']}: '{result['response_data']['response_preview']}'")
         
-        # Print summary
-        print("=" * 60)
-        print("🏁 BACKEND TESTING COMPLETE")
-        print(f"Duration: {duration:.2f} seconds")
-        print(f"Results: ✅ {self.passed} passed, ❌ {self.failed} failed")
-        print(f"Success Rate: {(self.passed / (self.passed + self.failed) * 100):.1f}%")
+        # Translation Quality Assessment  
+        translation_results = [r for r in self.results if "Translation" in r["test"] and r["success"]]
+        if translation_results:
+            print("\n🌐 Translation Quality:")
+            for result in translation_results:
+                rd = result.get("response_data", {})
+                if rd.get("translated"):
+                    automotive = "✅" if rd.get("automotive_context") else "⚠️"
+                    print(f"  • {result['test']}: '{rd.get('original', '')}' → '{rd.get('translated', '')}' {automotive}")
         
-        # Print failed tests details
-        if self.failed > 0:
-            print("\n❌ FAILED TESTS:")
-            for result in self.test_results:
-                if not result['success']:
-                    print(f"  • {result['test']} - Got {result['status_code']}, expected {result['expected']}")
-                    if result['notes']:
-                        print(f"    Notes: {result['notes']}")
+        # Save detailed results
+        with open('/app/tower_talk_translation_test_results.json', 'w') as f:
+            json.dump({
+                "test_type": "tower_talk_translation_upgrade",
+                "timestamp": datetime.now().isoformat(),
+                "backend_url": self.base_url,
+                "total_tests": total_tests,
+                "passed": passed_tests,
+                "failed": failed_tests,
+                "success_rate": f"{(passed_tests/total_tests)*100:.1f}%",
+                "detailed_results": self.results
+            }, f, indent=2)
         
-        print("=" * 60)
+        print(f"\n📄 Detailed results saved to: /app/tower_talk_translation_test_results.json")
         
-        return {
-            "passed": self.passed,
-            "failed": self.failed,
-            "duration": duration,
-            "success_rate": self.passed / (self.passed + self.failed) * 100,
-            "results": self.test_results
-        }
+        return passed_tests, failed_tests
+
+
+async def main():
+    async with BackendTester() as tester:
+        await tester.run_all_tests()
+
 
 if __name__ == "__main__":
-    tester = BackendTester()
-    results = tester.run_all_tests()
+    asyncio.run(main())
