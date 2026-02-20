@@ -367,6 +367,11 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                     placeholder="Search customers..."
                     placeholderTextColor={colors.textMute}
                     style={styles.searchInput}
+                    returnKeyType="search"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    clearButtonMode="while-editing"
+                    onSubmitEditing={Keyboard.dismiss}
                   />
                   {customerSearch.length > 0 && (
                     <Pressable onPress={() => setCustomerSearch('')}>
