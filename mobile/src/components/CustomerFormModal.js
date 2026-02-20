@@ -148,52 +148,82 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
                   placeholder="John"
                   placeholderTextColor={colors.textMute}
                   editable={!saving}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  textContentType="givenName"
+                  returnKeyType="next"
+                  onSubmitEditing={() => lastNameRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
               <View style={styles.halfInput}>
                 <Text style={styles.label}>Last Name *</Text>
                 <TextInput
+                  ref={lastNameRef}
                   style={styles.input}
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Doe"
                   placeholderTextColor={colors.textMute}
                   editable={!saving}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  textContentType="familyName"
+                  returnKeyType="next"
+                  onSubmitEditing={() => phoneRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
             </View>
 
             <Text style={styles.label}>Phone *</Text>
             <TextInput
+              ref={phoneRef}
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
               placeholder="(555) 123-4567"
               placeholderTextColor={colors.textMute}
               keyboardType="phone-pad"
+              textContentType="telephoneNumber"
+              returnKeyType="next"
               editable={!saving}
+              onSubmitEditing={() => emailRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             <Text style={styles.label}>Email</Text>
             <TextInput
+              ref={emailRef}
               style={styles.input}
               value={email}
               onChangeText={setEmail}
               placeholder="john.doe@example.com"
               placeholderTextColor={colors.textMute}
               keyboardType="email-address"
+              textContentType="emailAddress"
               autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
               editable={!saving}
+              onSubmitEditing={() => addressRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             <Text style={styles.label}>Address</Text>
             <TextInput
+              ref={addressRef}
               style={styles.input}
               value={address}
               onChangeText={setAddress}
               placeholder="123 Main St, City, State ZIP"
               placeholderTextColor={colors.textMute}
+              autoCapitalize="words"
+              textContentType="fullStreetAddress"
+              returnKeyType="next"
               editable={!saving}
+              onSubmitEditing={() => vehicleRef.current?.focus()}
+              blurOnSubmit={false}
             />
 
             {/* Vehicle Interest */}
