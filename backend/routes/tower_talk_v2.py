@@ -150,7 +150,7 @@ RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If 
         )
 
         user_message = UserMessage(
-            text=f"Situation: {request.situation.strip()}\n\nWrite the message now."
+            text=f"Inquiry type: {inquiry_type.upper().replace('_', ' ')}\nSituation: {request.situation.strip()}\n\nWrite the message now. Remember: 2-3 sentences MAXIMUM. NO emojis whatsoever."
         )
 
         response = await chat.send_message(user_message)
