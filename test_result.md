@@ -420,7 +420,31 @@ backend:
         agent: "testing"
         comment: "🎯 MOBILE PRINT CENTER SANITY TESTS COMPLETED - ALL TESTS PASS: Conducted comprehensive testing of mobile Print Center endpoints as requested in review. ✅ CRITICAL VERIFICATION: 1) GET /api/customers/list?limit=5&skip=0: Successfully returned {customers,total} structure with status 200, retrieved 1 customer with total=1, response structure valid with required fields present, 2) POST /api/printer/test with {ip:'127.0.0.1'}: Returned status 520 with clear error response (no stack trace) - graceful failure handling working correctly for non-existent printer, 3) POST /api/print/customer with real customer_id and printer_ip '127.0.0.1': Status 200 success, customer fetch working correctly, generated PDF with 1652 bytes - no 500 errors due to missing customer fetch, proper customer lookup and print job processing, 4) POST /api/print/license with fake base64 image and printer_ip '127.0.0.1': Status 200 success, PDF generation successful with stable response schema (success, message, bytes fields), generated 1920 bytes - endpoint working correctly without printer connectivity. ✅ COMPREHENSIVE RESULTS: All 4 mobile Print Center endpoints tested successfully with expected behavior - customer list returns proper structure, printer test shows graceful failures, customer printing works with real customer data, license printing generates stable PDF responses. No regressions detected, all endpoints responding with appropriate status codes and clean error handling."
 
-  - task: "Translation System & PTT - Sprint 6 Comprehensive Testing"
+  - task: "Tower Talk + Translation Beta Refinement - inquiryType + gpt-4o upgrade"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/tower_talk_v2.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Upgraded Tower Talk: added inquiryType field to TowerTalkRequest, 8 inquiry type contexts, upgraded model to gpt-4o, improved system prompt. Also upgraded translate to gpt-4o with automotive domain guidance. Backend verified working via curl: tower-talk returns proper AI response, translate returns accurate translations with confidence scores."
+
+  - task: "GUI Polish - Brushed Aluminum + No Box-Within-Box Inputs (Beta Refinement)"
+    implemented: true
+    working: "NA"
+    file: "/app/mobile/src/components/GlassCard.js, TowerTalkOverlay.js, PttOverlayView.js, CommandCenterModal.js, CustomerFormModal.js, BackendUrlSection.js, HomeScreen.js, VehicleEditorScreen.js, CustomerListModal.js, IntakeScreen.js, VinScanScreen.js, PrintCenterModal.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "GUI Polish complete: 1) GlassCard updated with multi-stop brushed aluminum LinearGradient (5 color stops with horizontal bands) and machined top-edge specular highlight. 2) All input fields across the entire app now use rgba(0,0,0,0.40) background + rgba(255,255,255,0.07-0.09) border - eliminates box-within-box by using consistent, muted borders instead of nested high-contrast boxes. 3) CommandCenterModal sheet gets brushed aluminum top highlight gradient. 4) TowerTalkOverlay: complete rebuild - voice dictation mic in situation field, typewriter animation for AI responses, new 8-type inquiry selector, full-text preset chips, translate+speak combo button, copy/SMS for both reply and translation. 5) PttOverlayView: complete rebuild - 7-bar waveform animation during recording, animated pulsing stop button with rings, copy + SMS buttons on results, better idle state with guidance text. This is a native mobile app only - no web app."
+
+
     implemented: true
     working: true
     file: "/app/backend/server.py, /app/backend/routes/tower_talk_v2.py"
