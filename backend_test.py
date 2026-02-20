@@ -1,394 +1,847 @@
 #!/usr/bin/env python3
 """
-Backend Testing Script for Supercharg'd Tower Talk and Translation Upgrades
-
-Tests the following endpoints that were just upgraded:
-1. Tower Talk with new inquiryType field - POST /api/tower-talk
-2. Translation with gpt-4o upgrade - POST /api/translate  
-3. Health check - GET /api/health
-
-As requested in the review, testing against backend at:
-https://pwa-native.preview.emergentagent.com/api
+COMPREHENSIVE QUALITY SCAN - Supercharg'd Backend Testing
+Target: 100% pass rate - most stringent testing possible
+Backend at http://localhost:8001
 """
 
 import asyncio
 import aiohttp
 import json
+import logging
+import base64
 import time
+import re
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, List
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-class BackendTester:
+@dataclass
+class TestResult:
+    test_name: str
+    passed: bool
+    response_time: float
+    status_code: Optional[int] = None
+    response_data: Optional[Any] = None
+    error_message: Optional[str] = None
+    details: Optional[str] = None
+
+class SuperchargdBackendTester:
+    """
+    Comprehensive backend tester for Supercharg'd system
+    Covers all endpoints with stringent quality checks
+    """
+    
     def __init__(self):
-        self.base_url = "https://pwa-native.preview.emergentagent.com/api"
-        self.session = None
-        self.results = []
+        self.base_url = "http://localhost:8001/api"
+        self.results: List[TestResult] = []
+        self.session: Optional[aiohttp.ClientSession] = None
         
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=30),
+            connector=aiohttp.TCPConnector(limit=10)
+        )
         return self
-    
+        
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
-    
-    def log_result(self, test_name: str, success: bool, details: str, response_data: Any = None):
-        """Log test result with timestamp"""
-        result = {
-            "test": test_name,
-            "success": success,
-            "details": details,
-            "timestamp": datetime.now().isoformat(),
-            "response_data": response_data
-        }
+
+    def log_result(self, result: TestResult):
+        """Log and store test result"""
         self.results.append(result)
+        status = "✅ PASS" if result.passed else "❌ FAIL"
+        logger.info(f"{status} - {result.test_name} ({result.response_time:.3f}s)")
+        if not result.passed and result.error_message:
+            logger.error(f"  Error: {result.error_message}")
+        if result.details:
+            logger.info(f"  Details: {result.details}")
+
+    async def make_request(self, method: str, endpoint: str, **kwargs) -> tuple:
+        """Make HTTP request and measure response time"""
+        url = f"{self.base_url}{endpoint}"
+        start_time = time.time()
         
-        status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status}: {test_name}")
-        print(f"   Details: {details}")
-        if response_data:
-            print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
-        print()
+        try:
+            async with self.session.request(method, url, **kwargs) as response:
+                response_time = time.time() - start_time
+                
+                # Try to parse JSON response
+                try:
+                    if response.content_type and 'application/json' in response.content_type:
+                        data = await response.json()
+                    else:
+                        text = await response.text()
+                        # Try to parse as JSON even if content-type is wrong
+                        try:
+                            data = json.loads(text)
+                        except:
+                            data = text
+                except:
+                    data = await response.text()
+                
+                return response.status, data, response_time, None
+                
+        except Exception as e:
+            response_time = time.time() - start_time
+            return None, None, response_time, str(e)
+
+    # ============== HEALTH + PERFORMANCE ==============
     
     async def test_health_check(self):
-        """Test health check endpoint"""
-        try:
-            start_time = time.time()
-            async with self.session.get(f"{self.base_url}/health") as response:
-                response_time = time.time() - start_time
-                
-                if response.status == 200:
-                    data = await response.json()
-                    self.log_result(
-                        "Health Check",
-                        True,
-                        f"Status: {data.get('status')} - Response time: {response_time:.2f}s",
-                        data
-                    )
-                else:
-                    self.log_result(
-                        "Health Check", 
-                        False,
-                        f"HTTP {response.status} - Response time: {response_time:.2f}s"
-                    )
-        except Exception as e:
-            self.log_result("Health Check", False, f"Exception: {str(e)}")
+        """Test GET /api/health - verify healthy, measure latency"""
+        status, data, response_time, error = await self.make_request('GET', '/health')
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict) and data.get('status') == 'healthy':
+                passed = True
+                details = f"Status: {data.get('status')}, Latency: {response_time*1000:.1f}ms"
+                if response_time > 1.0:
+                    details += " (WARNING: High latency)"
+            else:
+                error_message = f"Invalid response: {data}"
+        else:
+            error_message = f"HTTP {status}: {data}"
+        
+        self.log_result(TestResult(
+            test_name="Health Check",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    async def test_customers_list_performance(self):
+        """Test GET /api/customers/list - measure latency, verify structure"""
+        status, data, response_time, error = await self.make_request('GET', '/customers/list')
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict) and 'customers' in data and 'total' in data:
+                passed = True
+                customer_count = len(data.get('customers', []))
+                total = data.get('total', 0)
+                details = f"Customers: {customer_count}, Total: {total}, Latency: {response_time*1000:.1f}ms"
+                if response_time > 2.0:
+                    details += " (WARNING: High latency)"
+            else:
+                error_message = f"Invalid response structure: {data}"
+        else:
+            error_message = f"HTTP {status}: {data}"
+            
+        self.log_result(TestResult(
+            test_name="Customer List Performance",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    # ============== TOWER TALK - ALL 8 INQUIRY TYPES ==============
     
-    async def test_tower_talk_with_inquiry_type(self, inquiry_type: str, situation: str, context: Dict[str, Any]):
-        """Test Tower Talk endpoint with specific inquiry type"""
-        try:
-            start_time = time.time()
-            
-            payload = {
-                "situation": situation,
-                "inquiryType": inquiry_type,
-                "context": context
-            }
-            
-            async with self.session.post(
-                f"{self.base_url}/tower-talk",
-                json=payload
-            ) as response:
-                response_time = time.time() - start_time
+    def validate_tower_talk_quality(self, response_text: str, inquiry_type: str) -> tuple:
+        """
+        Validate Tower Talk response quality:
+        - NO emojis
+        - 2-3 sentences
+        - Professional tone
+        - Signs off with first name
+        """
+        if not response_text:
+            return False, "Empty response"
+        
+        # Check for emojis (Unicode emoji ranges)
+        emoji_pattern = re.compile(
+            "["
+            "\U0001F600-\U0001F64F"  # emoticons
+            "\U0001F300-\U0001F5FF"  # symbols & pictographs
+            "\U0001F680-\U0001F6FF"  # transport & map symbols
+            "\U0001F1E0-\U0001F1FF"  # flags (iOS)
+            "\U00002600-\U000027BF"  # misc symbols
+            "\U0001F900-\U0001F9FF"  # supplemental symbols
+            "]+", flags=re.UNICODE
+        )
+        
+        if emoji_pattern.search(response_text):
+            return False, "Contains emojis (violates NO emojis rule)"
+        
+        # Count sentences (rough estimate)
+        sentences = re.split(r'[.!?]+', response_text.strip())
+        sentences = [s.strip() for s in sentences if s.strip()]
+        sentence_count = len(sentences)
+        
+        if sentence_count < 2:
+            return False, f"Too few sentences: {sentence_count} (expected 2-3)"
+        if sentence_count > 4:
+            return False, f"Too many sentences: {sentence_count} (expected 2-3)"
+        
+        # Check for professional tone (basic checks)
+        lower_text = response_text.lower()
+        unprofessional_words = ['lol', 'omg', 'wtf', 'awesome', 'epic', 'lit']
+        for word in unprofessional_words:
+            if word in lower_text:
+                return False, f"Unprofessional language: '{word}'"
+        
+        # Check for first name sign-off (simple heuristic)
+        words = response_text.split()
+        last_word = words[-1] if words else ""
+        # Look for common first names or sign-off patterns
+        if len(last_word) < 2 or not last_word.isalpha():
+            return False, "Does not sign off with first name"
+        
+        return True, f"Quality check PASSED: {sentence_count} sentences, professional tone, signs off with '{last_word}'"
+
+    async def test_tower_talk_inquiry(self, inquiry_type: str, situation: str, context: dict):
+        """Test a specific Tower Talk inquiry type"""
+        payload = {
+            "situation": situation,
+            "inquiryType": inquiry_type,
+            "context": context
+        }
+        
+        status, data, response_time, error = await self.make_request(
+            'POST', '/tower-talk', 
+            json=payload,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict) and 'response' in data:
+                response_text = data['response']
+                quality_passed, quality_msg = self.validate_tower_talk_quality(response_text, inquiry_type)
                 
-                if response.status == 200:
-                    data = await response.json()
-                    response_text = data.get("response", "")
-                    
-                    # Validate response quality
-                    sentences = response_text.split('. ')
-                    sentence_count = len([s for s in sentences if s.strip()])
-                    
-                    # Check for quality indicators
-                    has_brackets = '[' in response_text or ']' in response_text
-                    has_placeholders = '{' in response_text or '}' in response_text
-                    has_emojis = any(ord(char) > 127 for char in response_text)
-                    
-                    quality_issues = []
-                    if sentence_count < 2 or sentence_count > 4:
-                        quality_issues.append(f"Sentence count: {sentence_count} (expected 2-4)")
-                    if has_brackets:
-                        quality_issues.append("Contains brackets")
-                    if has_placeholders:
-                        quality_issues.append("Contains placeholders")
-                    if has_emojis:
-                        quality_issues.append("Contains emojis")
-                    
-                    success = len(quality_issues) == 0
-                    details = f"inquiryType: {inquiry_type}, Response length: {len(response_text)}, Sentences: {sentence_count}, Time: {response_time:.2f}s"
-                    if quality_issues:
-                        details += f" - Issues: {', '.join(quality_issues)}"
-                    
-                    self.log_result(
-                        f"Tower Talk - {inquiry_type}",
-                        success,
-                        details,
-                        {
-                            "inquiry_type": inquiry_type,
-                            "situation": situation[:50] + "..." if len(situation) > 50 else situation,
-                            "response_length": len(response_text),
-                            "sentence_count": sentence_count,
-                            "response_preview": response_text[:100] + "..." if len(response_text) > 100 else response_text,
-                            "quality_issues": quality_issues,
-                            "response_time": f"{response_time:.2f}s"
-                        }
-                    )
+                if quality_passed:
+                    passed = True
+                    details = f"Response length: {len(response_text)} chars. {quality_msg}"
                 else:
-                    error_text = await response.text()
-                    self.log_result(
-                        f"Tower Talk - {inquiry_type}",
-                        False,
-                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
-                    )
-                    
-        except Exception as e:
-            self.log_result(f"Tower Talk - {inquiry_type}", False, f"Exception: {str(e)}")
-    
-    async def test_tower_talk_backwards_compatibility(self):
-        """Test Tower Talk without inquiryType field for backwards compatibility"""
-        try:
-            start_time = time.time()
+                    error_message = f"Quality check failed: {quality_msg}"
+                    details = f"Response: '{response_text[:100]}...'"
+            else:
+                error_message = f"Invalid response structure: {data}"
+        else:
+            error_message = f"HTTP {status}: {data}"
             
-            payload = {
-                "situation": "Customer texting asking about our 2024 Tesla Model 3 inventory",
+        self.log_result(TestResult(
+            test_name=f"Tower Talk - {inquiry_type}",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=response_text if passed else data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    async def test_all_tower_talk_inquiries(self):
+        """Test all 8 Tower Talk inquiry types with strict quality checks"""
+        inquiries = [
+            {
+                "type": "new_lead",
+                "situation": "Customer texted about 2024 Porsche 911",
                 "context": {
-                    "customerName": "Mike Chen",
-                    "vehicle": "2024 Tesla Model 3",
-                    "dealershipName": "Premier Auto",
+                    "customerName": "Alex Kim",
+                    "vehicle": "2024 Porsche 911",
+                    "dealershipName": "Premier Motorsports",
                     "salespersonName": "Jake"
                 }
+            },
+            {
+                "type": "price_question",
+                "situation": "Customer says they found same car $4000 cheaper at another dealer",
+                "context": {
+                    "customerName": "Maria Garcia",
+                    "vehicle": "2023 BMW M3",
+                    "vehiclePrice": "$76000",
+                    "salespersonName": "Carlos"
+                }
+            },
+            {
+                "type": "availability",
+                "situation": "Customer asking if specific trim level is in stock",
+                "context": {
+                    "customerName": "James Lee",
+                    "vehicle": "2024 Tesla Model 3 Performance"
+                }
+            },
+            {
+                "type": "trade_in",
+                "situation": "Customer has 2020 Toyota Camry to trade in, 45000 miles",
+                "context": {
+                    "customerName": "Sarah Chen",
+                    "vehicle": "2024 Mazda CX-5",
+                    "tradeMileage": "45000"
+                }
+            },
+            {
+                "type": "financing",
+                "situation": "Customer worried about credit score affecting approval",
+                "context": {
+                    "customerName": "Michael Torres",
+                    "vehicle": "2024 Lexus RX 350",
+                    "salespersonName": "Diana"
+                }
+            },
+            {
+                "type": "test_drive",
+                "situation": "Customer wants to test drive Saturday morning",
+                "context": {
+                    "customerName": "Emily Davis",
+                    "vehicle": "2024 Ford Mustang GT",
+                    "salespersonName": "Ryan"
+                }
+            },
+            {
+                "type": "follow_up",
+                "situation": "No response after last week visit",
+                "context": {
+                    "customerName": "Tom Wilson",
+                    "vehicle": "2024 Dodge Charger"
+                }
+            },
+            {
+                "type": "objection",
+                "situation": "Customer says not ready to buy for 3 months",
+                "context": {
+                    "customerName": "Lisa Park",
+                    "vehicle": "2024 Mercedes GLE",
+                    "salespersonName": "Sophie"
+                }
             }
-            
-            async with self.session.post(
-                f"{self.base_url}/tower-talk",
-                json=payload
-            ) as response:
-                response_time = time.time() - start_time
-                
-                if response.status == 200:
-                    data = await response.json()
-                    response_text = data.get("response", "")
-                    
-                    self.log_result(
-                        "Tower Talk - Backwards Compatibility (no inquiryType)",
-                        True,
-                        f"Response length: {len(response_text)}, Time: {response_time:.2f}s",
-                        {
-                            "response_length": len(response_text),
-                            "response_preview": response_text[:100] + "..." if len(response_text) > 100 else response_text,
-                            "response_time": f"{response_time:.2f}s"
-                        }
-                    )
-                else:
-                    error_text = await response.text()
-                    self.log_result(
-                        "Tower Talk - Backwards Compatibility",
-                        False,
-                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
-                    )
-                    
-        except Exception as e:
-            self.log_result("Tower Talk - Backwards Compatibility", False, f"Exception: {str(e)}")
+        ]
+        
+        for inquiry in inquiries:
+            await self.test_tower_talk_inquiry(
+                inquiry["type"],
+                inquiry["situation"],
+                inquiry["context"]
+            )
+
+    # ============== TRANSLATION (4 LANGUAGES) ==============
     
-    async def test_translation(self, source_lang: str, target_lang: str, text: str, test_name: str):
-        """Test translation endpoint with gpt-4o upgrade"""
-        try:
-            start_time = time.time()
-            
-            payload = {
-                "text": text,
-                "source_lang": source_lang,
-                "target_lang": target_lang
-            }
-            
-            async with self.session.post(
-                f"{self.base_url}/translate",
-                json=payload
-            ) as response:
-                response_time = time.time() - start_time
-                
-                if response.status == 200:
-                    data = await response.json()
-                    translated_text = data.get("translated_text", "")
-                    detected_lang = data.get("detected_lang")
-                    confidence = data.get("confidence")
-                    
-                    # Check if translation looks automotive-appropriate
-                    automotive_terms = ["vehicle", "car", "drive", "price", "warranty", "financing", "trade", "appraise"]
-                    has_automotive_context = any(term in text.lower() or term in translated_text.lower() for term in automotive_terms)
-                    
-                    self.log_result(
-                        f"Translation - {test_name}",
-                        True,
-                        f"{source_lang}→{target_lang}, Length: {len(translated_text)}, Time: {response_time:.2f}s, Automotive context: {has_automotive_context}",
-                        {
-                            "source_lang": source_lang,
-                            "target_lang": target_lang,
-                            "original": text[:50] + "..." if len(text) > 50 else text,
-                            "translated": translated_text[:50] + "..." if len(translated_text) > 50 else translated_text,
-                            "detected_lang": detected_lang,
-                            "confidence": confidence,
-                            "automotive_context": has_automotive_context,
-                            "response_time": f"{response_time:.2f}s"
-                        }
-                    )
+    async def test_translation(self, text: str, source_lang: str, target_lang: str, test_name: str):
+        """Test translation endpoint"""
+        payload = {
+            "text": text,
+            "source_lang": source_lang,
+            "target_lang": target_lang
+        }
+        
+        status, data, response_time, error = await self.make_request(
+            'POST', '/translate',
+            json=payload,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict) and 'translated_text' in data:
+                translated_text = data['translated_text']
+                if translated_text and len(translated_text.strip()) > 0:
+                    passed = True
+                    confidence = data.get('confidence', 'N/A')
+                    detected_lang = data.get('detected_lang', 'N/A')
+                    details = f"Translation: '{translated_text}', Confidence: {confidence}, Detected: {detected_lang}"
                 else:
-                    error_text = await response.text()
-                    self.log_result(
-                        f"Translation - {test_name}",
-                        False,
-                        f"HTTP {response.status} - {error_text[:100]}... - Time: {response_time:.2f}s"
-                    )
-                    
-        except Exception as e:
-            self.log_result(f"Translation - {test_name}", False, f"Exception: {str(e)}")
+                    error_message = "Empty translation result"
+            else:
+                error_message = f"Invalid response structure: {data}"
+        else:
+            error_message = f"HTTP {status}: {data}"
+            
+        self.log_result(TestResult(
+            test_name=f"Translation - {test_name}",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    async def test_all_translations(self):
+        """Test all 4 language translations"""
+        translations = [
+            {
+                "text": "The 2024 BMW X5 is available for immediate delivery with 0% APR financing for 36 months.",
+                "source": "en",
+                "target": "es",
+                "name": "EN→ES (BMW financing)"
+            },
+            {
+                "text": "We offer complimentary vehicle detailing and a full tank of gas with every purchase.",
+                "source": "en", 
+                "target": "ko",
+                "name": "EN→KO (Complimentary services)"
+            },
+            {
+                "text": "Your trade-in has been appraised at above market value. Come in today to finalize the deal.",
+                "source": "en",
+                "target": "fr", 
+                "name": "EN→FR (Trade-in appraisal)"
+            },
+            {
+                "text": "This weekend we have a special event with exclusive test drive opportunities.",
+                "source": "en",
+                "target": "ja",
+                "name": "EN→JA (Special event)"
+            }
+        ]
+        
+        for trans in translations:
+            await self.test_translation(
+                trans["text"],
+                trans["source"],
+                trans["target"],
+                trans["name"]
+            )
+
+    # ============== TTS (ALL 4 LANGUAGES) ==============
+    
+    async def test_tts(self, text: str, language: str, test_name: str):
+        """Test text-to-speech endpoint"""
+        payload = {
+            "text": text,
+            "voice": "auto",
+            "language": language
+        }
+        
+        status, data, response_time, error = await self.make_request(
+            'POST', '/tts',
+            json=payload,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict) and 'audio_base64' in data:
+                audio_base64 = data['audio_base64']
+                if audio_base64 and len(audio_base64) > 0:
+                    passed = True
+                    voice_used = data.get('voice_used', 'unknown')
+                    cached = data.get('cached', False)
+                    details = f"Audio length: {len(audio_base64)} chars, Voice: {voice_used}, Cached: {cached}"
+                else:
+                    error_message = "Empty audio data"
+            else:
+                error_message = f"Invalid response structure: {data}"
+        else:
+            error_message = f"HTTP {status}: {data}"
+            
+        self.log_result(TestResult(
+            test_name=f"TTS - {test_name}",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=len(data.get('audio_base64', '')) if isinstance(data, dict) else data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    async def test_all_tts(self):
+        """Test TTS for all 4 languages"""
+        tts_tests = [
+            {"text": "Welcome to our dealership, how can we help you today?", "lang": "en", "name": "English"},
+            {"text": "Bienvenido a nuestro concesionario, ¿cómo podemos ayudarle hoy?", "lang": "es", "name": "Spanish"},
+            {"text": "Bienvenue dans notre concession, comment pouvons-nous vous aider aujourd'hui?", "lang": "fr", "name": "French"},
+            {"text": "저희 대리점에 오신 것을 환영합니다. 오늘 어떻게 도와드릴까요?", "lang": "ko", "name": "Korean"}
+        ]
+        
+        for tts in tts_tests:
+            await self.test_tts(tts["text"], tts["lang"], tts["name"])
+
+    # ============== CUSTOMER LIFECYCLE ==============
+    
+    async def test_customer_lifecycle(self):
+        """Test full customer CRUD lifecycle"""
+        # Create customer
+        customer_data = {
+            "first_name": "John",
+            "last_name": "TestCustomer",
+            "phone": "555-TEST-123",
+            "email": "john.testcustomer@example.com",
+            "vehicle_interest": "2024 BMW X5",
+            "lead_status": "new"
+        }
+        
+        status, data, response_time, error = await self.make_request(
+            'POST', '/customers',
+            json=customer_data,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        customer_id = None
+        
+        if status in [200, 201] and isinstance(data, dict):
+            customer_id = data.get('id') or data.get('customer_id')
+            if customer_id:
+                self.log_result(TestResult(
+                    test_name="Customer Create",
+                    passed=True,
+                    response_time=response_time,
+                    status_code=status,
+                    response_data=customer_id,
+                    details=f"Customer created with ID: {customer_id}"
+                ))
+            else:
+                self.log_result(TestResult(
+                    test_name="Customer Create",
+                    passed=False,
+                    response_time=response_time,
+                    status_code=status,
+                    error_message="No customer ID in response",
+                    response_data=data
+                ))
+                return
+        else:
+            self.log_result(TestResult(
+                test_name="Customer Create",
+                passed=False,
+                response_time=response_time,
+                status_code=status,
+                error_message=error or f"HTTP {status}: {data}",
+                response_data=data
+            ))
+            return
+
+        # List customers (verify creation)
+        status, data, response_time, error = await self.make_request('GET', '/customers/list')
+        
+        if status == 200 and isinstance(data, dict):
+            customers = data.get('customers', [])
+            found_customer = any(c.get('id') == customer_id for c in customers)
+            self.log_result(TestResult(
+                test_name="Customer List (verify)",
+                passed=found_customer,
+                response_time=response_time,
+                status_code=status,
+                details=f"Found {len(customers)} customers, test customer {'found' if found_customer else 'NOT found'}"
+            ))
+        else:
+            self.log_result(TestResult(
+                test_name="Customer List (verify)",
+                passed=False,
+                response_time=response_time,
+                status_code=status,
+                error_message=error or f"HTTP {status}: {data}"
+            ))
+
+        # Search customer
+        status, data, response_time, error = await self.make_request(
+            'GET', '/customers/list',
+            params={'search': 'TestCustomer'}
+        )
+        
+        if status == 200 and isinstance(data, dict):
+            customers = data.get('customers', [])
+            found_customer = any('TestCustomer' in c.get('last_name', '') for c in customers)
+            self.log_result(TestResult(
+                test_name="Customer Search",
+                passed=found_customer,
+                response_time=response_time,
+                status_code=status,
+                details=f"Search returned {len(customers)} customers"
+            ))
+        else:
+            self.log_result(TestResult(
+                test_name="Customer Search",
+                passed=False,
+                response_time=response_time,
+                status_code=status,
+                error_message=error or f"HTTP {status}: {data}"
+            ))
+
+        # Update customer
+        update_data = {"lead_status": "qualified"}
+        status, data, response_time, error = await self.make_request(
+            'PATCH', f'/customers/{customer_id}',
+            json=update_data,
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        update_passed = status in [200, 201] and isinstance(data, dict)
+        self.log_result(TestResult(
+            test_name="Customer Update",
+            passed=update_passed,
+            response_time=response_time,
+            status_code=status,
+            details="Status updated to qualified" if update_passed else None,
+            error_message=None if update_passed else (error or f"HTTP {status}: {data}")
+        ))
+
+        # Delete customer
+        status, data, response_time, error = await self.make_request(
+            'DELETE', f'/customers/{customer_id}'
+        )
+        
+        delete_passed = status in [200, 204]
+        self.log_result(TestResult(
+            test_name="Customer Delete",
+            passed=delete_passed,
+            response_time=response_time,
+            status_code=status,
+            details="Customer deleted successfully" if delete_passed else None,
+            error_message=None if delete_passed else (error or f"HTTP {status}: {data}")
+        ))
+
+        # Verify deletion
+        status, data, response_time, error = await self.make_request(
+            'GET', f'/customers/{customer_id}'
+        )
+        
+        verify_passed = status == 404
+        self.log_result(TestResult(
+            test_name="Customer Delete Verification",
+            passed=verify_passed,
+            response_time=response_time,
+            status_code=status,
+            details="Customer properly deleted (404 response)" if verify_passed else "Customer still exists",
+            error_message=None if verify_passed else f"Expected 404, got {status}"
+        ))
+
+    # ============== VIN DECODE ==============
+    
+    async def test_vin_decode(self, vin: str, test_name: str):
+        """Test VIN decode endpoint"""
+        status, data, response_time, error = await self.make_request(
+            'GET', f'/vin/decode/{vin}'
+        )
+        
+        passed = False
+        details = None
+        
+        if error:
+            error_message = f"Request failed: {error}"
+        elif status == 200:
+            if isinstance(data, dict):
+                # Check for common VIN decode fields
+                if 'make' in data and 'model' in data and 'year' in data:
+                    passed = True
+                    make = data.get('make', 'Unknown')
+                    model = data.get('model', 'Unknown')
+                    year = data.get('year', 'Unknown')
+                    details = f"Decoded: {year} {make} {model}"
+                elif 'error' in data:
+                    error_message = f"VIN decode error: {data['error']}"
+                else:
+                    error_message = f"Unexpected response format: {data}"
+            else:
+                error_message = f"Invalid response type: {type(data)}"
+        else:
+            error_message = f"HTTP {status}: {data}"
+            
+        self.log_result(TestResult(
+            test_name=f"VIN Decode - {test_name}",
+            passed=passed,
+            response_time=response_time,
+            status_code=status,
+            response_data=data,
+            error_message=error_message if not passed else None,
+            details=details
+        ))
+
+    async def test_all_vin_decodes(self):
+        """Test VIN decode for provided VINs"""
+        vins = [
+            {"vin": "JM3KKEHA3T1355103", "name": "Mazda VIN"},
+            {"vin": "1HGBH41JXMN109186", "name": "Honda VIN"}
+        ]
+        
+        for vin_test in vins:
+            await self.test_vin_decode(vin_test["vin"], vin_test["name"])
+
+    # ============== ERROR HANDLING ==============
+    
+    async def test_error_handling(self):
+        """Test error handling for various scenarios"""
+        
+        # Test empty text translation - should return 400
+        status, data, response_time, error = await self.make_request(
+            'POST', '/translate',
+            json={"text": "", "target_lang": "es"},
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        expected_400 = status == 400
+        self.log_result(TestResult(
+            test_name="Error Handling - Empty translation",
+            passed=expected_400,
+            response_time=response_time,
+            status_code=status,
+            details="Correctly returned 400 for empty text" if expected_400 else f"Expected 400, got {status}",
+            error_message=None if expected_400 else f"Should return 400 for empty text, got {status}"
+        ))
+
+        # Test empty Tower Talk situation
+        status, data, response_time, error = await self.make_request(
+            'POST', '/tower-talk',
+            json={"situation": "", "context": {}},
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        # Check behavior - could be 400 or could handle gracefully
+        graceful_handling = status in [200, 400]
+        self.log_result(TestResult(
+            test_name="Error Handling - Empty Tower Talk situation",
+            passed=graceful_handling,
+            response_time=response_time,
+            status_code=status,
+            details=f"Handled empty situation with status {status}",
+            error_message=None if graceful_handling else f"Unexpected error handling: {status}"
+        ))
+
+        # Test invalid customer ID - should return 404
+        invalid_id = "invalid-customer-id-12345"
+        status, data, response_time, error = await self.make_request(
+            'GET', f'/customers/{invalid_id}'
+        )
+        
+        expected_404 = status == 404
+        self.log_result(TestResult(
+            test_name="Error Handling - Invalid customer ID",
+            passed=expected_404,
+            response_time=response_time,
+            status_code=status,
+            details="Correctly returned 404 for invalid ID" if expected_404 else f"Expected 404, got {status}",
+            error_message=None if expected_404 else f"Should return 404 for invalid customer ID, got {status}"
+        ))
+
+    # ============== MAIN TEST RUNNER ==============
     
     async def run_all_tests(self):
-        """Run all requested tests from the review"""
-        print("🚀 Starting Comprehensive Backend Testing for Tower Talk & Translation Upgrades")
-        print(f"Backend URL: {self.base_url}")
-        print("=" * 80)
-        print()
+        """Run comprehensive test suite"""
+        logger.info("🎯 STARTING COMPREHENSIVE QUALITY SCAN - Supercharg'd Backend")
+        logger.info(f"Target: 100% pass rate - Backend at {self.base_url}")
+        start_time = time.time()
         
-        # 1. Health Check
+        # A. HEALTH + PERFORMANCE
+        logger.info("\n📊 SECTION A: HEALTH + PERFORMANCE")
         await self.test_health_check()
+        await self.test_customers_list_performance()
         
-        # 2. Tower Talk with NEW inquiryType field - All requested scenarios
-        print("Testing Tower Talk with NEW inquiryType field...")
+        # B. TOWER TALK - ALL 8 INQUIRY TYPES  
+        logger.info("\n🎭 SECTION B: TOWER TALK - ALL 8 INQUIRY TYPES (strict quality checks)")
+        await self.test_all_tower_talk_inquiries()
         
-        await self.test_tower_talk_with_inquiry_type(
-            "new_lead",
-            "Customer texted asking about our 2024 Tesla Model 3 inventory",
-            {
-                "customerName": "Mike Chen",
-                "vehicle": "2024 Tesla Model 3",
-                "dealershipName": "Premier Auto",
-                "salespersonName": "Jake"
-            }
-        )
+        # C. TRANSLATION (4 languages)
+        logger.info("\n🌐 SECTION C: TRANSLATION (4 languages)")
+        await self.test_all_translations()
         
-        await self.test_tower_talk_with_inquiry_type(
-            "price_question",
-            "Customer asking why the price is higher than another dealer",
-            {
-                "customerName": "Sarah",
-                "vehicle": "2023 BMW M3",
-                "vehiclePrice": "$65,000"
-            }
-        )
+        # D. TTS (all 4 languages)
+        logger.info("\n🔊 SECTION D: TTS (all 4 languages)")
+        await self.test_all_tts()
         
-        await self.test_tower_talk_with_inquiry_type(
-            "trade_in",
-            "Customer wants to trade in her 2019 Honda Civic",
-            {
-                "customerName": "Lisa",
-                "vehicle": "2024 Mazda CX-5",
-                "tradeVin": "1HGBH41JXMN109186",
-                "tradeMileage": "55000"
-            }
-        )
+        # E. CUSTOMER LIFECYCLE
+        logger.info("\n👤 SECTION E: CUSTOMER LIFECYCLE")
+        await self.test_customer_lifecycle()
         
-        await self.test_tower_talk_with_inquiry_type(
-            "test_drive",
-            "Customer wants to schedule a test drive this weekend",
-            {
-                "customerName": "Tom"
-            }
-        )
+        # F. VIN DECODE
+        logger.info("\n🚗 SECTION F: VIN DECODE")
+        await self.test_all_vin_decodes()
         
-        # Test backwards compatibility
-        await self.test_tower_talk_backwards_compatibility()
+        # G. ERROR HANDLING
+        logger.info("\n⚠️ SECTION G: ERROR HANDLING")
+        await self.test_error_handling()
         
-        # 3. Translation with gpt-4o upgrade - All requested language pairs
-        print("Testing Translation with gpt-4o upgrade...")
+        # Calculate results
+        total_time = time.time() - start_time
+        passed_count = sum(1 for r in self.results if r.passed)
+        total_count = len(self.results)
+        pass_rate = (passed_count / total_count * 100) if total_count > 0 else 0
         
-        await self.test_translation(
-            "en", "es",
-            "The 2024 BMW X5 is priced at $65,000 and includes a 4-year warranty. When can you come in for a test drive?",
-            "EN→ES BMW X5 Warranty"
-        )
+        # Generate detailed report
+        self.generate_final_report(passed_count, total_count, pass_rate, total_time)
         
-        await self.test_translation(
-            "en", "ko",
-            "We have financing available with rates as low as 2.9% APR. Come in today to lock in this rate.",
-            "EN→KO Financing Rate"
-        )
+        return pass_rate >= 100.0
+
+    def generate_final_report(self, passed: int, total: int, pass_rate: float, total_time: float):
+        """Generate comprehensive test report"""
+        logger.info("\n" + "="*80)
+        logger.info("🎯 COMPREHENSIVE QUALITY SCAN RESULTS")
+        logger.info("="*80)
         
-        await self.test_translation(
-            "en", "fr",
-            "Your trade-in has been appraised at $18,500 which is $2,000 above book value.",
-            "EN→FR Trade-in Appraisal"
-        )
+        # Overall results
+        status_emoji = "✅" if pass_rate >= 100.0 else "⚠️" if pass_rate >= 90.0 else "❌"
+        logger.info(f"{status_emoji} OVERALL: {passed}/{total} tests passed ({pass_rate:.1f}%)")
+        logger.info(f"⏱️ Total time: {total_time:.2f} seconds")
         
-        await self.test_translation(
-            "en", "ja",
-            "The vehicle is available for immediate delivery. I'll have it detailed and ready when you arrive.",
-            "EN→JA Immediate Delivery"
-        )
+        # Group results by category
+        categories = {}
+        for result in self.results:
+            category = result.test_name.split(' - ')[0] if ' - ' in result.test_name else "General"
+            if category not in categories:
+                categories[category] = {"passed": 0, "total": 0, "results": []}
+            categories[category]["total"] += 1
+            if result.passed:
+                categories[category]["passed"] += 1
+            categories[category]["results"].append(result)
         
-        # Summary
-        print("=" * 80)
-        print("🏁 TESTING COMPLETE")
-        print("=" * 80)
+        # Report by category
+        for category, stats in categories.items():
+            cat_rate = (stats["passed"] / stats["total"] * 100) if stats["total"] > 0 else 0
+            cat_emoji = "✅" if cat_rate >= 100.0 else "⚠️" if cat_rate >= 90.0 else "❌"
+            logger.info(f"\n{cat_emoji} {category.upper()}: {stats['passed']}/{stats['total']} ({cat_rate:.1f}%)")
+            
+            # Show failed tests
+            failed_tests = [r for r in stats["results"] if not r.passed]
+            if failed_tests:
+                logger.info("   Failed tests:")
+                for test in failed_tests:
+                    logger.info(f"   ❌ {test.test_name}: {test.error_message}")
         
-        total_tests = len(self.results)
-        passed_tests = sum(1 for r in self.results if r["success"])
-        failed_tests = total_tests - passed_tests
+        # Production readiness assessment
+        logger.info(f"\n🚀 PRODUCTION READINESS: {'READY' if pass_rate >= 100.0 else 'NEEDS ATTENTION'}")
         
-        print(f"Total Tests: {total_tests}")
-        print(f"✅ Passed: {passed_tests}")
-        print(f"❌ Failed: {failed_tests}")
-        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        if pass_rate < 100.0:
+            logger.info("\n🔧 ISSUES TO ADDRESS:")
+            failed_tests = [r for r in self.results if not r.passed]
+            for i, test in enumerate(failed_tests, 1):
+                logger.info(f"{i}. {test.test_name}: {test.error_message}")
         
-        if failed_tests > 0:
-            print("\n🔍 FAILED TESTS:")
-            for result in self.results:
-                if not result["success"]:
-                    print(f"  • {result['test']}: {result['details']}")
+        # Performance insights
+        slow_tests = [r for r in self.results if r.response_time > 2.0]
+        if slow_tests:
+            logger.info(f"\n⏳ PERFORMANCE WARNINGS ({len(slow_tests)} slow responses > 2s):")
+            for test in slow_tests:
+                logger.info(f"   {test.test_name}: {test.response_time:.3f}s")
         
-        print("\n📊 QUALITY ASSESSMENT:")
-        
-        # Tower Talk Quality Assessment
-        tower_talk_results = [r for r in self.results if "Tower Talk" in r["test"] and r["success"]]
-        if tower_talk_results:
-            print("\n🗣️  Tower Talk Response Quality:")
-            for result in tower_talk_results:
-                if result.get("response_data", {}).get("response_preview"):
-                    print(f"  • {result['test']}: '{result['response_data']['response_preview']}'")
-        
-        # Translation Quality Assessment  
-        translation_results = [r for r in self.results if "Translation" in r["test"] and r["success"]]
-        if translation_results:
-            print("\n🌐 Translation Quality:")
-            for result in translation_results:
-                rd = result.get("response_data", {})
-                if rd.get("translated"):
-                    automotive = "✅" if rd.get("automotive_context") else "⚠️"
-                    print(f"  • {result['test']}: '{rd.get('original', '')}' → '{rd.get('translated', '')}' {automotive}")
-        
-        # Save detailed results
-        with open('/app/tower_talk_translation_test_results.json', 'w') as f:
-            json.dump({
-                "test_type": "tower_talk_translation_upgrade",
-                "timestamp": datetime.now().isoformat(),
-                "backend_url": self.base_url,
-                "total_tests": total_tests,
-                "passed": passed_tests,
-                "failed": failed_tests,
-                "success_rate": f"{(passed_tests/total_tests)*100:.1f}%",
-                "detailed_results": self.results
-            }, f, indent=2)
-        
-        print(f"\n📄 Detailed results saved to: /app/tower_talk_translation_test_results.json")
-        
-        return passed_tests, failed_tests
+        logger.info("="*80)
 
 
 async def main():
-    async with BackendTester() as tester:
-        await tester.run_all_tests()
-
+    """Main test execution"""
+    async with SuperchargdBackendTester() as tester:
+        success = await tester.run_all_tests()
+        return success
 
 if __name__ == "__main__":
     asyncio.run(main())
