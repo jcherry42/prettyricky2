@@ -87,7 +87,7 @@ export function TowerTalkOverlay({ visible, onClose }) {
         autoTranslateRef.current = responseText;
       }
     } catch (e) {
-      const errorMsg = e?.message || String(e) || 'Tower Talk request failed';
+      const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: errorMsg });
       notificationError();
       console.error('[TowerTalk] Error:', errorMsg);
