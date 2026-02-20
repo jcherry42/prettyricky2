@@ -1,7 +1,7 @@
 {
   "test_type": "tower_talk_translation_upgrade",
   "timestamp": "2026-02-20T17:47:36.307567",
-  "backend_url": "https://pwa-native.preview.emergentagent.com/api",
+  "backend_url": "https://sound-render-debug.preview.emergentagent.com/api",
   "total_tests": 10,
   "passed": 7,
   "failed": 3,
