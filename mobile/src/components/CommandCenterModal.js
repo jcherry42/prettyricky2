@@ -487,7 +487,7 @@ export function CommandCenterModal({ visible, onClose }) {
             </ScrollView>
           ) : null}
 
-          {/* PRINTERS */}
+          {/* SETTINGS */}
           {activeTab === 'settings' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
