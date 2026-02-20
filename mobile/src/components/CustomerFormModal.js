@@ -29,6 +29,13 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState(null);
 
+  // Refs for keyboard focus chaining
+  const lastNameRef = useRef(null);
+  const phoneRef = useRef(null);
+  const emailRef = useRef(null);
+  const addressRef = useRef(null);
+  const vehicleRef = useRef(null);
+
   // Load customer data when editing
   useEffect(() => {
     if (customer) {
