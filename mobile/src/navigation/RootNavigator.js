@@ -142,6 +142,7 @@ export function RootNavigator() {
         onOpenSettings={() => {
           setTalkOpen(false);
           setCcTab('settings');
+          setCcSection('backend');
           setCcOpen(true);
         }}
       />
