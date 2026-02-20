@@ -193,7 +193,12 @@ async def translate_text(request: TranslateRequest):
             "ko": "Korean",
         }
         target_lang_name = lang_names.get(request.target_lang, request.target_lang)
-        system_message = f"Translate to {target_lang_name}. Output ONLY the translation, nothing else."
+        system_message = (
+            f"You are a professional translator specializing in automotive industry communications. "
+            f"Translate the following text to {target_lang_name}. "
+            f"Preserve the tone, formality level, and any sales or technical automotive terminology accurately. "
+            f"Output ONLY the translation — no explanations, no alternatives, no quotation marks."
+        )
 
         start_time = datetime.now(timezone.utc)
 
