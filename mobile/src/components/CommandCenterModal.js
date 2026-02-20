@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
+import { BackendUrlSection } from './BackendUrlSection';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
