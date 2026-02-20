@@ -505,6 +505,10 @@ export function CommandCenterModal({ visible, onClose }) {
                 </View>
               </GlassCard>
 
+              <View style={{ height: 14 }} />
+              <BackendUrlSection />
+
+
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Eco Mode</SectionTitle>
                 <View style={{ height: 12 }} />
