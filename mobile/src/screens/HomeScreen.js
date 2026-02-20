@@ -79,10 +79,10 @@ export function HomeScreen() {
     });
   }, [customers, searchQuery]);
 
-  const handleCustomerPress = (customer) => {
+  const handleCustomerPress = useCallback((customer) => {
     setSelectedCustomer(customer);
     setShowDetailModal(true);
-  };
+  }, []);
 
   const handleAddNew = useCallback(() => {
     setEditingCustomer(null);
