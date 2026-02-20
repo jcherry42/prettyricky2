@@ -98,6 +98,15 @@ export function CommandCenterModal({ visible, onClose, initialTab = null }) {
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
 
+  // Allow external deep-linking to a specific tab (e.g., Tower Talk → Settings).
+  React.useEffect(() => {
+    if (!visible) return;
+    if (initialTab && typeof initialTab === 'string') {
+      setActiveTab(initialTab);
+    }
+  }, [visible, initialTab]);
+
+
   const [printerName, setPrinterName] = useState('');
   const [ipParts, setIpParts] = useState(['', '', '', '']);
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
