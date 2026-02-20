@@ -173,22 +173,24 @@ export function RootNavigator() {
           <FloatingPttButton
             flagLabel={flagFor(settings.defaultTargetLanguage)}
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
-            recording={ptt.status === 'recording'}
+            recording={ptt.status === 'recording' || ptt.status === 'requesting'}
             disabled={ptt.status === 'uploading' || ptt.status === 'translating' || ptt.status === 'speaking'}
             onPress={() => {
-              // Toggle behavior: press to start, press again to stop.
-              if (ptt.status === 'recording') {
+              // While recording or requesting permission, a second press cancels/stops.
+              if (ptt.status === 'recording' || ptt.status === 'requesting') {
                 ptt.stopRecording?.();
                 return;
               }
 
+              // Clean start states: open overlay and begin recording.
               if (ptt.status === 'idle' || ptt.status === 'done' || ptt.status === 'error') {
                 setPttOpen(true);
                 ptt.startRecording?.();
                 return;
               }
 
-              // If we're mid-upload/translate/speak, ignore taps.
+              // Uploading / translating / speaking: open overlay to show progress.
+              if (!pttOpen) setPttOpen(true);
             }}
           />
           <PttOverlayView visible={pttOpen} onClose={() => setPttOpen(false)} />
