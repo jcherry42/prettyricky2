@@ -275,6 +275,7 @@ export function PrintCenterModal({ visible, onClose }) {
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
+            keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"
           >
             {tab === 'customer' ? (
