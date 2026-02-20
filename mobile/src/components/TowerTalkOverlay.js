@@ -86,7 +86,12 @@ const PRESET_RESPONSES = {
 
 // Animated waveform bars during voice recording
 function VoiceWaveform() {
-  const bars = Array.from({ length: 5 }, (_, i) => useRef(new Animated.Value(0.3)).current);
+  // MUST NOT use useRef inside Array.from — create refs individually
+  const barsRef = useRef(null);
+  if (!barsRef.current) {
+    barsRef.current = Array.from({ length: 5 }, () => new Animated.Value(0.3));
+  }
+  const bars = barsRef.current;
 
   useEffect(() => {
     const animations = bars.map((anim, i) => {
