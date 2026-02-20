@@ -327,15 +327,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: {
-    height: 44,
+    height: 46,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.07)',
     paddingHorizontal: 12,
     color: colors.text,
     fontSize: 13,
     fontWeight: '600',
-    backgroundColor: 'rgba(0,0,0,0.30)',
+    backgroundColor: 'rgba(0,0,0,0.40)',
   },
   saveBtn: {
     height: 44,
