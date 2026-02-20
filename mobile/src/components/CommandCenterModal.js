@@ -752,11 +752,17 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 <SectionTitle>Add Printer</SectionTitle>
                 <View style={{ height: 10 }} />
                 <TextInput
+                  ref={printerNameRef}
                   value={printerName}
                   onChangeText={setPrinterName}
                   placeholder="Name"
                   placeholderTextColor={colors.textMute}
                   style={styles.input}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                  onSubmitEditing={() => ipInputRefs.current[0]?.focus()}
+                  blurOnSubmit={false}
                 />
                 <View style={{ height: 8 }} />
                 <View style={styles.ipRow}>
@@ -775,6 +781,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                         autoCorrect={false}
                         keyboardType="number-pad"
                         maxLength={3}
+                        returnKeyType={idx === 3 ? 'done' : 'next'}
+                        onSubmitEditing={idx === 3 ? Keyboard.dismiss : undefined}
                       />
                       {idx < 3 && (
                         <Text style={styles.ipDot}>.</Text>
