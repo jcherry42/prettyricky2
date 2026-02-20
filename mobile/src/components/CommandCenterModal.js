@@ -36,11 +36,14 @@ function SectionTitle({ children }) {
 }
 
 /* --- Liquid Glass Language Button --- */
-function LangGlass({ flag, active, onPress }) {
+function LangGlass({ flag, name, active, onPress }) {
   return (
     <Pressable
       onPress={() => { impactLight(); onPress(); }}
       style={({ pressed }) => [styles.langPressable, pressed && { transform: [{ scale: 0.97 }] }]}
+      accessibilityRole="button"
+      accessibilityLabel={`Select ${name} language`}
+      accessibilityState={{ selected: active }}
     >
       <View style={[styles.langGlassOuter, active && styles.langGlassOuterActive]}>
         <LinearGradient
@@ -63,6 +66,7 @@ function LangGlass({ flag, active, onPress }) {
             style={[StyleSheet.absoluteFill, { borderRadius: 20 }]}
           />
           <Text style={styles.langFlag}>{flag}</Text>
+          <Text style={[styles.langName, active && styles.langNameActive]}>{name}</Text>
         </View>
       </View>
     </Pressable>
