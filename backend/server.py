@@ -3213,7 +3213,7 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://*.emergentagent.com https://*.emergent.run https://*.emergent.com https://pwa-native-preview.preview.emergentagent.com"
+        "connect-src 'self' https://*.emergentagent.com https://*.emergent.run https://*.emergent.com https://mobile-refine.preview.emergentagent.com"
     )
     # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
@@ -3222,7 +3222,7 @@ async def add_security_headers(request: Request, call_next):
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://pwa-native-preview.preview.emergentagent.com",
+    "https://mobile-refine.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings

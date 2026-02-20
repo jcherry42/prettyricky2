@@ -23,7 +23,7 @@ Vite environment variables were not being properly embedded in iOS production bu
 ### 1. Created Production Environment File
 **File**: `/app/frontend/.env.production`
 ```env
-VITE_BACKEND_URL=https://pwa-native-preview.preview.emergentagent.com
+VITE_BACKEND_URL=https://mobile-refine.preview.emergentagent.com
 ```
 
 **Why**: Vite loads mode-specific `.env` files during build. For production iOS builds, `.env.production` is required to properly embed environment variables.

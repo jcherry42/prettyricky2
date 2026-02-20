@@ -21,7 +21,7 @@ cd YOUR_REPO_NAME/mobile
 yarn install
 
 # 3. Set your backend URL
-echo "EXPO_PUBLIC_BACKEND_URL=https://pwa-native-preview.preview.emergentagent.com" > .env
+echo "EXPO_PUBLIC_BACKEND_URL=https://mobile-refine.preview.emergentagent.com" > .env
 
 # 4. Generate the native iOS project
 npx expo prebuild --platform ios
