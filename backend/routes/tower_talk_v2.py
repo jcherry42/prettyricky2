@@ -30,8 +30,21 @@ router = APIRouter()
 
 # ---------- Models (match server.py schema) ----------
 
+INQUIRY_TYPE_GUIDANCE = {
+    "new_lead": "This is a brand-new lead. Your goal: build instant rapport, spark excitement about the vehicle, and get them to schedule a visit. Be warm but efficient.",
+    "price_question": "The customer is asking about price. Don't deflect. Be transparent about value. Help them see the full picture beyond the sticker price. Drive toward in-person so you can structure a real deal.",
+    "availability": "The customer wants to know if the vehicle is available. Confirm availability confidently and use it as the hook to get them in before someone else does.",
+    "trade_in": "The customer has a trade-in. Acknowledge the trade's value, let them know you'll give a fair number in person. This removes a barrier to coming in.",
+    "financing": "The customer has financing questions or concerns. Reassure them you work with strong lenders across all credit situations. Make them comfortable and invite them in for a real conversation.",
+    "test_drive": "The customer wants to test drive. This is a HOT lead. Confirm the vehicle is ready, lock in a time. Make it feel exclusive and effortless.",
+    "follow_up": "This is a follow-up on a previous interaction. Keep it short, non-pushy. Remind them of the vehicle and check where they are. Offer a gentle nudge back in.",
+    "objection": "The customer has an objection (price, timing, uncertainty). Don't argue. Empathize, then reframe with confidence. Help them see a path forward in person.",
+}
+
+
 class TowerTalkRequest(BaseModel):
     situation: str
+    inquiryType: Optional[str] = "new_lead"
     context: Dict[str, Any]
 
 
