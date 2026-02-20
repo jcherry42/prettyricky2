@@ -38,6 +38,7 @@ export default function App() {
           <NetworkProvider>
             <ToastProvider>
               <AppSettingsProvider>
+                <AmbientLightingProvider>
                 <CustomerProvider>
                   <InventoryProvider>
                     <PttProvider>
