@@ -223,69 +223,17 @@ export function HomeScreen() {
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   );
 
-  const renderHeader = () => (
-    <View>
-      {/* Header clearance */}
-      <View style={{ height: 56 }} />
-
-      <AmbientStrip active color={stripColor} />
-
-      {/* SPORT button */}
-      <View style={styles.sportRow}>
-        <SportModeButton />
-      </View>
-
-      <AmbientStrip active color={stripColor} />
-
-      {/* Chrome accent divider */}
-      <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 8 }} />
-
-      {/* Search bar with wood bezel styling */}
-      <View style={styles.searchContainer}>
-        <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.searchBezel}
-        >
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={18} color={colors.gold} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search customers..."
-              placeholderTextColor={colors.textMute}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              returnKeyType="search"
-              autoCorrect={false}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-              onSubmitEditing={Keyboard.dismiss}
-            />
-            {searchQuery.length > 0 && (
-              <Pressable onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={18} color={colors.textMute} />
-              </Pressable>
-            )}
-          </View>
-        </LinearGradient>
-      </View>
-
-      {/* Header with customer count + network status */}
-      <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>CUSTOMERS</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <NetworkStatusDot />
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{filteredCustomers.length}</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* QuickCompose box */}
-      <QuickCompose />
-    </View>
-  );
+  // Use a stable render function that references the memoized HomeListHeader component.
+  // Do NOT define the header content inline — that creates a new component type on every
+  // render, causing FlatList to unmount/remount QuickCompose and lose all state & focus.
+  const renderHeader = useCallback(() => (
+    <HomeListHeader
+      filteredCount={filteredCustomers.length}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      stripColor={stripColor}
+    />
+  ), [filteredCustomers.length, searchQuery, stripColor]);
 
   const renderEmpty = () => {
     if (loading) {
