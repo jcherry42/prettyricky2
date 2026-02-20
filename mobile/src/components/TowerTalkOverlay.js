@@ -14,6 +14,17 @@ import { impactMedium, notificationSuccess, notificationError, selectionTap } fr
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 
+function friendlyBackendError(e) {
+  if (e?.code === 'BACKEND_URL_MISSING') {
+    return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
+  }
+  const msg = e?.message || String(e) || 'Request failed';
+  if (typeof msg === 'string' && msg.includes('EXPO_PUBLIC_BACKEND_URL')) {
+    return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
+  }
+  return msg;
+}
+
 export function TowerTalkOverlay({ visible, onClose }) {
   const { settings } = useAppSettings();
   const lang = settings.defaultTargetLanguage;
