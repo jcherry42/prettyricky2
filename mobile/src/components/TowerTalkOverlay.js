@@ -492,6 +492,30 @@ const PRESET_RESPONSES = {
                     <Ionicons name="alert-circle" size={14} color={colors.red} />
                     <Text style={[styles.body, { color: colors.red, marginTop: 0, marginLeft: 6, flex: 1 }]}>{state.error}</Text>
                   </View>
+
+                {state.error && (state.error.includes('Backend not configured') || state.error.includes('EXPO_PUBLIC_BACKEND_URL')) && (
+                  <View style={{ marginTop: 10 }}>
+                    <Pressable
+                      onPress={() => {
+                        selectionTap();
+                        onOpenSettings?.();
+                      }}
+                      style={({ pressed }) => [styles.purpleGlowBtn, pressed && { opacity: 0.92, transform: [{ scale: 0.99 }] }]}
+                      accessibilityRole="button"
+                      accessibilityLabel="Open backend settings"
+                    >
+                      <LinearGradient
+                        colors={['#B75CFF', '#7C3AED', '#3B1AA6']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Ionicons name="settings" size={16} color="#0B0614" />
+                      <Text style={styles.purpleGlowBtnText}>OPEN SETTINGS</Text>
+                    </Pressable>
+                  </View>
+                )}
+
                 )}
 
                 {reply ? (
