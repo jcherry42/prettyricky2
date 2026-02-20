@@ -428,9 +428,9 @@ backend:
     priority: "high"
     needs_retesting: true
     status_history:
-      - working: "NA"
+      - working: true
         agent: "main"
-        comment: "Upgraded Tower Talk: added inquiryType field to TowerTalkRequest, 8 inquiry type contexts, upgraded model to gpt-4o, improved system prompt. Also upgraded translate to gpt-4o with automotive domain guidance. Backend verified working via curl: tower-talk returns proper AI response, translate returns accurate translations with confidence scores."
+        comment: "Upgraded Tower Talk: added inquiryType field to TowerTalkRequest (8 types with individual persuasion guidance), upgraded model to gpt-4o, strengthened system prompt with ABSOLUTE FORMAT RULES (2-3 sentences max, ZERO emojis, no brackets, proper sign-off). Dynamic sign-off using salesperson first name if provided. Spot-tested objection, trade_in, new_lead inquiries - all returned clean 2-3 sentence responses with no emojis. Also upgraded translate to gpt-4o with automotive domain guidance. Backend verified working."
 
   - task: "GUI Polish - Brushed Aluminum + No Box-Within-Box Inputs (Beta Refinement)"
     implemented: true
