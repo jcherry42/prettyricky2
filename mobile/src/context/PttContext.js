@@ -40,6 +40,11 @@ export function PttProvider({ children }) {
 
   const startRecording = useCallback(async () => {
     try {
+      // Guard: do not re-enter.
+      if (status === 'recording' || status === 'uploading' || status === 'translating' || status === 'speaking') {
+        return;
+      }
+
       setError(null);
       pendingStopRef.current = false;
       setStatus('recording');
@@ -58,12 +63,8 @@ export function PttProvider({ children }) {
 
       recordingRef.current = recording;
 
-      if (pendingStopRef.current) {
-        // User already released the button while we were spinning up
-        await recording.stopAndUnloadAsync().catch(() => {});
-        recordingRef.current = null;
-        return;
-      }
+      // NOTE: In this app, PTT is press-to-toggle (not press-and-hold), so we no longer
+      // treat "pendingStop" as a normal early-exit path.
 
       // Auto-stop after max duration
       timeoutRef.current = setTimeout(() => {
@@ -75,7 +76,7 @@ export function PttProvider({ children }) {
       setStatus('error');
       setError(String(e?.message || e));
     }
-  }, []);
+  }, [status, stopRecording]);
 
   const stopRecording = useCallback(async () => {
     pendingStopRef.current = true;
