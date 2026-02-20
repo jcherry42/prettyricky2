@@ -3,10 +3,30 @@
  * Editable text box (500 chars) on HomeScreen.
  * Send via SMS or Email. Translate button synced with selected language in SPORT mode.
  * Glowing link buttons for stored customers and inventory vehicles.
+ *
+ * FIX HISTORY:
+ * - Removed Animated.multiply (broken in RN 0.81 new arch, caused touch absorption)
+ * - Added scrollEnabled={false} to multiline TextInput to avoid FlatList scroll conflict
+ * - Added Pressable shell around container to stop touch events from bubbling
+ *   up to the HomeScreen's outer View, preventing accidental keyboard dismiss
+ * - Added keyboardShouldPersistTaps="handled" to picker ScrollViews
+ * - Improved GlowIconButton to use simpler, more reliable animation
  */
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ActivityIndicator, ScrollView, Alert, Linking, Animated } from 'react-native';
+import React, { useState, useCallback, useRef, useEffect, memo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+  ScrollView,
+  Alert,
+  Linking,
+  Animated,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { impactLight, impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
@@ -20,38 +40,47 @@ import { useToast } from '../context/ToastContext';
 
 const MAX_CHARS = 500;
 
-/* ---------- Glowing icon button ---------- */
-function GlowIconButton({ icon, glowColor, active, selected, onPress, label }) {
-  const glowAnim = useRef(new Animated.Value(0.4)).current;
+/* ---------- Glowing icon button ----------
+ * FIX: Replaced Animated.multiply(glowAnim, 0.8) with a direct opacity interpolation.
+ * Animated.multiply with useNativeDriver:true can fail in RN 0.81 new architecture,
+ * causing the Animated.View overlay to silently break and absorb all touch events.
+ */
+const GlowIconButton = memo(function GlowIconButton({ icon, glowColor, selected, onPress, label }) {
+  const glowAnim = useRef(new Animated.Value(0.15)).current;
 
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 1200, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0.4, duration: 1200, useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: selected ? 0.55 : 0.28, duration: 1200, useNativeDriver: true }),
+        Animated.timing(glowAnim, { toValue: 0.10, duration: 1200, useNativeDriver: true }),
       ])
     );
     anim.start();
     return () => anim.stop();
-  }, [glowAnim]);
+  }, [glowAnim, selected]);
 
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.linkBtn, pressed && { opacity: 0.7 }]}
+      style={({ pressed }) => [styles.linkBtn, pressed && { opacity: 0.65 }]}
       accessibilityLabel={label}
+      accessibilityRole="button"
     >
-      {/* Glow backdrop */}
+      {/* Glow backdrop — opacity only (no Animated.multiply), natively driven */}
       <Animated.View
         style={[
           styles.iconGlow,
-          { backgroundColor: glowColor, opacity: selected ? Animated.multiply(glowAnim, 0.8) : glowAnim },
+          {
+            backgroundColor: glowColor,
+            opacity: glowAnim,
+          },
         ]}
+        pointerEvents="none"
       />
-      <Ionicons name={icon} size={16} color={selected ? glowColor : glowColor} />
+      <Ionicons name={icon} size={16} color={glowColor} />
     </Pressable>
   );
-}
+});
 
 export function QuickCompose() {
   const { settings } = useAppSettings();
@@ -69,23 +98,25 @@ export function QuickCompose() {
   const [showInventoryPicker, setShowInventoryPicker] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
 
   const charCount = text.length;
   const hasText = text.trim().length > 0;
+  const isNearLimit = charCount > 450;
 
   // Close the other picker when one opens
-  const toggleCustomerPicker = () => {
+  const toggleCustomerPicker = useCallback(() => {
     impactLight();
     setShowInventoryPicker(false);
     setShowCustomerPicker((prev) => !prev);
-  };
+  }, []);
 
-  const toggleInventoryPicker = () => {
+  const toggleInventoryPicker = useCallback(() => {
     impactLight();
     setShowCustomerPicker(false);
     setShowInventoryPicker((prev) => !prev);
-  };
+  }, []);
 
   // Translate
   const handleTranslate = useCallback(async () => {
@@ -144,15 +175,16 @@ export function QuickCompose() {
   }, [text, translatedText, selectedCustomer, toast]);
 
   // Link customer
-  const linkCustomer = (c) => {
+  const linkCustomer = useCallback((c) => {
     impactLight();
     setSelectedCustomer(c);
     setShowCustomerPicker(false);
-    toast.showSuccess(`Linked to ${c.first_name || ''} ${c.last_name || ''}`);
-  };
+    const name = `${c.first_name || ''} ${c.last_name || ''}`.trim();
+    toast.showSuccess(`Linked to ${name}`);
+  }, [toast]);
 
   // Link vehicle
-  const linkVehicle = (v) => {
+  const linkVehicle = useCallback((v) => {
     impactLight();
     setSelectedVehicle(v);
     setShowInventoryPicker(false);
@@ -161,264 +193,321 @@ export function QuickCompose() {
       setText((prev) => (prev ? `${prev} — ${info}` : info));
     }
     toast.showSuccess(`Linked ${info || 'vehicle'}`);
-  };
+  }, [text, toast]);
 
   // Clear translation when text changes
-  const onChangeText = (val) => {
+  const onChangeText = useCallback((val) => {
     if (val.length <= MAX_CHARS) {
       setText(val);
       if (translatedText) setTranslatedText('');
     }
-  };
+  }, [translatedText]);
+
+  // Tapping the container focuses the input (instead of bubbling to outer views)
+  const handleContainerPress = useCallback(() => {
+    inputRef.current?.focus();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      {/* Header row */}
-      <View style={styles.headerRow}>
-        <Ionicons name="create-outline" size={14} color={colors.gold} />
-        <Text style={styles.headerLabel}>QUICK COMPOSE</Text>
-        <Text style={[styles.charCount, charCount > 450 && { color: colors.red }]}>
-          {charCount}/{MAX_CHARS}
-        </Text>
-      </View>
-
-      {/* Linked tags */}
-      {(selectedCustomer || selectedVehicle) && (
-        <View style={styles.tagsRow}>
-          {selectedCustomer && (
-            <Pressable onPress={() => { setSelectedCustomer(null); impactLight(); }} style={styles.tag}>
-              <Ionicons name="person" size={10} color={colors.blue} />
-              <Text style={styles.tagText}>{selectedCustomer.first_name} {selectedCustomer.last_name}</Text>
-              <Ionicons name="close" size={10} color={colors.textMute} />
-            </Pressable>
-          )}
-          {selectedVehicle && (
-            <Pressable onPress={() => { setSelectedVehicle(null); impactLight(); }} style={styles.tag}>
-              <Ionicons name="car" size={10} color={colors.green} />
-              <Text style={styles.tagText}>{selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}</Text>
-              <Ionicons name="close" size={10} color={colors.textMute} />
-            </Pressable>
-          )}
+    // Pressable shell stops touch events from bubbling to parent views.
+    // Without this, tapping on any non-interactive area of the compose box
+    // would propagate to outer components that might dismiss the keyboard.
+    <Pressable
+      onPress={handleContainerPress}
+      style={styles.containerShell}
+      accessible={false}
+    >
+      <View style={[styles.container, isFocused && styles.containerFocused]}>
+        {/* Header row */}
+        <View style={styles.headerRow}>
+          <Ionicons name="create-outline" size={14} color={colors.gold} />
+          <Text style={styles.headerLabel}>QUICK COMPOSE</Text>
+          <Text style={[styles.charCount, isNearLimit && styles.charCountWarn]}>
+            {charCount}/{MAX_CHARS}
+          </Text>
         </View>
-      )}
 
-      {/* Text input */}
-      <TextInput
-        ref={inputRef}
-        style={styles.input}
-        value={text}
-        onChangeText={onChangeText}
-        placeholder="Compose a message..."
-        placeholderTextColor={colors.textMute}
-        multiline
-        maxLength={MAX_CHARS}
-        textAlignVertical="top"
-      />
-
-      {/* Translation preview */}
-      {translatedText ? (
-        <View style={styles.translationPreview}>
-          <View style={styles.translationHeader}>
-            <Text style={styles.translationLabel}>{langName(lang).toUpperCase()} {flag}</Text>
-            <Pressable onPress={() => setTranslatedText('')}>
-              <Ionicons name="close-circle" size={14} color={colors.textMute} />
-            </Pressable>
+        {/* Linked tags */}
+        {(selectedCustomer || selectedVehicle) && (
+          <View style={styles.tagsRow}>
+            {selectedCustomer && (
+              <Pressable
+                onPress={() => { setSelectedCustomer(null); impactLight(); }}
+                style={styles.tag}
+              >
+                <Ionicons name="person" size={10} color={colors.blue} />
+                <Text style={styles.tagText}>
+                  {selectedCustomer.first_name} {selectedCustomer.last_name}
+                </Text>
+                <Ionicons name="close" size={10} color={colors.textMute} />
+              </Pressable>
+            )}
+            {selectedVehicle && (
+              <Pressable
+                onPress={() => { setSelectedVehicle(null); impactLight(); }}
+                style={styles.tag}
+              >
+                <Ionicons name="car" size={10} color={colors.green} />
+                <Text style={styles.tagText}>
+                  {selectedVehicle.year} {selectedVehicle.make} {selectedVehicle.model}
+                </Text>
+                <Ionicons name="close" size={10} color={colors.textMute} />
+              </Pressable>
+            )}
           </View>
-          <Text style={styles.translationText}>{translatedText}</Text>
-        </View>
-      ) : null}
+        )}
 
-      {/* Action bar */}
-      <View style={styles.actionBar}>
-        {/* Glowing link buttons */}
-        <View style={styles.linkButtons}>
-          <GlowIconButton
-            icon="person"
-            glowColor={colors.blue}
-            active={customers && customers.length > 0}
-            selected={!!selectedCustomer}
-            onPress={toggleCustomerPicker}
-            label="Link customer"
-          />
-          <GlowIconButton
-            icon="car-sport"
-            glowColor={colors.green}
-            active={vehicles && vehicles.length > 0}
-            selected={!!selectedVehicle}
-            onPress={toggleInventoryPicker}
-            label="Link vehicle"
-          />
-        </View>
+        {/* Text input
+         * FIX: scrollEnabled={false} prevents the multiline TextInput from competing
+         * with the FlatList's scroll responder, which was causing the touch to be
+         * "stolen" by the list, making text editing unreliable.
+         */}
+        <TextInput
+          ref={inputRef}
+          style={[styles.input, isFocused && styles.inputFocused]}
+          value={text}
+          onChangeText={onChangeText}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="Compose a message..."
+          placeholderTextColor={colors.textMute}
+          multiline
+          scrollEnabled={false}
+          maxLength={MAX_CHARS}
+          textAlignVertical="top"
+          returnKeyType="default"
+          blurOnSubmit={false}
+        />
 
-        {/* Send buttons */}
-        <View style={styles.sendButtons}>
-          {/* Translate flag - visible in SPORT mode */}
-          {sportOn && hasText && (
+        {/* Translation preview */}
+        {translatedText ? (
+          <View style={styles.translationPreview}>
+            <View style={styles.translationHeader}>
+              <Text style={styles.translationLabel}>
+                {langName(lang).toUpperCase()} {flag}
+              </Text>
+              <Pressable onPress={() => setTranslatedText('')} hitSlop={8}>
+                <Ionicons name="close-circle" size={14} color={colors.textMute} />
+              </Pressable>
+            </View>
+            <Text style={styles.translationText}>{translatedText}</Text>
+          </View>
+        ) : null}
+
+        {/* Action bar */}
+        <View style={styles.actionBar}>
+          {/* Glowing link buttons */}
+          <View style={styles.linkButtons}>
+            <GlowIconButton
+              icon="person"
+              glowColor={colors.blue}
+              selected={!!selectedCustomer}
+              onPress={toggleCustomerPicker}
+              label="Link customer"
+            />
+            <GlowIconButton
+              icon="car-sport"
+              glowColor={colors.green}
+              selected={!!selectedVehicle}
+              onPress={toggleInventoryPicker}
+              label="Link vehicle"
+            />
+          </View>
+
+          {/* Send buttons */}
+          <View style={styles.sendButtons}>
+            {/* Translate flag — visible in SPORT mode */}
+            {sportOn && hasText && (
+              <Pressable
+                onPress={handleTranslate}
+                disabled={translating}
+                style={({ pressed }) => [
+                  styles.translateFlag,
+                  translatedText && styles.translateFlagActive,
+                  pressed && { opacity: 0.7 },
+                ]}
+                accessibilityLabel={`Translate to ${langName(lang)}`}
+              >
+                {translating ? (
+                  <ActivityIndicator size="small" color={colors.gold} />
+                ) : (
+                  <Text style={styles.flagText}>{flag}</Text>
+                )}
+              </Pressable>
+            )}
+
+            {/* SMS send */}
             <Pressable
-              onPress={handleTranslate}
-              disabled={translating}
+              onPress={() => handleSendSms(!!translatedText)}
+              disabled={!hasText}
               style={({ pressed }) => [
-                styles.translateFlag,
-                translatedText && styles.translateFlagActive,
+                styles.sendBtn,
+                !hasText && styles.sendBtnDisabled,
                 pressed && { opacity: 0.7 },
               ]}
-              accessibilityLabel={`Translate to ${langName(lang)}`}
+              accessibilityLabel="Send as text message"
+              hitSlop={4}
             >
-              {translating ? (
-                <ActivityIndicator size="small" color={colors.gold} />
-              ) : (
-                <Text style={styles.flagText}>{flag}</Text>
-              )}
+              <Ionicons
+                name="chatbubble"
+                size={14}
+                color={hasText ? colors.blue : colors.textMute}
+              />
             </Pressable>
-          )}
 
-          {/* SMS send */}
-          <Pressable
-            onPress={() => handleSendSms(!!translatedText)}
-            disabled={!hasText}
-            style={({ pressed }) => [
-              styles.sendBtn,
-              !hasText && { opacity: 0.4 },
-              pressed && { opacity: 0.7 },
-            ]}
-            accessibilityLabel="Send as text message"
-          >
-            <Ionicons name="chatbubble" size={14} color={hasText ? colors.blue : colors.textMute} />
-          </Pressable>
-
-          {/* Email send */}
-          <Pressable
-            onPress={() => handleSendEmail(!!translatedText)}
-            disabled={!hasText}
-            style={({ pressed }) => [
-              styles.sendBtn,
-              !hasText && { opacity: 0.4 },
-              pressed && { opacity: 0.7 },
-            ]}
-            accessibilityLabel="Send as email"
-          >
-            <Ionicons name="mail" size={14} color={hasText ? colors.gold : colors.textMute} />
-          </Pressable>
+            {/* Email send */}
+            <Pressable
+              onPress={() => handleSendEmail(!!translatedText)}
+              disabled={!hasText}
+              style={({ pressed }) => [
+                styles.sendBtn,
+                !hasText && styles.sendBtnDisabled,
+                pressed && { opacity: 0.7 },
+              ]}
+              accessibilityLabel="Send as email"
+              hitSlop={4}
+            >
+              <Ionicons
+                name="mail"
+                size={14}
+                color={hasText ? colors.gold : colors.textMute}
+              />
+            </Pressable>
+          </View>
         </View>
+
+        {/* Customer picker dropdown */}
+        {showCustomerPicker && (
+          <View style={[styles.pickerDropdown, { borderColor: 'rgba(94,167,255,0.25)' }]}>
+            <View style={styles.pickerTitleRow}>
+              <Ionicons name="people" size={12} color={colors.blue} />
+              <Text style={[styles.pickerTitle, { color: colors.blue }]}>STORED CUSTOMERS</Text>
+              <Text style={styles.pickerCount}>{(customers || []).length}</Text>
+            </View>
+            <ScrollView
+              style={{ maxHeight: 180 }}
+              showsVerticalScrollIndicator
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+            >
+              {(customers || []).map((c) => (
+                <Pressable
+                  key={c.customer_id || c.id}
+                  onPress={() => linkCustomer(c)}
+                  style={({ pressed }) => [
+                    styles.pickerItem,
+                    pressed && { backgroundColor: 'rgba(94,167,255,0.10)' },
+                  ]}
+                >
+                  <View style={styles.pickerItemLeft}>
+                    <Ionicons name="person-circle" size={24} color={colors.blue} />
+                    <View style={{ marginLeft: 10, flex: 1 }}>
+                      <Text style={styles.pickerItemText} numberOfLines={1}>
+                        {c.first_name || ''} {c.last_name || ''}
+                      </Text>
+                      <Text style={styles.pickerItemSub} numberOfLines={1}>
+                        {c.phone || c.email || 'No contact info'}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.statusDot, { backgroundColor: statusColor(c.status) }]} />
+                </Pressable>
+              ))}
+              {(!customers || customers.length === 0) && (
+                <View style={styles.pickerEmptyContainer}>
+                  <Ionicons name="people-outline" size={28} color={colors.textMute} />
+                  <Text style={styles.pickerEmpty}>No customers stored yet</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Inventory picker dropdown */}
+        {showInventoryPicker && (
+          <View style={[styles.pickerDropdown, { borderColor: 'rgba(64,255,155,0.25)' }]}>
+            <View style={styles.pickerTitleRow}>
+              <Ionicons name="car-sport" size={12} color={colors.green} />
+              <Text style={[styles.pickerTitle, { color: colors.green }]}>STORED VEHICLES</Text>
+              <Text style={styles.pickerCount}>{(vehicles || []).length}</Text>
+            </View>
+            <ScrollView
+              style={{ maxHeight: 180 }}
+              showsVerticalScrollIndicator
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+            >
+              {(vehicles || []).map((v, i) => (
+                <Pressable
+                  key={v.vehicle_id || v.id || `v-${i}`}
+                  onPress={() => linkVehicle(v)}
+                  style={({ pressed }) => [
+                    styles.pickerItem,
+                    pressed && { backgroundColor: 'rgba(64,255,155,0.10)' },
+                  ]}
+                >
+                  <View style={styles.pickerItemLeft}>
+                    <Ionicons name="car" size={22} color={colors.green} />
+                    <View style={{ marginLeft: 10, flex: 1 }}>
+                      <Text style={styles.pickerItemText} numberOfLines={1}>
+                        {v.year || ''} {v.make || ''} {v.model || ''}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.pickerItemSub,
+                          { fontFamily: 'SpaceGrotesk_500Medium', letterSpacing: 0.5 },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {v.vin || 'No VIN'}
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              ))}
+              {(!vehicles || vehicles.length === 0) && (
+                <View style={styles.pickerEmptyContainer}>
+                  <Ionicons name="car-outline" size={28} color={colors.textMute} />
+                  <Text style={styles.pickerEmpty}>No vehicles in inventory</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
       </View>
-
-      {/* Customer picker dropdown */}
-      {showCustomerPicker && (
-        <View style={[styles.pickerDropdown, { borderColor: 'rgba(94,167,255,0.25)' }]}>
-          <View style={styles.pickerTitleRow}>
-            <Ionicons name="people" size={12} color={colors.blue} />
-            <Text style={[styles.pickerTitle, { color: colors.blue }]}>STORED CUSTOMERS</Text>
-            <Text style={styles.pickerCount}>{(customers || []).length}</Text>
-          </View>
-          <ScrollView
-            style={{ maxHeight: 180 }}
-            showsVerticalScrollIndicator={true}
-            nestedScrollEnabled={true}
-          >
-            {(customers || []).map((c) => (
-              <Pressable
-                key={c.customer_id || c.id}
-                onPress={() => linkCustomer(c)}
-                style={({ pressed }) => [
-                  styles.pickerItem,
-                  pressed && { backgroundColor: 'rgba(94,167,255,0.10)' },
-                ]}
-              >
-                <View style={styles.pickerItemLeft}>
-                  <Ionicons name="person-circle" size={24} color={colors.blue} />
-                  <View style={{ marginLeft: 10, flex: 1 }}>
-                    <Text style={styles.pickerItemText} numberOfLines={1}>
-                      {c.first_name || ''} {c.last_name || ''}
-                    </Text>
-                    <Text style={styles.pickerItemSub} numberOfLines={1}>
-                      {c.phone || c.email || 'No contact info'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={[styles.statusDot, { backgroundColor: statusColor(c.status) }]} />
-              </Pressable>
-            ))}
-            {(!customers || customers.length === 0) && (
-              <View style={styles.pickerEmptyContainer}>
-                <Ionicons name="people-outline" size={28} color={colors.textMute} />
-                <Text style={styles.pickerEmpty}>No customers stored yet</Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* Inventory picker dropdown */}
-      {showInventoryPicker && (
-        <View style={[styles.pickerDropdown, { borderColor: 'rgba(64,255,155,0.25)' }]}>
-          <View style={styles.pickerTitleRow}>
-            <Ionicons name="car-sport" size={12} color={colors.green} />
-            <Text style={[styles.pickerTitle, { color: colors.green }]}>STORED VEHICLES</Text>
-            <Text style={styles.pickerCount}>{(vehicles || []).length}</Text>
-          </View>
-          <ScrollView
-            style={{ maxHeight: 180 }}
-            showsVerticalScrollIndicator={true}
-            nestedScrollEnabled={true}
-          >
-            {(vehicles || []).map((v, i) => (
-              <Pressable
-                key={v.vehicle_id || v.id || `v-${i}`}
-                onPress={() => linkVehicle(v)}
-                style={({ pressed }) => [
-                  styles.pickerItem,
-                  pressed && { backgroundColor: 'rgba(64,255,155,0.10)' },
-                ]}
-              >
-                <View style={styles.pickerItemLeft}>
-                  <Ionicons name="car" size={22} color={colors.green} />
-                  <View style={{ marginLeft: 10, flex: 1 }}>
-                    <Text style={styles.pickerItemText} numberOfLines={1}>
-                      {v.year || ''} {v.make || ''} {v.model || ''}
-                    </Text>
-                    <Text style={[styles.pickerItemSub, { fontFamily: 'SpaceGrotesk_500Medium', letterSpacing: 0.5 }]} numberOfLines={1}>
-                      {v.vin || 'No VIN'}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
-            {(!vehicles || vehicles.length === 0) && (
-              <View style={styles.pickerEmptyContainer}>
-                <Ionicons name="car-outline" size={28} color={colors.textMute} />
-                <Text style={styles.pickerEmpty}>No vehicles in inventory</Text>
-              </View>
-            )}
-          </ScrollView>
-        </View>
-      )}
-    </View>
+    </Pressable>
   );
 }
 
 function statusColor(status) {
   switch (status) {
-    case 'new': return '#5EA7FF';
-    case 'contacted': return '#FFD700';
-    case 'appointment': return '#AF52DE';
-    case 'qualified': return '#00CCFF';
-    case 'negotiating': return '#FF9500';
-    case 'sold': return '#40FF9B';
-    case 'lost': return '#FF2D2D';
-    default: return 'rgba(255,255,255,0.3)';
+    case 'new':          return '#5EA7FF';
+    case 'contacted':    return '#FFD700';
+    case 'appointment':  return '#AF52DE';
+    case 'qualified':    return '#00CCFF';
+    case 'negotiating':  return '#FF9500';
+    case 'sold':         return '#40FF9B';
+    case 'lost':         return '#FF2D2D';
+    default:             return 'rgba(255,255,255,0.3)';
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  /* Outer Pressable shell — consumes taps so they don't bubble to parent views */
+  containerShell: {
     marginHorizontal: 16,
     marginTop: 12,
     marginBottom: 8,
+  },
+  container: {
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.stroke,
     backgroundColor: 'rgba(8,10,12,0.85)',
     overflow: 'visible',
+  },
+  containerFocused: {
+    borderColor: 'rgba(214,178,94,0.40)',
   },
   headerRow: {
     flexDirection: 'row',
@@ -440,12 +529,16 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
   },
+  charCountWarn: {
+    color: colors.red || '#FF3B30',
+  },
   tagsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
     paddingHorizontal: 14,
-    paddingTop: 6,
+    paddingTop: 4,
+    paddingBottom: 2,
   },
   tag: {
     flexDirection: 'row',
@@ -466,13 +559,16 @@ const styles = StyleSheet.create({
   input: {
     color: colors.text,
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     paddingHorizontal: 14,
     paddingTop: 8,
     paddingBottom: 8,
-    minHeight: 60,
-    maxHeight: 100,
+    minHeight: 72,
     fontFamily: 'SpaceGrotesk_400Regular',
+    /* scrollEnabled={false} is set as a prop — see the TextInput element above */
+  },
+  inputFocused: {
+    color: colors.text,
   },
   translationPreview: {
     marginHorizontal: 14,
@@ -529,7 +625,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    opacity: 0.15,
   },
   sendButtons: {
     flexDirection: 'row',
@@ -538,7 +633,7 @@ const styles = StyleSheet.create({
   },
   translateFlag: {
     width: 36,
-    height: 28,
+    height: 30,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,80,0,0.40)',
@@ -551,17 +646,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(214,178,94,0.15)',
   },
   flagText: {
-    fontSize: 14,
+    fontSize: 15,
   },
   sendBtn: {
     width: 36,
-    height: 28,
+    height: 30,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(255,255,255,0.04)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  sendBtnDisabled: {
+    opacity: 0.35,
   },
   pickerDropdown: {
     marginHorizontal: 10,
