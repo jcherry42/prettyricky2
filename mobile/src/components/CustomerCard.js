@@ -1,29 +1,48 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactLight } from '../lib/haptics';
-import { useAmbientLighting } from '../hooks/useAmbientLighting';
-import { PicassoAccent } from './PicassoSwirls';
 
-/**
- * Customer status badges
- */
 const STATUS_CONFIG = {
-  new: { label: 'NEW', color: colors.blue, icon: 'star' },
-  contacted: { label: 'CONTACTED', color: colors.gold, icon: 'call' },
-  appointment: { label: 'APPOINTMENT', color: colors.green, icon: 'calendar' },
-  negotiating: { label: 'NEGOTIATING', color: '#FF9500', icon: 'chatbubbles' },
-  sold: { label: 'SOLD', color: colors.green, icon: 'checkmark-circle' },
-  lost: { label: 'LOST', color: colors.red, icon: 'close-circle' },
+  new:         { label: 'NEW',         color: colors.blue,   icon: 'star' },
+  contacted:   { label: 'CONTACTED',   color: colors.gold,   icon: 'call' },
+  appointment: { label: 'APPOINTMENT', color: colors.green,  icon: 'calendar' },
+  negotiating: { label: 'NEGOTIATING', color: '#FF9500',     icon: 'chatbubbles' },
+  sold:        { label: 'SOLD',        color: colors.green,  icon: 'checkmark-circle' },
+  lost:        { label: 'LOST',        color: colors.red,    icon: 'close-circle' },
 };
 
-export function CustomerCard({ customer, onPress }) {
+/**
+ * Static quilted-leather accent — rendered once, never re-created.
+ * Using a fixed array so no Array.from() on every render.
+ */
+const QUILT_INDICES = [0, 1, 2, 3, 4];
+
+const QuiltPattern = memo(function QuiltPattern() {
+  return (
+    <View style={styles.quiltedPattern} pointerEvents="none">
+      {QUILT_INDICES.map((i) => (
+        <View
+          key={`ql-${i}`}
+          style={[styles.quiltLine, { top: i * 24, transform: [{ rotate: '45deg' }] }]}
+        />
+      ))}
+      {QUILT_INDICES.map((i) => (
+        <View
+          key={`qr-${i}`}
+          style={[styles.quiltLine, { top: i * 24, transform: [{ rotate: '-45deg' }] }]}
+        />
+      ))}
+    </View>
+  );
+});
+
+export const CustomerCard = memo(function CustomerCard({ customer, onPress }) {
   const status = customer?.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
-  const { isEnabled, currentColor, opacity } = useAmbientLighting();
 
   const name = `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown Customer';
   const phone = customer?.phone || 'No phone';
@@ -34,64 +53,21 @@ export function CustomerCard({ customer, onPress }) {
     onPress?.(customer);
   };
 
-  // Ambient glow border color
-  const glowBorder = isEnabled && currentColor
-    ? `${currentColor}${Math.round(opacity * 1.5 * 255).toString(16).padStart(2, '0')}`
-    : colors.stroke;
-
   return (
-    <Pressable onPress={handlePress} style={({ pressed }) => [styles.container, pressed && styles.pressed]}>
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`Customer ${name}`}
+    >
       <LinearGradient
         colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.gradient, { borderColor: glowBorder }]}
+        style={styles.gradient}
       >
-        {/* Quilted leather pattern overlay */}
-        <View style={styles.quiltedPattern}>
-          {/* Diamond quilted lines */}
-          {Array.from({ length: 5 }).map((_, i) => (
-            <View
-              key={`ql-${i}`}
-              style={[
-                styles.quiltLine,
-                {
-                  top: i * 24,
-                  transform: [{ rotate: '45deg' }],
-                },
-              ]}
-            />
-          ))}
-          {Array.from({ length: 5 }).map((_, i) => (
-            <View
-              key={`qr-${i}`}
-              style={[
-                styles.quiltLine,
-                {
-                  top: i * 24,
-                  transform: [{ rotate: '-45deg' }],
-                },
-              ]}
-            />
-          ))}
-        </View>
-
-        {/* Picasso accent overlay */}
-        <PicassoAccent mode="dark" />
-
-        {/* Ambient glow top edge */}
-        {isEnabled && currentColor && (
-          <LinearGradient
-            colors={[
-              `${currentColor}${Math.round(opacity * 1.2 * 255).toString(16).padStart(2, '0')}`,
-              'transparent',
-            ]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
-            style={styles.ambientGlow}
-            pointerEvents="none"
-          />
-        )}
+        {/* Quilted leather pattern */}
+        <QuiltPattern />
 
         {/* Status badge */}
         <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
@@ -101,21 +77,15 @@ export function CustomerCard({ customer, onPress }) {
 
         {/* Customer info */}
         <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1}>
-            {name}
-          </Text>
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
           <View style={styles.infoRow}>
             <Ionicons name="call" size={12} color={colors.textDim} />
-            <Text style={styles.info} numberOfLines={1}>
-              {phone}
-            </Text>
+            <Text style={styles.info} numberOfLines={1}>{phone}</Text>
           </View>
           {email ? (
             <View style={styles.infoRow}>
               <Ionicons name="mail" size={12} color={colors.textDim} />
-              <Text style={styles.info} numberOfLines={1}>
-                {email}
-              </Text>
+              <Text style={styles.info} numberOfLines={1}>{email}</Text>
             </View>
           ) : null}
         </View>
@@ -125,13 +95,13 @@ export function CustomerCard({ customer, onPress }) {
           <Ionicons name="chevron-forward" size={20} color={colors.gold} />
         </View>
 
-        {/* Contrast stitching accent */}
+        {/* Contrast stitching */}
         <View style={styles.stitchingTop} />
         <View style={styles.stitchingBottom} />
       </LinearGradient>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -153,10 +123,7 @@ const styles = StyleSheet.create({
   },
   quiltedPattern: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     overflow: 'hidden',
   },
   quiltLine: {
@@ -165,13 +132,6 @@ const styles = StyleSheet.create({
     right: -50,
     height: 0.5,
     backgroundColor: 'rgba(214,178,94,0.05)',
-  },
-  ambientGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 30,
   },
   statusBadge: {
     position: 'absolute',
@@ -221,18 +181,14 @@ const styles = StyleSheet.create({
   },
   stitchingTop: {
     position: 'absolute',
-    top: 4,
-    left: 8,
-    right: 8,
+    top: 4, left: 8, right: 8,
     height: 1,
     backgroundColor: colors.contrastStitching,
     opacity: 0.15,
   },
   stitchingBottom: {
     position: 'absolute',
-    bottom: 4,
-    left: 8,
-    right: 8,
+    bottom: 4, left: 8, right: 8,
     height: 1,
     backgroundColor: colors.contrastStitching,
     opacity: 0.15,
