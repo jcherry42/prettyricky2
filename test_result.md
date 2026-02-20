@@ -15,6 +15,31 @@ latest_fix:
   user_action_required: "Run 'yarn install' in the mobile/ directory, then 'npx expo start --clear' to restart with cleared Metro cache"
   status: "FIX_APPLIED_PENDING_USER_VERIFICATION"
 
+latest_fix_2:
+  date: "2025-07"
+  issue: "QuickCompose box on HomeScreen is unresponsive"
+  root_causes:
+    - "CRITICAL: renderHeader defined inline inside HomeScreen — new function reference on every render caused FlatList to unmount/remount the entire header including QuickCompose, instantly losing keyboard focus and all state"
+    - "CRITICAL: Animated.multiply() in GlowIconButton broken in RN 0.81 new arch — the Animated.View overlay silently failed and absorbed all touch events on the link buttons"
+    - "IMPORTANT: outer Pressable wrapping HomeScreen called Keyboard.dismiss() on every tap, fighting with the TextInput for focus"
+    - "IMPORTANT: multiline TextInput missing scrollEnabled={false}, causing FlatList scroll responder to steal touch events during editing"
+    - "MODERATE: picker ScrollViews missing keyboardShouldPersistTaps='handled'"
+  fixes_applied:
+    - "Extracted header content into React.memo HomeListHeader component defined OUTSIDE HomeScreen (stable component identity — FlatList no longer remounts it)"
+    - "Replaced renderHeader inline arrow function with useCallback pointing to HomeListHeader"
+    - "Replaced outer Pressable with View (onTouchEnd for flash effect) — keyboard dismiss now solely handled by FlatList keyboardDismissMode='on-drag'"
+    - "Fixed GlowIconButton — removed Animated.multiply, use direct glowAnim opacity, added pointerEvents='none' on Animated.View overlay"
+    - "Added scrollEnabled={false} to multiline TextInput"
+    - "Added Pressable shell around QuickCompose container — consumes tap events before they bubble to parent views"
+    - "Added keyboardShouldPersistTaps='handled' to both picker ScrollViews"
+    - "Added isFocused state with visual border feedback (gold tint when focused)"
+    - "Added hitSlop to action buttons for better touch targets"
+    - "Memoized all callbacks with useCallback for performance"
+  files_changed:
+    - mobile/src/screens/HomeScreen.js
+    - mobile/src/components/QuickCompose.js
+  status: "FIX_APPLIED_PENDING_USER_VERIFICATION"
+
 conversion_progress:
   current_sprint: "Sprint 8 - Print Center"
   status: "IN PROGRESS"
