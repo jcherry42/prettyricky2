@@ -299,6 +299,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 16 }}
+                keyboardDismissMode="on-drag"
                 keyboardShouldPersistTaps="handled"
               >
                 <View style={{ height: 6 }} />
