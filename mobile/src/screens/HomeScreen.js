@@ -188,6 +188,11 @@ export function HomeScreen() {
               placeholderTextColor={colors.textMute}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+              onSubmitEditing={Keyboard.dismiss}
             />
             {searchQuery.length > 0 && (
               <Pressable onPress={() => setSearchQuery('')}>
