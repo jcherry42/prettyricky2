@@ -107,6 +107,31 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   }, [visible, initialTab]);
 
 
+  const scrollRef = useRef(null);
+  const backendSectionRef = useRef(null);
+
+  React.useEffect(() => {
+    if (!visible) return;
+    if (initialTab === 'settings' && initialSection === 'backend') {
+      // Let layout settle first
+      const t = setTimeout(() => {
+        try {
+          if (backendSectionRef.current?.measureLayout && scrollRef.current) {
+            backendSectionRef.current.measureLayout(
+              scrollRef.current.getInnerViewNode(),
+              (_x, y) => {
+                scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
+              },
+              () => {}
+            );
+          }
+        } catch {}
+      }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [visible, initialTab, initialSection]);
+
+
   const [printerName, setPrinterName] = useState('');
   const [ipParts, setIpParts] = useState(['', '', '', '']);
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
