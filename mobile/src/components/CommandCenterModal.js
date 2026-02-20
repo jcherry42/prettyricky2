@@ -540,6 +540,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                     <LangGlass
                       key={l.code}
                       flag={l.flag}
+                      name={l.name}
                       active={selectedLang === l.code}
                       onPress={() => setDefaultTargetLanguage(l.code)}
                     />
