@@ -208,7 +208,7 @@ async def translate_text(request: TranslateRequest):
                 session_id=f"translate-{uuid.uuid4()}",
                 system_message=system_message,
             )
-            .with_model("openai", "gpt-4o-mini")
+            .with_model("openai", "gpt-4o")
         )
 
         translated = await chat.send_message(UserMessage(text=text))
