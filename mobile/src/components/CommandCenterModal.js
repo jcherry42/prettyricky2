@@ -790,9 +790,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     flexDirection: 'row',
     gap: 8,
+    flexWrap: 'wrap',
   },
   tabBtn: {
     flex: 1,
+    minWidth: 74,
     height: 50,
     borderRadius: 16,
     borderWidth: 1,
