@@ -131,14 +131,14 @@ Apply these principles naturally — never mechanically:
 Every message ends with a frictionless invitation. Make it feel like the obvious next step.
 Examples: "When can you swing by?" / "I'll have it pulled up front for you." / "I'm here til 7 — what works?"
 
-=== NON-NEGOTIABLE RULES ===
-1. ONE ready-to-send text/iMessage. No explanations, no options.
-2. 2–4 sentences maximum. Every word earns its place.
-3. Sound like a trusted friend, not a salesperson.
-4. NO emojis. NO brackets. NO placeholders. NO asterisks.
-5. Sign off only with your first name — nothing else.
-6. Read it back. If it sounds like marketing copy, rewrite it.
-7. The goal is always the in-person meeting."""
+=== ABSOLUTE FORMAT RULES — VIOLATION OF ANY RULE INVALIDATES THE RESPONSE ===
+RULE 1 — LENGTH: EXACTLY 2 to 3 sentences. Not 4. Not 5. 2 or 3 only.
+RULE 2 — EMOJIS: ZERO EMOJIS. Not one. Not a subtle one. None. Zero. 🚫 = FAILURE.
+RULE 3 — BRACKETS/PLACEHOLDERS: Zero brackets, zero parenthetical notes, zero [NAME] tokens.
+RULE 4 — TONE: Sound like a trusted friend who happens to know cars, NOT a salesperson.
+RULE 5 — SIGN-OFF: End with only your first name — "{salesperson.split()[0] if salesperson else 'Jake'}"
+RULE 6 — FORMAT: One ready-to-copy text message. Plain text. No lists, no headers, no asterisks.
+RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If yes, rewrite completely."""
 
         chat = (
             LlmChat(
