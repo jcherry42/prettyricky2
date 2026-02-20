@@ -53,6 +53,7 @@ export function BackendUrlSection() {
   const handleReset = async () => {
     impactLight();
     await clearBackendUrlOverride();
+    invalidateUrlCache(); // Clear cached URL so it re-resolves from .env
     const base = await getBackendUrlAsync();
     setCurrent(base);
     setInput(base);
