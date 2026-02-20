@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
+import { Audio } from 'expo-av';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { scaleSize, scaleFont } from '../theme/layout';
@@ -13,9 +14,10 @@ import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
-import { impactMedium, notificationSuccess, notificationError, selectionTap } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError, selectionTap, impactLight, impactHeavy } from '../lib/haptics';
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
+import { voiceTranslateUpload } from '../lib/voiceTranslate';
 
 function friendlyBackendError(e) {
   if (e?.code === 'BACKEND_URL_MISSING') {
@@ -52,8 +54,8 @@ const PRESET_RESPONSES = {
   ],
   availability: [
     "Yes, it's here and available. If you're serious, I'd lock in a time to see it so you're not chasing it after it's gone.",
-    "I've got it on the lot and ready. Photos don't do it justice \u2013 worth a quick drive in.",
-    "It's here now. The only question is whether it fits you \u2013 and that happens when you're behind the wheel.",
+    "I've got it on the lot and ready. Photos don't do it justice — worth a quick drive in.",
+    "It's here now. The only question is whether it fits you — and that happens when you're behind the wheel.",
   ],
   trade_in: [
     "Bring your current vehicle in and I'll put a real number on it, not a guess. That way you know exactly where you stand.",
@@ -71,16 +73,51 @@ const PRESET_RESPONSES = {
     "Give me a time that works and I'll have the vehicle staged for you when you roll in.",
   ],
   follow_up: [
-    "Just keeping this on your radar \u2013 the vehicle is still here and it's a good one. Let me know what you're thinking.",
+    "Just keeping this on your radar — the vehicle is still here and it's a good one. Let me know what you're thinking.",
     "I don't like chasing people, but I also don't like seeing good matches slip away. Where are you leaning?",
     "If you're still on the fence, a quick look in person might give you the clarity you're looking for.",
   ],
   objection: [
-    "I hear the concern. Let's walk through it together when you're here \u2013 there's usually a clean way forward.",
+    "I hear the concern. Let's walk through it together when you're here — there's usually a clean way forward.",
     "You're not the first person to have that hesitation. I've helped a lot of people through the same thing.",
     "I'm not here to pressure you, I'm here to give you the full picture so you can decide with confidence.",
   ],
 };
+
+// Animated waveform bars during voice recording
+function VoiceWaveform() {
+  const bars = Array.from({ length: 5 }, (_, i) => useRef(new Animated.Value(0.3)).current);
+
+  useEffect(() => {
+    const animations = bars.map((anim, i) => {
+      const delay = i * 80;
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(anim, { toValue: 1, duration: 300, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.2, duration: 300, useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.6, duration: 200, useNativeDriver: true }),
+        ])
+      );
+    });
+    animations.forEach(a => a.start());
+    return () => animations.forEach(a => a.stop());
+  }, []);
+
+  return (
+    <View style={styles.waveformWrap}>
+      {bars.map((anim, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            styles.waveformBar,
+            { transform: [{ scaleY: anim }] },
+          ]}
+        />
+      ))}
+    </View>
+  );
+}
 
 export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   const { settings } = useAppSettings();
@@ -96,29 +133,128 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
   const [state, setState] = useState({ status: 'idle', error: null });
   const [reply, setReply] = useState('');
+  const [displayedReply, setDisplayedReply] = useState('');
   const autoTranslateRef = useRef(null);
   const [translated, setTranslated] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedTranslation, setCopiedTranslation] = useState(false);
 
   const [selectedInquiry, setSelectedInquiry] = useState('new_lead');
   const [presetIndex, setPresetIndex] = useState(null);
+
+  // Voice dictation state
+  const [isDictating, setIsDictating] = useState(false);
+  const [dictationStatus, setDictationStatus] = useState('idle'); // idle | requesting | recording | processing
+  const recordingRef = useRef(null);
+  const dictationTimeoutRef = useRef(null);
 
   // Refs for keyboard focus chaining
   const vehicleRef = useRef(null);
   const tradeVinRef = useRef(null);
   const tradeMileageRef = useRef(null);
 
+  // Typewriter effect for AI response
+  useEffect(() => {
+    if (!reply) {
+      setDisplayedReply('');
+      return;
+    }
+    let index = 0;
+    setDisplayedReply('');
+    const interval = setInterval(() => {
+      index++;
+      if (index >= reply.length) {
+        setDisplayedReply(reply);
+        clearInterval(interval);
+      } else {
+        setDisplayedReply(reply.slice(0, index));
+      }
+    }, 12);
+    return () => clearInterval(interval);
+  }, [reply]);
+
+  // === Voice Dictation for Situation Field ===
+  const startDictation = useCallback(async () => {
+    try {
+      impactMedium();
+      setDictationStatus('requesting');
+      setIsDictating(true);
+
+      const perm = await Audio.requestPermissionsAsync();
+      if (!perm.granted) {
+        setDictationStatus('idle');
+        setIsDictating(false);
+        Alert.alert('Microphone Required', "Enable microphone access in Settings → Supercharg'd → Microphone");
+        return;
+      }
+
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      recordingRef.current = recording;
+      setDictationStatus('recording');
+
+      // Auto-stop after 12 seconds
+      dictationTimeoutRef.current = setTimeout(() => stopDictation(), 12000);
+    } catch (e) {
+      setDictationStatus('idle');
+      setIsDictating(false);
+    }
+  }, []);
+
+  const stopDictation = useCallback(async () => {
+    if (dictationTimeoutRef.current) {
+      clearTimeout(dictationTimeoutRef.current);
+      dictationTimeoutRef.current = null;
+    }
+    const rec = recordingRef.current;
+    if (!rec) {
+      setDictationStatus('idle');
+      setIsDictating(false);
+      return;
+    }
+    recordingRef.current = null;
+
+    try {
+      setDictationStatus('processing');
+      await rec.stopAndUnloadAsync();
+      const uri = rec.getURI();
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
+
+      if (!uri) throw new Error('No audio recorded');
+
+      const out = await voiceTranslateUpload({ uri, sourceLang: 'en', targetLang: 'en', mimeType: 'audio/m4a' });
+      const transcript = out?.transcript || out?.translated_text || '';
+      if (transcript && transcript.trim()) {
+        setSituation(prev => {
+          const base = prev.trim();
+          return base ? `${base} ${transcript.trim()}` : transcript.trim();
+        });
+        impactLight();
+      }
+    } catch (e) {
+      // silently fail — don't disrupt UX
+    } finally {
+      setDictationStatus('idle');
+      setIsDictating(false);
+    }
+  }, []);
+
   const runTowerTalk = useCallback(async () => {
     try {
       impactMedium();
       setState({ status: 'loading', error: null });
       setReply('');
+      setDisplayedReply('');
       setTranslated('');
       setCopied(false);
+      setCopiedTranslation(false);
 
       const res = await apiFetch('/api/tower-talk', {
         method: 'POST',
-        timeout: 20000,
+        timeout: 25000,
         body: JSON.stringify({
           situation: situation.trim(),
           inquiryType: selectedInquiry,
@@ -181,8 +317,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
       const res = await apiFetch('/api/translate', {
         method: 'POST',
-        timeout: 15000,
-        body: JSON.stringify({ text: reply.trim(), source_lang: 'auto', target_lang: lang }),
+        timeout: 20000,
+        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang }),
       });
 
       if (!res || typeof res !== 'object') {
@@ -201,6 +337,37 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `Translation error: ${errorMsg}` });
       notificationError();
+    }
+  }, [reply, lang]);
+
+  const translateAndSpeak = useCallback(async () => {
+    try {
+      if (!reply || !reply.trim()) return;
+      if (!lang || typeof lang !== 'string') return;
+
+      impactMedium();
+      setState({ status: 'translating', error: null });
+
+      const res = await apiFetch('/api/translate', {
+        method: 'POST',
+        timeout: 20000,
+        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang }),
+      });
+
+      const translatedText = res?.translated_text || '';
+      if (!translatedText?.trim()) throw new Error('Translation returned empty');
+
+      setTranslated(translatedText);
+      setState({ status: 'speaking', error: null });
+
+      const ttsRes = await ttsSpeak({ text: translatedText.trim(), language: lang, voice: 'auto' });
+      if (ttsRes?.audio_base64) {
+        await playBase64Audio({ base64: ttsRes.audio_base64, format: ttsRes.format || 'mp3' });
+      }
+
+      setState({ status: 'done', error: null });
+    } catch (e) {
+      setState({ status: 'error', error: `Translate & Speak error: ${friendlyBackendError(e)}` });
     }
   }, [reply, lang]);
 
@@ -231,12 +398,17 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
     }
   }, []);
 
-  const copyToClipboard = useCallback(async (text) => {
+  const copyToClipboard = useCallback(async (text, type = 'reply') => {
     try {
       await Clipboard.setStringAsync(text);
-      setCopied(true);
       selectionTap();
-      setTimeout(() => setCopied(false), 2000);
+      if (type === 'reply') {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        setCopiedTranslation(true);
+        setTimeout(() => setCopiedTranslation(false), 2000);
+      }
     } catch (e) {
       // silently fail
     }
@@ -263,17 +435,6 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
     state.error.includes('Backend not configured') || state.error.includes('EXPO_PUBLIC_BACKEND_URL')
   );
 
-  // Pulsing glow for Generate button
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 1400, useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0, duration: 1400, useNativeDriver: true }),
-      ])
-    ).start();
-  }, [glowAnim]);
-
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -282,6 +443,13 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
           <View style={styles.center}>
             <View style={styles.card}>
+              {/* Brushed aluminum top highlight */}
+              <LinearGradient
+                colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.00)']}
+                style={styles.cardTopHighlight}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+              />
               {/* Header */}
               <View style={styles.headRow}>
                 <View style={styles.titleRow}>
@@ -298,7 +466,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
               <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 16 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
                 keyboardDismissMode="on-drag"
                 keyboardShouldPersistTaps="handled"
               >
@@ -306,7 +474,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
                 {/* Inquiry Type Selector */}
                 <View style={styles.inquiryBlock}>
-                  <Text style={styles.inquiryLabel}>INQUIRY TYPE</Text>
+                  <Text style={styles.sectionLabel}>INQUIRY TYPE</Text>
                   <View style={styles.inquiryGrid}>
                     {INQUIRY_TYPES.map((it) => {
                       const active = selectedInquiry === it.id;
@@ -318,6 +486,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                             setSelectedInquiry(it.id);
                             setPresetIndex(null);
                             setReply('');
+                            setDisplayedReply('');
                             setTranslated('');
                           }}
                           style={({ pressed }) => [
@@ -326,180 +495,225 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                             pressed && { opacity: 0.9 },
                           ]}
                         >
-                          <LinearGradient
-                            colors={
-                              active
-                                ? ['rgba(214,178,94,0.25)', 'rgba(17,24,39,0.95)']
-                                : ['rgba(251,191,36,0.15)', 'rgba(17,24,39,0.95)']
-                            }
-                            locations={[0, 1]}
-                            style={StyleSheet.absoluteFill}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                          />
+                          {active && (
+                            <LinearGradient
+                              colors={['rgba(214,178,94,0.22)', 'rgba(17,24,39,0.98)']}
+                              locations={[0, 1]}
+                              style={StyleSheet.absoluteFill}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                            />
+                          )}
                           <View style={styles.inquiryInner}>
                             <Ionicons
                               name={it.icon}
-                              size={16}
-                              color={active ? colors.gold : colors.text}
+                              size={15}
+                              color={active ? colors.gold : colors.textMute}
                             />
                             <Text style={[styles.inquiryText, active && { color: colors.gold }]}>
                               {it.label}
                             </Text>
                           </View>
-                          {active && <View style={styles.inquiryGlow} />}
                         </Pressable>
                       );
                     })}
+                  </View>
+                </View>
+
+                <View style={{ height: 14 }} />
+
+                {/* Preset Chips */}
+                <View>
+                  <Text style={styles.sectionLabel}>QUICK RESPONSES</Text>
+                  <View style={{ height: 8 }} />
+                  {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
+                    const active = presetIndex === idx;
+                    return (
+                      <Pressable
+                        key={idx}
+                        onPress={() => {
+                          selectionTap();
+                          setPresetIndex(idx);
+                          setReply(text);
+                          setDisplayedReply(text);
+                          setTranslated('');
+                          setCopied(false);
+                        }}
+                        style={({ pressed }) => [
+                          styles.presetChip,
+                          active && styles.presetChipActive,
+                          pressed && { opacity: 0.88 },
+                        ]}
+                      >
+                        <View style={styles.presetLeft}>
+                          <View style={[styles.presetNum, active && styles.presetNumActive]}>
+                            <Text style={[styles.presetNumText, active && { color: colors.gold }]}>{idx + 1}</Text>
+                          </View>
+                        </View>
+                        <Text style={[styles.presetText, active && { color: colors.text }]} numberOfLines={3}>
+                          {text}
+                        </Text>
+                        {active && (
+                          <Ionicons name="checkmark-circle" size={16} color={colors.gold} style={{ marginLeft: 8 }} />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                <View style={{ height: 18 }} />
+
+                {/* Situation input with voice dictation */}
+                <Text style={styles.sectionLabel}>SITUATION</Text>
+                <View style={{ height: 8 }} />
+                <View style={styles.situationWrap}>
+                  <TextInput
+                    value={situation}
+                    onChangeText={setSituation}
+                    placeholder={isDictating ? 'Listening...' : "What's the situation? Describe it or tap the mic..."}
+                    placeholderTextColor={isDictating ? '#9333EA' : colors.textMute}
+                    style={[styles.situationInput, isDictating && styles.situationInputDictating]}
+                    multiline
+                    maxLength={600}
+                    autoCorrect
+                    spellCheck
+                    keyboardType="default"
+                    textAlignVertical="top"
+                    editable={!isDictating}
+                  />
+                  <View style={styles.situationBottom}>
+                    <Text style={styles.charCount}>{situation.length}/600</Text>
+                    <Pressable
+                      onPress={isDictating && dictationStatus === 'recording' ? stopDictation : startDictation}
+                      disabled={dictationStatus === 'processing'}
+                      style={({ pressed }) => [
+                        styles.micBtn,
+                        isDictating && styles.micBtnActive,
+                        pressed && { opacity: 0.85, transform: [{ scale: 0.94 }] },
+                        dictationStatus === 'processing' && { opacity: 0.6 },
+                      ]}
+                    >
+                      {dictationStatus === 'processing' ? (
+                        <ActivityIndicator color="#9333EA" size="small" />
+                      ) : dictationStatus === 'recording' ? (
+                        <VoiceWaveform />
+                      ) : (
+                        <Ionicons
+                          name={isDictating ? 'stop-circle' : 'mic'}
+                          size={18}
+                          color={isDictating ? '#EF4444' : '#9333EA'}
+                        />
+                      )}
+                    </Pressable>
                   </View>
                 </View>
 
                 <View style={{ height: 12 }} />
 
-                {/* Preset Chips */}
-                <View style={styles.presetsContainer}>
-                  <Text style={styles.inquiryLabel}>QUICK RESPONSES</Text>
-                  <View style={styles.presetsRow}>
-                    {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
-                      const active = presetIndex === idx;
-                      return (
-                        <Pressable
-                          key={idx}
-                          onPress={() => {
-                            selectionTap();
-                            setPresetIndex(idx);
-                            setReply(text);
-                            setTranslated('');
-                            setCopied(false);
-                          }}
-                          style={({ pressed }) => [
-                            styles.presetChip,
-                            active && styles.presetChipActive,
-                            pressed && { opacity: 0.9 },
-                          ]}
-                        >
-                          <View style={styles.presetNumber}>
-                            <Text style={styles.presetNumberText}>{idx + 1}</Text>
-                          </View>
-                          <Text
-                            style={[styles.presetText, active && { color: colors.text }]}
-                            numberOfLines={2}
-                          >
-                            {text}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
+                {/* Context fields — minimal, no box-within-box */}
+                <Text style={styles.sectionLabel}>CONTEXT (OPTIONAL)</Text>
+                <View style={{ height: 8 }} />
+                <View style={styles.fieldRow}>
+                  <View style={[styles.fieldWrap, { flex: 1 }]}>
+                    <Text style={styles.fieldLabel}>CUSTOMER</Text>
+                    <TextInput
+                      value={customerName}
+                      onChangeText={setCustomerName}
+                      placeholder="Name"
+                      placeholderTextColor={colors.textMute}
+                      style={styles.fieldInput}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      returnKeyType="next"
+                      textContentType="name"
+                      onSubmitEditing={() => vehicleRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
+                  <View style={[styles.fieldWrap, { flex: 1 }]}>
+                    <Text style={styles.fieldLabel}>VEHICLE</Text>
+                    <TextInput
+                      ref={vehicleRef}
+                      value={vehicle}
+                      onChangeText={setVehicle}
+                      placeholder="Year / Make / Model"
+                      placeholderTextColor={colors.textMute}
+                      style={styles.fieldInput}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      returnKeyType="next"
+                      onSubmitEditing={() => tradeVinRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
                   </View>
                 </View>
 
-                <View style={{ height: 16 }} />
-
-                {/* Situation input */}
-                <TextInput
-                  value={situation}
-                  onChangeText={setSituation}
-                  placeholder="What's the situation? (e.g., customer asking about price, wants to think it over...)"
-                  placeholderTextColor={colors.textMute}
-                  style={[styles.input, { height: 80, textAlignVertical: 'top', paddingTop: 12 }]}
-                  multiline
-                  maxLength={500}
-                  autoCorrect
-                  spellCheck
-                  keyboardType="default"
-                />
-                <Text style={styles.charCount}>{situation.length}/500</Text>
-
-                <View style={{ height: 8 }} />
+                <View style={{ height: 10 }} />
 
                 <View style={styles.fieldRow}>
-                  <TextInput
-                    value={customerName}
-                    onChangeText={setCustomerName}
-                    placeholder="Customer name"
-                    placeholderTextColor={colors.textMute}
-                    style={[styles.input, { flex: 1 }]}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    returnKeyType="next"
-                    textContentType="name"
-                    onSubmitEditing={() => vehicleRef.current?.focus()}
-                    blurOnSubmit={false}
-                  />
-                  <TextInput
-                    ref={vehicleRef}
-                    value={vehicle}
-                    onChangeText={setVehicle}
-                    placeholder="Vehicle"
-                    placeholderTextColor={colors.textMute}
-                    style={[styles.input, { flex: 1 }]}
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    returnKeyType="next"
-                    onSubmitEditing={() => tradeVinRef.current?.focus()}
-                    blurOnSubmit={false}
-                  />
+                  <View style={[styles.fieldWrap, { flex: 1.4 }]}>
+                    <Text style={styles.fieldLabel}>TRADE-IN VIN</Text>
+                    <TextInput
+                      ref={tradeVinRef}
+                      value={tradeVin}
+                      onChangeText={(t) => setTradeVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
+                      placeholder="17 characters"
+                      placeholderTextColor={colors.textMute}
+                      style={styles.fieldInput}
+                      autoCapitalize="characters"
+                      autoCorrect={false}
+                      maxLength={17}
+                      returnKeyType="next"
+                      keyboardType="default"
+                      onSubmitEditing={() => tradeMileageRef.current?.focus()}
+                      blurOnSubmit={false}
+                    />
+                  </View>
+                  <View style={[styles.fieldWrap, { flex: 1 }]}>
+                    <Text style={styles.fieldLabel}>MILEAGE</Text>
+                    <TextInput
+                      ref={tradeMileageRef}
+                      value={tradeMileage}
+                      onChangeText={(t) => setTradeMileage(t.replace(/[^0-9,]/g, ''))}
+                      placeholder="Miles"
+                      placeholderTextColor={colors.textMute}
+                      style={styles.fieldInput}
+                      keyboardType="number-pad"
+                      returnKeyType="done"
+                    />
+                  </View>
                 </View>
 
-                <View style={{ height: 8 }} />
-
-                <View style={styles.fieldRow}>
-                  <TextInput
-                    ref={tradeVinRef}
-                    value={tradeVin}
-                    onChangeText={(t) => setTradeVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
-                    placeholder="Trade-in VIN (17)"
-                    placeholderTextColor={colors.textMute}
-                    style={[styles.input, { flex: 1 }]}
-                    autoCapitalize="characters"
-                    autoCorrect={false}
-                    maxLength={17}
-                    returnKeyType="next"
-                    keyboardType="default"
-                    onSubmitEditing={() => tradeMileageRef.current?.focus()}
-                    blurOnSubmit={false}
-                  />
-                  <TextInput
-                    ref={tradeMileageRef}
-                    value={tradeMileage}
-                    onChangeText={(t) => setTradeMileage(t.replace(/[^0-9,]/g, ''))}
-                    placeholder="Trade-in miles"
-                    placeholderTextColor={colors.textMute}
-                    style={[styles.input, { flex: 1 }]}
-                    keyboardType="number-pad"
-                    returnKeyType="done"
-                  />
-                </View>
-
-                <View style={{ height: 14 }} />
+                <View style={{ height: 18 }} />
 
                 {/* Generate button */}
-                <View style={styles.generateWrap}>
-                  <Pressable
-                    onPress={() => { selectionTap(); runTowerTalk(); }}
-                    disabled={isLoading || !situation.trim()}
-                    style={({ pressed }) => [
-                      styles.generateBtn,
-                      pressed && !(isLoading || !situation.trim()) && { opacity: 0.92, transform: [{ scale: 0.98 }] },
-                      (isLoading || !situation.trim()) && { opacity: 0.55 },
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={['#FFF5C7', '#FCD76D', '#F5AA1C']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    {state.status === 'loading' ? (
+                <Pressable
+                  onPress={() => { selectionTap(); runTowerTalk(); }}
+                  disabled={isLoading || !situation.trim()}
+                  style={({ pressed }) => [
+                    styles.generateBtn,
+                    pressed && !(isLoading || !situation.trim()) && { opacity: 0.92, transform: [{ scale: 0.98 }] },
+                    (isLoading || !situation.trim()) && { opacity: 0.48 },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={['#FFF5C7', '#FCD76D', '#F5AA1C']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  {state.status === 'loading' ? (
+                    <>
                       <ActivityIndicator color="#0E0E0E" />
-                    ) : (
-                      <>
-                        <Ionicons name="sparkles" size={18} color="#0E0E0E" />
-                        <Text style={styles.generateBtnText}>GENERATE AI RESPONSE</Text>
-                      </>
-                    )}
-                  </Pressable>
-                </View>
+                      <Text style={styles.generateBtnText}>GENERATING...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Ionicons name="sparkles" size={18} color="#0E0E0E" />
+                      <Text style={styles.generateBtnText}>GENERATE AI RESPONSE</Text>
+                    </>
+                  )}
+                </Pressable>
 
                 {/* Error display */}
                 {state.error ? (
@@ -511,7 +725,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                     {showBackendError && (
                       <Pressable
                         onPress={() => { selectionTap(); onOpenSettings?.(); }}
-                        style={({ pressed }) => [styles.purpleGlowBtn, pressed && { opacity: 0.92, transform: [{ scale: 0.99 }] }]}
+                        style={({ pressed }) => [styles.settingsBtn, pressed && { opacity: 0.92, transform: [{ scale: 0.99 }] }]}
                         accessibilityRole="button"
                         accessibilityLabel="Open backend settings"
                       >
@@ -522,75 +736,115 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                           style={StyleSheet.absoluteFill}
                         />
                         <Ionicons name="settings" size={16} color="#F0E8FF" />
-                        <Text style={styles.purpleGlowBtnText}>OPEN SETTINGS</Text>
+                        <Text style={styles.settingsBtnText}>OPEN SETTINGS</Text>
                       </Pressable>
                     )}
                   </View>
                 ) : null}
 
+                {/* Translating / Speaking state indicator */}
+                {(state.status === 'translating' || state.status === 'speaking') && (
+                  <View style={styles.statusRow}>
+                    <ActivityIndicator color={colors.gold} size="small" />
+                    <Text style={styles.statusText}>
+                      {state.status === 'translating' ? `Translating to ${flag}...` : `Speaking ${flag}...`}
+                    </Text>
+                  </View>
+                )}
+
                 {/* Reply section */}
-                {reply ? (
+                {displayedReply ? (
                   <View style={styles.replySection}>
+                    {/* Reply header */}
                     <View style={styles.replySectionHeader}>
                       <Text style={styles.sectionLabel}>AI RESPONSE</Text>
                       <View style={styles.replyActions}>
-                        <Pressable onPress={() => copyToClipboard(reply)} style={styles.actionIcon}>
+                        <Pressable
+                          onPress={() => copyToClipboard(reply, 'reply')}
+                          style={styles.actionIcon}
+                          accessibilityLabel="Copy response"
+                        >
                           <Ionicons
                             name={copied ? 'checkmark' : 'copy-outline'}
                             size={16}
                             color={copied ? colors.green : colors.textDim}
                           />
                         </Pressable>
-                        <Pressable onPress={() => speak(reply, 'en')} style={styles.actionIcon}>
+                        <Pressable
+                          onPress={() => speak(reply, 'en')}
+                          disabled={state.status === 'speaking'}
+                          style={styles.actionIcon}
+                          accessibilityLabel="Speak in English"
+                        >
                           <Ionicons name="volume-high-outline" size={16} color={colors.textDim} />
                         </Pressable>
-                        <Pressable onPress={() => sendAsSms(reply)} style={styles.actionIcon}>
-                          <Ionicons name="send" size={16} color={colors.gold} />
+                        <Pressable
+                          onPress={() => sendAsSms(reply)}
+                          style={styles.actionIconGold}
+                          accessibilityLabel="Send as SMS"
+                        >
+                          <Ionicons name="send" size={15} color={colors.gold} />
                         </Pressable>
                       </View>
                     </View>
-                    <Text style={styles.replyText}>{reply}</Text>
+                    <Text style={styles.replyText}>{displayedReply}</Text>
 
-                    {/* Translation */}
+                    {/* Translation area */}
                     <View style={{ height: 12 }} />
-                    <Pressable
-                      onPress={translateReply}
-                      disabled={state.status === 'translating'}
-                      style={({ pressed }) => [
-                        styles.translateBtn,
-                        sportOn && styles.translateBtnSport,
-                        (state.status === 'translating' || pressed) && { opacity: 0.8 },
-                      ]}
-                    >
-                      {state.status === 'translating' ? (
-                        <ActivityIndicator color={colors.gold} size="small" />
-                      ) : (
-                        <>
-                          {sportOn && <Ionicons name="flame" size={13} color="#FF5000" />}
-                          <Ionicons name="language" size={14} color={colors.gold} />
-                          <Text style={styles.translateBtnText}>
-                            {sportOn ? `Translate to ${flag}` : `Translate ${flag}`}
-                          </Text>
-                        </>
-                      )}
-                    </Pressable>
+                    <View style={styles.translateActions}>
+                      <Pressable
+                        onPress={translateReply}
+                        disabled={state.status === 'translating' || state.status === 'speaking'}
+                        style={({ pressed }) => [
+                          styles.translateBtn,
+                          sportOn && styles.translateBtnSport,
+                          (state.status === 'translating' || pressed) && { opacity: 0.8 },
+                        ]}
+                      >
+                        <Ionicons name="language" size={14} color={colors.gold} />
+                        <Text style={styles.translateBtnText}>
+                          {`Translate ${flag}`}
+                        </Text>
+                      </Pressable>
 
+                      {sportOn && lang && (
+                        <Pressable
+                          onPress={translateAndSpeak}
+                          disabled={state.status === 'translating' || state.status === 'speaking'}
+                          style={({ pressed }) => [
+                            styles.translateSpeakBtn,
+                            (state.status === 'translating' || state.status === 'speaking' || pressed) && { opacity: 0.8 },
+                          ]}
+                        >
+                          <Ionicons name="flame" size={13} color="#FF5000" />
+                          <Ionicons name="volume-high-outline" size={14} color={colors.gold} />
+                          <Text style={styles.translateBtnText}>Translate & Speak</Text>
+                        </Pressable>
+                      )}
+                    </View>
+
+                    {/* Translation result */}
                     {translated ? (
-                      <View style={{ marginTop: 12 }}>
+                      <View style={styles.translationResult}>
                         <View style={styles.replySectionHeader}>
                           <Text style={styles.sectionLabel}>
-                            TRANSLATION ({lang.toUpperCase()}) {flag}
+                            {`${lang.toUpperCase()} ${flag}`}
                           </Text>
                           <View style={styles.replyActions}>
                             <Pressable
-                              onPress={() => copyToClipboard(translated)}
+                              onPress={() => copyToClipboard(translated, 'translation')}
                               style={styles.actionIcon}
                               accessibilityLabel="Copy translation"
                             >
-                              <Ionicons name="copy-outline" size={16} color={colors.textDim} />
+                              <Ionicons
+                                name={copiedTranslation ? 'checkmark' : 'copy-outline'}
+                                size={16}
+                                color={copiedTranslation ? colors.green : colors.textDim}
+                              />
                             </Pressable>
                             <Pressable
                               onPress={() => speak(translated, lang)}
+                              disabled={state.status === 'speaking'}
                               style={styles.actionIcon}
                               accessibilityLabel="Speak translation"
                             >
@@ -598,14 +852,14 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                             </Pressable>
                             <Pressable
                               onPress={() => sendAsSms(translated)}
-                              style={styles.actionIcon}
+                              style={styles.actionIconGold}
                               accessibilityLabel="Send translation as SMS"
                             >
-                              <Ionicons name="send" size={16} color={colors.gold} />
+                              <Ionicons name="send" size={15} color={colors.gold} />
                             </Pressable>
                           </View>
                         </View>
-                        <Text style={styles.replyText}>{translated}</Text>
+                        <Text style={[styles.replyText, { color: colors.gold }]}>{translated}</Text>
                       </View>
                     ) : null}
                   </View>
@@ -620,32 +874,47 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 }
 
 // ============================================================
-// STYLES — clean, no nested objects, no duplicates
+// STYLES — brushed aluminum premium finish, no box-within-box
 // ============================================================
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: 'rgba(0,0,0,0.80)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   center: {
     width: '92%',
-    maxHeight: '88%',
+    maxHeight: '90%',
   },
   card: {
-    borderRadius: 24,
+    borderRadius: 26,
     borderWidth: 1,
-    borderColor: 'rgba(255,45,45,0.25)',
-    backgroundColor: 'rgba(10,12,16,0.97)',
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(9,11,15,0.98)',
     padding: 18,
     maxHeight: '100%',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.70,
+    shadowRadius: 40,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 20,
+  },
+  cardTopHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
   },
   headRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   titleRow: {
     flexDirection: 'row',
@@ -657,12 +926,16 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.red,
+    shadowColor: colors.red,
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
   },
   title: {
     color: colors.text,
     ...type.label,
     fontSize: 13,
-    letterSpacing: 2.0,
+    letterSpacing: 2.4,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -670,67 +943,233 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   langBadge: {
-    fontSize: 16,
+    fontSize: 18,
   },
   closeIcon: {
     width: 34,
     height: 34,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.20)',
+  },
+
+  // Section label
+  sectionLabel: {
+    color: colors.textMute,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.6,
+  },
+
+  // Inquiry pills
+  inquiryBlock: {},
+  inquiryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 7,
+    marginTop: 8,
+  },
+  inquiryPill: {
+    width: '23.5%',
+    height: 52,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(12,14,18,0.95)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  body: {
-    marginTop: 6,
-    color: colors.textDim,
+  inquiryPillActive: {
+    borderColor: colors.gold,
+    shadowColor: 'rgba(214,178,94,0.70)',
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
+  inquiryInner: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
+  },
+  inquiryText: {
+    color: colors.textMute,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+
+  // Preset chips — full-width rows
+  presetChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(10,12,16,0.90)',
+  },
+  presetChipActive: {
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(214,178,94,0.08)',
+  },
+  presetLeft: {
+    marginRight: 10,
+  },
+  presetNum: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetNumActive: {
+    backgroundColor: 'rgba(214,178,94,0.20)',
+  },
+  presetNumText: {
+    color: colors.textMute,
+    fontSize: 9,
+    fontWeight: '900',
+  },
+  presetText: {
+    flex: 1,
+    color: colors.textMute,
     fontSize: 12,
+    fontWeight: '500',
     lineHeight: 16,
   },
-  fieldRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  input: {
-    height: 48,
-    borderRadius: 14,
+
+  // Situation input — NO box-within-box
+  situationWrap: {
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.09)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    overflow: 'hidden',
+  },
+  situationInput: {
+    height: 88,
     paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 8,
     color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.30)',
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
+    lineHeight: 19,
+    textAlignVertical: 'top',
+  },
+  situationInputDictating: {
+    color: '#C084FC',
+  },
+  situationBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+    paddingTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
   charCount: {
-    marginTop: 4,
     color: colors.textMute,
     fontSize: 10,
-    textAlign: 'right',
+    fontWeight: '600',
   },
-  generateWrap: {
+  micBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(147,51,234,0.35)',
+    backgroundColor: 'rgba(147,51,234,0.08)',
     alignItems: 'center',
+    justifyContent: 'center',
   },
+  micBtnActive: {
+    borderColor: 'rgba(239,68,68,0.60)',
+    backgroundColor: 'rgba(239,68,68,0.12)',
+    shadowColor: '#EF4444',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+  },
+
+  // Voice waveform
+  waveformWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    height: 20,
+  },
+  waveformBar: {
+    width: 3,
+    height: 16,
+    borderRadius: 2,
+    backgroundColor: '#EF4444',
+  },
+
+  // Context fields — minimal, elegant, no nested borders
+  fieldRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  fieldWrap: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(0,0,0,0.40)',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  fieldLabel: {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  fieldInput: {
+    height: 32,
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: 0,
+  },
+
+  // Generate button
   generateBtn: {
     width: '100%',
-    height: 52,
+    height: 54,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
     overflow: 'hidden',
-    shadowColor: 'rgba(214,178,94,0.80)',
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
+    shadowColor: 'rgba(246,178,46,0.70)',
+    shadowOpacity: 0.55,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
   },
   generateBtnText: {
     color: '#0E0E0E',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '900',
-    letterSpacing: 2.4,
+    letterSpacing: 2.0,
   },
+
   // Error
   errorBlock: {
     marginTop: 12,
@@ -748,8 +1187,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontWeight: '600',
   },
-  // Purple "Open Settings" button (properly at top level — not nested)
-  purpleGlowBtn: {
+  settingsBtn: {
     height: 46,
     borderRadius: 16,
     borderWidth: 1,
@@ -765,31 +1203,42 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     elevation: 10,
   },
-  purpleGlowBtnText: {
+  settingsBtnText: {
     color: '#F0E8FF',
     ...type.label,
     fontSize: 12,
     letterSpacing: 2.0,
   },
-  // Reply
+
+  // Status row (translating / speaking)
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    paddingHorizontal: 4,
+  },
+  statusText: {
+    color: colors.gold,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+
+  // Reply section
   replySection: {
-    marginTop: 16,
+    marginTop: 18,
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.20)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(8,10,14,0.80)',
   },
   replySectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  sectionLabel: {
-    color: colors.textDim,
-    ...type.label,
-    fontSize: 11,
+    marginBottom: 10,
   },
   replyActions: {
     flexDirection: 'row',
@@ -800,139 +1249,73 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.09)',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  actionIconGold: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.40)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(214,178,94,0.08)',
   },
   replyText: {
     color: colors.text,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 21,
     fontWeight: '500',
   },
+
+  // Translation buttons
+  translateActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   translateBtn: {
+    flex: 1,
     height: 42,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.40)',
-    backgroundColor: 'rgba(214,178,94,0.08)',
+    borderColor: 'rgba(214,178,94,0.35)',
+    backgroundColor: 'rgba(214,178,94,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 6,
   },
   translateBtnSport: {
-    borderColor: 'rgba(255,80,0,0.50)',
-    backgroundColor: 'rgba(255,80,0,0.10)',
+    borderColor: 'rgba(255,80,0,0.40)',
+    backgroundColor: 'rgba(255,80,0,0.08)',
+  },
+  translateSpeakBtn: {
+    flex: 1.2,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,80,0,0.40)',
+    backgroundColor: 'rgba(255,80,0,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 5,
   },
   translateBtnText: {
     color: colors.gold,
-    ...type.label,
     fontSize: 11,
-  },
-  // Inquiry
-  inquiryBlock: {
-    marginBottom: 4,
-  },
-  inquiryLabel: {
-    ...type.label,
-    color: colors.textDim,
-    fontSize: 11,
-    marginBottom: 8,
-    letterSpacing: 1.4,
-  },
-  inquiryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 8,
-  },
-  inquiryPill: {
-    width: '23%',
-    aspectRatio: 1.8,
-    borderRadius: 18,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(251,191,36,0.35)',
-    backgroundColor: 'rgba(15,12,8,0.96)',
-  },
-  inquiryPillActive: {
-    borderColor: colors.gold,
-    shadowColor: 'rgba(251,191,36,0.9)',
-    shadowOpacity: 0.8,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  inquiryInner: {
-    flex: 1,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  inquiryText: {
-    color: colors.text,
-    fontSize: 10,
     fontWeight: '800',
+    letterSpacing: 0.4,
   },
-  inquiryGlow: {
-    position: 'absolute',
-    width: '120%',
-    height: '140%',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    shadowColor: 'rgba(251,191,36,0.55)',
-    shadowOpacity: 1,
-    shadowRadius: 26,
-    shadowOffset: { width: 0, height: 0 },
-  },
-  // Presets
-  presetsContainer: {
-    marginTop: 0,
-    marginBottom: 4,
-  },
-  presetsRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  presetChip: {
-    flex: 1,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    paddingTop: 24,
-    borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(15,23,42,0.9)',
-    position: 'relative',
-    minHeight: 64,
-  },
-  presetChipActive: {
-    borderColor: colors.gold,
-    backgroundColor: 'rgba(251,191,36,0.12)',
-  },
-  presetNumber: {
-    position: 'absolute',
-    top: 6,
-    left: 6,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(214,178,94,0.22)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1,
-  },
-  presetNumberText: {
-    color: colors.gold,
-    fontSize: 9,
-    fontWeight: '900',
-  },
-  presetText: {
-    color: colors.textDim,
-    fontSize: 11,
-    fontWeight: '600',
-    lineHeight: 14,
+
+  // Translation result block
+  translationResult: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
 });
