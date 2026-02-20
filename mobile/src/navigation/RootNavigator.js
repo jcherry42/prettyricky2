@@ -126,7 +126,15 @@ export function RootNavigator() {
       {/* Modals */}
       <CommandCenterModal visible={ccOpen} initialTab={ccTab} onClose={() => { setCcOpen(false); setCcTab(null); }} />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
-      <TowerTalkOverlay visible={talkOpen} onClose={() => setTalkOpen(false)} />
+      <TowerTalkOverlay
+        visible={talkOpen}
+        onClose={() => setTalkOpen(false)}
+        onOpenSettings={() => {
+          setTalkOpen(false);
+          setCcTab('settings');
+          setCcOpen(true);
+        }}
+      />
       <CustomerListModal visible={customersOpen} onClose={() => setCustomersOpen(false)} />
       <CustomerEntryMenuModal
         visible={customerEntryOpen}
