@@ -176,12 +176,19 @@ export function RootNavigator() {
             recording={ptt.status === 'recording'}
             disabled={ptt.status === 'uploading' || ptt.status === 'translating' || ptt.status === 'speaking'}
             onPress={() => {
+              // Toggle behavior: press to start, press again to stop.
               if (ptt.status === 'recording') {
                 ptt.stopRecording?.();
-              } else if (ptt.status === 'idle' || ptt.status === 'done' || ptt.status === 'error') {
+                return;
+              }
+
+              if (ptt.status === 'idle' || ptt.status === 'done' || ptt.status === 'error') {
                 setPttOpen(true);
                 ptt.startRecording?.();
+                return;
               }
+
+              // If we're mid-upload/translate/speak, ignore taps.
             }}
           />
           <PttOverlayView visible={pttOpen} onClose={() => setPttOpen(false)} />
