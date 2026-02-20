@@ -82,7 +82,7 @@ export function NetworkProvider({ children }) {
       setSyncStatus('error');
       setTimeout(() => setSyncStatus('idle'), 3000);
     }
-  }, [syncStatus]);
+  }, []);
 
   const value = useMemo(
     () => ({
