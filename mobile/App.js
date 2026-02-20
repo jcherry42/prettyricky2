@@ -9,6 +9,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
+import { AmbientLightingProvider } from './src/context/AmbientLightingContext';
 import { PttProvider } from './src/context/PttContext';
 import { TaillightFlashProvider } from './src/context/TaillightFlashContext';
 import { CustomerProvider } from './src/context/CustomerContext';
