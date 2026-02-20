@@ -17,7 +17,7 @@ export function PicassoSwirls({ mode = 'dark', style, intensity = 0.6 }) {
   const animValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const anim = Animated.loop(
       Animated.sequence([
         Animated.timing(animValue, {
           toValue: 1,
@@ -30,7 +30,9 @@ export function PicassoSwirls({ mode = 'dark', style, intensity = 0.6 }) {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    anim.start();
+    return () => anim.stop();
   }, [animValue]);
 
   const isDark = mode === 'dark';
