@@ -323,11 +323,10 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Translation System & PTT - Sprint 6 - COMPLETED"
-    - "Customer Management Endpoints for Sprint 2 - COMPLETED"
-    - "License Scanner UI Testing - COMPLETED"
-  stuck_tasks: 
-    - "Printer endpoints - minor HTML response parsing issue (non-critical)"
+    - "Engine Sound Profiles - Audio + Haptics working"
+    - "Performance Optimization - Critical Bug Fixes"
+    - "Tower Talk + Translation gpt-4o upgrade"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
