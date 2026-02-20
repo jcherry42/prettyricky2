@@ -361,7 +361,7 @@ export function CommandCenterModal({ visible, onClose }) {
                 ) : (
                   <FlatList
                     data={filteredCustomers.slice(0, 10)}
-                    keyExtractor={(item) => item.customer_id}
+                    keyExtractor={(item) => item.customer_id || item.id}
                     renderItem={({ item }) => (
                       <View style={styles.customerRow}>
                         <View style={{ flex: 1 }}>
