@@ -6,22 +6,48 @@ import { useAppSettings } from './AppSettingsContext';
 
 const PttContext = createContext(null);
 
-const MAX_RECORDING_MS = 15000; // 15 second maximum
+const MAX_RECORDING_MS = 15000; // 15-second hard cap
 
 export function PttProvider({ children }) {
   const { settings, setPttDirection } = useAppSettings();
 
   const targetLang = settings.defaultTargetLanguage;
-  const direction = settings.pttDirection || 'en_to_target'; // 'en_to_target' | 'target_to_en'
+  const direction = settings.pttDirection || 'en_to_target';
 
-  const [status, setStatus] = useState('idle'); // 'idle' | 'recording' | 'uploading' | 'translating' | 'speaking' | 'done' | 'error'
+  // States: 'idle' | 'requesting' | 'recording' | 'uploading' | 'translating' | 'speaking' | 'done' | 'error'
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
   const [result, setResult] = useState({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
+  const [elapsedMs, setElapsedMs] = useState(0);
 
   const recordingRef = useRef(null);
   const playbackRef = useRef(null);
   const timeoutRef = useRef(null);
+  const timerRef = useRef(null);
+  const timerStartRef = useRef(null);
   const pendingStopRef = useRef(false);
+
+  // stopRecording is defined after startRecording; we use this ref so the
+  // auto-stop timeout and the startRecording body can always call the
+  // latest version without creating a circular useCallback dependency.
+  const stopFnRef = useRef(null);
+
+  // --- Elapsed timer ---
+  const startTimer = useCallback(() => {
+    timerStartRef.current = Date.now();
+    setElapsedMs(0);
+    timerRef.current = setInterval(() => {
+      setElapsedMs(Date.now() - (timerStartRef.current || Date.now()));
+    }, 100);
+  }, []);
+
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setElapsedMs(0);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -32,51 +58,66 @@ export function PttProvider({ children }) {
       if (playbackRef.current) {
         playbackRef.current.unloadAsync().catch(() => {});
       }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
 
   const startRecording = useCallback(async () => {
+    // Only start from a clean state
+    if (status !== 'idle' && status !== 'done' && status !== 'error') return;
+
+    setError(null);
+    setResult({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
+    pendingStopRef.current = false;
+    setStatus('requesting');
+
     try {
-      // Guard: do not re-enter.
-      if (status === 'recording' || status === 'uploading' || status === 'translating' || status === 'speaking') {
+      // --- Request microphone permission ---
+      const perm = await Audio.requestPermissionsAsync();
+      if (!perm.granted) {
+        setStatus('error');
+        setError('Microphone permission denied. Go to Settings → Supercharg\'d → Microphone to enable it.');
         return;
       }
 
-      setError(null);
-      pendingStopRef.current = false;
-      setStatus('recording');
-
-      const perm = await Audio.requestPermissionsAsync();
-      if (!perm.granted) throw new Error('Microphone permission not granted');
-
+      // Set audio mode for recording
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
+      // Create recording object
       const { recording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
 
-      recordingRef.current = recording;
+      // --- RACE CONDITION FIX ---
+      // If the user tapped "stop" while we were requesting permission or
+      // initializing the recorder, abort cleanly instead of starting.
+      if (pendingStopRef.current) {
+        await recording.stopAndUnloadAsync().catch(() => {});
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
+        setStatus('idle');
+        return;
+      }
 
-      // NOTE: In this app, PTT is press-to-toggle (not press-and-hold), so we no longer
-      // treat "pendingStop" as a normal early-exit path.
+      // Recording is live — update state and start elapsed timer
+      recordingRef.current = recording;
+      setStatus('recording');
+      startTimer();
 
       // Auto-stop after max duration
       timeoutRef.current = setTimeout(() => {
-        if (recordingRef.current) {
-          stopRecording();
-        }
+        stopFnRef.current?.();
       }, MAX_RECORDING_MS);
+
     } catch (e) {
+      const msg = e?.message || String(e);
       setStatus('error');
-      setError(String(e?.message || e));
+      setError(`Could not start recording: ${msg}`);
     }
-  }, [status, stopRecording]);
+  }, [status, targetLang, startTimer]);
 
   const stopRecording = useCallback(async () => {
     pendingStopRef.current = true;
@@ -85,26 +126,28 @@ export function PttProvider({ children }) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    stopTimer();
 
     const rec = recordingRef.current;
     if (!rec) {
-      // If user taps stop while we're not recording, ignore.
+      // Recording object not yet created (still in 'requesting' state).
+      // pendingStopRef is set; startRecording will detect it and abort.
       return;
     }
+    recordingRef.current = null;
 
     try {
       setStatus('uploading');
       await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
-      recordingRef.current = null;
 
-      // Immediately release mic access.
+      // Release microphone immediately
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
       }).catch(() => {});
 
-      if (!uri) throw new Error('No recording URI');
+      if (!uri) throw new Error('Recording produced no audio file');
 
       const sourceLang = direction === 'en_to_target' ? 'en' : targetLang;
       const outTarget = direction === 'en_to_target' ? targetLang : 'en';
@@ -120,10 +163,14 @@ export function PttProvider({ children }) {
       setResult(out);
       setStatus('done');
     } catch (e) {
+      const msg = e?.message || String(e);
       setStatus('error');
-      setError(String(e?.message || e));
+      setError(msg);
     }
-  }, [direction, targetLang]);
+  }, [direction, targetLang, stopTimer]);
+
+  // Keep stopFnRef current on every render (no deps needed for this)
+  stopFnRef.current = stopRecording;
 
   const speakTranslated = useCallback(async () => {
     try {
@@ -140,7 +187,7 @@ export function PttProvider({ children }) {
       const format = res?.format || 'mp3';
       const b64 = res?.audio_base64 || '';
       const mime = format === 'mp3' ? 'audio/mpeg' : `audio/${format}`;
-      if (!b64) throw new Error('TTS returned empty audio');
+      if (!b64) throw new Error('TTS returned no audio');
 
       const uri = `data:${mime};base64,${b64}`;
 
@@ -168,10 +215,12 @@ export function PttProvider({ children }) {
   }, [direction, setPttDirection]);
 
   const reset = useCallback(() => {
+    stopTimer();
     setStatus('idle');
     setError(null);
+    setElapsedMs(0);
     setResult({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
-  }, [targetLang]);
+  }, [targetLang, stopTimer]);
 
   const value = useMemo(
     () => ({
@@ -180,13 +229,14 @@ export function PttProvider({ children }) {
       status,
       error,
       result,
+      elapsedMs,
       startRecording,
       stopRecording,
       toggleDirection,
       speakTranslated,
       reset,
     }),
-    [direction, targetLang, status, error, result, startRecording, stopRecording, toggleDirection, speakTranslated, reset]
+    [direction, targetLang, status, error, result, elapsedMs, startRecording, stopRecording, toggleDirection, speakTranslated, reset]
   );
 
   return <PttContext.Provider value={value}>{children}</PttContext.Provider>;
