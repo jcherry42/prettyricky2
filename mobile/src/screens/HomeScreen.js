@@ -44,6 +44,78 @@ function AmbientStrip({ active, color }) {
   );
 }
 
+/* --------------------------------------------------------------------------
+ * HomeListHeader — defined OUTSIDE HomeScreen so its identity is STABLE.
+ * FlatList reconciles by component type: a new function reference on every
+ * HomeScreen render would cause the header (and QuickCompose inside it) to
+ * unmount/remount, losing all state and keyboard focus.
+ * -------------------------------------------------------------------------- */
+const HomeListHeader = memo(function HomeListHeader({
+  filteredCount,
+  searchQuery,
+  onSearchChange,
+  stripColor,
+}) {
+  return (
+    <View>
+      {/* Header clearance */}
+      <View style={{ height: 56 }} />
+
+      <AmbientStrip active color={stripColor} />
+
+      {/* SPORT button */}
+      <View style={styles.sportRow}>
+        <SportModeButton />
+      </View>
+
+      <AmbientStrip active color={stripColor} />
+
+      {/* Chrome accent divider */}
+      <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 8 }} />
+
+      {/* Search bar with wood bezel styling */}
+      <View style={styles.searchContainer}>
+        <LinearGradient
+          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.searchBezel}
+        >
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={18} color={colors.gold} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search customers..."
+              placeholderTextColor={colors.textMute}
+              value={searchQuery}
+              onChangeText={onSearchChange}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+              onSubmitEditing={Keyboard.dismiss}
+            />
+          </View>
+        </LinearGradient>
+      </View>
+
+      {/* Header with customer count + network status */}
+      <View style={styles.listHeader}>
+        <Text style={styles.listTitle}>CUSTOMERS</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <NetworkStatusDot />
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{filteredCount}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* QuickCompose box — stable mount, no remount on parent re-render */}
+      <QuickCompose />
+    </View>
+  );
+});
+
 export function HomeScreen() {
   const { triggerFlash } = useTaillightFlash();
   const { settings } = useAppSettings();
