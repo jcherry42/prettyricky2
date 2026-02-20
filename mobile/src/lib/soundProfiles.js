@@ -45,7 +45,7 @@ async function ensureAudioMode() {
   try {
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,          // ← plays even when iOS silent switch is ON
+      playsInSilentModeIOS: false,   // ← RESPECT the iOS silent switch at all times
       shouldDuckAndroid: false,
       playThroughEarpieceAndroid: false,
     });
