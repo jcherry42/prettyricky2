@@ -7,6 +7,14 @@ user_problem_statement: |
   codebase. Clean conversion with NO web app remnants. Preserve Mercedes-Benz designo UI aesthetic.
   Target platforms: iOS + Android. World-class quality with comprehensive testing.
 
+latest_fix:
+  date: "2025-07"
+  issue: "Expo Go render error: TypeError expected dynamic type 'boolean' but had type 'string'"
+  root_cause: "react-native-screens JS version (^4.23.0) was newer than the native version baked into Expo Go SDK 54. Versions 4.17.0+ break with Expo Go due to native code changes. JSI type mismatch at C++ boundary."
+  fix_applied: "Downgraded react-native-screens from ^4.23.0 to 4.16.0 (last compatible version with Expo Go SDK 54) in mobile/package.json"
+  user_action_required: "Run 'yarn install' in the mobile/ directory, then 'npx expo start --clear' to restart with cleared Metro cache"
+  status: "FIX_APPLIED_PENDING_USER_VERIFICATION"
+
 conversion_progress:
   current_sprint: "Sprint 8 - Print Center"
   status: "IN PROGRESS"
