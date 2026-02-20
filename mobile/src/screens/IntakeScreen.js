@@ -202,6 +202,8 @@ function IntakeHub({ navigation }) {
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
             contentContainerStyle={{ paddingBottom: 100 }}
             showsVerticalScrollIndicator={false}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.gold} />
             }
