@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Mobile-first screen container: consistent spacing + safe areas.
-export function Screen({ children, style }) {
+export const Screen = memo(function Screen({ children, style }) {
   const insets = useSafeAreaInsets();
-
   return (
     <View
       style={[
@@ -22,10 +20,8 @@ export function Screen({ children, style }) {
       {children}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-  },
+  root: { flex: 1 },
 });
