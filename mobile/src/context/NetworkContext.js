@@ -59,8 +59,11 @@ export function NetworkProvider({ children }) {
     return () => clearInterval(interval);
   }, []);
 
+  const syncStatusRef = useRef(syncStatus);
+  syncStatusRef.current = syncStatus;
+
   const triggerSync = useCallback(async () => {
-    if (syncStatus === 'syncing') return;
+    if (syncStatusRef.current === 'syncing') return;
     setSyncStatus('syncing');
     try {
       const result = await syncQueue((processed, total) => {
