@@ -174,7 +174,7 @@ export function RootNavigator() {
             flagLabel={flagFor(settings.defaultTargetLanguage)}
             badgeDirection={settings.pttDirection === 'target_to_en' ? '\u2192 EN' : 'EN \u2192'}
             recording={ptt.status === 'recording'}
-            disabled={ptt.status === 'processing' || ptt.status === 'speaking'}
+            disabled={ptt.status === 'uploading' || ptt.status === 'translating' || ptt.status === 'speaking'}
             onPress={() => {
               if (ptt.status === 'recording') {
                 ptt.stopRecording?.();
