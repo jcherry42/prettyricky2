@@ -280,7 +280,7 @@ export function HomeScreen() {
         <FlatList
           data={filteredCustomers}
           renderItem={renderCustomerMemo}
-          keyExtractor={(item) => item.customer_id || item.id || `item-${Math.random()}`}
+          keyExtractor={(item) => item.customer_id || item.id || item._id || String(item.name || '')}
           getItemLayout={getItemLayout}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
