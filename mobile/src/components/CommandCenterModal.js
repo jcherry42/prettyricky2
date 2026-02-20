@@ -151,6 +151,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const [inventorySearch, setInventorySearch] = useState('');
 
   const ipInputRefs = useRef([]);
+  const printerNameRef = useRef(null);
 
   const fullIp = useMemo(() => ipParts.join('.'), [ipParts]);
 
