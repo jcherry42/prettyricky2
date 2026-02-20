@@ -118,7 +118,7 @@ export function RootNavigator() {
 
       {/* Floating button cluster: CHECK | EJECT | TOWER TALK */}
       <FloatingButtonCluster
-        onCheck={() => setCcOpen(true)}
+        onCheck={() => { setCcTab(null); setCcOpen(true); }}
         onEject={() => setPrintOpen(true)}
         onTowerTalk={() => setTalkOpen(true)}
       />
