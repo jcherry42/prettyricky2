@@ -231,7 +231,7 @@ const PRESET_RESPONSES = {
       
       setState({ status: 'done', error: null });
     } catch (e) {
-      const errorMsg = e?.message || String(e) || 'Text-to-speech failed';
+      const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `TTS error: ${errorMsg}` });
       console.error('[TowerTalk] TTS error:', errorMsg, 'Language:', language);
     }
