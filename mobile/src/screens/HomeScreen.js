@@ -61,7 +61,7 @@ export function HomeScreen() {
   // Remove ambient lighting subscription from HomeScreen \u2014 AmbientLightingSystem
   // overlay handles the visual effect. HomeScreen stays fully memoized.
   const sportActive = Boolean(settings.sportMode);
-  const stripColor = sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';\n
+  const stripColor = sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';
   // Load customers on mount
   useEffect(() => {
     fetchCustomers().catch(() => {});
