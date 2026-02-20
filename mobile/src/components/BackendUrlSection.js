@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
     letterSpacing: 1.6,
   },
   card: {
-    borderRadius: 18,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    backgroundColor: 'rgba(0,0,0,0.22)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     padding: 12,
   },
   row: {
