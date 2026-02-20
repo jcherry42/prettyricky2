@@ -12,6 +12,8 @@ import { EmergencyInquiryModal } from '../components/EmergencyInquiryModal';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
+import { useToast } from '../context/ToastContext';
+import { SportModeButton } from '../components/SportModeButton';
 import { ChromeAccent } from '../components/DesignoTextures';
 import { NetworkStatusDot } from '../components/NetworkStatusDot';
 import { CustomerListSkeleton } from '../components/LoadingSkeleton';
