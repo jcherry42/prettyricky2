@@ -28,6 +28,35 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 router = APIRouter()
 
 
+import re as _re
+
+def _strip_emoji(text: str) -> str:
+    """Remove all emoji / Unicode pictograph characters from a string.
+    GPT-4o occasionally adds emojis to responses despite explicit instructions;
+    this acts as a deterministic safety net before returning to the client.
+    """
+    # Broad pattern: emoji ranges + variation selectors + skin-tone modifiers
+    emoji_pattern = _re.compile(
+        "["
+        "\U0001F600-\U0001F64F"  # Emoticons
+        "\U0001F300-\U0001F5FF"  # Misc symbols & pictographs
+        "\U0001F680-\U0001F6FF"  # Transport & map symbols
+        "\U0001F1E0-\U0001F1FF"  # Flags (regional indicator letters)
+        "\U00002702-\U000027B0"  # Dingbats
+        "\U000024C2-\U0001F251"  # Enclosed chars & misc
+        "\U0001F900-\U0001F9FF"  # Supplemental symbols & pictographs
+        "\U00002600-\U000026FF"  # Misc symbols
+        "\U0000FE0F"             # Variation selector-16 (emoji presentation)
+        "\U0001FA00-\U0001FA6F"  # Chess, medical etc.
+        "\U0001FA70-\U0001FAFF"  # Extended pictographic
+        "]+",
+        flags=_re.UNICODE,
+    )
+    return emoji_pattern.sub("", text).strip()
+
+
+
+
 # ---------- Models (match server.py schema) ----------
 
 INQUIRY_TYPE_GUIDANCE = {
