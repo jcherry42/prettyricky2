@@ -137,7 +137,7 @@ RULE 1 — LENGTH: EXACTLY 2 to 3 sentences. Not 4. Not 5. 2 or 3 only.
 RULE 2 — EMOJIS: ZERO EMOJIS. Not one. Not a subtle one. None. Zero. 🚫 = FAILURE.
 RULE 3 — BRACKETS/PLACEHOLDERS: Zero brackets, zero parenthetical notes, zero [NAME] tokens.
 RULE 4 — TONE: Sound like a trusted friend who happens to know cars, NOT a salesperson.
-RULE 5 — SIGN-OFF: End with only your first name — "{salesperson.split()[0] if salesperson else 'Jake'}"
+RULE 5 — SIGN-OFF: End with only the first name — "{first_name}"
 RULE 6 — FORMAT: One ready-to-copy text message. Plain text. No lists, no headers, no asterisks.
 RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If yes, rewrite completely."""
 
