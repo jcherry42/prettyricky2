@@ -262,7 +262,7 @@ export function HomeScreen() {
   };
 
   return (
-    <Pressable style={{ flex: 1 }} onPress={triggerFlash}>
+    <Pressable style={{ flex: 1 }} onPress={() => { Keyboard.dismiss(); triggerFlash(); }}>
       <Screen>
         <FlatList
           data={filteredCustomers}
@@ -276,6 +276,8 @@ export function HomeScreen() {
           maxToRenderPerBatch={10}
           windowSize={7}
           initialNumToRender={8}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
