@@ -60,28 +60,26 @@ export function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
 
+  // Remove ambient lighting subscription from HomeScreen \u2014 AmbientLightingSystem
+  // overlay handles the visual effect. HomeScreen stays fully memoized.
   const sportActive = Boolean(settings.sportMode);
-  // Use ambient lighting color if active, otherwise fallback to SPORT/default
-  const stripColor = ambientEnabled && ambientColor
-    ? `${ambientColor}${Math.round(ambientOpacity * 5 * 255).toString(16).padStart(2, '0')}`
-    : sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';
-
+  const stripColor = sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';\n
   // Load customers on mount
   useEffect(() => {
-    fetchCustomers().catch(() => {
-      // Silent fail - error state handled by context
-    });
+    fetchCustomers().catch(() => {});
   }, [fetchCustomers]);
 
-  // Filter customers based on search
-  const filteredCustomers = customers.filter((customer) => {
-    if (!searchQuery.trim()) return true;
+  // Filter customers \u2014 memoized so it only recomputes when inputs change
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return customers;
     const query = searchQuery.toLowerCase();
-    const name = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
-    const phone = customer.phone || '';
-    const email = customer.email || '';
-    return name.includes(query) || phone.includes(query) || email.includes(query);
-  });
+    return customers.filter((c) => {
+      const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
+      const phone = String(c.phone || '');
+      const email = String(c.email || '');
+      return name.includes(query) || phone.includes(query) || email.includes(query);
+    });
+  }, [customers, searchQuery]);
 
   const handleCustomerPress = (customer) => {
     setSelectedCustomer(customer);
