@@ -44,6 +44,7 @@ export function BackendUrlSection() {
 
     impactLight();
     await setBackendUrlOverride(trimmed);
+    invalidateUrlCache(); // Clear cached URL so next request uses new value
     setCurrent(trimmed);
     notificationSuccess();
     Alert.alert('Saved', 'Backend URL updated. (You may need to reopen modals that were already open.)');
