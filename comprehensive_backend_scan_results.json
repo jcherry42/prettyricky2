@@ -1,0 +1,302 @@
+{
+  "scan_type": "comprehensive_backend_performance_scan",
+  "timestamp": "2026-02-20T18:10:53.157297",
+  "backend_url": "http://localhost:8001/api",
+  "summary": {
+    "total_tests": 19,
+    "passed": 17,
+    "failed": 2,
+    "success_rate": "89.5%",
+    "avg_response_time": "0.48s",
+    "max_response_time": "1.60s",
+    "overall_score": "GOOD",
+    "recommendation": "Good performance with minor issues to address"
+  },
+  "results_by_category": {
+    "health": [
+      {
+        "test": "Backend Health Check",
+        "success": true,
+        "details": "Status: healthy, Response: 0.006s",
+        "response_time": 0.0059015750885009766,
+        "timestamp": "2026-02-20T18:10:43.245702",
+        "extra_data": {
+          "status_data": {
+            "status": "healthy",
+            "timestamp": "2026-02-20T18:10:43.244011+00:00",
+            "scheduler": {
+              "isRunning": true,
+              "nextRefresh": "2026-02-21T10:00:00-05:00",
+              "schedule": "Mon-Sat 10:00 AM ET"
+            },
+            "dataSources": {
+              "total": 0,
+              "active": 0,
+              "healthy": 0,
+              "needsAttention": 0
+            }
+          }
+        }
+      }
+    ],
+    "tower_talk": [
+      {
+        "test": "Tower Talk - New Lead",
+        "success": false,
+        "details": "inquiryType: new_lead, Sentences: 3, Time: 1.55s - Issues: Contains emojis - Signs off with Jake \u2713",
+        "response_time": 1.5535073280334473,
+        "timestamp": "2026-02-20T18:10:44.840014",
+        "extra_data": {
+          "response_preview": "The 2024 Porsche Cayenne is an exceptional vehicle that brings luxury and performance to the forefront, and with limited availability, it\u2019s attracting",
+          "sentence_count": 3,
+          "has_emojis": true,
+          "has_brackets": false,
+          "signs_off_with_first_name": true,
+          "quality_issues": [
+            "Contains emojis"
+          ]
+        }
+      },
+      {
+        "test": "Tower Talk - Price Objection",
+        "success": true,
+        "details": "inquiryType: objection, Sentences: 3, Time: 1.60s - Signs off with Carlos \u2713",
+        "response_time": 1.5972583293914795,
+        "timestamp": "2026-02-20T18:10:46.477074",
+        "extra_data": {
+          "response_preview": "I understand that the price might seem high initially, but waiting risks losing out on both this particular M3 and current interest rates, which are e",
+          "sentence_count": 3,
+          "has_emojis": false,
+          "has_brackets": false,
+          "signs_off_with_first_name": true,
+          "quality_issues": []
+        }
+      },
+      {
+        "test": "Tower Talk - Availability Check",
+        "success": true,
+        "details": "inquiryType: availability, Sentences: 3, Time: 1.36s",
+        "response_time": 1.3600938320159912,
+        "timestamp": "2026-02-20T18:10:47.878064",
+        "extra_data": {
+          "response_preview": "The 2024 Tesla Model 3 is indeed available, but with high demand, inventory can move quickly. Owning this cutting-edge vehicle offers incredible benef",
+          "sentence_count": 3,
+          "has_emojis": false,
+          "has_brackets": false,
+          "signs_off_with_first_name": false,
+          "quality_issues": []
+        }
+      },
+      {
+        "test": "Tower Talk - Financing Inquiry",
+        "success": false,
+        "details": "inquiryType: financing, Sentences: 3, Time: 1.57s - Issues: Contains emojis - Signs off with Alex \u2713",
+        "response_time": 1.5683610439300537,
+        "timestamp": "2026-02-20T18:10:49.487009",
+        "extra_data": {
+          "response_preview": "We work with a range of strong lenders to offer competitive financing options for the 2024 Lexus RX, whatever your credit situation might be. This mod",
+          "sentence_count": 3,
+          "has_emojis": true,
+          "has_brackets": false,
+          "signs_off_with_first_name": true,
+          "quality_issues": [
+            "Contains emojis"
+          ]
+        }
+      },
+      {
+        "test": "Tower Talk - Follow Up",
+        "success": true,
+        "details": "inquiryType: follow_up, Sentences: 3, Time: 1.33s",
+        "response_time": 1.3274030685424805,
+        "timestamp": "2026-02-20T18:10:50.855000",
+        "extra_data": {
+          "response_preview": "Hi Tom, just wanted to follow up on last week's test drive of the 2024 Ford Mustang. As these cars are moving quickly and rates can change, it's a gre",
+          "sentence_count": 3,
+          "has_emojis": false,
+          "has_brackets": false,
+          "signs_off_with_first_name": false,
+          "quality_issues": []
+        }
+      },
+      {
+        "test": "Tower Talk - Backward Compatibility",
+        "success": true,
+        "details": "Backward compatibility test, Time: 1.40s, Response length: 217",
+        "response_time": 1.3985931873321533,
+        "timestamp": "2026-02-20T18:10:52.293970",
+        "extra_data": {
+          "response_preview": "Hi Sam, it's great to hear you're interested in the vehicle. With the market moving quickly, securin"
+        }
+      }
+    ],
+    "translation": [
+      {
+        "test": "Translation - BMW Pricing EN\u2192ES",
+        "success": true,
+        "details": "en\u2192es, Time: 0.00s, Auto terms preserved: True",
+        "response_time": 0.0013399124145507812,
+        "timestamp": "2026-02-20T18:10:52.335990",
+        "extra_data": {
+          "original_preview": "The 2024 BMW X5 xDrive40i is priced at $67,295 wit...",
+          "translated_preview": "El BMW X5 xDrive40i 2024 tiene un precio de $67,29...",
+          "detected_lang": "en",
+          "confidence": 0.99,
+          "automotive_preserved": true
+        }
+      },
+      {
+        "test": "Translation - Trade-in Value EN\u2192KO",
+        "success": true,
+        "details": "en\u2192ko, Time: 0.00s, Auto terms preserved: True",
+        "response_time": 0.0010480880737304688,
+        "timestamp": "2026-02-20T18:10:52.377958",
+        "extra_data": {
+          "original_preview": "Your trade-in appraisal came back at $24,000 which...",
+          "translated_preview": "\uadc0\ud558\uc758 \ucc28\ub7c9 \ubcf4\uc0c1 \ud310\ub9e4 \ud3c9\uac00\uc561\uc740 $24,000\ub85c, KBB \uac00\uce58\ubcf4\ub2e4 $3,000 \ub192\uc740 \uae08\uc561\uc785...",
+          "detected_lang": "en",
+          "confidence": 0.99,
+          "automotive_preserved": true
+        }
+      },
+      {
+        "test": "Translation - Special Financing EN\u2192FR",
+        "success": true,
+        "details": "en\u2192fr, Time: 0.00s, Auto terms preserved: True",
+        "response_time": 0.0010204315185546875,
+        "timestamp": "2026-02-20T18:10:52.419912",
+        "extra_data": {
+          "original_preview": "We have special financing rates this month only. C...",
+          "translated_preview": "Nous avons des taux de financement sp\u00e9ciaux ce moi...",
+          "detected_lang": "en",
+          "confidence": 0.99,
+          "automotive_preserved": true
+        }
+      }
+    ],
+    "tts": [
+      {
+        "test": "TTS - Spanish BMW",
+        "success": true,
+        "details": "Lang: es, Voice: coral, Audio: 124800 chars, Time: 0.00s (cached)",
+        "response_time": 0.002126455307006836,
+        "timestamp": "2026-02-20T18:10:52.422396",
+        "extra_data": {
+          "language": "es",
+          "voice_used": "coral",
+          "format": "mp3",
+          "audio_length": 124800,
+          "cached": true,
+          "has_audio_content": true
+        }
+      },
+      {
+        "test": "TTS - French Financing",
+        "success": true,
+        "details": "Lang: fr, Voice: shimmer, Audio: 111360 chars, Time: 0.00s (cached)",
+        "response_time": 0.001634359359741211,
+        "timestamp": "2026-02-20T18:10:52.424217",
+        "extra_data": {
+          "language": "fr",
+          "voice_used": "shimmer",
+          "format": "mp3",
+          "audio_length": 111360,
+          "cached": true,
+          "has_audio_content": true
+        }
+      },
+      {
+        "test": "TTS - Korean Test Drive",
+        "success": true,
+        "details": "Lang: ko, Voice: echo, Audio: 97920 chars, Time: 0.00s (cached)",
+        "response_time": 0.0015292167663574219,
+        "timestamp": "2026-02-20T18:10:52.425969",
+        "extra_data": {
+          "language": "ko",
+          "voice_used": "echo",
+          "format": "mp3",
+          "audio_length": 97920,
+          "cached": true,
+          "has_audio_content": true
+        }
+      },
+      {
+        "test": "TTS - English Ready",
+        "success": true,
+        "details": "Lang: en, Voice: nova, Audio: 71040 chars, Time: 0.00s (cached)",
+        "response_time": 0.0013158321380615234,
+        "timestamp": "2026-02-20T18:10:52.427453",
+        "extra_data": {
+          "language": "en",
+          "voice_used": "nova",
+          "format": "mp3",
+          "audio_length": 71040,
+          "cached": true,
+          "has_audio_content": true
+        }
+      }
+    ],
+    "customer_crud": [
+      {
+        "test": "Customer Creation",
+        "success": true,
+        "details": "Created customer ID: ad988a72-65f7-4b98-9d6d-f3b3e7bd8ee9, Time: 0.00s",
+        "response_time": 0.0023276805877685547,
+        "timestamp": "2026-02-20T18:10:52.469919",
+        "extra_data": {
+          "customer_id": "ad988a72-65f7-4b98-9d6d-f3b3e7bd8ee9",
+          "name": null
+        }
+      },
+      {
+        "test": "Customer List",
+        "success": true,
+        "details": "Retrieved 3 customers, Total: 3, Time: 0.00s",
+        "response_time": 0.0024077892303466797,
+        "timestamp": "2026-02-20T18:10:52.513910",
+        "extra_data": {
+          "customer_count": 3,
+          "total": 3
+        }
+      },
+      {
+        "test": "Customer Deletion",
+        "success": true,
+        "details": "Deleted customer ad988a72-65f7-4b98-9d6d-f3b3e7bd8ee9, Status: 200, Time: 0.00s",
+        "response_time": 0.0015561580657958984,
+        "timestamp": "2026-02-20T18:10:52.515505",
+        "extra_data": {
+          "deleted_customer_id": "ad988a72-65f7-4b98-9d6d-f3b3e7bd8ee9"
+        }
+      }
+    ],
+    "vin_decode": [
+      {
+        "test": "VIN Decode (Alternative)",
+        "success": true,
+        "details": "VIN: JM3KKEHA3T1355103 \u2192 2026 MAZDA CX-90, Time: 0.36s",
+        "response_time": 0.35509324073791504,
+        "timestamp": "2026-02-20T18:10:53.155134",
+        "extra_data": {
+          "vin": "JM3KKEHA3T1355103",
+          "year": "2026",
+          "make": "MAZDA",
+          "model": "CX-90"
+        }
+      }
+    ],
+    "voice_translate": [
+      {
+        "test": "Voice Translate - Invalid Format",
+        "success": true,
+        "details": "Invalid format test: Expected 422, Got 422, Time: 0.00s",
+        "response_time": 0.001811981201171875,
+        "timestamp": "2026-02-20T18:10:53.157010",
+        "extra_data": {
+          "expected_status": 422,
+          "actual_status": 422
+        }
+      }
+    ]
+  }
+}
