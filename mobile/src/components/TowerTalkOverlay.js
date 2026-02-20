@@ -142,7 +142,7 @@ export function TowerTalkOverlay({ visible, onClose }) {
       setState({ status: 'done', error: null });
       notificationSuccess();
     } catch (e) {
-      const errorMsg = e?.message || String(e) || 'Translation failed';
+      const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `Translation error: ${errorMsg}` });
       notificationError();
       console.error('[TowerTalk] Translation error:', errorMsg, 'Lang:', lang);
