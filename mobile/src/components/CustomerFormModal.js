@@ -373,11 +373,12 @@ const styles = StyleSheet.create({
   input: {
     ...type.body,
     color: colors.text,
-    backgroundColor: colors.panel,
-    borderWidth: 1,
-    borderColor: colors.stroke,
-    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.10)',
+    borderRadius: 0,
     padding: 12,
+    paddingHorizontal: 4,
     marginBottom: 16,
   },
   textArea: {
