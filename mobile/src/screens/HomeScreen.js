@@ -262,21 +262,35 @@ export function HomeScreen() {
     return null;
   };
 
+  // CustomerCard: marginVertical 6 * 2 + padding 14 * 2 + content ~50px = ~94px total
+  const CARD_HEIGHT = 94;
+  const getItemLayout = useCallback((_data, index) => ({
+    length: CARD_HEIGHT,
+    offset: CARD_HEIGHT * index,
+    index,
+  }), []);
+
+  const renderCustomerMemo = useCallback(({ item }) => (
+    <CustomerCard customer={item} onPress={handleCustomerPress} />
+  ), [handleCustomerPress]);
+
   return (
     <Pressable style={{ flex: 1 }} onPress={() => { Keyboard.dismiss(); triggerFlash(); }}>
       <Screen>
         <FlatList
           data={filteredCustomers}
-          renderItem={renderCustomer}
+          renderItem={renderCustomerMemo}
           keyExtractor={(item) => item.customer_id || item.id || `item-${Math.random()}`}
+          getItemLayout={getItemLayout}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          removeClippedSubviews={true}
+          removeClippedSubviews
           maxToRenderPerBatch={10}
-          windowSize={7}
-          initialNumToRender={8}
+          updateCellsBatchingPeriod={50}
+          windowSize={5}
+          initialNumToRender={10}
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
           refreshControl={
