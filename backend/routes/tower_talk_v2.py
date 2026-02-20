@@ -91,8 +91,9 @@ async def tower_talk(request: TowerTalkRequest):
         trade_vin = ctx.get("tradeVin", "")
         trade_mileage = ctx.get("tradeMileage", "")
         dealership = ctx.get("dealershipName", "our dealership")
-        salesperson = ctx.get("salespersonName", "Your Sales Team")
-        first_name = salesperson.split()[0] if salesperson and salesperson != "the sales rep" else "Your Team"
+        salesperson = ctx.get("salespersonName", "")
+        first_name = salesperson.strip().split()[0] if salesperson and salesperson.strip() else ""
+        signoff_rule = f'RULE 5 — SIGN-OFF: End with a new line containing only your first name: "{first_name}"' if first_name else "RULE 5 — SIGN-OFF: No sign-off needed. End with the closing question only."
 
         # Build trade-in context line
         trade_context = ""
