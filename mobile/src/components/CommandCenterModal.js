@@ -672,7 +672,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* PRINTERS */}
           {activeTab === 'printers' ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
               {/* Active printer */}
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Active Printer</SectionTitle>
