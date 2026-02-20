@@ -357,7 +357,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* CUSTOMERS */}
           {activeTab === 'customers' ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
               <GlassCard style={{ marginTop: 14 }}>
                 <View style={styles.searchHeader}>
                   <Ionicons name="search" size={16} color={colors.gold} />
