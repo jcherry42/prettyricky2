@@ -523,7 +523,11 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* SETTINGS */}
           {activeTab === 'settings' ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView
+              ref={scrollRef}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Language</SectionTitle>
                 <View style={{ height: 14 }} />
