@@ -283,6 +283,13 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
         <View style={styles.sheet}>
+          {/* Brushed aluminum top specular edge */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.00)']}
+            style={styles.sheetTopHighlight}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
           {/* Header */}
           <View style={styles.header}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
