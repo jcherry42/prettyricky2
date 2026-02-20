@@ -305,7 +305,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* DASHBOARD */}
           {activeTab === 'dashboard' ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
               {loadingStats ? (
                 <View style={styles.centerContent}>
                   <ActivityIndicator color={colors.gold} size="large" />
