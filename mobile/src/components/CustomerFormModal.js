@@ -124,7 +124,12 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
             <View style={{ width: 28 }} />
           </LinearGradient>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+          >
             {/* Validation error banner */}
             {validationError && (
               <View style={styles.validationBanner}>
