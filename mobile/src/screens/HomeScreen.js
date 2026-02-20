@@ -353,7 +353,7 @@ export function HomeScreen() {
           onSave={handleSave}
         />
       </Screen>
-    </Pressable>
+    </View>
   );
 }
 
