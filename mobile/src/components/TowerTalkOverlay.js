@@ -25,7 +25,7 @@ function friendlyBackendError(e) {
   return msg;
 }
 
-export function TowerTalkOverlay({ visible, onClose }) {
+export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   const { settings } = useAppSettings();
   const lang = settings.defaultTargetLanguage;
   const sportOn = Boolean(settings.sportMode);
