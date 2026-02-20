@@ -843,6 +843,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -10 },
     elevation: 20,
   },
+  sheetTopHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
