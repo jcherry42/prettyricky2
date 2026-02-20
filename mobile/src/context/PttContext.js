@@ -87,13 +87,22 @@ export function PttProvider({ children }) {
     }
 
     const rec = recordingRef.current;
-    if (!rec) return;
+    if (!rec) {
+      // If user taps stop while we're not recording, ignore.
+      return;
+    }
 
     try {
       setStatus('uploading');
       await rec.stopAndUnloadAsync();
       const uri = rec.getURI();
       recordingRef.current = null;
+
+      // Immediately release mic access.
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+      }).catch(() => {});
 
       if (!uri) throw new Error('No recording URI');
 
