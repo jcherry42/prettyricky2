@@ -554,9 +554,9 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(255,255,255,0.08)',
     paddingHorizontal: 12,
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: 'rgba(0,0,0,0.38)',
   },
   searchInput: {
     flex: 1,
