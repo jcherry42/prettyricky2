@@ -295,7 +295,11 @@ export function HomeScreen() {
   ), [handleCustomerPress]);
 
   return (
-    <Pressable style={{ flex: 1 }} onPress={() => { Keyboard.dismiss(); triggerFlash(); }}>
+    // Replaced outer Pressable with View — the Pressable was calling Keyboard.dismiss()
+    // on EVERY tap anywhere on screen, including inside QuickCompose, preventing the
+    // TextInput from staying focused. Keyboard dismissal is handled by the FlatList's
+    // keyboardDismissMode="on-drag" below, which is the correct UX.
+    <View style={{ flex: 1 }} onTouchEnd={triggerFlash}>
       <Screen>
         <FlatList
           data={filteredCustomers}
