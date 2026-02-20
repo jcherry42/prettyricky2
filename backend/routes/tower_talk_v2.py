@@ -91,7 +91,8 @@ async def tower_talk(request: TowerTalkRequest):
         trade_vin = ctx.get("tradeVin", "")
         trade_mileage = ctx.get("tradeMileage", "")
         dealership = ctx.get("dealershipName", "our dealership")
-        salesperson = ctx.get("salespersonName", "the sales rep")
+        salesperson = ctx.get("salespersonName", "Your Sales Team")
+        first_name = salesperson.split()[0] if salesperson and salesperson != "the sales rep" else "Your Team"
 
         # Build trade-in context line
         trade_context = ""
