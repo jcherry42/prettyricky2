@@ -31,7 +31,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://mobile-refine.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://pwa-native.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -114,6 +114,6 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://mobile-refine.preview.emergentagent.com` |
+| Default Backend | `https://pwa-native.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |

@@ -13,7 +13,7 @@ import os
 from io import BytesIO
 
 # Backend base URL
-BASE_URL = "https://mobile-refine.preview.emergentagent.com/api"
+BASE_URL = "https://pwa-native.preview.emergentagent.com/api"
 
 class BackendTester:
     def __init__(self):
