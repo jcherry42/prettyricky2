@@ -544,7 +544,9 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               </GlassCard>
 
               <View style={{ height: 14 }} />
-              <BackendUrlSection />
+              <View ref={backendSectionRef} collapsable={false}>
+                <BackendUrlSection />
+              </View>
 
 
               <GlassCard style={{ marginTop: 14 }}>
