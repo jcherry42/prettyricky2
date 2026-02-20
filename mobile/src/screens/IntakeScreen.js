@@ -161,6 +161,11 @@ function IntakeHub({ navigation }) {
             placeholder="Search VIN, make, model, stock#..."
             placeholderTextColor={colors.textMute}
             style={styles.searchInput}
+            returnKeyType="search"
+            autoCapitalize="characters"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            onSubmitEditing={Keyboard.dismiss}
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch('')}>
