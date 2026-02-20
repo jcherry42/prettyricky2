@@ -70,9 +70,9 @@ function LangGlass({ flag, active, onPress }) {
 }
 
 const LANGS = [
-  { code: 'es', flag: '\ud83c\uddf2\ud83c\uddfd' },
-  { code: 'fr', flag: '\ud83c\uddeb\ud83c\uddf7' },
-  { code: 'ko', flag: '\ud83c\uddf0\ud83c\uddf7' },
+  { code: 'es', flag: '\ud83c\uddf2\ud83c\uddfd', name: 'ESPAÑOL' },
+  { code: 'fr', flag: '\ud83c\uddeb\ud83c\uddf7', name: 'FRANÇAIS' },
+  { code: 'ko', flag: '\ud83c\uddf0\ud83c\uddf7', name: '한국어' },
 ];
 
 function PrinterRow({ item, active, onSetActive, onRemove }) {
