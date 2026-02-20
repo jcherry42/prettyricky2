@@ -46,6 +46,7 @@ function TabLabel({ children, focused }) {
 
 export function RootNavigator() {
   const [ccOpen, setCcOpen] = useState(false);
+  const [ccTab, setCcTab] = useState(null);
   const [printOpen, setPrintOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
