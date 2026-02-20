@@ -47,6 +47,7 @@ function TabLabel({ children, focused }) {
 export function RootNavigator() {
   const [ccOpen, setCcOpen] = useState(false);
   const [ccTab, setCcTab] = useState(null);
+  const [ccSection, setCcSection] = useState(null);
   const [printOpen, setPrintOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
@@ -118,13 +119,22 @@ export function RootNavigator() {
 
       {/* Floating button cluster: CHECK | EJECT | TOWER TALK */}
       <FloatingButtonCluster
-        onCheck={() => { setCcTab(null); setCcOpen(true); }}
+        onCheck={() => { setCcTab(null); setCcSection(null); setCcOpen(true); }}
         onEject={() => setPrintOpen(true)}
         onTowerTalk={() => setTalkOpen(true)}
       />
 
       {/* Modals */}
-      <CommandCenterModal visible={ccOpen} initialTab={ccTab} onClose={() => { setCcOpen(false); setCcTab(null); }} />
+      <CommandCenterModal
+        visible={ccOpen}
+        initialTab={ccTab}
+        initialSection={ccSection}
+        onClose={() => {
+          setCcOpen(false);
+          setCcTab(null);
+          setCcSection(null);
+        }}
+      />
       <PrintCenterModal visible={printOpen} onClose={() => setPrintOpen(false)} />
       <TowerTalkOverlay
         visible={talkOpen}

@@ -92,7 +92,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
   );
 }
 
-export function CommandCenterModal({ visible, onClose, initialTab = null }) {
+export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }) {
   const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile } = useAppSettings();
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
