@@ -156,7 +156,10 @@ RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If 
         )
 
         response = await chat.send_message(user_message)
-        return TowerTalkResponse(response=response.strip())
+        # Deterministic emoji strip — GPT-4o occasionally adds emojis despite instructions.
+        # We own the pipeline, so we enforce the rule here unconditionally.
+        clean = _strip_emoji(response.strip())
+        return TowerTalkResponse(response=clean)
 
     except HTTPException:
         raise
