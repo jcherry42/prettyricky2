@@ -535,6 +535,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
             <ScrollView
               ref={scrollRef}
               showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               <GlassCard style={{ marginTop: 14 }}>
