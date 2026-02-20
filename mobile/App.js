@@ -39,23 +39,23 @@ export default function App() {
             <ToastProvider>
               <AppSettingsProvider>
                 <AmbientLightingProvider>
-                <CustomerProvider>
-                  <InventoryProvider>
-                    <PttProvider>
-                      <TaillightFlashProvider>
-                        <InfotainmentShell>
-                          <NavigationContainer>
-                            <RootNavigator />
-                          </NavigationContainer>
-                          <OfflineBanner />
-                          <StatusBar style="light" />
-                        </InfotainmentShell>
-                      </TaillightFlashProvider>
-                    </PttProvider>
-                  </InventoryProvider>
-                </CustomerProvider>
-              </AppSettingsProvider>
+                  <CustomerProvider>
+                    <InventoryProvider>
+                      <PttProvider>
+                        <TaillightFlashProvider>
+                          <InfotainmentShell>
+                            <NavigationContainer>
+                              <RootNavigator />
+                            </NavigationContainer>
+                            <OfflineBanner />
+                            <StatusBar style="light" />
+                          </InfotainmentShell>
+                        </TaillightFlashProvider>
+                      </PttProvider>
+                    </InventoryProvider>
+                  </CustomerProvider>
                 </AmbientLightingProvider>
+              </AppSettingsProvider>
             </ToastProvider>
           </NetworkProvider>
         </ErrorBoundary>
