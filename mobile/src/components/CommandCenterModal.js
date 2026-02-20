@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
   },
   langRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     gap: 6,
   },
   langPressable: {
@@ -878,7 +878,7 @@ const styles = StyleSheet.create({
   langGlassOuter: {
     flex: 1,
     marginHorizontal: 0,
-    height: 86,
+    height: 110,
     borderRadius: 26,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
@@ -899,7 +899,7 @@ const styles = StyleSheet.create({
   },
   langGlassInner: {
     width: '94%',
-    height: '82%',
+    height: '88%',
     borderRadius: 24,
     borderWidth: 0.5,
     borderColor: 'rgba(255,255,255,0.06)',
@@ -907,13 +907,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    gap: 6,
   },
   langGlassInnerActive: {
     borderColor: 'rgba(214,178,94,0.20)',
     backgroundColor: 'rgba(214,178,94,0.06)',
   },
   langFlag: {
-    fontSize: 36,
+    fontSize: 42,
+  },
+  langName: {
+    color: 'rgba(255,255,255,0.45)',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textAlign: 'center',
+  },
+  langNameActive: {
+    color: colors.gold,
   },
   toggle: {
     height: 44,
