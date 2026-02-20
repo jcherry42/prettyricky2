@@ -1,88 +1,119 @@
-# Supercharg'd — Build & Test on Your iPhone via Xcode
+# Supercharg'd — Beta Testing Guide
+
+> **Single source of truth for building and running the app on device.**
+
+---
 
 ## Prerequisites
-- **Mac** with **Xcode** installed (App Store → Xcode)
-- **iPhone** plugged in via USB
-- **Apple ID** (free — no $99 developer account needed for personal testing)
-- **Node.js 18+** — install from [nodejs.org](https://nodejs.org)
-- **Yarn** — `npm install -g yarn`
-- **CocoaPods** — `sudo gem install cocoapods`
 
----
-
-## Steps (copy-paste these in order)
+Install these once on your Mac:
 
 ```bash
-# 1. Clone repo and enter mobile folder
-git clone YOUR_GITHUB_REPO_URL
-cd YOUR_REPO_NAME/mobile
-
-# 2. Install JavaScript dependencies
-yarn install
-
-# 3. Set your backend URL
-echo "EXPO_PUBLIC_BACKEND_URL=https://mobile-refine.preview.emergentagent.com" > .env
-
-# 4. Generate the native iOS project
-npx expo prebuild --platform ios
-
-# 5. Install native dependencies (CocoaPods)
-cd ios
-pod install
-cd ..
-
-# 6. Open in Xcode
-open ios/.xcworkspace
+npm install -g yarn
+npm install -g eas-cli
 ```
 
-## In Xcode
-
-1. **Select your iPhone** as the build target (dropdown at the top)
-2. **Set your signing team:**
-   - Click on the project name in the left sidebar (blue icon)
-   - Go to **Signing & Capabilities** tab
-   - Check **Automatically manage signing**
-   - Select your **Team** (your Apple ID)
-3. **Hit ▶ Run** (or Cmd+R)
-4. **Trust the developer on your iPhone:**
-   - First run will fail on the phone with "Untrusted Developer"
-   - On your iPhone: Settings → General → VPN & Device Management → tap your Apple ID → Trust
-   - Hit ▶ Run again in Xcode
-
-The app installs directly on your phone. Done.
+Xcode must be installed with iOS simulators. Log in to your Apple Developer account in Xcode → Settings → Accounts.
 
 ---
 
-## Features to Test on Device
+## 1. Install Dependencies
 
-### Core
-- [ ] Customer Management — create, edit, delete, search, pull-to-refresh
-- [ ] VIN Scanner — camera scan + manual entry + decode
-- [ ] License Scanner — camera capture + OCR + save to customer
-- [ ] Tower Talk AI — generate responses, translate, speak, copy, SMS
-- [ ] Quick Compose — write message, translate (SPORT mode), send SMS/email
-- [ ] Emergency Responses — 8 inquiry types, 3 responses each
+```bash
+cd /path/to/project/mobile
+yarn install
+```
 
-### Translation (activate SPORT mode first)
-- [ ] Quick Compose translate button appears
-- [ ] Emergency Modal translate button appears
-- [ ] Language matches Settings selection (master control)
+---
 
-### Native Features (only work on real device)
-- [ ] Camera (VIN + License scan)
-- [ ] Haptic feedback on button presses
-- [ ] SMS composer (opens iMessage)
-- [ ] Audio playback (TTS)
-- [ ] Portrait lock
+## 2. Configure Environment
+
+`mobile/.env` is already in the repo with the default backend URL:
+
+```env
+EXPO_PUBLIC_BACKEND_URL=https://mobile-refine.preview.emergentagent.com
+```
+
+This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
+
+---
+
+## 3a. Run on Physical Device — Expo Go (Fastest, No Build)
+
+1. Install **Expo Go** from the App Store on your iPhone.
+2. Ensure your iPhone and Mac are on the **same Wi-Fi network**.
+3. In `mobile/`:
+   ```bash
+   npx expo start
+   ```
+4. Scan the QR code with your iPhone camera or the Expo Go app.
+
+> **Note**: Some native features (Bluetooth, custom audio sessions) work fully only in a Development Build (3b).
+
+---
+
+## 3b. Development Build via EAS (Recommended for Beta)
+
+A development build is a full native binary that includes all native modules and supports live hot-reload.
+
+```bash
+cd mobile
+eas build --platform ios --profile development
+```
+
+- Takes ~10–15 min on EAS remote servers (no Xcode required).
+- Download and install the `.ipa` from the link EAS emails you.
+- Run the dev server locally:
+  ```bash
+  npx expo start --dev-client
+  ```
+
+---
+
+## 3c. Local Xcode Build
+
+```bash
+cd mobile
+npx expo prebuild --clean      # generates ios/ and android/ folders
+npx expo run:ios --device      # builds and installs directly to connected iPhone
+```
+
+Or open in Xcode manually:
+```bash
+open ios/SuperchargdMobile.xcworkspace
+```
+Select your device in the top bar → press ▶.
+
+---
+
+## 4. Production Build (TestFlight / App Store)
+
+```bash
+eas build --platform ios --profile production
+eas submit --platform ios
+```
 
 ---
 
 ## Troubleshooting
 
-**"No bundle URL present"** → In Xcode: Product → Clean Build Folder, then Run again
+| Issue | Fix |
+|-------|-----|
+| "Metro bundler not found" | Run `yarn install` in `mobile/` |
+| "No development build found" | Use Expo Go (3a) or run `eas build` (3b) |
+| Backend URL error in app | Command Center → Settings → Backend → enter URL → Save |
+| Pod install fails | `cd ios && pod install --repo-update` |
+| Black screen on launch | Confirm `.env` exists with `EXPO_PUBLIC_BACKEND_URL` |
+| Xcode signing error | Xcode → Project → Signing & Capabilities → select your team |
+| Build cache issues | `npx expo prebuild --clean` then rebuild |
 
-**Pod install fails** → Run `cd ios && pod deintegrate && pod install`
+---
 
-**Signing error** → Make sure you selected a team in Signing & Capabilities
+## App Reference
 
-**App crashes on launch** → Check the Xcode console (bottom pane) for the error message
+| Setting | Value |
+|---------|-------|
+| Bundle ID | `com.superchargd.mobile` |
+| Default Backend | `https://mobile-refine.preview.emergentagent.com` |
+| Orientation | Portrait locked |
+| Min iOS | 16.0 |
