@@ -79,6 +79,13 @@ export function RootNavigator() {
           headerShown: false,
           tabBarStyle,
           tabBarHideOnKeyboard: true,
+          // Disable react-freeze for tab screens — prevents the
+          // Freeze→Suspender→AnimatedComponent→RNSScreen chain that triggers
+          // a JSI boolean/string type error in Expo Go.
+          freezeOnBlur: false,
+          // Inactive screens are detached from the tree to save memory
+          // (works fine with enableScreens(false) in App.js).
+          detachInactiveScreens: false,
         }}
         screenListeners={{
           state: (e) => {
