@@ -4,6 +4,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { enableScreens } from 'react-native-screens';
 import { InfotainmentShell } from './src/components/InfotainmentShell';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
@@ -18,6 +19,13 @@ import { NetworkProvider } from './src/context/NetworkContext';
 import { ToastProvider } from './src/context/ToastContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
 import { View } from 'react-native';
+
+// Disable native screens (RNSScreen Fabric component) to prevent a Codegen
+// TypeSpec boolean/string mismatch that crashes Expo Go during tab navigator
+// initialisation. Without this, the Freeze→Suspender→AnimatedComponent→RNSScreen
+// chain triggers a JSI type error: "expected dynamic type 'boolean', had 'string'".
+// Using JS-based screen rendering is a safe fallback for Expo Go testing.
+enableScreens(false);
 
 export default function App() {
   const fontsReady = useFontsReady();
