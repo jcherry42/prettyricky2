@@ -169,9 +169,12 @@ export function RootNavigator() {
         }}
       />
 
-      {/* Bluetooth customer button - always on Home */}
+      {/* Bluetooth customer button - always on Home - directly opens Add Customer */}
       {isHome && (
-        <FloatingCustomerButton onPress={() => setCustomerEntryOpen(true)} />
+        <FloatingCustomerButton onPress={() => {
+          // Directly open the Add Customer form (skip the menu since License Scans was removed)
+          globalThis.__sc_open_new_customer?.();
+        }} />
       )}
 
       {/* PTT (only in SPORT mode) */}
