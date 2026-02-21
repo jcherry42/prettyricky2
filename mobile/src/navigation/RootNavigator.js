@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import { CustomerEntryMenuModal } from '../components/CustomerEntryMenuModal';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors } from '../theme/colors';
@@ -52,7 +51,6 @@ export function RootNavigator() {
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
   const [customersOpen, setCustomersOpen] = useState(false);
-  const [customerEntryOpen, setCustomerEntryOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState('Home');
 
   const { settings } = useAppSettings();
