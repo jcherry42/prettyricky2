@@ -14,7 +14,7 @@ import os
 import io
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sound-render-debug.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://backend-sync-15.preview.emergentagent.com').rstrip('/')
 
 
 class TestHealthCheck:

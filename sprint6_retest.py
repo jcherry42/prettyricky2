@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Backend URL from frontend .env
-BACKEND_URL = "https://sound-render-debug.preview.emergentagent.com/api"
+BACKEND_URL = "https://backend-sync-15.preview.emergentagent.com/api"
 
 class Sprint6Tester:
     def __init__(self):

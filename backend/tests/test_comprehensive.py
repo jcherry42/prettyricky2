@@ -8,7 +8,7 @@ import os
 import json
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sound-render-debug.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://backend-sync-15.preview.emergentagent.com')
 
 class TestHealthEndpoint:
     """Health check endpoint tests"""

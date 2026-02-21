@@ -11,7 +11,7 @@ The troubleshoot agent identified that while the environment variable WAS being 
 ```javascript
 // vite.config.js now includes:
 define: {
-  'import.meta.env.VITE_BACKEND_URL': JSON.stringify('https://sound-render-debug.preview.emergentagent.com')
+  'import.meta.env.VITE_BACKEND_URL': JSON.stringify('https://backend-sync-15.preview.emergentagent.com')
 }
 ```
 This tells Vite to literally replace every instance of `import.meta.env.VITE_BACKEND_URL` with the string at build time.
@@ -19,7 +19,7 @@ This tells Vite to literally replace every instance of `import.meta.env.VITE_BAC
 **Layer 2: Hardcoded Fallback**
 ```javascript
 // backendUrl.js now includes:
-const hardcodedFallback = 'https://sound-render-debug.preview.emergentagent.com';
+const hardcodedFallback = 'https://backend-sync-15.preview.emergentagent.com';
 const envUrl = normalizeBackendUrl(rawEnvUrl || hardcodedFallback);
 ```
 If the env var is STILL undefined in iOS, it falls back to the hardcoded URL.
@@ -53,7 +53,7 @@ rm -rf dist
 ### Step 2: Build with Environment Variable
 ```bash
 # IMPORTANT: Set the env var explicitly when building
-VITE_BACKEND_URL=https://sound-render-debug.preview.emergentagent.com yarn build:prod
+VITE_BACKEND_URL=https://backend-sync-15.preview.emergentagent.com yarn build:prod
 ```
 
 ### Step 3: Sync to iOS
@@ -81,12 +81,12 @@ You should see ONE of these (both are GOOD):
 **Best Case** (env var working):
 ```
 [BackendURL Debug] {
-  rawEnv: "https://sound-render-debug.preview.emergentagent.com",
+  rawEnv: "https://backend-sync-15.preview.emergentagent.com",
   usedFallback: false,
   isCapacitor: true,
   mode: "production"
 }
-[BackendURL] Using backend URL in Capacitor: https://sound-render-debug.preview.emergentagent.com (from env)
+[BackendURL] Using backend URL in Capacitor: https://backend-sync-15.preview.emergentagent.com (from env)
 ```
 
 **Fallback Case** (still works!):
@@ -97,7 +97,7 @@ You should see ONE of these (both are GOOD):
   isCapacitor: true,
   mode: "production"
 }
-[BackendURL] Using backend URL in Capacitor: https://sound-render-debug.preview.emergentagent.com (from fallback)
+[BackendURL] Using backend URL in Capacitor: https://backend-sync-15.preview.emergentagent.com (from fallback)
 ```
 
 **Bad Case** (if you see this, share it):
