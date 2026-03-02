@@ -43,7 +43,7 @@
   "should_main_agent_self_test": false,
   "context_for_next_testing_agent": "Comprehensive cleanup verified complete. All features working. App ready for beta testing.",
   "features_tested": {
-    "app_load": "PASS - https://state-license-scan.preview.emergentagent.com loads correctly",
+    "app_load": "PASS - https://multilang-voice-fix.preview.emergentagent.com loads correctly",
     "header_branding": "PASS - SUPERCHARG'D branding visible with R34 taillight design",
     "sport_mode_toggle": "PASS - data-testid='toggle-supercharged-btn' works with fire animation",
     "theme_toggle": "PASS - data-testid='toggle-theme-btn' switches dark/light mode",
