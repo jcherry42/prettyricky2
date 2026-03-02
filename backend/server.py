@@ -3218,7 +3218,7 @@ If a field cannot be found, use empty string. Do not include any other text."""
         response = await chat.send_message(UserMessage(text=parse_prompt))
         
         # Parse JSON response
-        json_match = re.search(r'\{{[\s\S]*\}}', response)
+        json_match = re.search(r'\{[\s\S]*\}', response)
         if json_match:
             import json
             parsed = json.loads(json_match.group())
