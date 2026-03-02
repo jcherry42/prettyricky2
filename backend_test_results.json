@@ -1,7 +1,7 @@
 {
   "test_type": "mobile_print_center_sanity",
   "timestamp": "2026-02-17T17:57:25.630033",
-  "backend_url": "https://vehicle-data-sync-3.preview.emergentagent.com/api",
+  "backend_url": "https://state-license-scan.preview.emergentagent.com/api",
   "total_tests": 48,
   "passed": 41,
   "failed": 7,
@@ -505,7 +505,7 @@
     {
       "test": "Printer endpoints",
       "success": false,
-      "details": "Exception: 520, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://vehicle-data-sync-3.preview.emergentagent.com/api/printer/test'",
+      "details": "Exception: 520, message='Attempt to decode JSON with unexpected mimetype: text/html; charset=utf-8', url='https://state-license-scan.preview.emergentagent.com/api/printer/test'",
       "timestamp": "2026-02-17T17:57:23.308818",
       "response_data": null
     },

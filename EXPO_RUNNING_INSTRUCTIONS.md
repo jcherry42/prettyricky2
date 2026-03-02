@@ -5,7 +5,7 @@
 
 ## CURRENT STATUS ✅
 
-**Backend:** Running at `https://vehicle-data-sync-3.preview.emergentagent.com`
+**Backend:** Running at `https://state-license-scan.preview.emergentagent.com`
 **Expo Metro:** Running on port 8081 with tunnel mode
 **Configuration:** `.env` file created with backend URL
 
@@ -70,7 +70,7 @@ If you have a Mac or PC locally:
 
 3. **Create .env file:**
    ```
-   EXPO_PUBLIC_BACKEND_URL=https://vehicle-data-sync-3.preview.emergentagent.com
+   EXPO_PUBLIC_BACKEND_URL=https://state-license-scan.preview.emergentagent.com
    ```
 
 4. **Start Expo:**
@@ -113,7 +113,7 @@ Opens in Android Emulator automatically.
 ### ✅ Backend Connection
 **File:** `/app/mobile/.env`
 ```
-EXPO_PUBLIC_BACKEND_URL=https://vehicle-data-sync-3.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://state-license-scan.preview.emergentagent.com
 ```
 
 ### ✅ Expo Metro Bundler
