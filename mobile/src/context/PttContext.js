@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Audio } from 'expo-av';
+import { Platform } from 'react-native';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
 import { useAppSettings } from './AppSettingsContext';
@@ -7,6 +8,98 @@ import { useAppSettings } from './AppSettingsContext';
 const PttContext = createContext(null);
 
 const MAX_RECORDING_MS = 15000; // 15-second hard cap
+
+// Explicit recording options that produce Whisper-compatible output.
+// HIGH_QUALITY preset can produce .caf on some iOS versions which Whisper
+// rejects. We force m4a/AAC on native and webm on web.
+const RECORDING_OPTIONS = Platform.select({
+  ios: {
+    isMeteringEnabled: true,
+    android: {
+      extension: '.m4a',
+      outputFormat: 2 /* MPEG_4 */,
+      audioEncoder: 3 /* AAC */,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+    },
+    ios: {
+      extension: '.m4a',
+      outputFormat: 'aac' /* MPEG4AAC */,
+      audioQuality: 127 /* MAX */,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+      linearPCMBitDepth: 16,
+      linearPCMIsBigEndian: false,
+      linearPCMIsFloat: false,
+    },
+    web: {
+      mimeType: 'audio/webm',
+      bitsPerSecond: 128000,
+    },
+  },
+  android: {
+    isMeteringEnabled: true,
+    android: {
+      extension: '.m4a',
+      outputFormat: 2 /* MPEG_4 */,
+      audioEncoder: 3 /* AAC */,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+    },
+    ios: {
+      extension: '.m4a',
+      outputFormat: 'aac',
+      audioQuality: 127,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+      linearPCMBitDepth: 16,
+      linearPCMIsBigEndian: false,
+      linearPCMIsFloat: false,
+    },
+    web: {
+      mimeType: 'audio/webm',
+      bitsPerSecond: 128000,
+    },
+  },
+  default: {  // web
+    isMeteringEnabled: false,
+    android: {
+      extension: '.m4a',
+      outputFormat: 2,
+      audioEncoder: 3,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+    },
+    ios: {
+      extension: '.m4a',
+      outputFormat: 'aac',
+      audioQuality: 127,
+      sampleRate: 44100,
+      numberOfChannels: 1,
+      bitRate: 128000,
+      linearPCMBitDepth: 16,
+      linearPCMIsBigEndian: false,
+      linearPCMIsFloat: false,
+    },
+    web: {
+      mimeType: 'audio/webm',
+      bitsPerSecond: 128000,
+    },
+  },
+});
+
+// Determine the correct MIME type and file extension per platform
+function getAudioMeta() {
+  if (Platform.OS === 'web') {
+    return { ext: 'webm', mime: 'audio/webm' };
+  }
+  return { ext: 'm4a', mime: 'audio/mp4' };
+}
 
 export function PttProvider({ children }) {
   const { settings, setPttDirection } = useAppSettings();
@@ -87,10 +180,8 @@ export function PttProvider({ children }) {
         playsInSilentModeIOS: true,
       });
 
-      // Create recording object
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      // Create recording with explicit Whisper-compatible options
+      const { recording } = await Audio.Recording.createAsync(RECORDING_OPTIONS);
 
       // --- RACE CONDITION FIX ---
       // If the user tapped "stop" while we were requesting permission or
@@ -114,8 +205,15 @@ export function PttProvider({ children }) {
 
     } catch (e) {
       const msg = e?.message || String(e);
+      console.warn('[PTT] startRecording error:', msg);
       setStatus('error');
-      setError(`Could not start recording: ${msg}`);
+      if (msg.includes('already recording') || msg.includes('prepare')) {
+        setError('Microphone is busy. Please wait a moment and try again.');
+      } else if (msg.includes('not found') || msg.includes('no audio input')) {
+        setError('No microphone found. Please check your device audio settings.');
+      } else {
+        setError(`Could not start recording: ${msg}`);
+      }
     }
   }, [status, targetLang, startTimer]);
 
@@ -149,6 +247,8 @@ export function PttProvider({ children }) {
 
       if (!uri) throw new Error('Recording produced no audio file');
 
+      // Determine the correct audio metadata for the upload
+      const { ext, mime } = getAudioMeta();
       const sourceLang = direction === 'en_to_target' ? 'en' : targetLang;
       const outTarget = direction === 'en_to_target' ? targetLang : 'en';
 
@@ -157,15 +257,25 @@ export function PttProvider({ children }) {
         uri,
         sourceLang,
         targetLang: outTarget,
-        mimeType: 'audio/m4a',
+        mimeType: mime,
+        fileExtension: ext,
       });
 
       setResult(out);
       setStatus('done');
     } catch (e) {
       const msg = e?.message || String(e);
+      console.warn('[PTT] stopRecording error:', msg);
       setStatus('error');
-      setError(msg);
+      if (msg.includes('Backend URL')) {
+        setError('Backend not connected. Check your server URL in Command Center → Settings.');
+      } else if (msg.includes('timed out') || msg.includes('Timeout') || msg.includes('TIMEOUT')) {
+        setError('Translation timed out. Please try again with a shorter phrase.');
+      } else if (msg.includes('Network request failed') || msg.includes('fetch')) {
+        setError('Network error. Check your internet connection and try again.');
+      } else {
+        setError(msg);
+      }
     }
   }, [direction, targetLang, stopTimer]);
 

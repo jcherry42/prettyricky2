@@ -79,23 +79,35 @@ const waveStyles = StyleSheet.create({
 });
 
 // Large central stop button shown while recording
+// NOTE: Animated.multiply() is broken in RN 0.81 new-arch (JSI boundary
+// type mismatch). We use a separate Animated.Value driven by the outer
+// ring animation instead.
 function RecordingButton({ onStop }) {
   const ringAnim = useRef(new Animated.Value(1)).current;
+  const innerAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const outerLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(ringAnim, { toValue: 1.18, duration: 800, useNativeDriver: true }),
         Animated.timing(ringAnim, { toValue: 1.0, duration: 800, useNativeDriver: true }),
       ])
-    ).start();
-    return () => ringAnim.stopAnimation();
-  }, [ringAnim]);
+    );
+    const innerLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(innerAnim, { toValue: 1.062, duration: 800, useNativeDriver: true }), // 1.18 * 0.9
+        Animated.timing(innerAnim, { toValue: 0.9, duration: 800, useNativeDriver: true }),    // 1.0  * 0.9
+      ])
+    );
+    outerLoop.start();
+    innerLoop.start();
+    return () => { outerLoop.stop(); innerLoop.stop(); };
+  }, [ringAnim, innerAnim]);
 
   return (
     <View style={styles.recordingBtnWrap}>
-      <Animated.View style={[styles.recordingRingOuter, { transform: [{ scale: ringAnim }] }]} />
-      <Animated.View style={[styles.recordingRingInner, { transform: [{ scale: Animated.multiply(ringAnim, 0.9) }] }]} />
+      <Animated.View pointerEvents="none" style={[styles.recordingRingOuter, { transform: [{ scale: ringAnim }] }]} />
+      <Animated.View pointerEvents="none" style={[styles.recordingRingInner, { transform: [{ scale: innerAnim }] }]} />
       <Pressable
         onPress={() => { impactHeavy(); onStop(); }}
         style={({ pressed }) => [styles.recordingBtn, pressed && { transform: [{ scale: 0.92 }] }]}

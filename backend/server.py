@@ -349,6 +349,33 @@ class VoiceTranslateResponse(BaseModel):
     success: bool
     error: Optional[str] = None
 
+# Normalise extension from filename / content-type for Whisper compatibility.
+# Whisper accepts: flac, m4a, mp3, mp4, mpeg, mpga, oga, ogg, wav, webm
+_EXT_FROM_MIME: Dict[str, str] = {
+    'audio/webm': 'webm', 'video/webm': 'webm',
+    'audio/mp3': 'mp3', 'audio/mpeg': 'mp3',
+    'audio/mp4': 'm4a', 'audio/m4a': 'm4a', 'audio/x-m4a': 'm4a',
+    'audio/aac': 'aac', 'audio/x-aac': 'aac',
+    'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/wave': 'wav',
+    'audio/ogg': 'ogg', 'audio/flac': 'flac',
+    'audio/x-caf': 'm4a',  # iOS .caf → treat as m4a for Whisper
+    'audio/3gpp': 'mp4', 'audio/3gpp2': 'mp4',
+}
+_WHISPER_EXTS = {'flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm', 'aac'}
+
+def _resolve_whisper_filename(original_name: str, content_type: str) -> str:
+    """Return a safe filename with an extension Whisper can handle."""
+    ext = ''
+    if original_name and '.' in original_name:
+        ext = original_name.rsplit('.', 1)[-1].lower()
+    if ext not in _WHISPER_EXTS:
+        ext = _EXT_FROM_MIME.get(content_type, '')
+    if ext not in _WHISPER_EXTS:
+        ext = 'm4a'  # safe default — AAC in MP4 container
+    stem = original_name.rsplit('.', 1)[0] if original_name and '.' in original_name else 'ptt_audio'
+    return f"{stem}.{ext}"
+
+
 @api_router.post("/voice-translate", response_model=VoiceTranslateResponse)
 async def voice_translate(
     audio: UploadFile = File(...),
@@ -356,66 +383,44 @@ async def voice_translate(
     target_lang: str = Form(default="es")
 ):
     """
-    Voice Translation: Transcribe audio with Whisper, then translate.
-    Supports: mp3, mp4, mpeg, mpga, m4a, wav, webm
-    Max file size: 25MB
+    Enterprise Voice Translation: Whisper STT → GPT-4o Translation.
+    Supports: flac, m4a, mp3, mp4, mpeg, mpga, ogg, wav, webm, aac
+    Languages: en, es, fr, ko  (+ ja, de, it, pt, zh, ru)
+    Max file size: 25 MB
     """
-    import tempfile
     import io
-    
+
     try:
-        logger.info(f"Voice translate request: {audio.filename}, {source_lang} -> {target_lang}")
-        
-        # Validate file type
-        allowed_types = ['audio/webm', 'audio/mp3', 'audio/mp4', 'audio/mpeg', 'audio/wav', 
-                         'audio/m4a', 'audio/x-m4a', 'video/webm', 'audio/ogg', 'audio/aac']
-        content_type = audio.content_type or ''
-        
-        # Also check extension
-        filename = audio.filename or 'audio.webm'
-        ext = filename.split('.')[-1].lower()
-        allowed_exts = ['webm', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'ogg', 'aac']
-        
-        if content_type not in allowed_types and ext not in allowed_exts:
-            logger.warning(f"Invalid audio type: {content_type}, ext: {ext}")
-            raise HTTPException(
-                status_code=422,
-                detail="Invalid audio format. Supported: webm, mp3, mp4, wav, m4a, ogg, aac"
-            )
-        
-        # Read audio data
+        logger.info(f"Voice translate request: {audio.filename}, content_type={audio.content_type}, {source_lang} -> {target_lang}")
+
+        # --- Validate & read audio ------------------------------------------------
         audio_data = await audio.read()
-        
         if len(audio_data) == 0:
-            raise HTTPException(
-                status_code=422,
-                detail="Empty audio file received"
-            )
-        
-        if len(audio_data) > 25 * 1024 * 1024:  # 25MB limit
-            raise HTTPException(
-                status_code=422,
-                detail="Audio file too large. Max 25MB."
-            )
-        
-        logger.info(f"Audio size: {len(audio_data)} bytes")
-        
-        # Transcribe with Whisper
+            raise HTTPException(status_code=422, detail="Empty audio file received")
+        if len(audio_data) > 25 * 1024 * 1024:
+            raise HTTPException(status_code=422, detail="Audio file too large. Max 25 MB.")
+
+        safe_name = _resolve_whisper_filename(audio.filename or '', audio.content_type or '')
+        logger.info(f"Audio size: {len(audio_data)} bytes, resolved filename: {safe_name}")
+
+        # --- Transcribe with Whisper ----------------------------------------------
         from emergentintegrations.llm.openai import OpenAISpeechToText
-        
-        stt = OpenAISpeechToText(api_key=os.getenv("EMERGENT_LLM_KEY"))
-        
-        # Map language codes for Whisper (ISO-639-1)
+
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="API key not configured")
+
+        stt = OpenAISpeechToText(api_key=api_key)
+
         whisper_lang_map = {
-            'en': 'en', 'es': 'es', 'fr': 'fr', 'ja': 'ja', 'ko': 'ko',
-            'de': 'de', 'it': 'it', 'pt': 'pt', 'zh': 'zh', 'ru': 'ru'
+            'en': 'en', 'es': 'es', 'fr': 'fr', 'ko': 'ko',
+            'ja': 'ja', 'de': 'de', 'it': 'it', 'pt': 'pt', 'zh': 'zh', 'ru': 'ru'
         }
-        whisper_lang = whisper_lang_map.get(source_lang, 'en')
-        
-        # Create a file-like object for the API
+        whisper_lang = whisper_lang_map.get(source_lang, None)  # None = auto-detect
+
         audio_file = io.BytesIO(audio_data)
-        audio_file.name = filename if '.' in filename else f"audio.{ext}"
-        
+        audio_file.name = safe_name
+
         try:
             response = await stt.transcribe(
                 file=audio_file,
@@ -423,62 +428,61 @@ async def voice_translate(
                 language=whisper_lang,
                 response_format="json"
             )
-            transcript = response.text.strip()
-            logger.info(f"Transcription result: {transcript[:100]}...")
+            transcript = response.text.strip() if hasattr(response, 'text') else str(response).strip()
+            logger.info(f"Transcription OK ({len(transcript)} chars): {transcript[:120]}...")
         except Exception as stt_error:
-            logger.error(f"Whisper transcription failed: {stt_error}")
+            logger.error(f"Whisper transcription failed: {stt_error}", exc_info=True)
             return VoiceTranslateResponse(
-                transcript="",
-                translated_text="",
-                source_lang=source_lang,
-                target_lang=target_lang,
+                transcript="", translated_text="",
+                source_lang=source_lang, target_lang=target_lang,
                 success=False,
-                error=f"Transcription failed: {str(stt_error)}"
+                error=f"Speech recognition failed. Please speak clearly and try again."
             )
-        
+
         if not transcript:
             return VoiceTranslateResponse(
-                transcript="",
-                translated_text="",
-                source_lang=source_lang,
-                target_lang=target_lang,
+                transcript="", translated_text="",
+                source_lang=source_lang, target_lang=target_lang,
                 success=False,
-                error="No speech detected in audio"
+                error="No speech detected. Please speak louder or move closer to the microphone."
             )
-        
-        # If same language, no translation needed
+
+        # --- Same-language shortcut -----------------------------------------------
         if source_lang == target_lang:
             return VoiceTranslateResponse(
-                transcript=transcript,
-                translated_text=transcript,
-                source_lang=source_lang,
-                target_lang=target_lang,
+                transcript=transcript, translated_text=transcript,
+                source_lang=source_lang, target_lang=target_lang,
                 success=True
             )
-        
-        # Translate the transcript
+
+        # --- Translate with GPT-4o ------------------------------------------------
         lang_names = {
-            'en': 'English', 'es': 'Spanish', 'fr': 'French', 
-            'ja': 'Japanese', 'ko': 'Korean', 'de': 'German',
+            'en': 'English', 'es': 'Spanish', 'fr': 'French',
+            'ko': 'Korean', 'ja': 'Japanese', 'de': 'German',
             'it': 'Italian', 'pt': 'Portuguese', 'zh': 'Chinese', 'ru': 'Russian'
         }
-        
         source_name = lang_names.get(source_lang, 'English')
         target_name = lang_names.get(target_lang, 'Spanish')
-        
-        chat = LlmChat(
-            api_key=os.getenv('EMERGENT_LLM_KEY'),
-            model="gpt-4o-mini",
-            system_message=f"You are a professional translator. Translate the following {source_name} text to {target_name}. Provide ONLY the translation, nothing else.",
-            session_id=f"voice-translate-{uuid.uuid4()}"
+
+        system_prompt = (
+            f"You are an expert automotive-industry translator fluent in {source_name} and {target_name}. "
+            f"Translate the following {source_name} text into natural, idiomatic {target_name}. "
+            f"Preserve automotive terminology accurately (e.g. test drive, trade-in, financing, VIN, mileage, warranty). "
+            f"Output ONLY the translation — no explanations, no quotation marks, no alternatives."
         )
-        
-        user_message = UserMessage(message=transcript)
-        translated = await chat.send_message(user_message)
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"voice-translate-{uuid.uuid4()}",
+            system_message=system_prompt,
+        ).with_model("openai", "gpt-4o")
+
+        user_msg = UserMessage(text=transcript)
+        translated = await chat.send_message(user_msg)
         translated_text = translated.strip()
-        
-        logger.info(f"Translation complete: {translated_text[:100]}...")
-        
+
+        logger.info(f"Translation OK: {translated_text[:120]}...")
+
         return VoiceTranslateResponse(
             transcript=transcript,
             translated_text=translated_text,
@@ -486,16 +490,14 @@ async def voice_translate(
             target_lang=target_lang,
             success=True
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Voice translation error: {str(e)}", exc_info=True)
         return VoiceTranslateResponse(
-            transcript="",
-            translated_text="",
-            source_lang=source_lang,
-            target_lang=target_lang,
+            transcript="", translated_text="",
+            source_lang=source_lang, target_lang=target_lang,
             success=False,
             error=f"Voice translation failed: {str(e)}"
         )

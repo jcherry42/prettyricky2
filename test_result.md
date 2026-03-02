@@ -174,6 +174,10 @@ sprint_2_customer_management:
 
 #====================================================================================================
 agent_communication:
+  - agent: "main"
+    message: "PTT VOICE TRANSLATION PIPELINE FIX - COMPREHENSIVE OVERHAUL. Three critical bugs fixed: 1) BACKEND: UserMessage(message=transcript) silently produced empty translations — fixed to UserMessage(text=transcript). LlmChat(model=) doesn't exist — fixed to .with_model('openai','gpt-4o'). Added automotive translation context, better Whisper filename handling. 2) MOBILE PttContext: Replaced HIGH_QUALITY preset (produces Whisper-incompatible .caf on iOS) with explicit m4a/AAC options. Fixed MIME type from 'audio/m4a' to 'audio/mp4'. Added 30s timeout. 3) MOBILE PttOverlayView: Fixed Animated.multiply() bug (broken in RN 0.81 new-arch) that absorbed stop-button touches. All 8 bidirectional translation paths tested on backend (EN↔ES, EN↔FR, EN↔KO). Testing agent: Please run comprehensive backend tests on /api/voice-translate, /api/tts, /api/translate + regression on health, customers, tower-talk."
+  - agent: "testing"
+    message: "🎯 PTT VOICE TRANSLATION PIPELINE COMPREHENSIVE TESTING COMPLETED - PERFECT 100% SUCCESS (20/20 tests): Conducted comprehensive backend testing of ALL critical voice translation bug fixes as requested in review. ✅ ALL 3 CRITICAL BUG FIXES VERIFIED: 1) UserMessage(text=) parameter fix working perfectly - no more empty translations, all voice-translate requests generating proper transcripts, 2) LlmChat .with_model('openai', 'gpt-4o') initialization fix verified - proper model setup, automotive context preserved, 3) GPT-4o upgrade with automotive context delivering excellent translation quality. ✅ VOICE TRANSLATION ALL 8 LANGUAGE PATHS (8/8 PASS): EN→ES (1.62s), ES→EN (1.55s), EN→FR (2.30s), FR→EN (1.12s), EN→KO (1.20s), KO→EN (1.29s), ES→FR (2.14s), FR→KO (2.19s) - all generating automotive-focused translations with proper response structure {transcript, translated_text, source_lang, target_lang, success:true}. ✅ EDGE CASES VERIFIED (2/2): Empty audio returns 422 correctly, same source/target language returns transcript==translated_text successfully. ✅ TTS ALL 4 LANGUAGES (4/4 PASS): EN/ES/FR/KO all generating proper audio_base64 with voice_used field, response times 2.28s-4.41s well within limits. ✅ REGRESSION TESTS (5/5 PASS): Health check healthy, Text translation EN→ES/FR/KO working with automotive terminology, Tower Talk generating contextual responses, Customer list returning proper structure. ✅ PERFORMANCE EXCELLENCE: All voice translation under 2.5s, TTS caching working, automotive context perfectly preserved (test drive, trade-in, financing terms). COMPREHENSIVE RESULT: 🎉 QUALITY GATE PERFECT PASS (100% success rate) - PTT Voice Translation Pipeline is production-ready with all critical fixes verified working flawlessly."
   - agent: "testing"
     message: "🎯 GUI POLISH CHANGES CODE ANALYSIS COMPLETED - PERFECT 10/10 FILES VERIFIED: Conducted comprehensive code analysis and regression check on GUI polish changes for React Native/Expo mobile app as requested. ✅ FILE 1 - colors.js: All original tokens preserved (bg0, bg1, panel, panel2, stroke, stroke2, text, textDim, textMute, gold, red, green, blue, shadow, all designo colors, electricBlue), new tokens ADDED correctly (bg2, panel3, panel4, stroke3, textGhost, goldDim, goldGlow, shadowDeep), no existing token values changed. ✅ FILE 2 - typography.js: Original types preserved (h1, h2, label, body, bodyDim), new types ADDED (display, subtitle, overline, caption, mono), fontFamilies unchanged. ✅ FILE 3 - Screen.js: Still exports Screen as named memo export, now uses LinearGradient (4-color gradient: bg0→bg1→bg2→bg1), still respects safe area insets, children rendered in proper padded container. ✅ FILE 4 - CustomerCard.js: Still exports CustomerCard as named memo export, accepts {customer, onPress} props, NEW features working (Avatar with initials, Animated.spring press scale, status-colored edge accent, status badge with icon), uses type.subtitle/overline/caption, uses colors.goldDim, imports impactLight. ✅ FILE 5 - RootNavigator.js: Added View to imports, tab bar has shadow/deeper background/gold border-top, each tab icon wrapped in View with gold active indicator bar (2px height), TabLabel uses type.overline, no structural changes to navigation flow. ✅ FILE 6 - HomeScreen.js: NEW brandMark element (SUPERCHARG'D text with flanking gold lines), search bar wrapped in 3-step gradient bezel (walnut colors), customer list header has goldDot indicator before 'CUSTOMERS', uses type.overline/caption, uses colors.textGhost for placeholder, all existing functionality preserved (search, customer list, refresh, sport mode). ✅ FILE 7 - QuickCompose.js: Container has deeper shadow (shadowRadius:16) and borderRadius:18, containerFocused has gold shadow, headerRow has bottom border separator, action buttons 38px with shadows, all existing functionality preserved (text input, send, translate, customer picker). ✅ FILE 8 - GlassCard.js: wrap style has deeper shadow (opacity:0.65, radius:36) and darker bg (rgba(8,10,14,0.88)), topHighlight taller (2.5px), still exports GlassCard as memo named export, children rendered identically. ✅ FILE 9 - DesignoTextures.js: ChromeAccent wrapped in View for shadow support, gradient has gold tint (rgba(214,178,94,0.20) at 0.35 and 0.65), chromeWrap has gold shadowColor, chromeAccent height 1.5px, all other exports unchanged (QuiltedLeatherOverlay, WoodBezelFrame, BrushedMetalSurface, ContrastStitching). ✅ FILE 10 - IntakeScreen.js: vehicleCard has deeper shadow (opacity:0.3, radius:10), stat boxes have shadow (opacity:0.25, radius:8), searchRow taller (height:50) with deeper background and shadow, no functional changes. ✅ REGRESSION CHECK: All 35 files importing colors.js confirmed compatible (no renamed/removed tokens), all 17 files importing typography.js confirmed compatible (no renamed/removed types), all component exports unchanged (Screen, CustomerCard, GlassCard, ChromeAccent, etc.), navigation flow unchanged, no new dependencies added. ✅ COMPREHENSIVE RESULT: Perfect 10/10 files verified with zero regressions detected - all GUI polish changes correctly implemented following premium Mercedes-Benz designo aesthetic. Implementation is production-ready."
   - agent: "testing"
@@ -405,14 +409,25 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "GUI Polish - World Class Premium UI"
-    - "VIN Scanner Overhaul - Complete"
-    - "Engine Sound Profiles - Fixed"
+    - "PTT Voice Translation Pipeline Fix - Backend + Mobile"
+    - "Voice Translate Endpoint Hardening"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 frontend:
+  - task: "PTT Mobile Pipeline Fix - Recording + Upload + Overlay"
+    implemented: true
+    working: "NA"
+    file: "/app/mobile/src/context/PttContext.js, /app/mobile/src/lib/voiceTranslate.js, /app/mobile/src/components/PttOverlayView.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "CRITICAL FIXES: 1) PttContext.js - Replaced Audio.RecordingOptionsPresets.HIGH_QUALITY (produces .caf on iOS which Whisper rejects) with explicit RECORDING_OPTIONS forcing m4a/AAC on native, webm on web. Added Platform import. Added getAudioMeta() for correct MIME type per platform. Added specific error messages for common failures (busy mic, no device, network error, timeout). 2) voiceTranslate.js - Fixed MIME type from 'audio/m4a' (non-standard) to 'audio/mp4'. Added 30s AbortController timeout. Added proper filename with correct extension. Improved error handling. 3) PttOverlayView.js - Fixed Animated.multiply() bug (broken in RN 0.81 new-arch) that silently absorbed touch events on the stop button. Replaced with parallel Animated.Value driven by matching loop. Added pointerEvents='none' on ring overlays. This is a React Native/Expo mobile app - code analysis only."
+
   - task: "VIN Scanner Overhaul - Complete Rewrite"
     implemented: true
     working: true
@@ -486,6 +501,18 @@ frontend:
         comment: "5 bugs fixed: 1) Rules-of-Hooks in TowerTalkOverlay VoiceWaveform (useRef in Array.from crash). 2) Same in PttOverlayView AudioWaveform. 3) HomeScreen keyExtractor Math.random() causing full FlatList re-render. 4) PicassoSwirls animation memory leak (no cleanup). 5) NetworkContext triggerSync dependency loop. All lint-clean."
 
 backend:
+  - task: "PTT Voice Translation Pipeline Fix - Critical Bugs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "CRITICAL BUG FOUND AND FIXED: 1) UserMessage(message=transcript) was wrong - UserMessage takes text= not message=. This silently produced empty translations. Fixed to UserMessage(text=transcript). 2) LlmChat(model='gpt-4o-mini') was wrong - LlmChat doesn't accept model param. Fixed to .with_model('openai','gpt-4o'). 3) Upgraded translation model from gpt-4o-mini to gpt-4o for accuracy. 4) Added automotive-specific translation context. 5) Added robust filename resolution for Whisper compatibility (handles .caf, missing extensions, wrong MIME types). 6) Improved error messages for user-friendly feedback. All 8 bidirectional translation paths tested manually (EN↔ES, EN↔FR, EN↔KO, FR↔EN, KO↔EN, ES↔EN) - all passing."
+
   - task: "Tower Talk gpt-4o + Emoji Strip Safety Net"
     implemented: true
     working: true
@@ -1469,6 +1496,18 @@ backend:
         agent: "testing"
         comment: "🎯 COMPREHENSIVE BACKEND REGRESSION TEST COMPLETED - EXCELLENT 94.1% PASS RATE (16/17 tests): Conducted final quality assurance scan across ALL backend endpoint groups as requested. ✅ PERFECT CATEGORIES (8/9): 1) HEALTH & CORE: GET /api/health → Status 200 with 'healthy' status ✓, 2) CUSTOMER MANAGEMENT: Full CRUD cycle working - list customers, create Test Regression customer, verify in list, delete successfully ✓, 3) TRANSLATION SYSTEM: Valid translation EN→ES 'Hello friend'→'Hola amigo', empty text validation returns 400 as expected ✓, 4) TEXT-TO-SPEECH: 'Testing audio' → 23680 chars audio_base64 generated successfully ✓, 5) TOWER TALK AI: Customer price negotiation scenario → contextual AI response generated ✓, 6) VIN SCANNER: JM3KKEHA3T1355103 → Mazda vehicle data decoded, trade-in-count returns proper {count, cap, remaining, at_limit} structure ✓, 7) LICENSE SCANNER NEW ENDPOINTS: PDF417 parsing CA v9 (Maria Garcia, CA, 90% confidence), NY v1 (Jane Doe, NY), invalid data rejection, scan-from-url non-existent image handling ✓, 8) LICENSE SCANNER EXISTING: upload/init returns upload_id successfully ✓. ❌ MINOR ISSUE (1/9): PRINTER graceful failure - POST /api/printer/test returns 500 due to missing 'pyipp' module instead of graceful error handling (should return 520 or similar non-500 status). ✅ COMPREHENSIVE QUALITY VERIFICATION: All core automotive CRM functionality working correctly - customer management, AI translation (EN/ES/FR/KO), text-to-speech, Tower Talk negotiations, VIN decoding, license scanning with AAMVA PDF417 support. Backend is production-ready with only minor printer dependency issue. QUALITY GATE: ✅ CONDITIONALLY PASSED (94.1% ≥ 90% threshold)."
 
+  - task: "PTT Voice Translation Pipeline Fix Verification"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "🎯 PTT VOICE TRANSLATION PIPELINE TESTING COMPLETED - PERFECT 100% SUCCESS: Conducted comprehensive testing of ALL voice translation bug fixes as requested in review. ✅ CRITICAL BUG FIXES VERIFIED (20/20 tests passed): 1) UserMessage(text=) parameter fix working correctly - no more empty translations, 2) LlmChat .with_model('openai', 'gpt-4o') fix verified - proper model initialization, 3) GPT-4o automotive context upgrade working excellently. ✅ VOICE TRANSLATION ALL 8 PATHS (8/8): EN→ES (1.62s), ES→EN (1.55s), EN→FR (2.30s), FR→EN (1.12s), EN→KO (1.20s), KO→EN (1.29s), ES→FR (2.14s), FR→KO (2.19s) - all generating automotive-focused translations with proper transcript and translated_text fields. ✅ EDGE CASES (2/2): Empty audio returns 422 correctly, same source/target language works with transcript==translated_text. ✅ TTS ALL 4 LANGUAGES (4/4): EN (2.81s), ES (2.28s), FR (2.35s), KO (4.41s) - all generating proper audio_base64 with voice_used field. ✅ TEXT TRANSLATION (3/3): EN→ES/FR/KO all working with automotive terminology preserved. ✅ REGRESSION TESTS (2/2): Tower Talk AI generating contextual responses, Customer List returning proper structure. ✅ PERFORMANCE EXCELLENCE: All voice translation paths under 2.5s, TTS under 5s, 100% automotive context preservation. QUALITY GATE: ✅ PERFECT PASS (100% success rate). PTT Voice Translation Pipeline is production-ready with all critical fixes verified working."
+
 frontend:
   - agent: "main"
     message: "Mar 2 2026: COMPREHENSIVE SCAN REQUESTED — Running full backend + frontend regression across ALL features. Backend first, then frontend."
@@ -1493,8 +1532,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive backend regression testing complete"
-    - "Production readiness verification"
+    - "PTT Voice Translation Pipeline verification complete"
+    - "All critical bug fixes confirmed working"
   stuck_tasks: []
   test_all: false
   test_priority: "complete"
