@@ -45,9 +45,10 @@ async function ensureAudioMode() {
   try {
     await Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
-      playsInSilentModeIOS: false,   // ← RESPECT the iOS silent switch at all times
+      playsInSilentModeIOS: true,    // Sport mode is user-initiated — always play the engine sound
       shouldDuckAndroid: false,
       playThroughEarpieceAndroid: false,
+      staysActiveInBackground: false,
     });
     audioModeSet = true;
   } catch {
@@ -152,20 +153,54 @@ export const SOUND_PROFILES = {
 export const PROFILE_KEYS = Object.keys(SOUND_PROFILES);
 
 // ── Core audio playback helper ───────────────────────────────────────────────
+
+// Preloaded sound cache — load once, replay instantly
+const _preloaded = {};
+
 /**
- * Loads and plays a WAV asset once, then unloads it.
- * Using createAsync + shouldPlay ensures minimal latency.
+ * Preload all sound assets for instant playback.
+ * Called lazily on first activation, then cached.
  */
-async function playAsset(asset) {
+async function preloadSounds() {
+  if (Object.keys(_preloaded).length > 0) return;
+  await ensureAudioMode();
+
+  for (const [profileId, assets] of Object.entries(AUDIO_ASSETS)) {
+    for (const [type, asset] of Object.entries(assets)) {
+      const key = `${profileId}_${type}`;
+      try {
+        const { sound } = await Audio.Sound.createAsync(asset, { shouldPlay: false, volume: 1.0 });
+        _preloaded[key] = sound;
+      } catch {
+        // If preload fails, we'll fall back to on-demand loading
+      }
+    }
+  }
+}
+
+/**
+ * Play a sound asset — uses preloaded cache for instant response,
+ * falls back to on-demand loading if cache miss.
+ */
+async function playAsset(asset, cacheKey) {
   let sound = null;
   try {
     await ensureAudioMode();
+
+    // Try preloaded cache first (instant playback)
+    if (cacheKey && _preloaded[cacheKey]) {
+      sound = _preloaded[cacheKey];
+      await sound.setPositionAsync(0);
+      await sound.playAsync();
+      return;
+    }
+
+    // Fallback: load and play on demand
     const { sound: s } = await Audio.Sound.createAsync(
       asset,
       { shouldPlay: true, volume: 1.0 }
     );
     sound = s;
-    // Unload 3s after playback start (all our sounds are < 1s)
     sound.setOnPlaybackStatusUpdate((status) => {
       if (status.didJustFinish && sound) {
         sound.unloadAsync().catch(() => {});
@@ -173,7 +208,7 @@ async function playAsset(asset) {
       }
     });
   } catch (e) {
-    if (sound) {
+    if (sound && !_preloaded[`${cacheKey}`]) {
       await sound.unloadAsync().catch(() => {});
     }
     // Silently ignore audio errors — haptics still run
@@ -185,15 +220,20 @@ async function playAsset(asset) {
 /**
  * Play activation sound + haptics for a given profile.
  * Audio and haptics run concurrently for immediate sensation.
+ * Preloads all sounds on first call for instant future playback.
  */
 export async function playActivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.activate;
   const asset = AUDIO_ASSETS[id]?.activate;
+  const cacheKey = `${id}_activate`;
+
+  // Ensure sounds are preloaded for this and future calls
+  preloadSounds().catch(() => {});
 
   // Run haptics + audio simultaneously for best immediacy
   const promises = [];
-  if (asset) promises.push(playAsset(asset));
+  if (asset) promises.push(playAsset(asset, cacheKey));
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
 
   await Promise.allSettled(promises);
@@ -206,9 +246,10 @@ export async function playDeactivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.deactivate;
   const asset = AUDIO_ASSETS[id]?.deactivate;
+  const cacheKey = `${id}_deactivate`;
 
   const promises = [];
-  if (asset) promises.push(playAsset(asset));
+  if (asset) promises.push(playAsset(asset, cacheKey));
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
 
   await Promise.allSettled(promises);
