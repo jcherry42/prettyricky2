@@ -345,9 +345,11 @@ export function VinScanScreen() {
 
     try {
       impactMedium();
+      // decoded may be { year, make, model, ... } directly (vin_v2 API) or { vehicle: { ... } }
+      const vehicleData = item.decoded?.vehicle || item.decoded;
       await addVehicle({
         vin: item.vin,
-        ...item.decoded.vehicle,
+        ...vehicleData,
         category: item.category,
       });
 
