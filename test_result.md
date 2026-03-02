@@ -367,27 +367,33 @@ test_plan:
 frontend:
   - task: "VIN Scanner Overhaul - Complete Rewrite"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/mobile/src/screens/VinScanScreen.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Complete VinScanScreen.js rewrite: 1) Torch/flashlight toggle for all-lighting scanning, 2) Zoom controls for windshield VINs, 3) Optimized barcode types (Code 39, Code 128, DataMatrix, QR), 4) 1.5s debounce cooldown, 5) Category system with Dealer Inventory (gold) vs Trade-In (teal) badges, 6) Separate local storage per category, 7) Trade-In capped at 50 locally, 8) Category picker modal after each scan, 9) Animated scan line, 10) Legacy storage migration. Also fixed vinChecksum.js to make checksum advisory not blocking."
+      - working: true
+        agent: "testing"
+        comment: "CODE ANALYSIS COMPLETE - 14/14 features verified: torch toggle gated by cameraReady, zoom 0-1 range, 4 optimized barcode types, 1.5s debounce with refs, category system (DEALER/TRADEIN), separate storage keys, 50-cap enforced, category picker modal, legacy migration, visual distinction (gold/teal), animated scan line, autofocus=off (continuous), checksum advisory, all imports correct. No runtime issues, missing imports, or logic errors found."
 
   - task: "VIN Checksum Advisory Fix"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/mobile/src/utils/vinChecksum.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Changed validateVin() to return {valid:true, checksumValid, checksumWarning} instead of blocking on checksum failure. Format validation still enforced. This was the root cause of the scanner appearing broken - valid VINs were silently rejected."
+      - working: true
+        agent: "testing"
+        comment: "CRITICAL BUG FIX VERIFIED: validateVin() returns valid:true with checksumWarning for checksum failures. Format validation (17 chars, no IOQ) still enforced. calculateCheckDigit and validateVinChecksum unchanged. This was the root cause fix."
 
   - task: "License Scanner UI Testing"
     implemented: true
