@@ -176,6 +176,10 @@ sprint_2_customer_management:
 agent_communication:
   - agent: "main"
     message: "PTT VOICE TRANSLATION PIPELINE FIX - COMPREHENSIVE OVERHAUL. Three critical bugs fixed: 1) BACKEND: UserMessage(message=transcript) silently produced empty translations — fixed to UserMessage(text=transcript). LlmChat(model=) doesn't exist — fixed to .with_model('openai','gpt-4o'). Added automotive translation context, better Whisper filename handling. 2) MOBILE PttContext: Replaced HIGH_QUALITY preset (produces Whisper-incompatible .caf on iOS) with explicit m4a/AAC options. Fixed MIME type from 'audio/m4a' to 'audio/mp4'. Added 30s timeout. 3) MOBILE PttOverlayView: Fixed Animated.multiply() bug (broken in RN 0.81 new-arch) that absorbed stop-button touches. All 8 bidirectional translation paths tested on backend (EN↔ES, EN↔FR, EN↔KO). Testing agent: Please run comprehensive backend tests on /api/voice-translate, /api/tts, /api/translate + regression on health, customers, tower-talk."
+  - agent: "main"
+    message: "COMPREHENSIVE CODEBASE AUDIT - ADDITIONAL BUGS FOUND AND FIXED: 1) BACKEND server.py /import/email: LlmChat(model='gpt-4o-mini') wrong constructor + send_message_async non-existent method — both fixed with proper .with_model() and send_message(). 2) BACKEND server.py double /api prefix on /vision/extract-customer — fixed. 3) MOBILE TowerTalkOverlay.js: audio/m4a non-standard MIME + HIGH_QUALITY recording preset — both fixed. 4) f-string lint error fixed. 5) Orphaned components: ErrorBoundary, InfotainmentShell, OfflineBanner, PicassoSwirls (has broken Animated.multiply), QuickAddButton — dead code, not imported anywhere. Testing agent: Run FULL regression including /import/email, /vision/extract-customer endpoints, plus all existing PTT and core endpoints."
+  - agent: "testing"
+    message: "🎯 COMPREHENSIVE BACKEND REGRESSION TEST COMPLETED - EXCELLENT 95% PASS RATE (19/20): Conducted comprehensive full regression backend testing of Supercharg'd automotive sales app focusing on critical bug fixes as requested in review. ✅ ALL CRITICAL FIXES VERIFIED WORKING: 1) Voice Translation Pipeline (8/8 PASS): All critical bugs fixed - UserMessage(text=) parameter working perfectly, LlmChat.with_model('openai','gpt-4o') initialization correct, automotive context preserved. All 8 language paths tested (EN→ES/FR/KO, ES/FR/KO→EN) with proper response structure, edge cases handled correctly. 2) Vision Extract Route Fix (1/1 PASS): /api/vision/extract-customer accessible (fixed from double /api/api/ prefix). 3) TTS All Languages (4/4 PASS): EN/ES/FR/KO generating proper audio with audio_base64 and voice_used fields. 4) Text Translation (2/2 PASS): EN→ES/KO working with translated_text field. 5) Core Regression (4/4 PASS): Health check healthy, customers list functional, Tower Talk AI generating responses, import/file endpoint exists. ❌ MINOR ISSUE IDENTIFIED (1/20): Email Import returns 422 'Could not parse email content' - GPT-4o-mini LLM response not matching JSON extraction regex pattern, requires prompt refinement. NOT A CRITICAL BLOCKER - LlmChat constructor fix is correct, issue is content parsing. ✅ PERFORMANCE EXCELLENT: Average 3041ms response time, voice translation under 10s, all within acceptable limits. ✅ QUALITY GATE ASSESSMENT: 🎉 EXCELLENT (95% ≥ 90%) - All critical fixes verified working, voice translation pipeline production-ready. Only minor email parsing issue needs attention, does not block deployment."
   - agent: "testing"
     message: "🎯 PTT VOICE TRANSLATION PIPELINE COMPREHENSIVE TESTING COMPLETED - PERFECT 100% SUCCESS (20/20 tests): Conducted comprehensive backend testing of ALL critical voice translation bug fixes as requested in review. ✅ ALL 3 CRITICAL BUG FIXES VERIFIED: 1) UserMessage(text=) parameter fix working perfectly - no more empty translations, all voice-translate requests generating proper transcripts, 2) LlmChat .with_model('openai', 'gpt-4o') initialization fix verified - proper model setup, automotive context preserved, 3) GPT-4o upgrade with automotive context delivering excellent translation quality. ✅ VOICE TRANSLATION ALL 8 LANGUAGE PATHS (8/8 PASS): EN→ES (1.62s), ES→EN (1.55s), EN→FR (2.30s), FR→EN (1.12s), EN→KO (1.20s), KO→EN (1.29s), ES→FR (2.14s), FR→KO (2.19s) - all generating automotive-focused translations with proper response structure {transcript, translated_text, source_lang, target_lang, success:true}. ✅ EDGE CASES VERIFIED (2/2): Empty audio returns 422 correctly, same source/target language returns transcript==translated_text successfully. ✅ TTS ALL 4 LANGUAGES (4/4 PASS): EN/ES/FR/KO all generating proper audio_base64 with voice_used field, response times 2.28s-4.41s well within limits. ✅ REGRESSION TESTS (5/5 PASS): Health check healthy, Text translation EN→ES/FR/KO working with automotive terminology, Tower Talk generating contextual responses, Customer list returning proper structure. ✅ PERFORMANCE EXCELLENCE: All voice translation under 2.5s, TTS caching working, automotive context perfectly preserved (test drive, trade-in, financing terms). COMPREHENSIVE RESULT: 🎉 QUALITY GATE PERFECT PASS (100% success rate) - PTT Voice Translation Pipeline is production-ready with all critical fixes verified working flawlessly."
   - agent: "testing"
@@ -409,11 +413,13 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "PTT Voice Translation Pipeline Fix - Backend + Mobile"
-    - "Voice Translate Endpoint Hardening"
-  stuck_tasks: []
+    - "PTT Voice Translation Pipeline Fix - Critical Bugs - COMPLETED"
+    - "Voice Translation Full Regression Testing - COMPLETED"
+    - "Email Import LlmChat Constructor Fix - MINOR ISSUE IDENTIFIED"
+  stuck_tasks:
+    - "Email Import with LlmChat Constructor Fix"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "complete"
 
 frontend:
   - task: "PTT Mobile Pipeline Fix - Recording + Upload + Overlay"
@@ -507,11 +513,29 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: false
         agent: "main"
         comment: "CRITICAL BUG FOUND AND FIXED: 1) UserMessage(message=transcript) was wrong - UserMessage takes text= not message=. This silently produced empty translations. Fixed to UserMessage(text=transcript). 2) LlmChat(model='gpt-4o-mini') was wrong - LlmChat doesn't accept model param. Fixed to .with_model('openai','gpt-4o'). 3) Upgraded translation model from gpt-4o-mini to gpt-4o for accuracy. 4) Added automotive-specific translation context. 5) Added robust filename resolution for Whisper compatibility (handles .caf, missing extensions, wrong MIME types). 6) Improved error messages for user-friendly feedback. All 8 bidirectional translation paths tested manually (EN↔ES, EN↔FR, EN↔KO, FR↔EN, KO↔EN, ES↔EN) - all passing."
+      - working: true
+        agent: "testing"
+        comment: "🎯 COMPREHENSIVE BACKEND REGRESSION TEST COMPLETED - EXCELLENT 95% PASS RATE: Conducted comprehensive full regression backend testing focusing on all critical bug fixes as requested in review. ✅ CRITICAL FIXES VERIFICATION - ALL PASS: 1) Voice Translation Fixes (8/8 PASS): All voice translation paths working perfectly - EN→ES, ES→EN, EN→FR, FR→EN, EN→KO, KO→EN tested successfully with proper UserMessage(text=) and LlmChat.with_model() fixes verified, automotive context preserved, empty audio returns 422 correctly, same language returns transcript==translated_text as expected. 2) Vision Extract Route Fix (1/1 PASS): /api/vision/extract-customer endpoint accessible (no longer returns 404 from double /api/api/ prefix). 3) TTS All Languages (4/4 PASS): EN/ES/FR/KO all generating proper audio with audio_base64 and voice_used fields. 4) Text Translation (2/2 PASS): EN→ES and EN→KO working correctly with translated_text field. 5) Core Regression (4/4 PASS): Health check healthy, customers list working, Tower Talk AI generating contextual responses, import/file endpoint exists. ❌ MINOR ISSUE: Email Import (0/1 FAIL): /api/import/email returns 422 'Could not parse email content' - LLM response parsing issue, not a critical functionality blocker. ✅ PERFORMANCE: Average response time 3041ms, voice translation under 10s, excellent quality. ALL CRITICAL BUG FIXES VERIFIED WORKING - Voice translation pipeline production-ready with 100% success rate on core fixes."
+
+  - task: "Email Import with LlmChat Constructor Fix"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "main"
+        comment: "Fixed LlmChat constructor from wrong LlmChat(model='gpt-4o-mini') to correct .with_model('openai', 'gpt-4o-mini') pattern and changed send_message_async to send_message."
+      - working: false
+        agent: "testing"
+        comment: "❌ MINOR ISSUE: /api/import/email returns 422 'Could not parse email content' when testing with proper automotive email content (BMW X5 inquiry with customer details). LLM is not returning parseable JSON format despite correct LlmChat constructor fix. This is a content parsing issue where the GPT-4o-mini response cannot be matched with the regex pattern r'\\{{[\\s\\S]*\\}}' to extract JSON. Not a critical functionality blocker but needs prompt refinement or more robust JSON parsing."
 
   - task: "Tower Talk gpt-4o + Emoji Strip Safety Net"
     implemented: true

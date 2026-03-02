@@ -436,7 +436,7 @@ async def voice_translate(
                 transcript="", translated_text="",
                 source_lang=source_lang, target_lang=target_lang,
                 success=False,
-                error=f"Speech recognition failed. Please speak clearly and try again."
+                error="Speech recognition failed. Please speak clearly and try again."
             )
 
         if not transcript:
@@ -2932,7 +2932,7 @@ class VisionExtractionRequest(BaseModel):
     additional_context: Optional[str] = Field(None, description="Optional context to help extraction")
 
 
-@api_router.post("/api/vision/extract-customer")
+@api_router.post("/vision/extract-customer")
 async def extract_customer_from_image(req: VisionExtractionRequest):
     """
     Extract customer data from image using GPT-5.1 vision
@@ -3189,7 +3189,11 @@ async def parse_lead_email(email_body: str = Form(...), email_subject: str = For
         if not api_key:
             raise HTTPException(status_code=500, detail="LLM not configured")
         
-        chat = LlmChat(api_key=api_key, model="gpt-4o-mini")
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"email-parse-{uuid.uuid4()}",
+            system_message="You are an expert at parsing automotive lead emails. Extract customer information and return it as JSON only."
+        ).with_model("openai", "gpt-4o-mini")
         
         parse_prompt = f"""Parse this automotive lead email and extract customer information in JSON format.
         
@@ -3211,10 +3215,10 @@ Extract and return ONLY valid JSON with these fields:
 
 If a field cannot be found, use empty string. Do not include any other text."""
 
-        response = await chat.send_message_async(UserMessage(text=parse_prompt))
+        response = await chat.send_message(UserMessage(text=parse_prompt))
         
         # Parse JSON response
-        json_match = re.search(r'\{[\s\S]*\}', response.text)
+        json_match = re.search(r'\{{[\s\S]*\}}', response)
         if json_match:
             import json
             parsed = json.loads(json_match.group())

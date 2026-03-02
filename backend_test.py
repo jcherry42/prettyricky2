@@ -1,350 +1,642 @@
+#!/usr/bin/env python3
 """
-Backend Test Suite for License Scanner Endpoints
-Tests the NEW license scanner backend endpoints that were just added.
+Comprehensive Backend Testing for Supercharg'd Automotive Sales App
+Testing critical bug fixes and full regression as requested in review.
 
-Test Cases from Review Request:
-A-G: POST /api/license/parse-pdf417 (various AAMVA barcode formats)
-H: POST /api/license/scan-from-url (non-existent image)
-I-K: Regression tests (health, vin, translate)
+Test Focus Areas from Review Request:
+1. /api/voice-translate — UserMessage fix, LlmChat.with_model fix, automotive context 
+2. /api/import/email — LlmChat constructor + send_message_async fix
+3. /api/vision/extract-customer — route fix (was /api/api/vision/extract-customer)
+4. /api/tts — all languages (EN/ES/FR/KO)
+5. /api/translate — text translation
+6. Core regression endpoints
 """
 
 import asyncio
 import aiohttp
 import json
-import sys
+import base64
+import tempfile
 import os
+from pathlib import Path
+from typing import Dict, Any, Optional
+import time
 
-# Backend URL configuration
+# Backend URL - using localhost as specified in review
 BACKEND_URL = "http://localhost:8001"
 
-class TestResults:
+class BackendTester:
     def __init__(self):
-        self.passed = 0
-        self.failed = 0
-        self.results = []
+        self.session: Optional[aiohttp.ClientSession] = None
+        self.test_results = []
+        self.total_tests = 0
+        self.passed_tests = 0
+        
+    async def __aenter__(self):
+        self.session = aiohttp.ClientSession()
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+            
+    def log_test(self, test_name: str, status: str, response_time: float = 0, details: str = ""):
+        """Log test result"""
+        self.total_tests += 1
+        if status == "PASS":
+            self.passed_tests += 1
+            
+        result = {
+            "test": test_name,
+            "status": status,
+            "response_time_ms": round(response_time * 1000, 2),
+            "details": details
+        }
+        self.test_results.append(result)
+        
+        # Print result
+        status_emoji = "✅" if status == "PASS" else "❌"
+        print(f"{status_emoji} {test_name} ({response_time*1000:.0f}ms) - {details}")
+        
+    async def test_endpoint(self, method: str, endpoint: str, test_name: str, 
+                          data: Any = None, files: Any = None, 
+                          expected_status: int = 200, expected_fields: list = None) -> Dict[str, Any]:
+        """Generic test endpoint helper"""
+        url = f"{BACKEND_URL}{endpoint}"
+        start_time = time.time()
+        
+        try:
+            if method.upper() == "GET":
+                async with self.session.get(url) as response:
+                    response_time = time.time() - start_time
+                    response_data = await response.json() if response.content_type == 'application/json' else await response.text()
+                    
+            elif method.upper() == "POST":
+                if files:
+                    # For multipart form data
+                    form_data = aiohttp.FormData()
+                    if data:
+                        for key, value in data.items():
+                            form_data.add_field(key, value)
+                    for key, file_info in files.items():
+                        form_data.add_field(key, file_info['data'], 
+                                          filename=file_info['filename'],
+                                          content_type=file_info['content_type'])
+                    
+                    async with self.session.post(url, data=form_data) as response:
+                        response_time = time.time() - start_time
+                        response_data = await response.json() if response.content_type == 'application/json' else await response.text()
+                        
+                elif isinstance(data, dict) and not any(isinstance(v, str) and v.startswith('form:') for v in data.values()):
+                    # JSON data
+                    async with self.session.post(url, json=data) as response:
+                        response_time = time.time() - start_time
+                        response_data = await response.json() if response.content_type == 'application/json' else await response.text()
+                        
+                else:
+                    # Form data
+                    form_data = aiohttp.FormData()
+                    if data:
+                        for key, value in data.items():
+                            if isinstance(value, str) and value.startswith('form:'):
+                                form_data.add_field(key, value[5:])  # Remove 'form:' prefix
+                            else:
+                                form_data.add_field(key, str(value))
+                    
+                    async with self.session.post(url, data=form_data) as response:
+                        response_time = time.time() - start_time
+                        response_data = await response.json() if response.content_type == 'application/json' else await response.text()
+            
+            # Validate response
+            if isinstance(expected_status, list):
+                if response.status not in expected_status:
+                    self.log_test(test_name, "FAIL", response_time, 
+                                f"Status {response.status}, expected one of {expected_status}")
+                    return {"error": f"Wrong status code: {response.status}"}
+            else:
+                if response.status != expected_status:
+                    self.log_test(test_name, "FAIL", response_time, 
+                                f"Status {response.status}, expected {expected_status}")
+                    return {"error": f"Wrong status code: {response.status}"}
+                
+            if expected_fields and isinstance(response_data, dict):
+                missing_fields = [field for field in expected_fields if field not in response_data]
+                if missing_fields:
+                    self.log_test(test_name, "FAIL", response_time, 
+                                f"Missing fields: {missing_fields}")
+                    return {"error": f"Missing fields: {missing_fields}"}
+                    
+            self.log_test(test_name, "PASS", response_time, "OK")
+            return response_data
+            
+        except Exception as e:
+            response_time = time.time() - start_time
+            self.log_test(test_name, "FAIL", response_time, str(e))
+            return {"error": str(e)}
     
-    def add_result(self, test_name, passed, details=""):
-        self.results.append({
-            'test': test_name,
-            'passed': passed,
-            'details': details
-        })
-        if passed:
-            self.passed += 1
-            print(f"✅ {test_name}")
+    def create_test_audio(self, format: str = "wav") -> bytes:
+        """Create minimal test audio file"""
+        if format == "wav":
+            # Minimal WAV file header (44 bytes) + 1 second of silence
+            header = b'RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00D\xac\x00\x00\x88X\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00'
+            silence = b'\x00' * 8000  # 1 second at 8kHz mono
+            return header + silence
+        return b"fake audio data"
+    
+    async def run_comprehensive_tests(self):
+        """Run all comprehensive backend tests as per review request"""
+        
+        print("🎯 STARTING COMPREHENSIVE BACKEND REGRESSION TESTING")
+        print("=" * 70)
+        
+        # A. VOICE TRANSLATION TESTS (Critical bug fixes)
+        print("\n🔊 VOICE TRANSLATION TESTS (Critical Bug Fixes)")
+        print("-" * 50)
+        
+        await self.test_voice_translate_en_to_es()
+        await self.test_voice_translate_es_to_en()
+        await self.test_voice_translate_en_to_fr()
+        await self.test_voice_translate_fr_to_en()
+        await self.test_voice_translate_en_to_ko()
+        await self.test_voice_translate_ko_to_en()
+        await self.test_voice_translate_edge_cases()
+        
+        # B. EMAIL IMPORT TESTS (Newly fixed)
+        print("\n📧 EMAIL IMPORT TESTS (LlmChat Constructor Fix)")
+        print("-" * 50)
+        
+        await self.test_email_import()
+        
+        # C. VISION EXTRACT TESTS (Route fix)
+        print("\n👁️ VISION EXTRACT TESTS (Route Fix)")
+        print("-" * 50)
+        
+        await self.test_vision_extract_customer()
+        
+        # D. TTS TESTS (All languages)
+        print("\n🔊 TTS TESTS (All Languages)")
+        print("-" * 50)
+        
+        await self.test_tts_english()
+        await self.test_tts_spanish()
+        await self.test_tts_french()
+        await self.test_tts_korean()
+        
+        # E. TEXT TRANSLATION TESTS
+        print("\n🌐 TEXT TRANSLATION TESTS")
+        print("-" * 50)
+        
+        await self.test_text_translation()
+        
+        # F. CORE REGRESSION TESTS
+        print("\n🏥 CORE REGRESSION TESTS")
+        print("-" * 50)
+        
+        await self.test_health_check()
+        await self.test_customers_list()
+        await self.test_tower_talk()
+        await self.test_import_file()
+        
+        # Print final summary
+        self.print_summary()
+    
+    # VOICE TRANSLATION TESTS
+    async def test_voice_translate_en_to_es(self):
+        """Test EN→ES voice translation with automotive context"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_audio.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'en',
+            'target_lang': 'es'
+        }
+        
+        response = await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate EN→ES", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+        
+    async def test_voice_translate_es_to_en(self):
+        """Test ES→EN voice translation"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_spanish.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'es',
+            'target_lang': 'en'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate ES→EN", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+        
+    async def test_voice_translate_en_to_fr(self):
+        """Test EN→FR voice translation"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_english.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'en',
+            'target_lang': 'fr'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate EN→FR", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+    
+    async def test_voice_translate_fr_to_en(self):
+        """Test FR→EN voice translation"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_french.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'fr',
+            'target_lang': 'en'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate FR→EN", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+    
+    async def test_voice_translate_en_to_ko(self):
+        """Test EN→KO voice translation"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_english.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'en',
+            'target_lang': 'ko'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate EN→KO", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+    
+    async def test_voice_translate_ko_to_en(self):
+        """Test KO→EN voice translation"""
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test_korean.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {
+            'source_lang': 'ko',
+            'target_lang': 'en'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate KO→EN", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'source_lang', 'target_lang', 'success']
+        )
+    
+    async def test_voice_translate_edge_cases(self):
+        """Test voice translation edge cases"""
+        # Test 1: Empty audio
+        files = {
+            'audio': {
+                'data': b'',
+                'filename': 'empty.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {'source_lang': 'en', 'target_lang': 'es'}
+        
+        await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate Empty Audio→422", 
+            data=data, files=files,
+            expected_status=422
+        )
+        
+        # Test 2: Same language (en→en)
+        audio_data = self.create_test_audio()
+        files = {
+            'audio': {
+                'data': audio_data,
+                'filename': 'test.wav',
+                'content_type': 'audio/wav'
+            }
+        }
+        data = {'source_lang': 'en', 'target_lang': 'en'}
+        
+        response = await self.test_endpoint(
+            "POST", "/api/voice-translate", 
+            "Voice Translate Same Lang (en→en)", 
+            data=data, files=files,
+            expected_fields=['transcript', 'translated_text', 'success']
+        )
+        
+        # Should have transcript == translated_text for same language
+        if isinstance(response, dict) and 'transcript' in response and 'translated_text' in response:
+            if response['transcript'] == response['translated_text']:
+                print("   ✓ Same language: transcript == translated_text")
+            else:
+                print("   ⚠️ Same language: transcript != translated_text")
+    
+    # EMAIL IMPORT TESTS
+    async def test_email_import(self):
+        """Test email import with LlmChat constructor fix"""
+        data = {
+            'form:email_body': 'Hi, I\'m interested in a 2024 BMW X5. My name is John Smith, phone 555-123-4567, email john@test.com. Looking to trade in my 2020 Honda Civic.',
+            'form:email_subject': 'Vehicle Inquiry',
+            'form:email_from': 'john@test.com'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/import/email",
+            "Email Import with Customer Info",
+            data=data,
+            expected_status=200
+        )
+    
+    # VISION EXTRACT TESTS
+    async def test_vision_extract_customer(self):
+        """Test vision extract customer (route was fixed from /api/api/ to /api/)"""
+        data = {
+            'image_data': 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k='
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/vision/extract-customer",
+            "Vision Extract Customer (Route Fix)",
+            data=data,
+            expected_status=[200, 422]  # Accept both success and validation error
+        )
+    
+    # TTS TESTS
+    async def test_tts_english(self):
+        """Test TTS English"""
+        data = {
+            'text': 'Test drive scheduled',
+            'voice': 'auto',
+            'language': 'en'
+        }
+        
+        response = await self.test_endpoint(
+            "POST", "/api/tts",
+            "TTS English",
+            data=data,
+            expected_fields=['audio_base64', 'voice_used']
+        )
+        
+        # Verify audio_base64 is not empty
+        if isinstance(response, dict) and 'audio_base64' in response:
+            if len(response['audio_base64']) > 1000:
+                print("   ✓ Audio generated successfully")
+            else:
+                print("   ⚠️ Audio seems too short")
+    
+    async def test_tts_spanish(self):
+        """Test TTS Spanish"""
+        data = {
+            'text': 'Prueba de manejo programada',
+            'voice': 'auto',
+            'language': 'es'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/tts",
+            "TTS Spanish",
+            data=data,
+            expected_fields=['audio_base64', 'voice_used']
+        )
+    
+    async def test_tts_french(self):
+        """Test TTS French"""
+        data = {
+            'text': 'Essai routier programmé',
+            'voice': 'auto',
+            'language': 'fr'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/tts",
+            "TTS French",
+            data=data,
+            expected_fields=['audio_base64', 'voice_used']
+        )
+    
+    async def test_tts_korean(self):
+        """Test TTS Korean"""
+        data = {
+            'text': '시승 예약이 완료되었습니다',
+            'voice': 'auto',
+            'language': 'ko'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/tts",
+            "TTS Korean",
+            data=data,
+            expected_fields=['audio_base64', 'voice_used']
+        )
+    
+    # TEXT TRANSLATION TESTS
+    async def test_text_translation(self):
+        """Test text translation endpoints"""
+        # Test EN→ES
+        data = {
+            'text': 'I\'d like to discuss financing options',
+            'source_lang': 'en',
+            'target_lang': 'es'
+        }
+        
+        response = await self.test_endpoint(
+            "POST", "/api/translate",
+            "Text Translation EN→ES",
+            data=data,
+            expected_fields=['translated_text']
+        )
+        
+        # Test EN→KO
+        data = {
+            'text': 'I\'d like to discuss financing options',
+            'source_lang': 'en',
+            'target_lang': 'ko'
+        }
+        
+        await self.test_endpoint(
+            "POST", "/api/translate",
+            "Text Translation EN→KO",
+            data=data,
+            expected_fields=['translated_text']
+        )
+    
+    # CORE REGRESSION TESTS
+    async def test_health_check(self):
+        """Test health check endpoint"""
+        response = await self.test_endpoint(
+            "GET", "/api/health",
+            "Health Check",
+            expected_fields=['status']
+        )
+        
+        if isinstance(response, dict) and response.get('status') == 'healthy':
+            print("   ✓ Backend is healthy")
         else:
-            self.failed += 1
-            print(f"❌ {test_name}: {details}")
+            print("   ⚠️ Backend health status unclear")
     
-    def summary(self):
-        total = self.passed + self.failed
-        print(f"\n🎯 TEST SUMMARY: {self.passed}/{total} passed ({(self.passed/total)*100:.1f}% pass rate)")
-        if self.failed > 0:
-            print("\n❌ FAILED TESTS:")
-            for result in self.results:
-                if not result['passed']:
-                    print(f"  - {result['test']}: {result['details']}")
-
-async def test_license_parse_pdf417():
-    """Test POST /api/license/parse-pdf417 with various barcode formats"""
-    results = TestResults()
+    async def test_customers_list(self):
+        """Test customers list endpoint"""
+        response = await self.test_endpoint(
+            "GET", "/api/customers/list?limit=3",
+            "Customers List",
+            expected_fields=['customers', 'total']
+        )
+        
+        if isinstance(response, dict):
+            if 'customers' in response and isinstance(response['customers'], list):
+                print(f"   ✓ Found {len(response['customers'])} customers")
+            if 'total' in response:
+                print(f"   ✓ Total customers: {response['total']}")
     
-    async with aiohttp.ClientSession() as session:
-        
-        # Test Case A: Kentucky v9 barcode (modern format)
-        test_case_a = {
-            "barcode_data": "@\n\nANSI 636014090002DL00410288ZK03190008DLDAQK12345678\nDCSJOHNSON\nDDEN\nDACMICHAEL\nDADJAMES\nDBD06062019\nDBB01151990\nDBA01152028\nDBC1\nDAU510\nDAYBLU\nDAG123 MAIN STREET\nDAILOUISVILLE\nDAJKY\nDAK402021375\nDCF0123456789\nDCGUSA\n", 
-            "scan_source": "camera"
+    async def test_tower_talk(self):
+        """Test Tower Talk AI endpoint"""
+        data = {
+            'situation': 'Customer asking about warranty',
+            'inquiryType': 'warranty',
+            'context': {
+                'customerName': 'Maria',
+                'vehicle': '2024 Toyota Camry'
+            }
         }
         
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_a) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == True and 
-                    data.get('extracted_data', {}).get('first_name') == 'Michael' and
-                    data.get('extracted_data', {}).get('last_name') == 'Johnson' and
-                    data.get('extracted_data', {}).get('state') == 'KY' and
-                    data.get('extracted_data', {}).get('license_number') == 'K12345678' and
-                    data.get('confidence', 0) >= 90):
-                    results.add_result("A) Kentucky v9 barcode", True)
-                else:
-                    results.add_result("A) Kentucky v9 barcode", False, 
-                                     f"Expected success=true, first_name=Michael, last_name=Johnson, state=KY, license_number=K12345678, confidence>=90. Got: success={data.get('success')}, data={data.get('extracted_data', {})}, confidence={data.get('confidence')}")
-        except Exception as e:
-            results.add_result("A) Kentucky v9 barcode", False, f"Exception: {e}")
+        response = await self.test_endpoint(
+            "POST", "/api/tower-talk",
+            "Tower Talk AI",
+            data=data,
+            expected_fields=['response']
+        )
         
-        # Test Case B: California v9 barcode
-        test_case_b = {
-            "barcode_data": "@\n\nANSI 636050090002DL00410288ZC03190008DLDAQD1234567\nDCSGARCIA\nDDEN\nDACMARIA\nDADELENA\nDBD03152022\nDBB07041985\nDBA07042029\nDBC2\nDAU504\nDAYBRO\nDAG456 OAK AVENUE APT 12\nDAISAN FRANCISCO\nDAJCA\nDAK941101234\nDCF12345678901234\nDCGUSA\n", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_b) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == True and 
-                    data.get('extracted_data', {}).get('first_name') == 'Maria' and
-                    data.get('extracted_data', {}).get('last_name') == 'Garcia' and
-                    data.get('extracted_data', {}).get('state') == 'CA' and
-                    data.get('extracted_data', {}).get('city') == 'San Francisco'):
-                    results.add_result("B) California v9 barcode", True)
-                else:
-                    results.add_result("B) California v9 barcode", False, 
-                                     f"Expected success=true, first_name=Maria, last_name=Garcia, state=CA, city=San Francisco. Got: {data.get('extracted_data', {})}")
-        except Exception as e:
-            results.add_result("B) California v9 barcode", False, f"Exception: {e}")
-        
-        # Test Case C: Old v1 New York format (DAA combined name)
-        test_case_c = {
-            "barcode_data": "@\nANSI 636001010002DL00300196DLDAQT123456789\nDAADOE,JANE,MARIE\nDBB03121975\nDBA03122026\nDAG555 ELM STREET\nDAIALBANY\nDAJNY\nDAK122011234\nDBC2\n", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_c) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == True and 
-                    data.get('extracted_data', {}).get('first_name') == 'Jane' and
-                    data.get('extracted_data', {}).get('middle_name') == 'Marie' and
-                    data.get('extracted_data', {}).get('last_name') == 'Doe' and
-                    data.get('extracted_data', {}).get('state') == 'NY'):
-                    results.add_result("C) Old v1 NY (DAA combined name)", True)
-                else:
-                    results.add_result("C) Old v1 NY (DAA combined name)", False, 
-                                     f"Expected first_name=Jane, middle_name=Marie, last_name=Doe, state=NY. Got: {data.get('extracted_data', {})}")
-        except Exception as e:
-            results.add_result("C) Old v1 NY (DAA combined name)", False, f"Exception: {e}")
-        
-        # Test Case D: Texas v8 barcode (city name contains valid code "DAL" in "DALLAS")
-        test_case_d = {
-            "barcode_data": "@\n\nANSI 636041080002DL00410278ZT03190008DLDAQ12345678\nDCSWILLIAMS\nDACROBERT\nDADLEE\nDBD01012020\nDBB12251988\nDBA12252027\nDBC1\nDAU511\nDAYGRN\nDAG789 SUNSET BLVD\nDAIDALLAS\nDAJTX\nDAK752011234\nDCGUSA\n", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_d) as resp:
-                data = await resp.json()
-                
-                city = data.get('extracted_data', {}).get('city')
-                if (resp.status == 200 and 
-                    data.get('success') == True and 
-                    data.get('extracted_data', {}).get('first_name') == 'Robert' and
-                    data.get('extracted_data', {}).get('last_name') == 'Williams' and
-                    data.get('extracted_data', {}).get('state') == 'TX' and
-                    city == 'Dallas'):  # City should NOT be empty!
-                    results.add_result("D) Texas v8 barcode (Dallas city)", True)
-                else:
-                    results.add_result("D) Texas v8 barcode (Dallas city)", False, 
-                                     f"Expected first_name=Robert, last_name=Williams, state=TX, city=Dallas (NOT empty!). Got: city={city}, data={data.get('extracted_data', {})}")
-        except Exception as e:
-            results.add_result("D) Texas v8 barcode (Dallas city)", False, f"Exception: {e}")
-        
-        # Test Case E: Florida barcode
-        test_case_e = {
-            "barcode_data": "@\n\nANSI 636010090002DL00410288ZF03190008DLDAQJ123-456-78-901-0\nDCSSMITH\nDACJAMES\nDADWILLIAM\nDBD08152023\nDBB02281992\nDBA02282030\nDBC1\nDAU600\nDAYBLU\nDAG1010 OCEAN DRIVE\nDAIMIAMI\nDAJFL\nDAK331391234\nDCGUSA\n", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_e) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == True and 
-                    data.get('extracted_data', {}).get('state') == 'FL' and
-                    data.get('extracted_data', {}).get('city') == 'Miami' and
-                    data.get('extracted_data', {}).get('license_number') == 'J123-456-78-901-0'):
-                    results.add_result("E) Florida barcode", True)
-                else:
-                    results.add_result("E) Florida barcode", False, 
-                                     f"Expected state=FL, city=Miami, license_number=J123-456-78-901-0. Got: {data.get('extracted_data', {})}")
-        except Exception as e:
-            results.add_result("E) Florida barcode", False, f"Exception: {e}")
-        
-        # Test Case F: Empty/invalid data
-        test_case_f = {
-            "barcode_data": "hello world", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_f) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == False and
-                    data.get('errors') is not None and 
-                    len(data.get('errors', [])) > 0):
-                    results.add_result("F) Empty/invalid data", True)
-                else:
-                    results.add_result("F) Empty/invalid data", False, 
-                                     f"Expected success=false, errors not empty. Got: {data}")
-        except Exception as e:
-            results.add_result("F) Empty/invalid data", False, f"Exception: {e}")
-        
-        # Test Case G: Too short data
-        test_case_g = {
-            "barcode_data": "abc", 
-            "scan_source": "camera"
-        }
-        
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
-                                  json=test_case_g) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == False):
-                    results.add_result("G) Too short data", True)
-                else:
-                    results.add_result("G) Too short data", False, 
-                                     f"Expected success=false. Got: {data}")
-        except Exception as e:
-            results.add_result("G) Too short data", False, f"Exception: {e}")
+        if isinstance(response, dict) and 'response' in response:
+            response_length = len(response['response'])
+            print(f"   ✓ AI response generated ({response_length} chars)")
     
-    return results
-
-async def test_license_scan_from_url():
-    """Test POST /api/license/scan-from-url"""
-    results = TestResults()
+    async def test_import_file(self):
+        """Test import file endpoint exists (can return 422 for missing file)"""
+        # Just verify endpoint exists - expect 422 for missing file
+        await self.test_endpoint(
+            "POST", "/api/import/file",
+            "Import File Endpoint Exists",
+            expected_status=422
+        )
     
-    async with aiohttp.ClientSession() as session:
+    def print_summary(self):
+        """Print comprehensive test summary"""
+        print("\n" + "=" * 70)
+        print("🎯 COMPREHENSIVE BACKEND REGRESSION TEST SUMMARY")
+        print("=" * 70)
         
-        # Test Case H: Non-existent image
-        test_case_h = {
-            "image_url": "/api/uploads/nonexistent_abc.jpg", 
-            "retry_count": 0
-        }
+        # Overall stats
+        pass_rate = (self.passed_tests / self.total_tests) * 100 if self.total_tests > 0 else 0
+        print(f"\n📊 OVERALL RESULTS: {self.passed_tests}/{self.total_tests} tests passed ({pass_rate:.1f}%)")
         
-        try:
-            async with session.post(f"{BACKEND_URL}/api/license/scan-from-url", 
-                                  json=test_case_h) as resp:
-                data = await resp.json()
-                
-                if (resp.status == 200 and 
-                    data.get('success') == False and
-                    'not found' in str(data.get('error', '')).lower()):
-                    results.add_result("H) Non-existent image", True)
-                else:
-                    results.add_result("H) Non-existent image", False, 
-                                     f"Expected success=false, error contains 'not found'. Got: {data}")
-        except Exception as e:
-            results.add_result("H) Non-existent image", False, f"Exception: {e}")
-    
-    return results
-
-async def test_regression_endpoints():
-    """Test existing endpoints still work (regression tests)"""
-    results = TestResults()
-    
-    async with aiohttp.ClientSession() as session:
+        if pass_rate >= 90:
+            print("🎉 EXCELLENT - Production Ready!")
+        elif pass_rate >= 75:
+            print("✅ GOOD - Minor issues to address")
+        else:
+            print("⚠️ NEEDS ATTENTION - Multiple issues found")
         
-        # Test Case I: GET /api/health
-        try:
-            async with session.get(f"{BACKEND_URL}/api/health") as resp:
-                if resp.status == 200:
-                    results.add_result("I) GET /api/health", True)
-                else:
-                    results.add_result("I) GET /api/health", False, f"Status {resp.status}")
-        except Exception as e:
-            results.add_result("I) GET /api/health", False, f"Exception: {e}")
+        # Group results by category
+        categories = {}
+        for result in self.test_results:
+            category = result['test'].split(' ')[0:2]  # First two words as category
+            category_name = ' '.join(category)
+            
+            if category_name not in categories:
+                categories[category_name] = {'pass': 0, 'fail': 0, 'total': 0}
+            
+            categories[category_name]['total'] += 1
+            if result['status'] == 'PASS':
+                categories[category_name]['pass'] += 1
+            else:
+                categories[category_name]['fail'] += 1
         
-        # Test Case J: GET /api/vin/trade-in-count
-        try:
-            async with session.get(f"{BACKEND_URL}/api/vin/trade-in-count") as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    # Check proper structure
-                    if ('count' in data and 'cap' in data and 'remaining' in data and 'at_limit' in data):
-                        results.add_result("J) GET /api/vin/trade-in-count", True)
-                    else:
-                        results.add_result("J) GET /api/vin/trade-in-count", False, 
-                                         f"Missing required fields in structure: {data}")
-                else:
-                    results.add_result("J) GET /api/vin/trade-in-count", False, f"Status {resp.status}")
-        except Exception as e:
-            results.add_result("J) GET /api/vin/trade-in-count", False, f"Exception: {e}")
+        # Print category breakdown
+        print(f"\n📋 RESULTS BY CATEGORY:")
+        for category, stats in categories.items():
+            category_pass_rate = (stats['pass'] / stats['total']) * 100
+            status_emoji = "✅" if category_pass_rate == 100 else "⚠️" if category_pass_rate >= 75 else "❌"
+            print(f"   {status_emoji} {category}: {stats['pass']}/{stats['total']} ({category_pass_rate:.0f}%)")
         
-        # Test Case K: POST /api/translate
-        test_translate = {
-            "text": "Hello",
-            "source_lang": "en", 
-            "target_lang": "es"
-        }
+        # Show failures
+        failures = [r for r in self.test_results if r['status'] == 'FAIL']
+        if failures:
+            print(f"\n❌ FAILURES TO ADDRESS:")
+            for failure in failures:
+                print(f"   • {failure['test']}: {failure['details']}")
+        else:
+            print(f"\n✅ NO FAILURES - All tests passed!")
         
-        try:
-            async with session.post(f"{BACKEND_URL}/api/translate", 
-                                  json=test_translate) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    if data.get('translated_text'):
-                        results.add_result("K) POST /api/translate", True)
-                    else:
-                        results.add_result("K) POST /api/translate", False, 
-                                         f"Missing translated_text field: {data}")
-                else:
-                    results.add_result("K) POST /api/translate", False, f"Status {resp.status}")
-        except Exception as e:
-            results.add_result("K) POST /api/translate", False, f"Exception: {e}")
-    
-    return results
+        # Performance summary
+        avg_response_time = sum(r['response_time_ms'] for r in self.test_results) / len(self.test_results)
+        print(f"\n⏱️ PERFORMANCE: Average response time {avg_response_time:.0f}ms")
+        
+        # Critical fixes verification
+        print(f"\n🔧 CRITICAL FIXES VERIFICATION:")
+        voice_tests = [r for r in self.test_results if 'Voice Translate' in r['test']]
+        voice_pass_rate = (len([r for r in voice_tests if r['status'] == 'PASS']) / len(voice_tests)) * 100 if voice_tests else 0
+        print(f"   • Voice Translation Fixes: {voice_pass_rate:.0f}% pass rate")
+        
+        email_tests = [r for r in self.test_results if 'Email Import' in r['test']]
+        email_pass_rate = (len([r for r in email_tests if r['status'] == 'PASS']) / len(email_tests)) * 100 if email_tests else 0
+        print(f"   • Email Import Fix: {email_pass_rate:.0f}% pass rate")
+        
+        vision_tests = [r for r in self.test_results if 'Vision Extract' in r['test']]
+        vision_pass_rate = (len([r for r in vision_tests if r['status'] == 'PASS']) / len(vision_tests)) * 100 if vision_tests else 0
+        print(f"   • Vision Extract Route Fix: {vision_pass_rate:.0f}% pass rate")
+        
+        print("\n" + "=" * 70)
 
 async def main():
-    print("🎯 LICENSE SCANNER BACKEND ENDPOINTS TESTING")
-    print("=" * 60)
-    print(f"Backend URL: {BACKEND_URL}")
-    print()
-    
-    # Test PDF417 parsing endpoints (test cases A-G)
-    print("🔍 Testing POST /api/license/parse-pdf417 (Test Cases A-G)")
-    pdf417_results = await test_license_parse_pdf417()
-    print()
-    
-    # Test scan from URL endpoint (test case H)
-    print("🔍 Testing POST /api/license/scan-from-url (Test Case H)")
-    scan_url_results = await test_license_scan_from_url()
-    print()
-    
-    # Test regression endpoints (test cases I-K)
-    print("🔍 Testing Regression Endpoints (Test Cases I-K)")
-    regression_results = await test_regression_endpoints()
-    print()
-    
-    # Combine all results
-    all_results = TestResults()
-    all_results.passed = pdf417_results.passed + scan_url_results.passed + regression_results.passed
-    all_results.failed = pdf417_results.failed + scan_url_results.failed + regression_results.failed
-    all_results.results = pdf417_results.results + scan_url_results.results + regression_results.results
-    
-    # Print comprehensive summary
-    print("=" * 60)
-    all_results.summary()
-    print()
-    
-    # Detailed breakdown
-    print("📊 DETAILED BREAKDOWN:")
-    print(f"  PDF417 Parsing (A-G): {pdf417_results.passed}/{pdf417_results.passed + pdf417_results.failed}")
-    print(f"  Scan from URL (H): {scan_url_results.passed}/{scan_url_results.passed + scan_url_results.failed}")
-    print(f"  Regression Tests (I-K): {regression_results.passed}/{regression_results.passed + regression_results.failed}")
-    
-    if all_results.passed == 11:  # Total expected tests A through K
-        print("\n🎉 ALL TESTS PASSED! License scanner backend endpoints are working perfectly.")
-    else:
-        print(f"\n⚠️  {all_results.failed} test(s) failed. Please check implementation.")
-    
-    return all_results
+    """Main test execution"""
+    async with BackendTester() as tester:
+        await tester.run_comprehensive_tests()
 
 if __name__ == "__main__":
     asyncio.run(main())

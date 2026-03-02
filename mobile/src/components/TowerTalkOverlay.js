@@ -196,7 +196,14 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
 
       const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
+        Platform.OS === 'web'
+          ? Audio.RecordingOptionsPresets.HIGH_QUALITY
+          : {
+              isMeteringEnabled: true,
+              android: { extension: '.m4a', outputFormat: 2, audioEncoder: 3, sampleRate: 44100, numberOfChannels: 1, bitRate: 128000 },
+              ios: { extension: '.m4a', outputFormat: 'aac', audioQuality: 127, sampleRate: 44100, numberOfChannels: 1, bitRate: 128000, linearPCMBitDepth: 16, linearPCMIsBigEndian: false, linearPCMIsFloat: false },
+              web: { mimeType: 'audio/webm', bitsPerSecond: 128000 },
+            }
       );
       recordingRef.current = recording;
       setDictationStatus('recording');
@@ -230,7 +237,9 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
       if (!uri) throw new Error('No audio recorded');
 
-      const out = await voiceTranslateUpload({ uri, sourceLang: 'en', targetLang: 'en', mimeType: 'audio/m4a' });
+      const ext = Platform.OS === 'web' ? 'webm' : 'm4a';
+      const mime = Platform.OS === 'web' ? 'audio/webm' : 'audio/mp4';
+      const out = await voiceTranslateUpload({ uri, sourceLang: 'en', targetLang: 'en', mimeType: mime, fileExtension: ext });
       const transcript = out?.transcript || out?.translated_text || '';
       if (transcript && transcript.trim()) {
         setSituation(prev => {
