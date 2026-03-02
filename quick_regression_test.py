@@ -9,7 +9,7 @@ import json
 import sys
 
 # Use the backend URL from the review request
-BACKEND_URL = "https://backend-sync-15.preview.emergentagent.com/api"
+BACKEND_URL = "https://vehicle-data-sync-3.preview.emergentagent.com/api"
 
 async def run_requested_tests():
     """Run the specific 6 tests mentioned in the review request"""

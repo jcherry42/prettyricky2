@@ -7,7 +7,7 @@ import requests
 import time
 import os
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://backend-sync-15.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://vehicle-data-sync-3.preview.emergentagent.com')
 
 
 class TestHealthEndpoints:
