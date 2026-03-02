@@ -86,18 +86,25 @@ export function validateVinFormat(vin) {
 }
 
 /**
- * Full VIN validation with checksum
+ * Full VIN validation with advisory checksum.
+ * Format is enforced (17 chars, no IOQ). Checksum is ADVISORY only —
+ * many legitimate non-US-manufactured VINs do not follow the FMVSS 115
+ * check-digit algorithm. Leading CRM platforms (vAuto, VinSolutions,
+ * DealerSocket) treat the check digit as a confidence signal, not a gate.
+ *
  * @param {string} vin - VIN to validate
- * @returns {object} - { valid: boolean, error?: string }
+ * @returns {object} - { valid: boolean, checksumValid: boolean, checksumWarning?: string, error?: string }
  */
 export function validateVin(vin) {
   const formatCheck = validateVinFormat(vin);
-  if (!formatCheck.valid) return formatCheck;
+  if (!formatCheck.valid) return { ...formatCheck, checksumValid: false };
 
   const checksumValid = validateVinChecksum(vin);
-  if (!checksumValid) {
-    return { valid: false, error: 'VIN checksum invalid' };
-  }
-
-  return { valid: true };
+  return {
+    valid: true,        // Format is valid — VIN is accepted
+    checksumValid,
+    checksumWarning: checksumValid
+      ? null
+      : 'Check digit mismatch — common on imported vehicles. Verify VIN visually.',
+  };
 }

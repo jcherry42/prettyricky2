@@ -3,15 +3,20 @@ VIN Routes (Refactored v2)
 
 Goal:
 - Match the current production VIN API contract in backend/server.py exactly.
+- Robust NHTSA decode with retry logic for reliability.
+- Trade-In VIN cap enforcement (50 max).
 
 Endpoints:
 - GET  /vin/decode/{vin}
+- GET  /vin/trade-in-count
 - POST /vin/save
 - POST /vin/save-to-inventory
 """
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
@@ -19,9 +24,13 @@ from datetime import datetime, timezone
 import uuid
 import httpx
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 _db = None
+
+TRADE_IN_CAP = 50
 
 
 def init_vin_routes(db):
@@ -186,6 +195,28 @@ def decode_wmi(vin: str) -> Dict[str, str]:
     return {"country": country_codes.get(vin[0], "Unknown"), "manufacturer": "Unknown"}
 
 
+async def _nhtsa_decode_with_retry(vin: str, max_retries: int = 3) -> dict:
+    """Call NHTSA vPIC API with exponential backoff retry for reliability."""
+    url = f"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json"
+    last_error = None
+
+    for attempt in range(max_retries):
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as http_client:
+                response = await http_client.get(url)
+                response.raise_for_status()
+                return response.json()
+        except (httpx.HTTPError, httpx.TimeoutException) as e:
+            last_error = e
+            if attempt < max_retries - 1:
+                wait = (2 ** attempt) * 0.5  # 0.5s, 1s, 2s
+                logger.warning(f"NHTSA API attempt {attempt + 1} failed for VIN {vin}: {e}. Retrying in {wait}s...")
+                await asyncio.sleep(wait)
+
+    logger.error(f"NHTSA API failed after {max_retries} retries for VIN {vin}: {last_error}")
+    raise last_error
+
+
 @router.get("/vin/decode/{vin}")
 async def decode_vin(vin: str):
     """Decode VIN using multiple sources for cross-reference accuracy."""
@@ -208,11 +239,7 @@ async def decode_vin(vin: str):
     }
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as http_client:
-            url = f"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json"
-            response = await http_client.get(url)
-            response.raise_for_status()
-            data = response.json()
+        data = await _nhtsa_decode_with_retry(vin)
 
         results = data.get("Results", [])
         if not results:
@@ -418,6 +445,24 @@ async def save_vin_vehicle(request: VinSaveRequest):
         raise HTTPException(status_code=500, detail=f"Failed to save vehicle: {str(e)}") from e
 
 
+@router.get("/vin/trade-in-count")
+async def get_trade_in_count():
+    """Return current trade-in count and cap for enforcement."""
+    if _db is None:
+        raise HTTPException(status_code=500, detail="VIN routes not initialized")
+
+    try:
+        count = await _db.vehicles.count_documents({"category": "trade_in"})
+        return {
+            "count": count,
+            "cap": TRADE_IN_CAP,
+            "remaining": max(0, TRADE_IN_CAP - count),
+            "at_limit": count >= TRADE_IN_CAP,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get trade-in count: {str(e)}") from e
+
+
 @router.post("/vin/save-to-inventory")
 async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
     if _db is None:
@@ -426,6 +471,15 @@ async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
     try:
         vin = request.vin.upper().strip()
         vdata = request.vehicle_data
+
+        # Enforce trade-in cap of 50
+        if request.category == "trade_in":
+            trade_in_count = await _db.vehicles.count_documents({"category": "trade_in"})
+            if trade_in_count >= TRADE_IN_CAP:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Trade-In VIN limit reached ({TRADE_IN_CAP} max). Remove existing trade-ins before adding new ones.",
+                )
 
         existing = await _db.vehicles.find_one({"vin": vin}, {"_id": 0})
         if existing:
@@ -462,9 +516,16 @@ async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
         }
 
         await _db.vehicles.insert_one(vehicle_record)
-        return {"success": True, "message": "Vehicle saved to inventory", "id": vehicle_record["id"]}
+        logger.info(f"Vehicle saved to inventory: {vin} (category={request.category})")
+        return {
+            "success": True,
+            "message": f"Vehicle saved as {request.category.replace('_', ' ').title()}",
+            "id": vehicle_record["id"],
+            "category": request.category,
+        }
 
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"VIN save failed: {e}")
         raise HTTPException(status_code=500, detail=f"VIN save failed: {str(e)}") from e

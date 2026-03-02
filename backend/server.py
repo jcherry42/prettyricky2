@@ -2775,55 +2775,8 @@ class VinSaveWithCategoryRequest(BaseModel):
     condition: Optional[str] = None
 
 
-@api_router.post("/vin/save-to-inventory")
-async def save_vin_to_inventory(request: VinSaveWithCategoryRequest):
-    """Save VIN-decoded vehicle to inventory with category"""
-    try:
-        vin = request.vin.upper().strip()
-        vdata = request.vehicle_data
-        
-        # Check if VIN already exists - REJECT duplicates
-        existing = await db.vehicles.find_one({"vin": vin}, {"_id": 0})
-        if existing:
-            logger.warning(f"Duplicate VIN rejected: {vin}")
-            raise HTTPException(
-                status_code=409, 
-                detail=f"This VIN already exists in inventory. Vehicle: {existing.get('year')} {existing.get('make')} {existing.get('model')}"
-            )
-        
-        vehicle_record = {
-            "id": str(uuid.uuid4()),
-            "vin": vin,
-            "year": int(vdata.get("year", 0)) if vdata.get("year") else None,
-            "make": vdata.get("make", ""),
-            "model": vdata.get("model", ""),
-            "trim": vdata.get("trim"),
-            "category": request.category,
-            "body_class": vdata.get("body_class"),
-            "drive_type": vdata.get("drive_type"),
-            "fuel_type": vdata.get("fuel_type"),
-            "engine_display": vdata.get("engine_display"),
-            "transmission": vdata.get("transmission"),
-            "assembly_location": vdata.get("assembly_location"),
-            "safety_features": vdata.get("safety_features", []),
-            "customer_id": request.customer_id,
-            "trade_in_value": request.trade_in_value,
-            "condition": request.condition,
-            "status": "available",
-            "source_id": "vin_scanner",
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc),
-        }
-        
-        await db.vehicles.insert_one(vehicle_record)
-        logger.info(f"Vehicle added to inventory: {vin}")
-        return {"success": True, "message": "Vehicle saved to inventory", "id": vehicle_record["id"]}
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Save VIN to inventory error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# NOTE: /vin/save-to-inventory is handled by routes/vin_v2.py (with trade-in cap enforcement).
+# The v2 router is registered first and takes precedence. This legacy stub is kept for reference only.
 
 
 # ============== DATA IMPORT (File Upload, Email Parsing) ==============
