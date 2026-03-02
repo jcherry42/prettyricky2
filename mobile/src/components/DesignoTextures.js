@@ -144,19 +144,23 @@ export function BrushedMetalSurface({ children, style }) {
  */
 export function ChromeAccent({ style }) {
   return (
-    <LinearGradient
-      colors={[
-        'transparent',
-        'rgba(192,200,208,0.30)',
-        'rgba(192,200,208,0.50)',
-        'rgba(192,200,208,0.30)',
-        'transparent',
-      ]}
-      locations={[0, 0.2, 0.5, 0.8, 1]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={[styles.chromeAccent, style]}
-    />
+    <View style={[styles.chromeWrap, style]}>
+      <LinearGradient
+        colors={[
+          'transparent',
+          'rgba(192,200,208,0.25)',
+          'rgba(214,178,94,0.20)',
+          'rgba(192,200,208,0.45)',
+          'rgba(214,178,94,0.20)',
+          'rgba(192,200,208,0.25)',
+          'transparent',
+        ]}
+        locations={[0, 0.12, 0.35, 0.5, 0.65, 0.88, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.chromeAccent}
+      />
+    </View>
   );
 }
 
@@ -251,9 +255,18 @@ const styles = StyleSheet.create({
     height: 0.5,
     backgroundColor: 'rgba(255,255,255,0.15)',
   },
-  chromeAccent: {
-    height: 1,
+  chromeWrap: {
+    height: 1.5,
     width: '100%',
+    shadowColor: 'rgba(214,178,94,0.4)',
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  chromeAccent: {
+    height: 1.5,
+    width: '100%',
+    borderRadius: 1,
   },
   stitchingH: {
     flexDirection: 'row',

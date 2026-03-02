@@ -1,5 +1,5 @@
-import React, { memo } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import React, { memo, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
@@ -17,7 +17,6 @@ const STATUS_CONFIG = {
 
 /**
  * Static quilted-leather accent — rendered once, never re-created.
- * Using a fixed array so no Array.from() on every render.
  */
 const QUILT_INDICES = [0, 1, 2, 3, 4];
 
@@ -40,13 +39,58 @@ const QuiltPattern = memo(function QuiltPattern() {
   );
 });
 
+/**
+ * Avatar — initials circle with status-keyed gradient.
+ */
+function Avatar({ name, color }) {
+  const initials = (name || '')
+    .split(' ')
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <View style={styles.avatarWrap}>
+      {/* Outer glow ring */}
+      <View style={[styles.avatarGlow, { shadowColor: color, borderColor: `${color}40` }]} />
+      <LinearGradient
+        colors={[`${color}30`, `${color}12`]}
+        style={styles.avatarCircle}
+      >
+        <Text style={[styles.avatarText, { color }]}>{initials || '?'}</Text>
+      </LinearGradient>
+    </View>
+  );
+}
+
 export const CustomerCard = memo(function CustomerCard({ customer, onPress }) {
   const status = customer?.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const name = `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown Customer';
   const phone = customer?.phone || 'No phone';
   const email = customer?.email || '';
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.975,
+      friction: 8,
+      tension: 200,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 4,
+      tension: 160,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const handlePress = () => {
     impactLight();
@@ -54,70 +98,83 @@ export const CustomerCard = memo(function CustomerCard({ customer, onPress }) {
   };
 
   return (
-    <Pressable
-      onPress={handlePress}
-      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
-      accessibilityRole="button"
-      accessibilityLabel={`Customer ${name}`}
-    >
-      <LinearGradient
-        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.gradient}
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={styles.container}
+        accessibilityRole="button"
+        accessibilityLabel={`Customer ${name}`}
       >
-        {/* Quilted leather pattern */}
-        <QuiltPattern />
+        <LinearGradient
+          colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        >
+          {/* Quilted leather pattern */}
+          <QuiltPattern />
 
-        {/* Status badge */}
-        <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
-          <Ionicons name={statusConfig.icon} size={10} color="#000" />
-          <Text style={styles.statusText}>{statusConfig.label}</Text>
-        </View>
+          {/* Status-colored left edge accent */}
+          <View style={[styles.edgeAccent, { backgroundColor: statusConfig.color }]} />
 
-        {/* Customer info */}
-        <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1}>{name}</Text>
-          <View style={styles.infoRow}>
-            <Ionicons name="call" size={12} color={colors.textDim} />
-            <Text style={styles.info} numberOfLines={1}>{phone}</Text>
-          </View>
-          {email ? (
-            <View style={styles.infoRow}>
-              <Ionicons name="mail" size={12} color={colors.textDim} />
-              <Text style={styles.info} numberOfLines={1}>{email}</Text>
+          <View style={styles.cardBody}>
+            {/* Avatar */}
+            <Avatar name={name} color={statusConfig.color} />
+
+            {/* Customer info */}
+            <View style={styles.content}>
+              <View style={styles.nameRow}>
+                <Text style={styles.name} numberOfLines={1}>{name}</Text>
+                {/* Status badge */}
+                <View style={[styles.statusBadge, { backgroundColor: `${statusConfig.color}20`, borderColor: `${statusConfig.color}40` }]}>
+                  <Ionicons name={statusConfig.icon} size={9} color={statusConfig.color} />
+                  <Text style={[styles.statusText, { color: statusConfig.color }]}>{statusConfig.label}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Ionicons name="call" size={11} color={colors.textMute} />
+                <Text style={styles.info} numberOfLines={1}>{phone}</Text>
+              </View>
+              {email ? (
+                <View style={styles.infoRow}>
+                  <Ionicons name="mail" size={11} color={colors.textMute} />
+                  <Text style={styles.info} numberOfLines={1}>{email}</Text>
+                </View>
+              ) : null}
             </View>
-          ) : null}
-        </View>
 
-        {/* Chevron */}
-        <View style={styles.chevron}>
-          <Ionicons name="chevron-forward" size={20} color={colors.gold} />
-        </View>
+            {/* Chevron */}
+            <View style={styles.chevron}>
+              <Ionicons name="chevron-forward" size={18} color={colors.goldDim} />
+            </View>
+          </View>
 
-        {/* Contrast stitching */}
-        <View style={styles.stitchingTop} />
-        <View style={styles.stitchingBottom} />
-      </LinearGradient>
-    </Pressable>
+          {/* Contrast stitching */}
+          <View style={styles.stitchingTop} />
+          <View style={styles.stitchingBottom} />
+        </LinearGradient>
+      </Pressable>
+    </Animated.View>
   );
 });
 
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
-    marginVertical: 6,
-    borderRadius: 12,
+    marginVertical: 5,
+    borderRadius: 14,
     overflow: 'hidden',
   },
-  pressed: {
-    opacity: 0.7,
-  },
   gradient: {
-    padding: 14,
+    paddingVertical: 14,
+    paddingRight: 14,
+    paddingLeft: 4,
     borderWidth: 1,
     borderColor: colors.stroke,
-    borderRadius: 12,
+    borderRadius: 14,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -131,66 +188,116 @@ const styles = StyleSheet.create({
     left: -50,
     right: -50,
     height: 0.5,
-    backgroundColor: 'rgba(214,178,94,0.05)',
+    backgroundColor: 'rgba(214,178,94,0.04)',
   },
-  statusBadge: {
+  edgeAccent: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    left: 0,
+    top: 8,
+    bottom: 8,
+    width: 3,
+    borderRadius: 2,
+    opacity: 0.7,
+  },
+  cardBody: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    zIndex: 2,
+    paddingLeft: 10,
+    zIndex: 1,
   },
-  statusText: {
-    ...type.label,
-    fontSize: 9,
-    color: '#000',
-    fontWeight: '700',
+  avatarWrap: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarGlow: {
+    position: 'absolute',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontFamily: 'SpaceGrotesk_700Bold',
+    fontSize: 15,
+    letterSpacing: 0.5,
   },
   content: {
     flex: 1,
-    paddingRight: 40,
+    paddingRight: 8,
     zIndex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+    gap: 8,
+  },
   name: {
-    ...type.h2,
+    ...type.subtitle,
     color: colors.text,
-    marginBottom: 6,
+    flex: 1,
+  },
+  statusBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderWidth: 1,
+  },
+  statusText: {
+    ...type.overline,
+    fontSize: 8,
+    fontWeight: '800',
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 4,
+    marginTop: 3,
   },
   info: {
-    ...type.bodyDim,
+    ...type.caption,
     color: colors.textDim,
     flex: 1,
   },
   chevron: {
-    position: 'absolute',
-    right: 12,
-    top: '50%',
-    marginTop: -10,
-    zIndex: 2,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   stitchingTop: {
     position: 'absolute',
-    top: 4, left: 8, right: 8,
+    top: 4, left: 10, right: 10,
     height: 1,
     backgroundColor: colors.contrastStitching,
-    opacity: 0.15,
+    opacity: 0.12,
   },
   stitchingBottom: {
     position: 'absolute',
-    bottom: 4, left: 8, right: 8,
+    bottom: 4, left: 10, right: 10,
     height: 1,
     backgroundColor: colors.contrastStitching,
-    opacity: 0.15,
+    opacity: 0.12,
   },
 });

@@ -59,34 +59,40 @@ const HomeListHeader = memo(function HomeListHeader({
   return (
     <View>
       {/* Header clearance */}
-      <View style={{ height: 56 }} />
+      <View style={{ height: 60 }} />
 
       <AmbientStrip active color={stripColor} />
 
-      {/* SPORT button */}
+      {/* SPORT button with subtle top branding */}
       <View style={styles.sportRow}>
+        <View style={styles.brandMark}>
+          <View style={styles.brandLine} />
+          <Text style={styles.brandText}>SUPERCHARG'D</Text>
+          <View style={styles.brandLine} />
+        </View>
+        <View style={{ height: 16 }} />
         <SportModeButton />
       </View>
 
       <AmbientStrip active color={stripColor} />
 
       {/* Chrome accent divider */}
-      <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 8 }} />
+      <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 10 }} />
 
-      {/* Search bar with wood bezel styling */}
+      {/* Search bar with wood bezel + inner depth */}
       <View style={styles.searchContainer}>
         <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.searchBezel}
         >
           <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={18} color={colors.gold} />
+            <Ionicons name="search" size={16} color={colors.gold} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search customers..."
-              placeholderTextColor={colors.textMute}
+              placeholderTextColor={colors.textGhost || colors.textMute}
               value={searchQuery}
               onChangeText={onSearchChange}
               returnKeyType="search"
@@ -101,7 +107,10 @@ const HomeListHeader = memo(function HomeListHeader({
 
       {/* Header with customer count + network status */}
       <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>CUSTOMERS</Text>
+        <View style={styles.listTitleRow}>
+          <View style={styles.goldDot} />
+          <Text style={styles.listTitle}>CUSTOMERS</Text>
+        </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <NetworkStatusDot />
           <View style={styles.countBadge}>
@@ -364,7 +373,26 @@ const styles = StyleSheet.create({
   sportRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 28,
+    paddingVertical: 24,
+  },
+  brandMark: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    opacity: 0.6,
+  },
+  brandLine: {
+    width: 28,
+    height: 1,
+    backgroundColor: colors.gold,
+    opacity: 0.4,
+  },
+  brandText: {
+    ...type.overline,
+    fontSize: 8,
+    color: colors.gold,
+    letterSpacing: 3,
+    opacity: 0.7,
   },
   ambientStrip: {
     width: '100%',
@@ -373,25 +401,29 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginTop: 20,
+    marginTop: 18,
     marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
   },
   searchBezel: {
     padding: 3,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.38)',
-    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.50)',
+    borderRadius: 11,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 8,
+    paddingVertical: 11,
+    gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
   searchInput: {
     ...type.body,
@@ -407,21 +439,42 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 8,
   },
+  listTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  goldDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.gold,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 0 },
+  },
   listTitle: {
-    ...type.label,
-    fontSize: 11,
+    ...type.overline,
+    fontSize: 10,
     color: colors.gold,
+    letterSpacing: 2,
   },
   countBadge: {
     backgroundColor: colors.gold,
-    paddingHorizontal: 10,
+    paddingHorizontal: 11,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 8,
+    shadowColor: colors.gold,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
   },
   countText: {
-    ...type.label,
-    fontSize: 11,
+    ...type.overline,
+    fontSize: 10,
     color: colors.bg0,
+    letterSpacing: 0.5,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -436,23 +489,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptySubtext: {
-    ...type.body,
+    ...type.caption,
     color: colors.textMute,
     marginTop: 8,
     textAlign: 'center',
+    lineHeight: 18,
   },
   retryButton: {
     marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 24,
     paddingVertical: 12,
     backgroundColor: colors.panel2,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.stroke2,
   },
   retryButtonText: {
-    ...type.body,
-    fontFamily: 'SpaceGrotesk_600SemiBold',
+    ...type.label,
+    fontSize: 11,
     color: colors.text,
   },
 });

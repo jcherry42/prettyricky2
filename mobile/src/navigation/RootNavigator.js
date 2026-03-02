@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -33,9 +33,9 @@ function TabLabel({ children, focused }) {
     <Text
       style={{
         color: focused ? colors.gold : colors.textMute,
-        ...type.label,
-        fontSize: 10,
-        letterSpacing: 1.1,
+        ...type.overline,
+        fontSize: 9,
+        letterSpacing: 1.4,
       }}
     >
       {children}
@@ -60,12 +60,17 @@ export function RootNavigator() {
 
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: 'rgba(0,0,0,0.62)',
-      borderTopColor: 'rgba(255,255,255,0.10)',
+      backgroundColor: 'rgba(4,6,8,0.88)',
+      borderTopColor: 'rgba(214,178,94,0.12)',
       borderTopWidth: 1,
-      height: 64,
+      height: 68,
       paddingTop: 8,
-      paddingBottom: 10,
+      paddingBottom: 12,
+      shadowColor: '#000',
+      shadowOpacity: 0.6,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: -8 },
+      elevation: 20,
     }),
     []
   );
@@ -104,7 +109,10 @@ export function RootNavigator() {
             headerTitle: () => <BrandTaillights compact />,
             headerStyle: { backgroundColor: 'transparent' },
             tabBarIcon: ({ focused }) => (
-              <Ionicons name={focused ? 'speedometer' : 'speedometer-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
+              <View style={{ alignItems: 'center' }}>
+                {focused && <View style={{ width: 20, height: 2, borderRadius: 1, backgroundColor: colors.gold, marginBottom: 4, shadowColor: colors.gold, shadowOpacity: 0.8, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } }} />}
+                <Ionicons name={focused ? 'speedometer' : 'speedometer-outline'} size={21} color={focused ? colors.gold : colors.textMute} />
+              </View>
             ),
             tabBarLabel: ({ focused }) => <TabLabel focused={focused}>HOME</TabLabel>,
           }}
@@ -115,7 +123,10 @@ export function RootNavigator() {
           component={IntakeScreen}
           options={{
             tabBarIcon: ({ focused }) => (
-              <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} size={20} color={focused ? colors.gold : colors.textMute} />
+              <View style={{ alignItems: 'center' }}>
+                {focused && <View style={{ width: 20, height: 2, borderRadius: 1, backgroundColor: colors.gold, marginBottom: 4, shadowColor: colors.gold, shadowOpacity: 0.8, shadowRadius: 6, shadowOffset: { width: 0, height: 0 } }} />}
+                <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} size={21} color={focused ? colors.gold : colors.textMute} />
+              </View>
             ),
             tabBarLabel: ({ focused }) => <TabLabel focused={focused}>INTAKE</TabLabel>,
           }}
