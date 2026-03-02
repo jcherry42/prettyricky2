@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert, Modal } from 'react-native';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert, Modal, Animated } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,7 +10,8 @@ import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { impactMedium, notificationSuccess, notificationError, impactLight } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
+import { parseAamvaPdf417, isLikelyAamva } from '../utils/aamvaParser';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 const MAX_HISTORY = 50;
@@ -198,6 +199,26 @@ export function DlScanScreen() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanStatus, setScanStatus] = useState(''); // status message for PDF417
+
+  // Debounce refs for PDF417 scanning
+  const lastScanTime = useRef(0);
+  const lastScannedData = useRef('');
+  const SCAN_COOLDOWN_MS = 2000;
+
+  // Animated scan line for PDF417 scanner
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (scannerOpen) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanLineAnim, { toValue: 1, duration: 2000, useNativeDriver: true }),
+          Animated.timing(scanLineAnim, { toValue: 0, duration: 2000, useNativeDriver: true }),
+        ])
+      ).start();
+    }
+  }, [scannerOpen, scanLineAnim]);
 
   const canScan = permission?.granted === true;
 
@@ -235,21 +256,59 @@ export function DlScanScreen() {
         setUploading(true);
         setUploadProgress(0);
 
-        // Upload with chunked upload for large files
+        // Step 1: Upload the image to the server
         const imageUrl = await uploadFileAuto({
           uri,
           filename: `license_${Date.now()}.jpg`,
           contentType: 'image/jpeg',
           onProgress: (current, total) => {
-            setUploadProgress(Math.round((current / total) * 100));
+            setUploadProgress(Math.round((current / total) * 50)); // 0-50% for upload
           },
         });
 
-        // Call backend scan endpoint
-        const response = await apiFetch('/api/license/scan', {
+        setUploadProgress(60); // Upload done, starting OCR
+
+        // Step 2: Run OCR on the uploaded image via scan-from-url
+        // (This fixes the format mismatch — we send the URL, not a re-upload)
+        const response = await apiFetch('/api/license/scan-from-url', {
           method: 'POST',
-          body: JSON.stringify({ image_url: imageUrl }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_url: imageUrl, retry_count: 0 }),
         });
+
+        setUploadProgress(100);
+
+        if (!response.success) {
+          // OCR failed but image is saved — let user enter manually
+          notificationError();
+          Alert.alert(
+            'OCR Could Not Read License',
+            response.error || 'Please enter the information manually.',
+            [{ text: 'OK' }]
+          );
+          // Still create an entry so user can edit manually
+          const entry = {
+            id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            scanMethod: 'manual',
+            savedAt: new Date().toISOString(),
+            imageUrl,
+            confidence: 0,
+            first_name: '',
+            middle_name: '',
+            last_name: '',
+            license_number: '',
+            expiration: '',
+            date_of_birth: '',
+            address: '',
+            city: '',
+            state: '',
+            zip_code: '',
+          };
+          await saveToHistory(entry);
+          setSelectedItem(entry);
+          setShowDetailModal(true);
+          return;
+        }
 
         const extracted = response.extracted_data || {};
         const confidence = response.confidence || 0;
@@ -288,25 +347,106 @@ export function DlScanScreen() {
   );
 
   const onBarcodeScanned = useCallback(
-    async ({ data }) => {
+    async ({ data, type: barcodeType }) => {
       if (!scanning) return;
 
-      // PDF417 barcodes contain structured license data
-      if (data && data.length > 50) {
-        impactMedium();
-        setScanning(false);
-        setScannerOpen(false);
+      // Debounce: prevent duplicate scans
+      const now = Date.now();
+      if (now - lastScanTime.current < SCAN_COOLDOWN_MS) return;
+      if (data === lastScannedData.current) return;
 
-        // For PDF417, we'd ideally parse the data here
-        // For now, treat as OCR and let backend handle
-        Alert.alert('License Detected', 'Processing barcode data...');
-        
-        // In production, parse PDF417 data or send to backend
-        // For this implementation, prompt user to use camera instead
-        impactLight();
+      lastScanTime.current = now;
+      lastScannedData.current = data;
+
+      // Check if this looks like AAMVA PDF417 data
+      if (!data || data.length < 30) return;
+
+      // Heavy haptic feedback for successful barcode detection
+      impactHeavy();
+      setScanning(false);
+      setScanStatus('Parsing license data...');
+
+      try {
+        // ── Step 1: Try client-side AAMVA parsing (instant, no network) ──
+        let parsed = null;
+
+        if (isLikelyAamva(data)) {
+          parsed = parseAamvaPdf417(data);
+        }
+
+        // ── Step 2: If client-side fails, try server-side parsing ──
+        if (!parsed || !parsed.success) {
+          setScanStatus('Verifying with server...');
+          try {
+            const serverResponse = await apiFetch('/api/license/parse-pdf417', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ barcode_data: data, scan_source: 'camera' }),
+            });
+
+            if (serverResponse.success) {
+              parsed = {
+                success: true,
+                ...serverResponse.extracted_data,
+                confidence: serverResponse.confidence,
+                aamva_version: serverResponse.aamva_version,
+                scan_method: 'pdf417',
+                errors: serverResponse.errors || [],
+                warnings: serverResponse.warnings || [],
+              };
+            }
+          } catch (serverErr) {
+            // Server fallback failed — use client result if partial
+            console.warn('Server PDF417 parse failed:', serverErr.message);
+          }
+        }
+
+        // ── Step 3: Create history entry ──
+        if (parsed && parsed.success) {
+          const entry = {
+            id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            scanMethod: 'pdf417',
+            savedAt: new Date().toISOString(),
+            imageUrl: null,
+            confidence: parsed.confidence || 0,
+            aamvaVersion: parsed.aamva_version,
+            first_name: parsed.first_name || '',
+            middle_name: parsed.middle_name || '',
+            last_name: parsed.last_name || '',
+            license_number: parsed.license_number || '',
+            expiration: parsed.expiration || '',
+            date_of_birth: parsed.date_of_birth || '',
+            address: parsed.address || '',
+            city: parsed.city || '',
+            state: parsed.state || '',
+            zip_code: parsed.zip_code || '',
+          };
+
+          await saveToHistory(entry);
+          setScannerOpen(false);
+          setSelectedItem(entry);
+          setShowDetailModal(true);
+          notificationSuccess();
+          setScanStatus('');
+        } else {
+          // Could not parse — let user know
+          setScanStatus('');
+          setScannerOpen(false);
+          notificationError();
+          Alert.alert(
+            'Could Not Read Barcode',
+            'The barcode was detected but could not be parsed. Try scanning the PDF417 barcode on the BACK of the license, or use the camera/gallery option.',
+            [{ text: 'OK' }]
+          );
+        }
+      } catch (error) {
+        setScanStatus('');
+        setScannerOpen(false);
+        notificationError();
+        Alert.alert('Parse Error', error.message || 'Unable to process barcode data');
       }
     },
-    [scanning]
+    [scanning, saveToHistory]
   );
 
   const handleCameraScan = async () => {
@@ -474,6 +614,7 @@ export function DlScanScreen() {
                   onPress={() => {
                     setScannerOpen(false);
                     setScanning(false);
+                    setScanStatus('');
                   }}
                   style={styles.modalClose}
                 >
@@ -497,16 +638,37 @@ export function DlScanScreen() {
                     <View style={[styles.corner, styles.cornerTR]} />
                     <View style={[styles.corner, styles.cornerBL]} />
                     <View style={[styles.corner, styles.cornerBR]} />
+                    {/* Animated scan line */}
+                    <Animated.View
+                      style={[
+                        styles.scanLine,
+                        {
+                          transform: [{
+                            translateY: scanLineAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0, 150],
+                            }),
+                          }],
+                        },
+                      ]}
+                    />
                   </View>
                   <View style={styles.scanMaskBottom} />
                 </View>
 
-                <View style={styles.scanHintCard}>
-                  <Ionicons name="information-circle" size={20} color={colors.gold} />
-                  <Text style={styles.scanHint}>
-                    Position the barcode on the back of the driver's license in the frame. The PDF417 barcode contains encoded license data.
-                  </Text>
-                </View>
+                {scanStatus ? (
+                  <View style={styles.scanStatusCard}>
+                    <ActivityIndicator size="small" color={colors.gold} />
+                    <Text style={styles.scanStatusText}>{scanStatus}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.scanHintCard}>
+                    <Ionicons name="information-circle" size={20} color={colors.gold} />
+                    <Text style={styles.scanHint}>
+                      Position the PDF417 barcode on the BACK of the driver's license within the frame. Works with all 50 US states.
+                    </Text>
+                  </View>
+                )}
               </View>
             </LinearGradient>
           </View>
@@ -950,6 +1112,34 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.text,
     lineHeight: 18,
+  },
+  scanLine: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    height: 2,
+    backgroundColor: colors.gold,
+    borderRadius: 1,
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+  },
+  scanStatusCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: 'rgba(214,178,94,0.2)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.gold,
+  },
+  scanStatusText: {
+    ...type.body,
+    color: colors.gold,
+    fontFamily: 'SpaceGrotesk_600SemiBold',
   },
   detailHeader: {
     flexDirection: 'row',

@@ -36,6 +36,7 @@ from data_integration import (
     shutdown_scheduler,
 )
 from repositories import CustomerRepository, VehicleRepository, DataSourceRepository
+from aamva_parser import parse_pdf417, is_likely_aamva
 
 
 ROOT_DIR = Path(__file__).parent
@@ -898,6 +899,271 @@ CRITICAL INSTRUCTIONS:
             image_url=saved_image_url,
             confidence=0,
             error=error_msg
+        )
+
+
+# ──── PDF417 BARCODE PARSING (AAMVA Standard, All 50 States) ────
+
+class Pdf417ParseRequest(BaseModel):
+    """Request body for PDF417 barcode parsing"""
+    barcode_data: str
+    scan_source: Optional[str] = "camera"  # camera | manual
+
+class Pdf417ParseResponse(BaseModel):
+    """Response for PDF417 barcode parsing"""
+    success: bool
+    extracted_data: Optional[dict] = None
+    confidence: Optional[float] = None
+    aamva_version: Optional[int] = None
+    scan_method: str = "pdf417"
+    errors: Optional[List[str]] = None
+    warnings: Optional[List[str]] = None
+
+
+@api_router.post("/license/parse-pdf417", response_model=Pdf417ParseResponse)
+async def parse_license_pdf417(request: Pdf417ParseRequest):
+    """
+    Parse AAMVA-standard PDF417 barcode data from any US driver's license.
+    
+    Supports all 50 US states + DC, AAMVA versions 1-11.
+    Returns structured license data with confidence scoring.
+    
+    This is the PRIMARY, most reliable method for scanning licenses.
+    PDF417 barcodes are on the back of every US driver's license and
+    contain 100% structured, machine-readable data.
+    """
+    try:
+        raw = request.barcode_data
+        logger.info(f"PDF417 parse request: {len(raw)} chars, source={request.scan_source}")
+
+        if not raw or len(raw.strip()) < 20:
+            return Pdf417ParseResponse(
+                success=False,
+                errors=["Barcode data is too short or empty. Please rescan."],
+            )
+
+        if not is_likely_aamva(raw):
+            return Pdf417ParseResponse(
+                success=False,
+                errors=["Data does not appear to be an AAMVA-standard barcode. Ensure you are scanning the PDF417 barcode on the BACK of the license."],
+            )
+
+        result = parse_pdf417(raw)
+
+        return Pdf417ParseResponse(
+            success=result.success,
+            extracted_data={
+                "first_name": result.first_name,
+                "middle_name": result.middle_name,
+                "last_name": result.last_name,
+                "license_number": result.license_number,
+                "expiration": result.expiration,
+                "date_of_birth": result.date_of_birth,
+                "address": result.address,
+                "city": result.city,
+                "state": result.state,
+                "zip_code": result.zip_code,
+                "sex": result.sex,
+                "issue_date": result.issue_date,
+                "country": result.country,
+            },
+            confidence=result.confidence,
+            aamva_version=result.aamva_version,
+            scan_method="pdf417",
+            errors=result.errors if result.errors else None,
+            warnings=result.warnings if result.warnings else None,
+        )
+
+    except Exception as e:
+        logger.error(f"PDF417 parse endpoint error: {e}", exc_info=True)
+        return Pdf417ParseResponse(
+            success=False,
+            errors=[f"Server error parsing barcode: {str(e)}"],
+        )
+
+
+# ──── OCR SCAN FROM ALREADY-UPLOADED IMAGE URL ────
+
+class LicenseScanFromUrlRequest(BaseModel):
+    """Request to run OCR on an already-uploaded license image"""
+    image_url: str
+    retry_count: int = 0
+
+@api_router.post("/license/scan-from-url", response_model=LicenseScanResponse)
+async def scan_license_from_url(request: LicenseScanFromUrlRequest):
+    """
+    Run GPT-4o Vision OCR on a license image that is already uploaded to the server.
+    
+    The frontend flow is:
+    1. Upload image via /license/upload → get image_url
+    2. Call this endpoint with image_url → get extracted data
+    
+    This fixes the format mismatch where the frontend had an image_url
+    but the original /license/scan expected a file upload.
+    """
+    import base64
+    import json
+    import re
+
+    image_url = request.image_url
+    retry_count = request.retry_count
+
+    try:
+        logger.info(f"License scan-from-url: {image_url}, retry: {retry_count}")
+
+        # Resolve the file on disk from the URL path
+        # image_url is like "/api/uploads/license_abc123.jpg"
+        filename = image_url.split("/")[-1]
+        filepath = UPLOADS_DIR / filename
+
+        if not filepath.exists():
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                error="Uploaded image not found on server. Please re-upload."
+            )
+
+        image_data = filepath.read_bytes()
+
+        if len(image_data) == 0:
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                error="Image file is empty."
+            )
+
+        if len(image_data) < 10 * 1024:
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                confidence=0,
+                error="Image appears too small for reliable OCR. Please take a clearer photo."
+            )
+
+        # Convert to base64 for Vision API
+        base64_image = base64.b64encode(image_data).decode('utf-8')
+
+        # Enterprise OCR prompt — optimized for all 50 US states
+        extraction_prompt = """You are an expert OCR system specialized in reading US Driver's Licenses from all 50 states.
+
+Analyze this driver's license image carefully and extract information EXACTLY as printed.
+
+Return ONLY a JSON object (no markdown, no explanation):
+{
+  "first_name": "First/Given name (Title Case)",
+  "middle_name": "Middle name or null if not visible",
+  "last_name": "Last/Family name (Title Case)",
+  "license_number": "DL/ID number exactly as printed",
+  "expiration": "Expiration date as MM/DD/YYYY",
+  "date_of_birth": "Date of birth as MM/DD/YYYY",
+  "address": "Street address (number and street only)",
+  "city": "City name (Title Case)",
+  "state": "2-letter state abbreviation (e.g. CA, TX, NY)",
+  "zip_code": "5-digit or 5+4 ZIP code"
+}
+
+CRITICAL RULES:
+1. NAME may be "LAST, FIRST MIDDLE" or "FIRST MIDDLE LAST" — split correctly
+2. Look for labels: DL, LIC, ID #, CUSTOMER ID, DOB, EXP, ISS, CLASS
+3. State is ALWAYS a 2-letter abbreviation
+4. Convert dates to MM/DD/YYYY regardless of source format
+5. Use Title Case for names and city (not ALL CAPS)
+6. If a field is unreadable, use null
+7. License number: include ALL characters exactly as shown (letters + digits)
+8. ZIP: prefer 5-digit, include +4 if clearly visible
+9. Address: street only — do NOT include city/state/zip in address field
+10. Return ONLY the JSON — no explanations, no markdown fences"""
+
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY'),
+            session_id=f"license-scan-url-{uuid.uuid4()}-r{retry_count}",
+            system_message="You are an expert document OCR system specializing in US driver's licenses from all 50 states. Be precise."
+        ).with_model("openai", "gpt-4o")
+
+        from emergentintegrations.llm.openai import ImageContent
+        image_content = ImageContent(image_base64=base64_image)
+
+        user_message = UserMessage(
+            text=extraction_prompt,
+            file_contents=[image_content]
+        )
+
+        response = await chat.send_message(user_message)
+        logger.info(f"Vision API response for scan-from-url ({len(response)} chars)")
+
+        # Parse JSON response
+        cleaned = response.strip()
+        if '```' in cleaned:
+            json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', cleaned)
+            if json_match:
+                cleaned = json_match.group(1)
+            else:
+                cleaned = re.sub(r'^```json?\s*', '', cleaned)
+                cleaned = re.sub(r'\s*```$', '', cleaned)
+
+        json_match = re.search(r'\{[\s\S]*\}', cleaned)
+        if json_match:
+            cleaned = json_match.group(0)
+
+        extracted_data = json.loads(cleaned)
+
+        # Normalize
+        if extracted_data.get('first_name'):
+            extracted_data['first_name'] = normalize_name(extracted_data['first_name'])
+        if extracted_data.get('last_name'):
+            extracted_data['last_name'] = normalize_name(extracted_data['last_name'])
+        if extracted_data.get('middle_name'):
+            extracted_data['middle_name'] = normalize_name(extracted_data['middle_name'])
+        if extracted_data.get('city'):
+            extracted_data['city'] = normalize_name(extracted_data['city'])
+        if extracted_data.get('state'):
+            extracted_data['state'] = normalize_state(extracted_data['state'])
+        if extracted_data.get('zip_code'):
+            extracted_data['zip_code'] = re.sub(r'[^\d-]', '', str(extracted_data['zip_code']))
+        if extracted_data.get('license_number'):
+            extracted_data['license_number'] = str(extracted_data['license_number']).strip()
+        if extracted_data.get('expiration'):
+            extracted_data['expiration'] = normalize_date_mmddyyyy(str(extracted_data['expiration']))
+        if extracted_data.get('date_of_birth'):
+            extracted_data['date_of_birth'] = normalize_date_mmddyyyy(str(extracted_data['date_of_birth']))
+
+        confidence, notes = calculate_license_confidence(extracted_data)
+        has_name = extracted_data.get('first_name') or extracted_data.get('last_name')
+
+        if not has_name:
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                confidence=0,
+                extraction_notes=["Could not read name from license"],
+                error="Could not extract name. Please ensure the license is clearly visible and well-lit."
+            )
+
+        logger.info(f"OCR extracted: {extracted_data.get('first_name')} {extracted_data.get('last_name')} (confidence: {confidence}%)")
+
+        return LicenseScanResponse(
+            success=True,
+            image_url=image_url,
+            extracted_data=extracted_data,
+            confidence=confidence,
+            extraction_notes=notes if notes else None,
+        )
+
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse error in scan-from-url: {e}")
+        return LicenseScanResponse(
+            success=False,
+            image_url=image_url,
+            confidence=0,
+            error="Could not read license data. Please try again with a clearer photo."
+        )
+    except Exception as e:
+        logger.error(f"scan-from-url error: {e}", exc_info=True)
+        return LicenseScanResponse(
+            success=False,
+            image_url=image_url,
+            confidence=0,
+            error=f"Scan failed: {str(e)}"
         )
 
 

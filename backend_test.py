@@ -1,485 +1,350 @@
-#!/usr/bin/env python3
 """
-Comprehensive Backend Test for VIN Scanner Endpoints
-Testing VIN decode, trade-in count, and save-to-inventory after overhaul
+Backend Test Suite for License Scanner Endpoints
+Tests the NEW license scanner backend endpoints that were just added.
+
+Test Cases from Review Request:
+A-G: POST /api/license/parse-pdf417 (various AAMVA barcode formats)
+H: POST /api/license/scan-from-url (non-existent image)
+I-K: Regression tests (health, vin, translate)
 """
 
 import asyncio
 import aiohttp
 import json
 import sys
-from datetime import datetime
-from typing import Dict, Any, List
+import os
 
-# Backend URL as specified in review request
+# Backend URL configuration
 BACKEND_URL = "http://localhost:8001"
 
-class VINBackendTester:
+class TestResults:
     def __init__(self):
-        self.backend_url = BACKEND_URL
-        self.session = None
-        self.test_results = []
-        
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
-        return self
-        
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
+        self.passed = 0
+        self.failed = 0
+        self.results = []
     
-    def log_result(self, test_name: str, passed: bool, details: str = "", response_time_ms: float = 0):
-        """Log test result"""
-        status = "✅ PASS" if passed else "❌ FAIL"
-        result = {
-            "test": test_name,
-            "status": status,
-            "passed": passed,
-            "details": details,
-            "response_time_ms": round(response_time_ms, 2)
-        }
-        self.test_results.append(result)
-        print(f"{status} {test_name}: {details} ({response_time_ms:.0f}ms)")
+    def add_result(self, test_name, passed, details=""):
+        self.results.append({
+            'test': test_name,
+            'passed': passed,
+            'details': details
+        })
+        if passed:
+            self.passed += 1
+            print(f"✅ {test_name}")
+        else:
+            self.failed += 1
+            print(f"❌ {test_name}: {details}")
+    
+    def summary(self):
+        total = self.passed + self.failed
+        print(f"\n🎯 TEST SUMMARY: {self.passed}/{total} passed ({(self.passed/total)*100:.1f}% pass rate)")
+        if self.failed > 0:
+            print("\n❌ FAILED TESTS:")
+            for result in self.results:
+                if not result['passed']:
+                    print(f"  - {result['test']}: {result['details']}")
+
+async def test_license_parse_pdf417():
+    """Test POST /api/license/parse-pdf417 with various barcode formats"""
+    results = TestResults()
+    
+    async with aiohttp.ClientSession() as session:
         
-    async def make_request(self, method: str, endpoint: str, **kwargs) -> tuple:
-        """Make HTTP request and measure response time"""
-        url = f"{self.backend_url}{endpoint}"
-        start_time = datetime.now()
+        # Test Case A: Kentucky v9 barcode (modern format)
+        test_case_a = {
+            "barcode_data": "@\n\nANSI 636014090002DL00410288ZK03190008DLDAQK12345678\nDCSJOHNSON\nDDEN\nDACMICHAEL\nDADJAMES\nDBD06062019\nDBB01151990\nDBA01152028\nDBC1\nDAU510\nDAYBLU\nDAG123 MAIN STREET\nDAILOUISVILLE\nDAJKY\nDAK402021375\nDCF0123456789\nDCGUSA\n", 
+            "scan_source": "camera"
+        }
         
         try:
-            async with self.session.request(method, url, **kwargs) as response:
-                response_time = (datetime.now() - start_time).total_seconds() * 1000
-                try:
-                    data = await response.json()
-                except:
-                    data = await response.text()
-                return response.status, data, response_time
-        except Exception as e:
-            response_time = (datetime.now() - start_time).total_seconds() * 1000
-            return 0, str(e), response_time
-    
-    async def test_vin_decode_valid_us_honda(self):
-        """Test VIN decode with valid US VIN: 1HGCV1F34LA000001 (Honda Accord)"""
-        test_name = "VIN Decode - Valid US Honda"
-        vin = "1HGCV1F34LA000001"
-        
-        status, data, response_time = await self.make_request("GET", f"/api/vin/decode/{vin}")
-        
-        if status == 200 and isinstance(data, dict):
-            required_fields = ["vin", "year", "make", "model", "validation"]
-            has_all_fields = all(field in data for field in required_fields)
-            
-            validation_check = (
-                "confidence_score" in data.get("validation", {}) and
-                "checksum_valid" in data.get("validation", {})
-            )
-            
-            if has_all_fields and validation_check:
-                make = data.get("make", "").upper()
-                model = data.get("model", "").upper()
-                if "HONDA" in make and "ACCORD" in model:
-                    self.log_result(test_name, True, 
-                        f"Successfully decoded Honda Accord, confidence: {data['validation'].get('confidence_score', 0)}%", 
-                        response_time)
-                else:
-                    self.log_result(test_name, False, 
-                        f"Incorrect vehicle decoded: {data.get('make')} {data.get('model')}", 
-                        response_time)
-            else:
-                missing = [f for f in required_fields if f not in data]
-                self.log_result(test_name, False, 
-                    f"Missing fields: {missing}, validation check: {validation_check}", 
-                    response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
-    
-    async def test_vin_decode_valid_japanese_mazda(self):
-        """Test VIN decode with valid Japanese VIN: JM3KKEHA3T1355103 (Mazda CX-90)"""
-        test_name = "VIN Decode - Valid Japanese Mazda"
-        vin = "JM3KKEHA3T1355103"
-        
-        status, data, response_time = await self.make_request("GET", f"/api/vin/decode/{vin}")
-        
-        if status == 200 and isinstance(data, dict):
-            required_fields = ["vin", "year", "make", "model", "validation"]
-            has_all_fields = all(field in data for field in required_fields)
-            
-            validation_check = (
-                "confidence_score" in data.get("validation", {}) and
-                "checksum_valid" in data.get("validation", {})
-            )
-            
-            if has_all_fields and validation_check:
-                make = data.get("make", "").upper()
-                model = data.get("model", "").upper()
-                if "MAZDA" in make and "CX" in model:
-                    self.log_result(test_name, True, 
-                        f"Successfully decoded Mazda CX-90, confidence: {data['validation'].get('confidence_score', 0)}%", 
-                        response_time)
-                else:
-                    self.log_result(test_name, False, 
-                        f"Incorrect vehicle decoded: {data.get('make')} {data.get('model')}", 
-                        response_time)
-            else:
-                missing = [f for f in required_fields if f not in data]
-                self.log_result(test_name, False, 
-                    f"Missing fields: {missing}, validation check: {validation_check}", 
-                    response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
-    
-    async def test_vin_decode_invalid_short(self):
-        """Test VIN decode with invalid VIN (too short): ABC123"""
-        test_name = "VIN Decode - Invalid Short VIN"
-        vin = "ABC123"
-        
-        status, data, response_time = await self.make_request("GET", f"/api/vin/decode/{vin}")
-        
-        if status == 400:
-            self.log_result(test_name, True, "Correctly rejected short VIN with 400 error", response_time)
-        else:
-            self.log_result(test_name, False, f"Expected 400, got {status}: {str(data)[:200]}", response_time)
-    
-    async def test_vin_decode_invalid_characters(self):
-        """Test VIN decode with invalid characters (I, O, Q): 1HGCV1F34LA00IOQ1"""
-        test_name = "VIN Decode - Invalid Characters (I,O,Q)"
-        vin = "1HGCV1F34LA00IOQ1"
-        
-        status, data, response_time = await self.make_request("GET", f"/api/vin/decode/{vin}")
-        
-        if status == 400:
-            self.log_result(test_name, True, "Correctly rejected VIN with invalid characters", response_time)
-        else:
-            self.log_result(test_name, False, f"Expected 400, got {status}: {str(data)[:200]}", response_time)
-    
-    async def test_trade_in_count(self):
-        """Test trade-in count endpoint - should return count, cap (50), remaining, at_limit"""
-        test_name = "Trade-In Count Endpoint"
-        
-        status, data, response_time = await self.make_request("GET", "/api/vin/trade-in-count")
-        
-        if status == 200 and isinstance(data, dict):
-            required_fields = ["count", "cap", "remaining", "at_limit"]
-            has_all_fields = all(field in data for field in required_fields)
-            
-            if has_all_fields:
-                cap = data.get("cap")
-                count = data.get("count")
-                remaining = data.get("remaining")
-                at_limit = data.get("at_limit")
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_a) as resp:
+                data = await resp.json()
                 
-                if cap == 50 and isinstance(count, int) and isinstance(remaining, int) and isinstance(at_limit, bool):
-                    self.log_result(test_name, True, 
-                        f"Count: {count}, Cap: {cap}, Remaining: {remaining}, At limit: {at_limit}", 
-                        response_time)
+                if (resp.status == 200 and 
+                    data.get('success') == True and 
+                    data.get('extracted_data', {}).get('first_name') == 'Michael' and
+                    data.get('extracted_data', {}).get('last_name') == 'Johnson' and
+                    data.get('extracted_data', {}).get('state') == 'KY' and
+                    data.get('extracted_data', {}).get('license_number') == 'K12345678' and
+                    data.get('confidence', 0) >= 90):
+                    results.add_result("A) Kentucky v9 barcode", True)
                 else:
-                    self.log_result(test_name, False, 
-                        f"Invalid values - Cap: {cap}, Count: {count}, Remaining: {remaining}, At limit: {at_limit}", 
-                        response_time)
-            else:
-                missing = [f for f in required_fields if f not in data]
-                self.log_result(test_name, False, f"Missing fields: {missing}", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
-    
-    async def test_save_active_inventory(self):
-        """Test saving VIN as active_inventory"""
-        test_name = "Save VIN as Active Inventory"
+                    results.add_result("A) Kentucky v9 barcode", False, 
+                                     f"Expected success=true, first_name=Michael, last_name=Johnson, state=KY, license_number=K12345678, confidence>=90. Got: success={data.get('success')}, data={data.get('extracted_data', {})}, confidence={data.get('confidence')}")
+        except Exception as e:
+            results.add_result("A) Kentucky v9 barcode", False, f"Exception: {e}")
         
-        payload = {
-            "vin": "1HGCV1F34LA000001",
-            "vehicle_data": {
-                "year": "2020",
-                "make": "HONDA", 
-                "model": "Accord"
-            },
-            "category": "active_inventory"
+        # Test Case B: California v9 barcode
+        test_case_b = {
+            "barcode_data": "@\n\nANSI 636050090002DL00410288ZC03190008DLDAQD1234567\nDCSGARCIA\nDDEN\nDACMARIA\nDADELENA\nDBD03152022\nDBB07041985\nDBA07042029\nDBC2\nDAU504\nDAYBRO\nDAG456 OAK AVENUE APT 12\nDAISAN FRANCISCO\nDAJCA\nDAK941101234\nDCF12345678901234\nDCGUSA\n", 
+            "scan_source": "camera"
         }
         
-        status, data, response_time = await self.make_request(
-            "POST", "/api/vin/save-to-inventory", 
-            json=payload
-        )
-        
-        if status in [200, 409]:  # 200 = success, 409 = already exists (acceptable)
-            if status == 200:
-                if isinstance(data, dict) and "category" in data:
-                    self.log_result(test_name, True, 
-                        f"Successfully saved to active inventory, category: {data.get('category')}", 
-                        response_time)
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_b) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == True and 
+                    data.get('extracted_data', {}).get('first_name') == 'Maria' and
+                    data.get('extracted_data', {}).get('last_name') == 'Garcia' and
+                    data.get('extracted_data', {}).get('state') == 'CA' and
+                    data.get('extracted_data', {}).get('city') == 'San Francisco'):
+                    results.add_result("B) California v9 barcode", True)
                 else:
-                    self.log_result(test_name, False, f"Missing category field in response: {data}", response_time)
-            else:  # 409
-                self.log_result(test_name, True, "VIN already exists (409) - acceptable for test", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
-    
-    async def test_save_trade_in(self):
-        """Test saving VIN as trade_in"""
-        test_name = "Save VIN as Trade-In"
+                    results.add_result("B) California v9 barcode", False, 
+                                     f"Expected success=true, first_name=Maria, last_name=Garcia, state=CA, city=San Francisco. Got: {data.get('extracted_data', {})}")
+        except Exception as e:
+            results.add_result("B) California v9 barcode", False, f"Exception: {e}")
         
-        payload = {
-            "vin": "JM3KKEHA3T1355103",
-            "vehicle_data": {
-                "year": "2026",
-                "make": "MAZDA",
-                "model": "CX-90"
-            },
-            "category": "trade_in"
+        # Test Case C: Old v1 New York format (DAA combined name)
+        test_case_c = {
+            "barcode_data": "@\nANSI 636001010002DL00300196DLDAQT123456789\nDAADOE,JANE,MARIE\nDBB03121975\nDBA03122026\nDAG555 ELM STREET\nDAIALBANY\nDAJNY\nDAK122011234\nDBC2\n", 
+            "scan_source": "camera"
         }
         
-        status, data, response_time = await self.make_request(
-            "POST", "/api/vin/save-to-inventory", 
-            json=payload
-        )
-        
-        if status in [200, 409]:  # 200 = success, 409 = already exists (acceptable) 
-            if status == 200:
-                if isinstance(data, dict) and "category" in data:
-                    self.log_result(test_name, True, 
-                        f"Successfully saved as trade-in, category: {data.get('category')}", 
-                        response_time)
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_c) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == True and 
+                    data.get('extracted_data', {}).get('first_name') == 'Jane' and
+                    data.get('extracted_data', {}).get('middle_name') == 'Marie' and
+                    data.get('extracted_data', {}).get('last_name') == 'Doe' and
+                    data.get('extracted_data', {}).get('state') == 'NY'):
+                    results.add_result("C) Old v1 NY (DAA combined name)", True)
                 else:
-                    self.log_result(test_name, False, f"Missing category field in response: {data}", response_time)
-            else:  # 409
-                self.log_result(test_name, True, "VIN already exists (409) - acceptable for test", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
-    
-    async def test_duplicate_vin_rejection(self):
-        """Test duplicate VIN rejection - try saving same VIN again, expect 409"""
-        test_name = "Duplicate VIN Rejection"
+                    results.add_result("C) Old v1 NY (DAA combined name)", False, 
+                                     f"Expected first_name=Jane, middle_name=Marie, last_name=Doe, state=NY. Got: {data.get('extracted_data', {})}")
+        except Exception as e:
+            results.add_result("C) Old v1 NY (DAA combined name)", False, f"Exception: {e}")
         
-        # Try to save the same Honda VIN again
-        payload = {
-            "vin": "1HGCV1F34LA000001",
-            "vehicle_data": {
-                "year": "2020",
-                "make": "HONDA",
-                "model": "Accord"
-            },
-            "category": "active_inventory"
+        # Test Case D: Texas v8 barcode (city name contains valid code "DAL" in "DALLAS")
+        test_case_d = {
+            "barcode_data": "@\n\nANSI 636041080002DL00410278ZT03190008DLDAQ12345678\nDCSWILLIAMS\nDACROBERT\nDADLEE\nDBD01012020\nDBB12251988\nDBA12252027\nDBC1\nDAU511\nDAYGRN\nDAG789 SUNSET BLVD\nDAIDALLAS\nDAJTX\nDAK752011234\nDCGUSA\n", 
+            "scan_source": "camera"
         }
         
-        status, data, response_time = await self.make_request(
-            "POST", "/api/vin/save-to-inventory", 
-            json=payload
-        )
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_d) as resp:
+                data = await resp.json()
+                
+                city = data.get('extracted_data', {}).get('city')
+                if (resp.status == 200 and 
+                    data.get('success') == True and 
+                    data.get('extracted_data', {}).get('first_name') == 'Robert' and
+                    data.get('extracted_data', {}).get('last_name') == 'Williams' and
+                    data.get('extracted_data', {}).get('state') == 'TX' and
+                    city == 'Dallas'):  # City should NOT be empty!
+                    results.add_result("D) Texas v8 barcode (Dallas city)", True)
+                else:
+                    results.add_result("D) Texas v8 barcode (Dallas city)", False, 
+                                     f"Expected first_name=Robert, last_name=Williams, state=TX, city=Dallas (NOT empty!). Got: city={city}, data={data.get('extracted_data', {})}")
+        except Exception as e:
+            results.add_result("D) Texas v8 barcode (Dallas city)", False, f"Exception: {e}")
         
-        if status == 409:
-            self.log_result(test_name, True, "Correctly rejected duplicate VIN with 409 error", response_time)
-        else:
-            self.log_result(test_name, False, f"Expected 409, got {status}: {str(data)[:200]}", response_time)
-    
-    async def test_trade_in_count_increase(self):
-        """Verify trade-in count increases after trade-in save"""
-        test_name = "Trade-In Count Verification"
-        
-        # Get initial count
-        status1, data1, _ = await self.make_request("GET", "/api/vin/trade-in-count")
-        
-        if status1 != 200:
-            self.log_result(test_name, False, f"Failed to get initial count: {status1}", 0)
-            return
-            
-        initial_count = data1.get("count", 0)
-        
-        # Try to add a new trade-in (use a different VIN)
-        payload = {
-            "vin": "JM3KKEHA3T1355999",  # Different VIN
-            "vehicle_data": {
-                "year": "2025",
-                "make": "MAZDA",
-                "model": "CX-90"
-            },
-            "category": "trade_in"
+        # Test Case E: Florida barcode
+        test_case_e = {
+            "barcode_data": "@\n\nANSI 636010090002DL00410288ZF03190008DLDAQJ123-456-78-901-0\nDCSSMITH\nDACJAMES\nDADWILLIAM\nDBD08152023\nDBB02281992\nDBA02282030\nDBC1\nDAU600\nDAYBLU\nDAG1010 OCEAN DRIVE\nDAIMIAMI\nDAJFL\nDAK331391234\nDCGUSA\n", 
+            "scan_source": "camera"
         }
         
-        status2, data2, response_time = await self.make_request(
-            "POST", "/api/vin/save-to-inventory", 
-            json=payload
-        )
-        
-        # Get count after save
-        status3, data3, _ = await self.make_request("GET", "/api/vin/trade-in-count")
-        
-        if status3 == 200:
-            final_count = data3.get("count", 0)
-            
-            if status2 == 200:
-                # New VIN saved successfully
-                if final_count > initial_count:
-                    self.log_result(test_name, True, 
-                        f"Trade-in count increased from {initial_count} to {final_count}", 
-                        response_time)
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_e) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == True and 
+                    data.get('extracted_data', {}).get('state') == 'FL' and
+                    data.get('extracted_data', {}).get('city') == 'Miami' and
+                    data.get('extracted_data', {}).get('license_number') == 'J123-456-78-901-0'):
+                    results.add_result("E) Florida barcode", True)
                 else:
-                    self.log_result(test_name, False, 
-                        f"Count did not increase: {initial_count} -> {final_count}", 
-                        response_time)
-            elif status2 == 409:
-                # VIN already exists, count should remain same
-                if final_count == initial_count:
-                    self.log_result(test_name, True, 
-                        f"Count unchanged ({initial_count}) as expected for duplicate VIN", 
-                        response_time)
+                    results.add_result("E) Florida barcode", False, 
+                                     f"Expected state=FL, city=Miami, license_number=J123-456-78-901-0. Got: {data.get('extracted_data', {})}")
+        except Exception as e:
+            results.add_result("E) Florida barcode", False, f"Exception: {e}")
+        
+        # Test Case F: Empty/invalid data
+        test_case_f = {
+            "barcode_data": "hello world", 
+            "scan_source": "camera"
+        }
+        
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_f) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == False and
+                    data.get('errors') is not None and 
+                    len(data.get('errors', [])) > 0):
+                    results.add_result("F) Empty/invalid data", True)
                 else:
-                    self.log_result(test_name, False, 
-                        f"Count changed unexpectedly: {initial_count} -> {final_count}", 
-                        response_time)
-            else:
-                self.log_result(test_name, False, f"Save failed with status {status2}: {data2}", response_time)
-        else:
-            self.log_result(test_name, False, f"Failed to get final count: {status3}", response_time)
+                    results.add_result("F) Empty/invalid data", False, 
+                                     f"Expected success=false, errors not empty. Got: {data}")
+        except Exception as e:
+            results.add_result("F) Empty/invalid data", False, f"Exception: {e}")
+        
+        # Test Case G: Too short data
+        test_case_g = {
+            "barcode_data": "abc", 
+            "scan_source": "camera"
+        }
+        
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/parse-pdf417", 
+                                  json=test_case_g) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == False):
+                    results.add_result("G) Too short data", True)
+                else:
+                    results.add_result("G) Too short data", False, 
+                                     f"Expected success=false. Got: {data}")
+        except Exception as e:
+            results.add_result("G) Too short data", False, f"Exception: {e}")
     
-    # Regression Tests
+    return results
+
+async def test_license_scan_from_url():
+    """Test POST /api/license/scan-from-url"""
+    results = TestResults()
     
-    async def test_health_endpoint(self):
-        """Test health endpoint regression check"""
-        test_name = "Health Endpoint Regression"
+    async with aiohttp.ClientSession() as session:
         
-        status, data, response_time = await self.make_request("GET", "/api/health")
+        # Test Case H: Non-existent image
+        test_case_h = {
+            "image_url": "/api/uploads/nonexistent_abc.jpg", 
+            "retry_count": 0
+        }
         
-        if status == 200:
-            self.log_result(test_name, True, "Health endpoint responding correctly", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
+        try:
+            async with session.post(f"{BACKEND_URL}/api/license/scan-from-url", 
+                                  json=test_case_h) as resp:
+                data = await resp.json()
+                
+                if (resp.status == 200 and 
+                    data.get('success') == False and
+                    'not found' in str(data.get('error', '')).lower()):
+                    results.add_result("H) Non-existent image", True)
+                else:
+                    results.add_result("H) Non-existent image", False, 
+                                     f"Expected success=false, error contains 'not found'. Got: {data}")
+        except Exception as e:
+            results.add_result("H) Non-existent image", False, f"Exception: {e}")
     
-    async def test_customers_list_endpoint(self):
-        """Test customers list endpoint regression check"""
-        test_name = "Customers List Endpoint Regression"
-        
-        status, data, response_time = await self.make_request("GET", "/api/customers/list?limit=3")
-        
-        if status == 200 and isinstance(data, dict):
-            if "customers" in data and "total" in data:
-                self.log_result(test_name, True, 
-                    f"Customers list has proper structure, total: {data.get('total')}", 
-                    response_time)
-            else:
-                self.log_result(test_name, False, f"Missing customers or total field: {data.keys()}", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
+    return results
+
+async def test_regression_endpoints():
+    """Test existing endpoints still work (regression tests)"""
+    results = TestResults()
     
-    async def test_translate_endpoint(self):
-        """Test translate endpoint regression check"""
-        test_name = "Translate Endpoint Regression"
+    async with aiohttp.ClientSession() as session:
         
-        payload = {
+        # Test Case I: GET /api/health
+        try:
+            async with session.get(f"{BACKEND_URL}/api/health") as resp:
+                if resp.status == 200:
+                    results.add_result("I) GET /api/health", True)
+                else:
+                    results.add_result("I) GET /api/health", False, f"Status {resp.status}")
+        except Exception as e:
+            results.add_result("I) GET /api/health", False, f"Exception: {e}")
+        
+        # Test Case J: GET /api/vin/trade-in-count
+        try:
+            async with session.get(f"{BACKEND_URL}/api/vin/trade-in-count") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    # Check proper structure
+                    if ('count' in data and 'cap' in data and 'remaining' in data and 'at_limit' in data):
+                        results.add_result("J) GET /api/vin/trade-in-count", True)
+                    else:
+                        results.add_result("J) GET /api/vin/trade-in-count", False, 
+                                         f"Missing required fields in structure: {data}")
+                else:
+                    results.add_result("J) GET /api/vin/trade-in-count", False, f"Status {resp.status}")
+        except Exception as e:
+            results.add_result("J) GET /api/vin/trade-in-count", False, f"Exception: {e}")
+        
+        # Test Case K: POST /api/translate
+        test_translate = {
             "text": "Hello",
             "source_lang": "en", 
             "target_lang": "es"
         }
         
-        status, data, response_time = await self.make_request(
-            "POST", "/api/translate", 
-            json=payload
-        )
-        
-        if status == 200 and isinstance(data, dict):
-            if "translated_text" in data:
-                self.log_result(test_name, True, 
-                    f"Translation working: '{payload['text']}' -> '{data.get('translated_text')}'", 
-                    response_time)
-            else:
-                self.log_result(test_name, False, f"Missing translated_text field: {data}", response_time)
-        else:
-            self.log_result(test_name, False, f"Status {status}, response: {str(data)[:200]}", response_time)
+        try:
+            async with session.post(f"{BACKEND_URL}/api/translate", 
+                                  json=test_translate) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get('translated_text'):
+                        results.add_result("K) POST /api/translate", True)
+                    else:
+                        results.add_result("K) POST /api/translate", False, 
+                                         f"Missing translated_text field: {data}")
+                else:
+                    results.add_result("K) POST /api/translate", False, f"Status {resp.status}")
+        except Exception as e:
+            results.add_result("K) POST /api/translate", False, f"Exception: {e}")
     
-    async def cleanup_test_data(self):
-        """Clean up test vehicles after testing"""
-        test_name = "Cleanup Test Data"
-        
-        test_vins = ["1HGCV1F34LA000001", "JM3KKEHA3T1355103", "JM3KKEHA3T1355999"]
-        
-        cleanup_results = []
-        for vin in test_vins:
-            # Try to delete via API if endpoint exists, otherwise note for manual cleanup
-            status, data, response_time = await self.make_request("DELETE", f"/api/vehicles/vin/{vin}")
-            
-            if status == 200:
-                cleanup_results.append(f"✅ {vin}")
-            elif status == 404:
-                cleanup_results.append(f"➖ {vin} (not found)")
-            else:
-                cleanup_results.append(f"❌ {vin} (status {status})")
-        
-        self.log_result(test_name, True, f"Cleanup attempted: {', '.join(cleanup_results)}", 0)
-        print(f"\n⚠️  MANUAL CLEANUP REQUIRED: Please delete test vehicles with VINs: {', '.join(test_vins)}")
-    
-    async def run_all_tests(self):
-        """Run all VIN scanner backend tests"""
-        print("🚀 Starting Comprehensive VIN Scanner Backend Tests")
-        print(f"📡 Backend URL: {self.backend_url}")
-        print("=" * 80)
-        
-        # VIN Decode Tests
-        await self.test_vin_decode_valid_us_honda()
-        await self.test_vin_decode_valid_japanese_mazda()
-        await self.test_vin_decode_invalid_short()
-        await self.test_vin_decode_invalid_characters()
-        
-        # Trade-in Count Tests
-        await self.test_trade_in_count()
-        
-        # Save to Inventory Tests
-        await self.test_save_active_inventory()
-        await self.test_save_trade_in()
-        await self.test_duplicate_vin_rejection()
-        await self.test_trade_in_count_increase()
-        
-        # Regression Tests
-        await self.test_health_endpoint()
-        await self.test_customers_list_endpoint() 
-        await self.test_translate_endpoint()
-        
-        # Cleanup
-        await self.cleanup_test_data()
-        
-        # Summary
-        print("\n" + "=" * 80)
-        print("📊 TEST RESULTS SUMMARY")
-        print("=" * 80)
-        
-        passed_tests = [r for r in self.test_results if r["passed"]]
-        failed_tests = [r for r in self.test_results if not r["passed"]]
-        
-        print(f"✅ PASSED: {len(passed_tests)}/{len(self.test_results)} tests")
-        print(f"❌ FAILED: {len(failed_tests)}/{len(self.test_results)} tests")
-        
-        if failed_tests:
-            print("\n🔍 FAILED TESTS DETAILS:")
-            for test in failed_tests:
-                print(f"   ❌ {test['test']}: {test['details']}")
-        
-        avg_response_time = sum(r["response_time_ms"] for r in self.test_results) / len(self.test_results) if self.test_results else 0
-        print(f"\n⏱️  AVERAGE RESPONSE TIME: {avg_response_time:.0f}ms")
-        
-        # Determine overall result
-        success_rate = len(passed_tests) / len(self.test_results) * 100 if self.test_results else 0
-        print(f"📈 SUCCESS RATE: {success_rate:.1f}%")
-        
-        if success_rate >= 90:
-            print("🎉 EXCELLENT: VIN Scanner backend is working excellently!")
-        elif success_rate >= 75:
-            print("👍 GOOD: VIN Scanner backend is working well with minor issues")
-        elif success_rate >= 50:
-            print("⚠️  MODERATE: VIN Scanner backend has some issues that need attention")
-        else:
-            print("🚨 CRITICAL: VIN Scanner backend has serious issues requiring immediate attention")
-        
-        return success_rate >= 75
-
+    return results
 
 async def main():
-    """Main test execution"""
-    try:
-        async with VINBackendTester() as tester:
-            success = await tester.run_all_tests()
-            sys.exit(0 if success else 1)
-    except Exception as e:
-        print(f"❌ Test execution failed: {e}")
-        sys.exit(1)
-
+    print("🎯 LICENSE SCANNER BACKEND ENDPOINTS TESTING")
+    print("=" * 60)
+    print(f"Backend URL: {BACKEND_URL}")
+    print()
+    
+    # Test PDF417 parsing endpoints (test cases A-G)
+    print("🔍 Testing POST /api/license/parse-pdf417 (Test Cases A-G)")
+    pdf417_results = await test_license_parse_pdf417()
+    print()
+    
+    # Test scan from URL endpoint (test case H)
+    print("🔍 Testing POST /api/license/scan-from-url (Test Case H)")
+    scan_url_results = await test_license_scan_from_url()
+    print()
+    
+    # Test regression endpoints (test cases I-K)
+    print("🔍 Testing Regression Endpoints (Test Cases I-K)")
+    regression_results = await test_regression_endpoints()
+    print()
+    
+    # Combine all results
+    all_results = TestResults()
+    all_results.passed = pdf417_results.passed + scan_url_results.passed + regression_results.passed
+    all_results.failed = pdf417_results.failed + scan_url_results.failed + regression_results.failed
+    all_results.results = pdf417_results.results + scan_url_results.results + regression_results.results
+    
+    # Print comprehensive summary
+    print("=" * 60)
+    all_results.summary()
+    print()
+    
+    # Detailed breakdown
+    print("📊 DETAILED BREAKDOWN:")
+    print(f"  PDF417 Parsing (A-G): {pdf417_results.passed}/{pdf417_results.passed + pdf417_results.failed}")
+    print(f"  Scan from URL (H): {scan_url_results.passed}/{scan_url_results.passed + scan_url_results.failed}")
+    print(f"  Regression Tests (I-K): {regression_results.passed}/{regression_results.passed + regression_results.failed}")
+    
+    if all_results.passed == 11:  # Total expected tests A through K
+        print("\n🎉 ALL TESTS PASSED! License scanner backend endpoints are working perfectly.")
+    else:
+        print(f"\n⚠️  {all_results.failed} test(s) failed. Please check implementation.")
+    
+    return all_results
 
 if __name__ == "__main__":
     asyncio.run(main())
