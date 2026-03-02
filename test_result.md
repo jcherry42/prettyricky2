@@ -559,17 +559,16 @@ agent_communication:
 
 
   - agent: "main"
-    message: "Mar 2 2026: PHASE 1-2 CLEANUP & PERFORMANCE OPTIMIZATION COMPLETE. Phase 1 (Cleanup): Removed 4 dead backend route files (license.py, imports.py, analytics.py, dashboard.py), 5 dead mobile components (QuickAddButton, OfflineBanner, ErrorBoundary, InfotainmentShell, PicassoSwirls), 30+ stale root-level test scripts/docs/JSON files, dead security/rbac.py (restored after discovering auth_endpoints.py dependency), test_reports/ directory. Phase 2 (Performance): Added GZip compression middleware (500-byte threshold), tuned MongoDB connection pool (maxPoolSize=50, minPoolSize=5, idle 30s, timeouts 5s), upgraded TTS cache to LRU OrderedDict eviction, created singleton service pattern for ConversationHistoryService and AnalyticsService (moved from per-request instantiation to startup), moved conversation index creation to app lifespan. All endpoints verified healthy. Testing agent: Please run COMPREHENSIVE BACKEND REGRESSION TEST covering ALL endpoint groups: health, customers CRUD, translation (all languages), TTS (all languages), voice-translate, Tower Talk, VIN decode + trade-in, license parse-pdf417, analytics, conversations, dashboard stats, import/file, import/email, CRM configs, AB testing, vision extract, events, favorites. Pay special attention to conversation endpoints and analytics endpoints to verify singleton service pattern works correctly."
+    message: "Mar 2 2026: PHASE 1-2 CLEANUP & PERFORMANCE OPTIMIZATION COMPLETE. Phase 1 (Cleanup): Removed 4 dead backend route files (license.py, imports.py, analytics.py, dashboard.py), 2 truly dead mobile components (QuickAddButton, PicassoSwirls), 30+ stale root-level test scripts/docs/JSON files, test_reports/ directory. Restored ErrorBoundary, InfotainmentShell, OfflineBanner after discovering they ARE used by App.js. Phase 2 (Performance): Added GZip compression middleware, tuned MongoDB connection pool, upgraded TTS cache to LRU, created singleton services for ConversationHistory and Analytics. Phase 3 (Comprehensive Scan): Backend testing agent verified 27/28 tests pass (96.4%), all 19 backend Python files compile cleanly, zero broken mobile imports, final 13-endpoint smoke test all pass. Phase 4 (Beta Prep): Updated BETA_TESTING_GUIDE.md with build status table and comprehensive test checklist."
+  - agent: "testing"
+    message: "Mar 2 2026: POST-CLEANUP COMPREHENSIVE BACKEND REGRESSION - 27/28 TESTS PASSED (96.4%). Verified: Health ✓, Customer CRUD ✓, Translation EN→ES/FR/KO ✓, TTS all 4 languages ✓, Tower Talk AI ✓, VIN trade-in count ✓, License PDF417 parse ✓, Analytics dashboard ✓, Sales analytics ✓, Conversations (singleton pattern) ✓, Dashboard stats ✓, AB experiments ✓, Events ✓, File import ✓, CRM configs ✓, GZip compression ✓. Only 'failure' was voice-translate correctly rejecting invalid audio. Performance: avg API 53ms, LLM 1.3s. Zero regressions."
 
 test_plan:
   current_focus:
-    - "Post-Cleanup & Performance Optimization Full Regression"
-    - "Verify all endpoint groups still work after dead code removal"
-    - "Verify GZip compression active"
-    - "Verify singleton service patterns for conversations/analytics"
+    - "COMPLETE - All phases done"
   stuck_tasks: []
-  test_all: true
-  test_priority: "sequential"
+  test_all: false
+  test_priority: "complete"
 
 frontend:
   - task: "PTT Mobile Pipeline Fix - Recording + Upload + Overlay"
