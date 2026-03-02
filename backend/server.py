@@ -4,10 +4,12 @@ Sales automation tool with CRM-agnostic data integration
 """
 
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Request
+from fastapi.middleware.gzip import GZipMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from contextlib import asynccontextmanager
+from collections import OrderedDict
 import os
 import logging
 from pathlib import Path
@@ -49,9 +51,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# MongoDB connection
+# MongoDB connection with tuned pool
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(
+    mongo_url,
+    maxPoolSize=50,
+    minPoolSize=5,
+    maxIdleTimeMS=30000,
+    connectTimeoutMS=5000,
+    serverSelectionTimeoutMS=5000,
+)
 db = client[os.environ['DB_NAME']]
 
 # Repositories
@@ -110,6 +119,18 @@ async def lifespan(app: FastAPI):
         await ab_testing_service.create_experiment(Experiment(**exp))
     logger.info("A/B Testing service initialized with default experiments")
     
+    # Initialize conversation history indexes (once at startup, not per-request)
+    from conversation_history import ConversationHistoryService
+    _conv_svc = ConversationHistoryService(db)
+    await _conv_svc.initialize()
+    app.state.conversation_service = _conv_svc
+    logger.info("✅ Conversation history service initialized")
+    
+    # Initialize analytics service singleton
+    from analytics_service import AnalyticsService
+    app.state.analytics_service = AnalyticsService(db)
+    logger.info("✅ Analytics service initialized")
+    
     logger.info("Integration layer initialized")
     
     # Initialize scheduler
@@ -128,6 +149,9 @@ async def lifespan(app: FastAPI):
 
 # Create app with lifespan
 app = FastAPI(lifespan=lifespan)
+
+# GZip compression for all responses > 500 bytes
+app.add_middleware(GZipMiddleware, minimum_size=500)
 
 # Create API router
 api_router = APIRouter(prefix="/api")
@@ -246,8 +270,8 @@ async def health_check():
 
 # ============== TEXT-TO-SPEECH (Enterprise-Grade) ==============
 
-# TTS Cache for instant playback of repeated phrases
-_tts_cache: Dict[str, str] = {}
+# TTS Cache for instant playback of repeated phrases (LRU eviction)
+_tts_cache: OrderedDict = OrderedDict()
 _tts_cache_max_size = 200
 
 # Optimal voice selection by language for natural, smooth speech
@@ -285,8 +309,9 @@ async def text_to_speech(request: TTSRequest):
         # Create cache key
         cache_key = f"{voice}:{request.speed}:{text[:500]}"
         
-        # Check cache first - instant response
+        # Check cache first - instant response (LRU: move to end on hit)
         if cache_key in _tts_cache:
+            _tts_cache.move_to_end(cache_key)
             logger.info(f"TTS cache hit: {len(text)} chars, voice={voice}")
             return TTSResponse(
                 audio_base64=_tts_cache[cache_key],
@@ -316,14 +341,10 @@ async def text_to_speech(request: TTSRequest):
         generation_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         logger.info(f"TTS generated: {len(text)} chars, voice={voice}, time={generation_time:.2f}s")
         
-        # Cache for future instant playback
-        if len(_tts_cache) >= _tts_cache_max_size:
-            # Remove oldest entries
-            keys_to_remove = list(_tts_cache.keys())[:50]
-            for key in keys_to_remove:
-                del _tts_cache[key]
-        
+        # Cache for future instant playback (LRU eviction)
         _tts_cache[cache_key] = audio_base64
+        if len(_tts_cache) > _tts_cache_max_size:
+            _tts_cache.popitem(last=False)  # Remove oldest entry
         
         return TTSResponse(
             audio_base64=audio_base64,
@@ -2737,16 +2758,22 @@ class ConversationCreateRequest(BaseModel):
     language: str = "en"
     shortcut_used: Optional[str] = None
 
+def _get_conv_service(request: Request) -> ConversationHistoryService:
+    """Get the singleton conversation service from app state, with fallback."""
+    svc = getattr(request.app.state, 'conversation_service', None)
+    if svc is None:
+        svc = ConversationHistoryService(db)
+    return svc
+
 @api_router.get("/conversations/categories")
 async def get_conversation_categories():
     """Get available conversation categories"""
     return {"categories": ConversationHistoryService.get_categories()}
 
 @api_router.post("/conversations")
-async def create_conversation(request: ConversationCreateRequest):
+async def create_conversation(request: ConversationCreateRequest, req: Request = None):
     """Create a new conversation record"""
-    service = ConversationHistoryService(db)
-    await service.initialize()
+    service = _get_conv_service(req) if req else ConversationHistoryService(db)
     
     data = ConversationCreate(**request.model_dump())
     result = await service.create_conversation(data)
@@ -2755,6 +2782,7 @@ async def create_conversation(request: ConversationCreateRequest):
 
 @api_router.get("/conversations")
 async def get_conversations(
+    request: Request,
     session_id: Optional[str] = None,
     customer_id: Optional[str] = None,
     category: Optional[str] = None,
@@ -2762,7 +2790,7 @@ async def get_conversations(
     offset: int = 0
 ):
     """Get conversations with optional filters"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     conversations = await service.get_conversations(
         session_id=session_id,
         customer_id=customer_id,
@@ -2773,39 +2801,39 @@ async def get_conversations(
     return {"conversations": conversations, "count": len(conversations)}
 
 @api_router.get("/conversations/stats")
-async def get_conversation_stats():
+async def get_conversation_stats(request: Request):
     """Get conversation statistics"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     stats = await service.get_stats()
     return stats
 
 @api_router.get("/conversations/session/{session_id}")
-async def get_session_history(session_id: str):
+async def get_session_history(session_id: str, request: Request):
     """Get all conversations in a session"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     conversations = await service.get_session_history(session_id)
     return {"session_id": session_id, "conversations": conversations}
 
 @api_router.get("/conversations/customer/{customer_id}")
-async def get_customer_conversation_history(customer_id: str):
+async def get_customer_conversation_history(customer_id: str, request: Request):
     """Get all conversations for a customer"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     conversations = await service.get_customer_history(customer_id)
     return {"customer_id": customer_id, "conversations": conversations}
 
 @api_router.delete("/conversations/{conversation_id}")
-async def delete_conversation(conversation_id: str):
+async def delete_conversation(conversation_id: str, request: Request):
     """Delete a specific conversation"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     success = await service.delete_conversation(conversation_id)
     if not success:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return {"success": True}
 
 @api_router.delete("/conversations/session/{session_id}")
-async def delete_session_conversations(session_id: str):
+async def delete_session_conversations(session_id: str, request: Request):
     """Delete all conversations in a session"""
-    service = ConversationHistoryService(db)
+    service = _get_conv_service(request)
     deleted_count = await service.delete_session(session_id)
     return {"success": True, "deleted_count": deleted_count}
 
@@ -2814,46 +2842,53 @@ async def delete_session_conversations(session_id: str):
 
 from analytics_service import AnalyticsService
 
+def _get_analytics_service(request: Request) -> AnalyticsService:
+    """Get the singleton analytics service from app state, with fallback."""
+    svc = getattr(request.app.state, 'analytics_service', None)
+    if svc is None:
+        svc = AnalyticsService(db)
+    return svc
+
 @api_router.get("/analytics/dashboard")
-async def get_analytics_dashboard():
+async def get_analytics_dashboard(request: Request):
     """Get comprehensive analytics dashboard"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_dashboard_summary()
 
 @api_router.get("/analytics/sales")
-async def get_sales_analytics(days: int = 30):
+async def get_sales_analytics(request: Request, days: int = 30):
     """Get sales performance analytics"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_sales_performance(days)
 
 @api_router.get("/analytics/customers")
-async def get_customer_analytics():
+async def get_customer_analytics(request: Request):
     """Get customer engagement analytics"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_customer_engagement()
 
 @api_router.get("/analytics/inventory")
-async def get_inventory_analytics():
+async def get_inventory_analytics(request: Request):
     """Get inventory metrics"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_inventory_metrics()
 
 @api_router.get("/analytics/conversations")
-async def get_conversation_analytics():
+async def get_conversation_analytics(request: Request):
     """Get conversation insights"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_conversation_insights()
 
 @api_router.get("/analytics/integrations")
-async def get_integration_analytics():
+async def get_integration_analytics(request: Request):
     """Get integration health analytics"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_integration_health()
 
 @api_router.get("/analytics/trends/{metric}")
-async def get_metric_trends(metric: str, days: int = 30):
+async def get_metric_trends(metric: str, request: Request, days: int = 30):
     """Get trend data for a specific metric"""
-    service = AnalyticsService(db)
+    service = _get_analytics_service(request)
     return await service.get_trends(metric, days)
 
 
