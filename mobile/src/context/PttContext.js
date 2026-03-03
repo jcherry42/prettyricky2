@@ -9,89 +9,32 @@ const PttContext = createContext(null);
 
 const MAX_RECORDING_MS = 15000; // 15-second hard cap
 
-// Explicit recording options that produce Whisper-compatible output.
-// HIGH_QUALITY preset can produce .caf on some iOS versions which Whisper
-// rejects. We force m4a/AAC on native and webm on web.
-const RECORDING_OPTIONS = Platform.select({
+// Recording options for Whisper-compatible m4a output.
+//
+// The previous version used outputFormat: 'aac' (string) which is wrong.
+// iOS CoreAudio FourCC for MPEG-4 AAC is 'aac ' (4 chars, trailing space).
+// Passing the wrong string causes NSOSStatusErrorDomain Code=1718449215
+// ("fmt?") = kAudioFormatUnsupportedDataFormatError.
+//
+// Fix: use expo-av's RecordingOptionsPresets.HIGH_QUALITY which resolves
+// the correct IOSOutputFormat.MPEG4AAC constant internally, then override
+// numberOfChannels to 1 (mono) to keep file sizes small for Whisper.
+const RECORDING_OPTIONS = {
+  ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+  isMeteringEnabled: true,
   ios: {
-    isMeteringEnabled: true,
-    android: {
-      extension: '.m4a',
-      outputFormat: 2 /* MPEG_4 */,
-      audioEncoder: 3 /* AAC */,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-    },
-    ios: {
-      extension: '.m4a',
-      outputFormat: 'aac' /* MPEG4AAC */,
-      audioQuality: 127 /* MAX */,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-      linearPCMBitDepth: 16,
-      linearPCMIsBigEndian: false,
-      linearPCMIsFloat: false,
-    },
-    web: {
-      mimeType: 'audio/webm',
-      bitsPerSecond: 128000,
-    },
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
+    numberOfChannels: 1,   // mono is optimal for speech recognition
+    sampleRate: 44100,
+    bitRate: 128000,
   },
   android: {
-    isMeteringEnabled: true,
-    android: {
-      extension: '.m4a',
-      outputFormat: 2 /* MPEG_4 */,
-      audioEncoder: 3 /* AAC */,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-    },
-    ios: {
-      extension: '.m4a',
-      outputFormat: 'aac',
-      audioQuality: 127,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-      linearPCMBitDepth: 16,
-      linearPCMIsBigEndian: false,
-      linearPCMIsFloat: false,
-    },
-    web: {
-      mimeType: 'audio/webm',
-      bitsPerSecond: 128000,
-    },
+    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
+    numberOfChannels: 1,
+    sampleRate: 44100,
+    bitRate: 128000,
   },
-  default: {  // web
-    isMeteringEnabled: false,
-    android: {
-      extension: '.m4a',
-      outputFormat: 2,
-      audioEncoder: 3,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-    },
-    ios: {
-      extension: '.m4a',
-      outputFormat: 'aac',
-      audioQuality: 127,
-      sampleRate: 44100,
-      numberOfChannels: 1,
-      bitRate: 128000,
-      linearPCMBitDepth: 16,
-      linearPCMIsBigEndian: false,
-      linearPCMIsFloat: false,
-    },
-    web: {
-      mimeType: 'audio/webm',
-      bitsPerSecond: 128000,
-    },
-  },
-});
+};
 
 // Determine the correct MIME type and file extension per platform
 function getAudioMeta() {
