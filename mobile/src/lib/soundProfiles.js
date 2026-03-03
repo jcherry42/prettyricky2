@@ -171,9 +171,10 @@ async function configureAudioSession() {
 /**
  * Core playback: load the asset fresh each time and play immediately.
  * Fresh-load avoids any stale Sound object state that can cause silence or distortion.
+ * Returns the Sound object so callers can control it (e.g. fade out).
  */
 async function playAsset(asset) {
-  // Stop anything currently playing
+  // Stop anything currently playing (hard stop — only used for activation)
   await stopActiveSound();
 
   // Configure audio session right before playback
@@ -186,13 +187,13 @@ async function playAsset(asset) {
         shouldPlay: true,
         volume: 1.0,
         isLooping: false,
-        progressUpdateIntervalMillis: 500,
+        progressUpdateIntervalMillis: 100,
       }
     );
 
     _activeSound = sound;
 
-    // Auto-release when playback finishes
+    // Auto-release when playback finishes naturally
     sound.setOnPlaybackStatusUpdate((status) => {
       if (status.didJustFinish) {
         sound.unloadAsync().catch(() => {});
@@ -204,17 +205,50 @@ async function playAsset(asset) {
         if (_activeSound === sound) _activeSound = null;
       }
     });
+
+    return sound;
   } catch (e) {
     console.warn('[SoundProfile] Failed to load/play asset:', e?.message);
     _activeSound = null;
+    return null;
+  }
+}
+
+/**
+ * Fade the currently active sound from its current volume down to 0,
+ * then stop and unload it. Smooth 1.5-second fade.
+ */
+async function fadeOutActiveSound(durationMs = 1500) {
+  const sound = _activeSound;
+  if (!sound) return;
+
+  const STEPS = 30;
+  const stepMs = durationMs / STEPS;
+
+  try {
+    for (let i = STEPS - 1; i >= 0; i--) {
+      // If another sound started while we were fading, bail out
+      if (_activeSound !== sound) return;
+      const vol = parseFloat((i / STEPS).toFixed(3));
+      await sound.setVolumeAsync(vol).catch(() => {});
+      await delay(stepMs);
+    }
+    // Fully silent — now stop and release
+    if (_activeSound === sound) {
+      await sound.stopAsync().catch(() => {});
+      await sound.unloadAsync().catch(() => {});
+      _activeSound = null;
+    }
+  } catch {
+    // Sound may have already unloaded naturally — no-op
+    if (_activeSound === sound) _activeSound = null;
   }
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Play activation sound + haptics for a given profile.
- * Audio and haptics run concurrently for immediate sensation.
+ * SPORT MODE ON — play activation sound + haptics concurrently.
  */
 export async function playActivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
@@ -229,16 +263,19 @@ export async function playActivationSound(profileId = 'merica') {
 }
 
 /**
- * Play deactivation sound + haptics for a given profile.
+ * SPORT MODE OFF — haptics only + fade out any still-playing sound.
+ * No new audio is loaded. The activation sound gently fades to silence.
  */
 export async function playDeactivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.deactivate;
-  const asset = AUDIO_ASSETS[id]?.deactivate;
 
+  // Haptics fire immediately; fade runs in background (non-blocking)
   const promises = [];
-  if (asset) promises.push(playAsset(asset));
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
+
+  // Kick off fade-out concurrently — 1.5s smooth taper to silence
+  promises.push(fadeOutActiveSound(1500));
 
   await Promise.allSettled(promises);
 }
