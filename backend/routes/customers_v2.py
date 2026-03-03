@@ -201,7 +201,7 @@ class LegacyCustomerCreateRequest(BaseModel):
     license_image: Optional[str] = None
 
 
-@router.post("/customers")
+@router.post("/customers", status_code=201)
 async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
     if _db is None:
         raise HTTPException(status_code=500, detail="Customer routes not initialized")
@@ -242,7 +242,7 @@ async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
     return {k: v for k, v in customer_doc.items() if k != "_id"}
 
 
-@router.post("/customers/create")
+@router.post("/customers/create", status_code=201)
 async def create_customer(customer: CustomerCreate):
     if _db is None:
         raise HTTPException(status_code=500, detail="Customer routes not initialized")
