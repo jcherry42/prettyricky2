@@ -46,16 +46,12 @@ function AmbientStrip({ active, color }) {
 
 /* --------------------------------------------------------------------------
  * HomeListHeader — defined OUTSIDE HomeScreen so its identity is STABLE.
- * FlatList reconciles by component type: a new function reference on every
- * HomeScreen render would cause the header (and QuickCompose inside it) to
- * unmount/remount, losing all state and keyboard focus.
+ * Only contains static/slow-changing content (branding, SPORT button,
+ * QuickCompose). The search bar is rendered OUTSIDE FlatList to prevent
+ * keyboard dismissal on every keystroke (a known React Native issue when
+ * a TextInput lives inside ListHeaderComponent).
  * -------------------------------------------------------------------------- */
-const HomeListHeader = memo(function HomeListHeader({
-  filteredCount,
-  searchQuery,
-  onSearchChange,
-  stripColor,
-}) {
+const HomeListHeader = memo(function HomeListHeader({ stripColor }) {
   return (
     <View>
       {/* Header clearance */}
@@ -78,46 +74,6 @@ const HomeListHeader = memo(function HomeListHeader({
 
       {/* Chrome accent divider */}
       <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 10 }} />
-
-      {/* Search bar with wood bezel + inner depth */}
-      <View style={styles.searchContainer}>
-        <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.searchBezel}
-        >
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={16} color={colors.gold} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search customers..."
-              placeholderTextColor={colors.textGhost || colors.textMute}
-              value={searchQuery}
-              onChangeText={onSearchChange}
-              returnKeyType="search"
-              autoCorrect={false}
-              autoCapitalize="none"
-              clearButtonMode="while-editing"
-              onSubmitEditing={Keyboard.dismiss}
-            />
-          </View>
-        </LinearGradient>
-      </View>
-
-      {/* Header with customer count + network status */}
-      <View style={styles.listHeader}>
-        <View style={styles.listTitleRow}>
-          <View style={styles.goldDot} />
-          <Text style={styles.listTitle}>CUSTOMERS</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <NetworkStatusDot />
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{filteredCount}</Text>
-          </View>
-        </View>
-      </View>
 
       {/* QuickCompose box — stable mount, no remount on parent re-render */}
       <QuickCompose />
@@ -232,17 +188,10 @@ export function HomeScreen() {
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   );
 
-  // Use a stable render function that references the memoized HomeListHeader component.
-  // Do NOT define the header content inline — that creates a new component type on every
-  // render, causing FlatList to unmount/remount QuickCompose and lose all state & focus.
+  // renderHeader only depends on stripColor now — never re-creates due to typing
   const renderHeader = useCallback(() => (
-    <HomeListHeader
-      filteredCount={filteredCustomers.length}
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-      stripColor={stripColor}
-    />
-  ), [filteredCustomers.length, searchQuery, stripColor]);
+    <HomeListHeader stripColor={stripColor} />
+  ), [stripColor]);
 
   const renderEmpty = () => {
     if (loading) {
@@ -310,6 +259,48 @@ export function HomeScreen() {
     // keyboardDismissMode="on-drag" below, which is the correct UX.
     <View style={{ flex: 1 }} onTouchEnd={triggerFlash}>
       <Screen>
+        {/* ── Search bar lives OUTSIDE FlatList so its TextInput never unmounts.
+            Placing it inside ListHeaderComponent caused the keyboard to dismiss
+            on every keystroke because searchQuery dep re-created the render fn. ── */}
+        <View style={styles.searchContainer}>
+          <LinearGradient
+            colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.searchBezel}
+          >
+            <View style={styles.searchInputContainer}>
+              <Ionicons name="search" size={16} color={colors.gold} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search customers..."
+                placeholderTextColor={colors.textGhost || colors.textMute}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                returnKeyType="search"
+                autoCorrect={false}
+                autoCapitalize="none"
+                clearButtonMode="while-editing"
+                onSubmitEditing={Keyboard.dismiss}
+              />
+            </View>
+          </LinearGradient>
+        </View>
+
+        {/* Customer count row */}
+        <View style={styles.listHeader}>
+          <View style={styles.listTitleRow}>
+            <View style={styles.goldDot} />
+            <Text style={styles.listTitle}>CUSTOMERS</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <NetworkStatusDot />
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{filteredCustomers.length}</Text>
+            </View>
+          </View>
+        </View>
+
         <FlatList
           data={filteredCustomers}
           renderItem={renderCustomerMemo}
