@@ -248,7 +248,9 @@ async function fadeOutActiveSound(durationMs = 1500) {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * SPORT MODE ON — play activation sound + haptics concurrently.
+ * SPORT MODE ON — play activation sound with auto-fade + haptics.
+ * The sound plays at full volume for ~2 s then fades to silence over 1.5 s
+ * so it never cuts off abruptly.
  */
 export async function playActivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
@@ -256,28 +258,33 @@ export async function playActivationSound(profileId = 'merica') {
   const asset = AUDIO_ASSETS[id]?.activate;
 
   const promises = [];
-  if (asset) promises.push(playAsset(asset));
+  if (asset) {
+    promises.push(
+      playAsset(asset).then((sound) => {
+        if (!sound) return;
+        // Let the impactful part play for 2 s, then fade to silence over 1.5 s
+        return delay(2000).then(() => fadeOutActiveSound(1500));
+      })
+    );
+  }
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
 
   await Promise.allSettled(promises);
 }
 
 /**
- * SPORT MODE OFF — haptics only + fade out any still-playing sound.
- * No new audio is loaded. The activation sound gently fades to silence.
+ * SPORT MODE OFF — haptics only, no audio.
+ * Any still-playing activation sound is killed immediately (hard stop).
  */
 export async function playDeactivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.deactivate;
 
-  // Haptics fire immediately; fade runs in background (non-blocking)
-  const promises = [];
-  if (hapticFn) promises.push(hapticFn().catch(() => {}));
+  // Kill any lingering activation audio instantly — user expects silence
+  await stopActiveSound();
 
-  // Kick off fade-out concurrently — 1.5s smooth taper to silence
-  promises.push(fadeOutActiveSound(1500));
-
-  await Promise.allSettled(promises);
+  // Haptics only
+  if (hapticFn) await hapticFn().catch(() => {});
 }
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
