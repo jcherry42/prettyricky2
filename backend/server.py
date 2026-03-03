@@ -2967,6 +2967,99 @@ class VisionExtractionRequest(BaseModel):
     additional_context: Optional[str] = Field(None, description="Optional context to help extraction")
 
 
+class VinOcrRequest(BaseModel):
+    """VIN OCR extraction from image"""
+    image_base64: str = Field(..., description="Base64 encoded image (PNG, JPEG, WEBP) of VIN plate/windshield")
+
+
+@api_router.post("/vin/extract-from-image")
+async def extract_vin_from_image(req: VinOcrRequest):
+    """
+    Extract VIN number from a photo using GPT Vision AI.
+    Handles windshield VIN plates, dashboard VIN stamps, and door-jamb labels.
+    Returns all 17-character VIN candidates found in the image.
+    """
+    try:
+        api_key = os.getenv('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Vision AI not configured")
+
+        # Validate base64 image
+        import re as _re
+        b64_clean = req.image_base64
+        if ',' in b64_clean:
+            b64_clean = b64_clean.split(',', 1)[1]
+        b64_clean = b64_clean.strip()
+        if not b64_clean:
+            raise HTTPException(status_code=400, detail="Empty image data")
+
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        from emergentintegrations.llm.openai import ImageContent
+
+        system_prompt = (
+            "You are a precision VIN (Vehicle Identification Number) reader for automotive dealerships. "
+            "Your only job is to find and return VIN numbers visible in the image.\n\n"
+            "VIN RULES:\n"
+            "- A VIN is exactly 17 characters: uppercase letters A-Z (except I, O, Q) and digits 0-9\n"
+            "- Common locations: lower-left windshield plate, door jamb sticker, dashboard stamp, barcode label\n"
+            "- May be printed, stamped, etched, or in a barcode label\n\n"
+            "RESPONSE FORMAT (JSON only, no markdown):\n"
+            '{"vins": ["VIN1", "VIN2"], "confidence": "high|medium|low", "notes": "brief description"}\n\n'
+            "If no valid 17-character VIN is found, return: "
+            '{"vins": [], "confidence": "low", "notes": "No VIN found"}\n\n'
+            "IMPORTANT: Return ONLY the JSON object. No extra text."
+        )
+
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=f"vin_ocr_{os.urandom(6).hex()}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-4o")
+
+        image_content = ImageContent(image_base64=b64_clean)
+        user_message = UserMessage(
+            text="Find all VIN numbers in this image. Return ONLY valid 17-character VINs.",
+            file_contents=[image_content]
+        )
+
+        response = await chat.send_message(user_message)
+        raw = response.strip()
+
+        # Parse JSON response
+        import json as _json
+        try:
+            # Strip markdown code blocks if present
+            if raw.startswith('```'):
+                raw = raw.split('```')[1]
+                if raw.startswith('json'):
+                    raw = raw[4:]
+            parsed = _json.loads(raw)
+        except Exception:
+            # Fallback: extract VIN-like patterns from raw text
+            vin_pattern = _re.compile(r'\b[A-HJ-NPR-Z0-9]{17}\b')
+            found = vin_pattern.findall(raw)
+            parsed = {"vins": list(set(found)), "confidence": "low", "notes": raw[:200]}
+
+        vins = parsed.get("vins", [])
+        # Validate each VIN format
+        vin_re = _re.compile(r'^[A-HJ-NPR-Z0-9]{17}$')
+        valid_vins = [v.upper().strip() for v in vins if vin_re.match(v.upper().strip())]
+
+        return {
+            "success": True,
+            "vins": valid_vins,
+            "confidence": parsed.get("confidence", "low"),
+            "notes": parsed.get("notes", ""),
+            "count": len(valid_vins)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"VIN OCR error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"VIN OCR failed: {str(e)}")
+
+
 @api_router.post("/vision/extract-customer")
 async def extract_customer_from_image(req: VisionExtractionRequest):
     """

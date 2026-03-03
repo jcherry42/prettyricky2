@@ -2,16 +2,14 @@
  * Sound Profile System for SPORT Mode
  *
  * 3 engine sound profiles:
- *   merica — American V8 thundering rumble
- *   euro   — Euro exotic high-revving whine
- *   jdm    — JDM turbo spool + blow-off valve
+ *   merica — Ford Mustang Shelby GT500 (V8 thunder)
+ *   euro   — Sports car revving (high-revving exotic)
+ *   jdm    — JDM car transition (turbo/resonant)
  *
- * Each profile plays:
- *   1. A synthesized engine WAV (from /assets/sounds/) via expo-av
- *   2. A haptic pattern that matches the engine character
+ * Each profile plays the user's custom WAV file + a haptic pattern.
+ * Same file is used for both activate and deactivate (as requested).
  *
- * Audio files are generated at build time by scripts/generate_engine_sounds.py
- * and bundled as static assets — no network required.
+ * Audio files live at mobile/assets/sounds/ and are bundled with the app.
  */
 
 import { Audio } from 'expo-av';
@@ -21,7 +19,6 @@ import * as Haptics from 'expo-haptics';
 const isNative = Platform.OS === 'ios' || Platform.OS === 'android';
 
 // ── Static asset map ────────────────────────────────────────────────────────
-// All 6 WAV files live at mobile/assets/sounds/ and are bundled with the app.
 const AUDIO_ASSETS = {
   merica: {
     activate: require('../../assets/sounds/merica_activate.wav'),
@@ -36,25 +33,6 @@ const AUDIO_ASSETS = {
     deactivate: require('../../assets/sounds/jdm_deactivate.wav'),
   },
 };
-
-// ── Audio mode setup (called once before any playback) ──────────────────────
-let audioModeSet = false;
-
-async function ensureAudioMode() {
-  if (audioModeSet) return;
-  try {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,    // Sport mode is user-initiated — always play the engine sound
-      shouldDuckAndroid: false,
-      playThroughEarpieceAndroid: false,
-      staysActiveInBackground: false,
-    });
-    audioModeSet = true;
-  } catch {
-    // silently ignore — audio will still work on most devices
-  }
-}
 
 // ── Haptic patterns (profile-specific tactile feedback) ─────────────────────
 const HAPTICS = {
@@ -152,66 +130,83 @@ export const SOUND_PROFILES = {
 
 export const PROFILE_KEYS = Object.keys(SOUND_PROFILES);
 
-// ── Core audio playback helper ───────────────────────────────────────────────
-
-// Preloaded sound cache — load once, replay instantly
-const _preloaded = {};
+// ── Active sound ref — stop previous before playing new ─────────────────────
+let _activeSound = null;
 
 /**
- * Preload all sound assets for instant playback.
- * Called lazily on first activation, then cached.
+ * Stop any currently playing sound, then release it.
  */
-async function preloadSounds() {
-  if (Object.keys(_preloaded).length > 0) return;
-  await ensureAudioMode();
-
-  for (const [profileId, assets] of Object.entries(AUDIO_ASSETS)) {
-    for (const [type, asset] of Object.entries(assets)) {
-      const key = `${profileId}_${type}`;
-      try {
-        const { sound } = await Audio.Sound.createAsync(asset, { shouldPlay: false, volume: 1.0 });
-        _preloaded[key] = sound;
-      } catch {
-        // If preload fails, we'll fall back to on-demand loading
-      }
+async function stopActiveSound() {
+  if (_activeSound) {
+    try {
+      await _activeSound.stopAsync();
+      await _activeSound.unloadAsync();
+    } catch {
+      // ignore — sound may have already finished
     }
+    _activeSound = null;
   }
 }
 
 /**
- * Play a sound asset — uses preloaded cache for instant response,
- * falls back to on-demand loading if cache miss.
+ * Set the audio session to play through the speaker at full volume,
+ * even when the silent switch is engaged (user-initiated sound).
+ * Called every time before playback to ensure iOS/Android audio routing.
  */
-async function playAsset(asset, cacheKey) {
-  let sound = null;
+async function configureAudioSession() {
   try {
-    await ensureAudioMode();
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,      // Override silent switch — SPORT mode is intentional
+      shouldDuckAndroid: false,         // Don't lower other app volume
+      playThroughEarpieceAndroid: false, // Use speaker, not earpiece
+      staysActiveInBackground: false,
+    });
+  } catch (e) {
+    // Non-fatal — audio will still play on most devices without this
+    console.warn('[SoundProfile] Audio session config failed:', e?.message);
+  }
+}
 
-    // Try preloaded cache first (instant playback)
-    if (cacheKey && _preloaded[cacheKey]) {
-      sound = _preloaded[cacheKey];
-      await sound.setPositionAsync(0);
-      await sound.playAsync();
-      return;
-    }
+/**
+ * Core playback: load the asset fresh each time and play immediately.
+ * Fresh-load avoids any stale Sound object state that can cause silence or distortion.
+ */
+async function playAsset(asset) {
+  // Stop anything currently playing
+  await stopActiveSound();
 
-    // Fallback: load and play on demand
-    const { sound: s } = await Audio.Sound.createAsync(
+  // Configure audio session right before playback
+  await configureAudioSession();
+
+  try {
+    const { sound } = await Audio.Sound.createAsync(
       asset,
-      { shouldPlay: true, volume: 1.0 }
+      {
+        shouldPlay: true,
+        volume: 1.0,
+        isLooping: false,
+        progressUpdateIntervalMillis: 500,
+      }
     );
-    sound = s;
+
+    _activeSound = sound;
+
+    // Auto-release when playback finishes
     sound.setOnPlaybackStatusUpdate((status) => {
-      if (status.didJustFinish && sound) {
+      if (status.didJustFinish) {
         sound.unloadAsync().catch(() => {});
-        sound = null;
+        if (_activeSound === sound) _activeSound = null;
+      }
+      if (status.error) {
+        console.warn('[SoundProfile] Playback error:', status.error);
+        sound.unloadAsync().catch(() => {});
+        if (_activeSound === sound) _activeSound = null;
       }
     });
   } catch (e) {
-    if (sound && !_preloaded[`${cacheKey}`]) {
-      await sound.unloadAsync().catch(() => {});
-    }
-    // Silently ignore audio errors — haptics still run
+    console.warn('[SoundProfile] Failed to load/play asset:', e?.message);
+    _activeSound = null;
   }
 }
 
@@ -220,20 +215,14 @@ async function playAsset(asset, cacheKey) {
 /**
  * Play activation sound + haptics for a given profile.
  * Audio and haptics run concurrently for immediate sensation.
- * Preloads all sounds on first call for instant future playback.
  */
 export async function playActivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.activate;
   const asset = AUDIO_ASSETS[id]?.activate;
-  const cacheKey = `${id}_activate`;
 
-  // Ensure sounds are preloaded for this and future calls
-  preloadSounds().catch(() => {});
-
-  // Run haptics + audio simultaneously for best immediacy
   const promises = [];
-  if (asset) promises.push(playAsset(asset, cacheKey));
+  if (asset) promises.push(playAsset(asset));
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
 
   await Promise.allSettled(promises);
@@ -246,10 +235,9 @@ export async function playDeactivationSound(profileId = 'merica') {
   const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
   const hapticFn = HAPTICS[id]?.deactivate;
   const asset = AUDIO_ASSETS[id]?.deactivate;
-  const cacheKey = `${id}_deactivate`;
 
   const promises = [];
-  if (asset) promises.push(playAsset(asset, cacheKey));
+  if (asset) promises.push(playAsset(asset));
   if (hapticFn) promises.push(hapticFn().catch(() => {}));
 
   await Promise.allSettled(promises);

@@ -20,19 +20,26 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
 import { useInventory } from '../context/InventoryContext';
-import { validateVin, validateVinChecksum } from '../utils/vinChecksum';
+import { validateVin } from '../utils/vinChecksum';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { impactMedium, notificationSuccess, notificationError, impactLight } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
+import { buildApiUrlAsync } from '../config/backend';
 
 // ── Storage keys: separate bins for each VIN category ──────────────────
 const STORAGE_KEY_INVENTORY = 'sc_v2_vins_dealer_inventory';
 const STORAGE_KEY_TRADEIN   = 'sc_v2_vins_trade_in';
-const LEGACY_STORAGE_KEY    = 'sc_v1_vins'; // for migration
+const LEGACY_STORAGE_KEY    = 'sc_v1_vins';
 
 const MAX_DEALER_HISTORY = 150;
 const MAX_TRADEIN        = 50;
-const SCAN_COOLDOWN_MS   = 1500; // debounce between scans
+const SCAN_COOLDOWN_MS   = 1500;
+
+// ── Scan modes ──────────────────────────────────────────────────────────
+const SCAN_MODE = {
+  BARCODE: 'barcode',  // Real-time barcode detection (labels/stickers)
+  CAPTURE: 'capture',  // Tap-to-capture photo → AI Vision OCR (windshield text)
+};
 
 // ── Categories ──────────────────────────────────────────────────────────
 const CATEGORY = {
@@ -44,7 +51,6 @@ function cleanVin(s) {
   return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
 }
 
-// ── Badge colours per category ──────────────────────────────────────────
 const categoryMeta = {
   [CATEGORY.DEALER]: {
     label: 'DEALER INVENTORY',
@@ -83,33 +89,33 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
         style={styles.historyGradient}
       >
         <View style={styles.quiltedPattern} />
-
         <View style={styles.historyContent}>
           <View style={styles.historyLeft}>
-            {/* Category badge */}
             <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}>
               <Ionicons name={meta.icon} size={10} color={meta.color} />
               <Text style={[styles.categoryBadgeText, { color: meta.color }]}>{meta.short}</Text>
             </View>
-
             <Text style={styles.vinText}>{item.vin}</Text>
             {label && <Text style={styles.vinLabel}>{label}</Text>}
-
-            {/* Checksum warning */}
             {item.checksumValid === false && (
               <View style={styles.checksumWarn}>
                 <Ionicons name="warning" size={10} color="#FFB347" />
                 <Text style={styles.checksumWarnText}>Check-digit advisory</Text>
               </View>
             )}
-
             <View style={styles.historyMeta}>
               <Ionicons
-                name={item.source === 'barcode' ? 'scan' : 'keypad'}
+                name={
+                  item.source === 'barcode' ? 'scan' :
+                  item.source === 'ai_vision' ? 'sparkles' : 'keypad'
+                }
                 size={12}
                 color={colors.textMute}
               />
               <Text style={styles.metaText}>
+                {item.source === 'ai_vision' ? 'AI Vision' :
+                 item.source === 'barcode' ? 'Barcode' : 'Manual'}
+                {' · '}
                 {new Date(item.savedAt).toLocaleDateString()}
               </Text>
             </View>
@@ -119,7 +125,6 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
               </Text>
             )}
           </View>
-
           <View style={styles.historyRight}>
             {isInInventory ? (
               <View style={styles.savedBadge}>
@@ -137,7 +142,6 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
             <Ionicons name="chevron-forward" size={18} color={colors.gold} style={{ marginLeft: 8 }} />
           </View>
         </View>
-
         <View style={styles.stitchingTop} />
         <View style={styles.stitchingBottom} />
       </LinearGradient>
@@ -151,34 +155,41 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
 
 export function VinScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const { addVehicle, isAtLimit, maxInventory, vehicles } = useInventory();
+  const { addVehicle, isAtLimit, maxInventory } = useInventory();
 
-  // ── State ──
-  const [scanning, setScanning] = useState(false);
-  const [manualVin, setManualVin] = useState('');
   const [dealerHistory, setDealerHistory] = useState([]);
   const [tradeInHistory, setTradeInHistory] = useState([]);
   const [decoding, setDecoding] = useState(null);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [scanMode, setScanMode] = useState(SCAN_MODE.BARCODE);
+  const [scanning, setScanning] = useState(false);
+  const [manualVin, setManualVin] = useState('');
   const [lastScan, setLastScan] = useState(null);
   const [vinValidation, setVinValidation] = useState(null);
   const [activeTab, setActiveTab] = useState(CATEGORY.DEALER);
-  const [saveCategoryPicker, setSaveCategoryPicker] = useState(null); // item pending category choice
+  const [saveCategoryPicker, setSaveCategoryPicker] = useState(null);
 
-  // ── Camera state ──
+  // Camera state
   const [torchOn, setTorchOn] = useState(false);
   const [zoom, setZoom] = useState(0);
   const [cameraReady, setCameraReady] = useState(false);
 
-  // ── Debounce ref ──
+  // AI OCR state
+  const [ocrProcessing, setOcrProcessing] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState('');
+  const [ocrResults, setOcrResults] = useState(null); // {vins, confidence, notes}
+
+  const cameraRef = useRef(null);
   const lastScanTime = useRef(0);
   const lastScannedVin = useRef('');
 
-  // ── Animated scan line ──
   const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const captureFlash = useRef(new Animated.Value(0)).current;
+  const ocrPulse = useRef(new Animated.Value(0)).current;
 
+  // Animate scan line for barcode mode
   useEffect(() => {
-    if (scannerOpen && scanning) {
+    if (scannerOpen && scanMode === SCAN_MODE.BARCODE && scanning) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(scanLineAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
@@ -188,12 +199,24 @@ export function VinScanScreen() {
     } else {
       scanLineAnim.setValue(0);
     }
-  }, [scannerOpen, scanning, scanLineAnim]);
+  }, [scannerOpen, scanMode, scanning, scanLineAnim]);
+
+  // Pulse animation for OCR processing
+  useEffect(() => {
+    if (ocrProcessing) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(ocrPulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(ocrPulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      ocrPulse.setValue(0);
+    }
+  }, [ocrProcessing, ocrPulse]);
 
   const canScan = useMemo(() => permission?.granted === true, [permission]);
-
   const activeHistory = activeTab === CATEGORY.DEALER ? dealerHistory : tradeInHistory;
-  const activeMax = activeTab === CATEGORY.DEALER ? MAX_DEALER_HISTORY : MAX_TRADEIN;
 
   // ── Load / save helpers ──────────────────────────────────────────────
 
@@ -205,7 +228,6 @@ export function VinScanScreen() {
     setDealerHistory(Array.isArray(dealer) ? dealer : []);
     setTradeInHistory(Array.isArray(tradeIn) ? tradeIn : []);
 
-    // One-time migration from legacy key
     if ((!dealer || dealer.length === 0) && (!tradeIn || tradeIn.length === 0)) {
       const legacy = await loadJson(LEGACY_STORAGE_KEY, []);
       if (Array.isArray(legacy) && legacy.length > 0) {
@@ -226,7 +248,6 @@ export function VinScanScreen() {
     const v = cleanVin(vin);
     if (v.length !== 17) return null;
 
-    // Format validation (hard gate) — checksum is advisory only
     const validation = validateVin(v);
     if (!validation.valid) {
       setVinValidation(validation);
@@ -239,12 +260,8 @@ export function VinScanScreen() {
     const currentList = isTrade ? tradeInHistory : dealerHistory;
     const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
 
-    // Enforce cap for trade-in
     if (isTrade && currentList.length >= MAX_TRADEIN) {
-      Alert.alert(
-        'Trade-In Limit Reached',
-        `Maximum ${MAX_TRADEIN} trade-in VINs. Remove existing entries before adding new ones.`
-      );
+      Alert.alert('Trade-In Limit Reached', `Maximum ${MAX_TRADEIN} trade-in VINs.`);
       return null;
     }
 
@@ -267,14 +284,9 @@ export function VinScanScreen() {
     await persistHistory(category, next);
     impactMedium();
 
-    // Show advisory if checksum fails
     if (validation.checksumWarning) {
-      // Don't block, just let user know
-      setTimeout(() => {
-        Alert.alert('Checksum Advisory', validation.checksumWarning);
-      }, 300);
+      setTimeout(() => Alert.alert('Checksum Advisory', validation.checksumWarning), 300);
     }
-
     return entry;
   }, [dealerHistory, tradeInHistory, persistHistory]);
 
@@ -284,42 +296,26 @@ export function VinScanScreen() {
     try {
       setDecoding(item.id);
       const decoded = await decodeVinWithBackend(item.vin);
-
-      const entry = {
-        ...item,
-        decoded,
-        decodedAt: new Date().toISOString(),
-      };
+      const entry = { ...item, decoded, decodedAt: new Date().toISOString() };
 
       const isTrade = item.category === CATEGORY.TRADEIN;
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
       const next = [entry, ...currentList.filter((h) => h.id !== item.id)].slice(0, maxItems);
 
-      if (isTrade) {
-        setTradeInHistory(next);
-      } else {
-        setDealerHistory(next);
-      }
+      if (isTrade) setTradeInHistory(next);
+      else setDealerHistory(next);
       await persistHistory(item.category, next);
       setLastScan({ vin: item.vin, decoded });
       notificationSuccess();
     } catch (e) {
-      const entry = {
-        ...item,
-        decodeError: String(e?.message || e),
-        decodedAt: new Date().toISOString(),
-      };
+      const entry = { ...item, decodeError: String(e?.message || e), decodedAt: new Date().toISOString() };
       const isTrade = item.category === CATEGORY.TRADEIN;
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
       const next = [entry, ...currentList.filter((h) => h.id !== item.id)].slice(0, maxItems);
-
-      if (isTrade) {
-        setTradeInHistory(next);
-      } else {
-        setDealerHistory(next);
-      }
+      if (isTrade) setTradeInHistory(next);
+      else setDealerHistory(next);
       await persistHistory(item.category, next);
       setLastScan({ vin: item.vin, error: String(e?.message || e) });
       notificationError();
@@ -335,87 +331,157 @@ export function VinScanScreen() {
       Alert.alert('Decode First', 'Please decode this VIN before adding to inventory');
       return;
     }
-
     const isTrade = item.category === CATEGORY.TRADEIN;
-
     if (!isTrade && isAtLimit) {
       Alert.alert('Inventory Full', `Maximum ${maxInventory} vehicles reached.`);
       return;
     }
-
     try {
       impactMedium();
-      // decoded may be { year, make, model, ... } directly (vin_v2 API) or { vehicle: { ... } }
       const vehicleData = item.decoded?.vehicle || item.decoded;
-      await addVehicle({
-        vin: item.vin,
-        ...vehicleData,
-        category: item.category,
-      });
-
+      await addVehicle({ vin: item.vin, ...vehicleData, category: item.category });
       const entry = { ...item, savedToInventoryAt: new Date().toISOString() };
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
       const next = [entry, ...currentList.filter((h) => h.id !== item.id)].slice(0, maxItems);
-
-      if (isTrade) {
-        setTradeInHistory(next);
-      } else {
-        setDealerHistory(next);
-      }
+      if (isTrade) setTradeInHistory(next);
+      else setDealerHistory(next);
       await persistHistory(item.category, next);
       notificationSuccess();
-
-      const catLabel = isTrade ? 'Trade-In' : 'Dealer Inventory';
-      Alert.alert('Success', `Vehicle added to ${catLabel}`);
+      Alert.alert('Success', `Vehicle added to ${isTrade ? 'Trade-In' : 'Dealer Inventory'}`);
     } catch (e) {
       notificationError();
       Alert.alert('Save Failed', String(e?.message || e));
     }
   }, [dealerHistory, tradeInHistory, addVehicle, isAtLimit, maxInventory, persistHistory]);
 
-  // ── Lifecycle ────────────────────────────────────────────────────────
-
   useEffect(() => { loadAllHistory(); }, [loadAllHistory]);
 
-  // ── Barcode handler with debounce ────────────────────────────────────
+  // ── Open scanner helper ──────────────────────────────────────────────
 
-  const onBarcodeScanned = useCallback(
-    async ({ data }) => {
-      if (!scanning) return;
+  const openScanner = useCallback(async (mode) => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) return;
+    }
+    impactMedium();
+    setCameraReady(false);
+    setTorchOn(false);
+    setZoom(0);
+    setScanMode(mode);
+    setScanning(mode === SCAN_MODE.BARCODE);
+    setOcrResults(null);
+    setOcrStatus('');
+    lastScannedVin.current = '';
+    setScannerOpen(true);
+  }, [permission, requestPermission]);
 
-      const now = Date.now();
-      const v = cleanVin(data);
-      if (!v || v.length !== 17) return;
+  const closeScanner = useCallback(() => {
+    setScannerOpen(false);
+    setScanning(false);
+    setTorchOn(false);
+    setOcrProcessing(false);
+    setOcrResults(null);
+    setOcrStatus('');
+  }, []);
 
-      // Debounce: ignore rapid re-scans of same VIN or within cooldown
-      if (
-        now - lastScanTime.current < SCAN_COOLDOWN_MS ||
-        v === lastScannedVin.current
-      ) {
+  // ── Barcode handler ──────────────────────────────────────────────────
+
+  const onBarcodeScanned = useCallback(async ({ data }) => {
+    if (!scanning) return;
+
+    const now = Date.now();
+    const v = cleanVin(data);
+    if (!v || v.length !== 17) return;
+
+    if (
+      now - lastScanTime.current < SCAN_COOLDOWN_MS ||
+      v === lastScannedVin.current
+    ) return;
+
+    const validation = validateVin(v);
+    if (!validation.valid) { impactLight(); return; }
+
+    lastScanTime.current = now;
+    lastScannedVin.current = v;
+
+    setScanning(false);
+    setScannerOpen(false);
+    impactHeavy();
+
+    setSaveCategoryPicker({ vin: v, source: 'barcode' });
+  }, [scanning]);
+
+  // ── AI Vision OCR capture ────────────────────────────────────────────
+
+  const handleAiCapture = useCallback(async () => {
+    if (!cameraRef.current || ocrProcessing) return;
+
+    impactMedium();
+
+    // Flash effect
+    Animated.sequence([
+      Animated.timing(captureFlash, { toValue: 1, duration: 80, useNativeDriver: true }),
+      Animated.timing(captureFlash, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start();
+
+    setOcrProcessing(true);
+    setOcrStatus('Capturing image...');
+    setOcrResults(null);
+
+    try {
+      // Take photo at high quality for OCR accuracy
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.92,
+        base64: true,
+        skipProcessing: false,
+      });
+
+      if (!photo.base64) {
+        setOcrStatus('Capture failed. Try again.');
+        setOcrProcessing(false);
         return;
       }
 
-      // Format validation only (checksum is advisory)
-      const validation = validateVin(v);
-      if (!validation.valid) {
-        impactLight();
-        return;
+      setOcrStatus('AI reading VIN numbers...');
+
+      const apiUrl = await buildApiUrlAsync('/api/vin/extract-from-image');
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: photo.base64 }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      lastScanTime.current = now;
-      lastScannedVin.current = v;
+      const result = await response.json();
 
-      // Pause scanning, show category picker
-      setScanning(false);
-      setScannerOpen(false);
-      impactMedium();
+      if (result.vins && result.vins.length > 0) {
+        setOcrResults(result);
+        setOcrStatus(`Found ${result.vins.length} VIN${result.vins.length > 1 ? 's' : ''}!`);
+        notificationSuccess();
+      } else {
+        setOcrResults({ vins: [], confidence: 'low', notes: result.notes || 'No VIN found' });
+        setOcrStatus('No VIN detected. Reposition and try again.');
+        notificationError();
+      }
+    } catch (e) {
+      console.warn('[VIN OCR]', e?.message);
+      setOcrStatus('Error. Check connection and try again.');
+      notificationError();
+    } finally {
+      setOcrProcessing(false);
+    }
+  }, [ocrProcessing, captureFlash]);
 
-      // Ask which category to save under
-      setSaveCategoryPicker({ vin: v, source: 'barcode' });
-    },
-    [scanning]
-  );
+  // When user taps a detected VIN from OCR results
+  const handleOcrVinSelect = useCallback((vin) => {
+    closeScanner();
+    setSaveCategoryPicker({ vin, source: 'ai_vision' });
+  }, [closeScanner]);
 
   // ── Category picker handler ──────────────────────────────────────────
 
@@ -434,7 +500,6 @@ export function VinScanScreen() {
 
   const handleManualEntry = async () => {
     if (manualVin.length !== 17) return;
-    // Show category picker for manual entry too
     setSaveCategoryPicker({ vin: manualVin, source: 'manual' });
     setManualVin('');
     setVinValidation(null);
@@ -448,178 +513,324 @@ export function VinScanScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.container}>
 
-        {/* ── Camera Scanner Card ── */}
-        <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.sectionBezel}
-        >
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Ionicons name="camera" size={18} color={colors.gold} />
-              <Text style={styles.sectionTitle}>CAMERA SCAN</Text>
-            </View>
-
-            {!canScan && (
-              <Text style={[styles.body, { color: colors.red }]}>Camera permission required</Text>
-            )}
-
-            {lastScan?.vin && (
-              <View style={styles.lastScanCard}>
-                <Text style={styles.lastScanLabel}>Last Scanned VIN</Text>
-                <Text style={styles.lastScanVin}>{lastScan.vin}</Text>
-                {lastScan.decoded?.vehicle && (
-                  <Text style={styles.lastScanDetail}>
-                    {[lastScan.decoded.vehicle.year, lastScan.decoded.vehicle.make, lastScan.decoded.vehicle.model]
-                      .filter(Boolean)
-                      .join(' ')}
-                  </Text>
-                )}
-                {lastScan.decoded?.year && !lastScan.decoded?.vehicle && (
-                  <Text style={styles.lastScanDetail}>
-                    {[lastScan.decoded.year, lastScan.decoded.make, lastScan.decoded.model]
-                      .filter(Boolean)
-                      .join(' ')}
-                  </Text>
-                )}
-                {lastScan.error && (
-                  <Text style={[styles.lastScanDetail, { color: colors.red }]}>{lastScan.error}</Text>
-                )}
-              </View>
-            )}
-
+        {/* ── Scan Mode Cards ── */}
+        <View style={styles.scanModeRow}>
+          {/* BARCODE SCAN */}
+          <LinearGradient
+            colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.scanModeBezel, { flex: 1, marginRight: 6 }]}
+          >
             <Pressable
-              onPress={async () => {
-                if (!permission?.granted) {
-                  const result = await requestPermission();
-                  if (!result.granted) return;
-                }
-                impactMedium();
-                setCameraReady(false);
-                setTorchOn(false);
-                setZoom(0);
-                setScanning(true);
-                setScannerOpen(true);
-                lastScannedVin.current = '';
-              }}
-              style={({ pressed }) => [styles.scanButton, scanning && styles.scanButtonActive, pressed && styles.pressed]}
+              onPress={() => openScanner(SCAN_MODE.BARCODE)}
+              style={({ pressed }) => [styles.scanModeCard, pressed && styles.pressed]}
             >
-              <Ionicons name="scan" size={20} color={scanning ? colors.text : colors.gold} />
-              <Text style={[styles.scanButtonText, scanning && { color: colors.text }]}>
-                {scanning ? 'Scanning...' : 'Scan VIN from Windshield'}
-              </Text>
+              <View style={styles.scanModeIconWrap}>
+                <LinearGradient colors={['rgba(214,178,94,0.25)', 'rgba(214,178,94,0.08)']} style={styles.scanModeIconBg}>
+                  <Ionicons name="barcode" size={28} color={colors.gold} />
+                </LinearGradient>
+              </View>
+              <Text style={styles.scanModeTitle}>BARCODE</Text>
+              <Text style={styles.scanModeDesc}>Labels & Stickers</Text>
             </Pressable>
+          </LinearGradient>
+
+          {/* AI VISION CAPTURE */}
+          <LinearGradient
+            colors={['#1a2a3a', '#0d1e2e']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.scanModeBezel, { flex: 1, marginLeft: 6 }]}
+          >
+            <Pressable
+              onPress={() => openScanner(SCAN_MODE.CAPTURE)}
+              style={({ pressed }) => [styles.scanModeCard, styles.scanModeCardAi, pressed && styles.pressed]}
+            >
+              <View style={styles.scanModeIconWrap}>
+                <LinearGradient colors={['rgba(100,200,255,0.3)', 'rgba(100,200,255,0.08)']} style={styles.scanModeIconBg}>
+                  <Ionicons name="sparkles" size={28} color="#64C8FF" />
+                </LinearGradient>
+              </View>
+              <Text style={[styles.scanModeTitle, { color: '#64C8FF' }]}>AI VISION</Text>
+              <Text style={styles.scanModeDesc}>Windshield / Plate</Text>
+            </Pressable>
+          </LinearGradient>
+        </View>
+
+        {/* Last scan result */}
+        {lastScan?.vin && (
+          <View style={styles.lastScanCard}>
+            <View style={styles.lastScanHeader}>
+              <Ionicons name="checkmark-circle" size={16} color={colors.green} />
+              <Text style={styles.lastScanLabel}>Last Scanned VIN</Text>
+            </View>
+            <Text style={styles.lastScanVin}>{lastScan.vin}</Text>
+            {(lastScan.decoded?.vehicle || lastScan.decoded?.make) && (
+              <Text style={styles.lastScanDetail}>
+                {[
+                  lastScan.decoded?.vehicle?.year || lastScan.decoded?.year,
+                  lastScan.decoded?.vehicle?.make || lastScan.decoded?.make,
+                  lastScan.decoded?.vehicle?.model || lastScan.decoded?.model,
+                ].filter(Boolean).join(' ')}
+              </Text>
+            )}
+            {lastScan.error && (
+              <Text style={[styles.lastScanDetail, { color: colors.red }]}>{lastScan.error}</Text>
+            )}
           </View>
-        </LinearGradient>
+        )}
 
         {/* ── Camera Modal ── */}
         <Modal visible={scannerOpen && canScan} animationType="slide" presentationStyle="fullScreen">
           <View style={styles.modalRoot}>
             <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
+
               {/* Header */}
               <View style={styles.modalHeader}>
-                <Pressable
-                  onPress={() => { setScannerOpen(false); setScanning(false); setTorchOn(false); }}
-                  style={styles.modalClose}
-                >
+                <Pressable onPress={closeScanner} style={styles.modalClose}>
                   <Ionicons name="close" size={24} color={colors.text} />
                 </Pressable>
-                <Text style={styles.modalTitle}>VIN WINDSHIELD SCANNER</Text>
+                <View style={styles.modalTitleRow}>
+                  <Ionicons
+                    name={scanMode === SCAN_MODE.BARCODE ? 'barcode-outline' : 'sparkles'}
+                    size={16}
+                    color={scanMode === SCAN_MODE.BARCODE ? colors.gold : '#64C8FF'}
+                  />
+                  <Text style={[
+                    styles.modalTitle,
+                    { color: scanMode === SCAN_MODE.BARCODE ? colors.gold : '#64C8FF' }
+                  ]}>
+                    {scanMode === SCAN_MODE.BARCODE ? 'BARCODE VIN SCAN' : 'AI VISION VIN SCAN'}
+                  </Text>
+                </View>
+                {/* Mode switcher */}
+                <Pressable
+                  onPress={() => {
+                    const next = scanMode === SCAN_MODE.BARCODE ? SCAN_MODE.CAPTURE : SCAN_MODE.BARCODE;
+                    setScanMode(next);
+                    setScanning(next === SCAN_MODE.BARCODE);
+                    setOcrResults(null);
+                    setOcrStatus('');
+                  }}
+                  style={styles.modeSwitchBtn}
+                >
+                  <Ionicons
+                    name={scanMode === SCAN_MODE.BARCODE ? 'sparkles' : 'barcode-outline'}
+                    size={18}
+                    color={colors.textDim}
+                  />
+                </Pressable>
               </View>
 
               {/* Camera View */}
               <View style={styles.modalBody}>
                 <View style={styles.scannerWrap}>
                   <CameraView
-                    onBarcodeScanned={scanning ? onBarcodeScanned : undefined}
+                    ref={cameraRef}
+                    onBarcodeScanned={
+                      scanMode === SCAN_MODE.BARCODE && scanning ? onBarcodeScanned : undefined
+                    }
                     onCameraReady={() => setCameraReady(true)}
                     enableTorch={torchOn && cameraReady}
                     zoom={zoom}
-                    autofocus="off"
                     style={StyleSheet.absoluteFill}
-                    barcodeScannerSettings={{
-                      barcodeTypes: [
-                        'code39',   // Most common VIN barcode format (OEM windshield stickers)
-                        'code128',  // Second most common (dealer/aftermarket labels)
-                        'datamatrix', // Newer vehicles, stamped metal plates
-                        'qr',        // Some dealers add QR to window stickers
-                      ],
-                    }}
+                    barcodeScannerSettings={
+                      scanMode === SCAN_MODE.BARCODE
+                        ? {
+                            barcodeTypes: [
+                              'code39',     // Most common VIN barcode (OEM window stickers)
+                              'code128',    // Second most common (dealer/aftermarket labels)
+                              'datamatrix', // Newer vehicles, stamped metal plates
+                              'qr',         // Some dealers add QR to window stickers
+                              'code93',     // Some OEM labels
+                              'itf14',      // International logistics labels
+                            ],
+                          }
+                        : undefined
+                    }
                   />
-                  {/* Mask overlay - top */}
-                  <View style={styles.scanMaskTop} />
 
-                  {/* Windshield guide frame — wide aspect for VIN plate */}
+                  {/* Capture flash overlay */}
+                  <Animated.View
+                    style={[
+                      StyleSheet.absoluteFill,
+                      {
+                        backgroundColor: 'white',
+                        opacity: captureFlash,
+                        pointerEvents: 'none',
+                      },
+                    ]}
+                  />
+
+                  {/* Mask + guide frame */}
+                  <View style={styles.scanMaskTop} />
                   <View style={styles.scanFrame}>
                     <View style={[styles.corner, styles.cornerTL]} />
                     <View style={[styles.corner, styles.cornerTR]} />
                     <View style={[styles.corner, styles.cornerBL]} />
                     <View style={[styles.corner, styles.cornerBR]} />
 
-                    {/* Animated scan line */}
-                    <Animated.View
-                      style={[
-                        styles.scanLine,
-                        {
-                          transform: [
-                            {
+                    {/* Barcode mode: animated scan line */}
+                    {scanMode === SCAN_MODE.BARCODE && (
+                      <Animated.View
+                        style={[
+                          styles.scanLine,
+                          {
+                            borderColor: colors.gold,
+                            transform: [{
                               translateY: scanLineAnim.interpolate({
                                 inputRange: [0, 1],
                                 outputRange: [0, 80],
                               }),
-                            },
-                          ],
-                        },
-                      ]}
-                    />
-                  </View>
+                            }],
+                          },
+                        ]}
+                      />
+                    )}
 
-                  {/* Mask overlay - bottom */}
+                    {/* AI mode: pulsing frame */}
+                    {scanMode === SCAN_MODE.CAPTURE && (
+                      <Animated.View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            borderRadius: 6,
+                            borderWidth: 2,
+                            borderColor: '#64C8FF',
+                            opacity: ocrProcessing
+                              ? ocrPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1.0] })
+                              : 0.7,
+                          },
+                        ]}
+                      />
+                    )}
+                  </View>
                   <View style={styles.scanMaskBottom} />
                 </View>
 
-                {/* Camera controls overlay */}
+                {/* Camera controls */}
                 <View style={styles.cameraControls}>
-                  {/* Torch toggle */}
                   <Pressable
                     onPress={() => setTorchOn((t) => !t)}
                     style={[styles.cameraControlBtn, torchOn && styles.cameraControlBtnActive]}
                   >
                     <Ionicons
                       name={torchOn ? 'flashlight' : 'flashlight-outline'}
-                      size={22}
+                      size={20}
                       color={torchOn ? '#000' : colors.text}
                     />
                     <Text style={[styles.cameraControlLabel, torchOn && { color: '#000' }]}>
-                      {torchOn ? 'LIGHT ON' : 'LIGHT'}
+                      {torchOn ? 'ON' : 'LIGHT'}
                     </Text>
                   </Pressable>
 
-                  {/* Zoom controls */}
                   <View style={styles.zoomControls}>
-                    <Pressable
-                      onPress={() => setZoom((z) => Math.max(0, z - 0.1))}
-                      style={styles.zoomBtn}
-                    >
+                    <Pressable onPress={() => setZoom((z) => Math.max(0, parseFloat((z - 0.1).toFixed(1))))} style={styles.zoomBtn}>
                       <Ionicons name="remove" size={20} color={colors.text} />
                     </Pressable>
                     <Text style={styles.zoomLabel}>{Math.round(zoom * 100)}%</Text>
-                    <Pressable
-                      onPress={() => setZoom((z) => Math.min(1, z + 0.1))}
-                      style={styles.zoomBtn}
-                    >
+                    <Pressable onPress={() => setZoom((z) => Math.min(1, parseFloat((z + 0.1).toFixed(1))))} style={styles.zoomBtn}>
                       <Ionicons name="add" size={20} color={colors.text} />
                     </Pressable>
                   </View>
                 </View>
 
-                <View style={styles.scanHintCard}>
-                  <Ionicons name="information-circle" size={20} color={colors.gold} />
-                  <Text style={styles.scanHint}>
-                    Point at the VIN plate on the lower-left windshield. Use the flashlight for low-light. Zoom in if the plate is small. All 17 characters are captured automatically.
-                  </Text>
-                </View>
+                {/* ── BARCODE MODE: hint ── */}
+                {scanMode === SCAN_MODE.BARCODE && (
+                  <View style={styles.hintCard}>
+                    <Ionicons name="scan" size={18} color={colors.gold} />
+                    <Text style={styles.hintText}>
+                      Point at the barcode on the door jamb label or window sticker. Hold steady — scanning automatically.
+                    </Text>
+                  </View>
+                )}
+
+                {/* ── AI VISION MODE: capture button + results ── */}
+                {scanMode === SCAN_MODE.CAPTURE && (
+                  <View style={styles.aiPanel}>
+                    {/* Status text */}
+                    {ocrStatus ? (
+                      <View style={styles.ocrStatusRow}>
+                        {ocrProcessing && <ActivityIndicator size="small" color="#64C8FF" style={{ marginRight: 8 }} />}
+                        <Text style={[styles.ocrStatusText, { color: ocrProcessing ? '#64C8FF' : colors.textDim }]}>
+                          {ocrStatus}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.hintCard}>
+                        <Ionicons name="sparkles" size={18} color="#64C8FF" />
+                        <Text style={[styles.hintText, { color: colors.textDim }]}>
+                          Frame the VIN plate in the guide box. Works on windshield engravings, dashboard stamps, and door jamb text.
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* OCR Results — tappable VINs */}
+                    {ocrResults && ocrResults.vins.length > 0 && (
+                      <View style={styles.ocrResults}>
+                        <Text style={styles.ocrResultsTitle}>TAP TO USE:</Text>
+                        {ocrResults.vins.map((vin) => (
+                          <Pressable
+                            key={vin}
+                            onPress={() => handleOcrVinSelect(vin)}
+                            style={({ pressed }) => [styles.ocrVinBtn, pressed && styles.pressed]}
+                          >
+                            <LinearGradient
+                              colors={['rgba(100,200,255,0.2)', 'rgba(100,200,255,0.08)']}
+                              style={styles.ocrVinGradient}
+                            >
+                              <Ionicons name="sparkles" size={14} color="#64C8FF" />
+                              <Text style={styles.ocrVinText}>{vin}</Text>
+                              <Ionicons name="chevron-forward" size={16} color="#64C8FF" />
+                            </LinearGradient>
+                          </Pressable>
+                        ))}
+                        <Text style={styles.ocrConfidence}>
+                          Confidence: {ocrResults.confidence?.toUpperCase()}
+                        </Text>
+                      </View>
+                    )}
+
+                    {ocrResults && ocrResults.vins.length === 0 && !ocrProcessing && (
+                      <View style={styles.ocrNoResult}>
+                        <Ionicons name="alert-circle" size={20} color="#FFB347" />
+                        <Text style={styles.ocrNoResultText}>
+                          No VIN found. Ensure the VIN plate is fully visible and well-lit.
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Capture button */}
+                    <Pressable
+                      onPress={handleAiCapture}
+                      disabled={ocrProcessing || !cameraReady}
+                      style={({ pressed }) => [
+                        styles.captureBtn,
+                        (ocrProcessing || !cameraReady) && styles.captureBtnDisabled,
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={
+                          ocrProcessing
+                            ? ['rgba(100,200,255,0.3)', 'rgba(100,200,255,0.1)']
+                            : ['rgba(100,200,255,0.5)', 'rgba(100,200,255,0.25)']
+                        }
+                        style={styles.captureBtnInner}
+                      >
+                        {ocrProcessing ? (
+                          <ActivityIndicator color="#64C8FF" size="small" />
+                        ) : (
+                          <Ionicons name="camera" size={28} color="#64C8FF" />
+                        )}
+                        <Text style={styles.captureBtnText}>
+                          {ocrProcessing ? 'READING...' : 'CAPTURE & READ'}
+                        </Text>
+                      </LinearGradient>
+                    </Pressable>
+                  </View>
+                )}
               </View>
             </LinearGradient>
           </View>
@@ -631,6 +842,18 @@ export function VinScanScreen() {
             <View style={styles.pickerCard}>
               <Text style={styles.pickerTitle}>SAVE VIN AS</Text>
               <Text style={styles.pickerVin}>{saveCategoryPicker?.vin}</Text>
+              {saveCategoryPicker?.source === 'ai_vision' && (
+                <View style={styles.pickerSourceBadge}>
+                  <Ionicons name="sparkles" size={12} color="#64C8FF" />
+                  <Text style={[styles.pickerSourceText, { color: '#64C8FF' }]}>Detected by AI Vision</Text>
+                </View>
+              )}
+              {saveCategoryPicker?.source === 'barcode' && (
+                <View style={styles.pickerSourceBadge}>
+                  <Ionicons name="scan" size={12} color={colors.green} />
+                  <Text style={[styles.pickerSourceText, { color: colors.green }]}>Barcode Scanned</Text>
+                </View>
+              )}
 
               <Pressable
                 onPress={() => handleCategorySave(CATEGORY.DEALER)}
@@ -667,17 +890,14 @@ export function VinScanScreen() {
                   <View style={styles.pickerOptionText}>
                     <Text style={[styles.pickerOptionTitle, { color: '#40D2FF' }]}>Trade-In</Text>
                     <Text style={styles.pickerOptionDesc}>
-                      Customer trade-in vehicles ({tradeInHistory.length}/{MAX_TRADEIN})
+                      Customer trade-ins ({tradeInHistory.length}/{MAX_TRADEIN})
                       {tradeInHistory.length >= MAX_TRADEIN ? ' — LIMIT REACHED' : ''}
                     </Text>
                   </View>
                 </LinearGradient>
               </Pressable>
 
-              <Pressable
-                onPress={() => setSaveCategoryPicker(null)}
-                style={styles.pickerCancel}
-              >
+              <Pressable onPress={() => setSaveCategoryPicker(null)} style={styles.pickerCancel}>
                 <Text style={styles.pickerCancelText}>Cancel</Text>
               </Pressable>
             </View>
@@ -698,14 +918,10 @@ export function VinScanScreen() {
               <Ionicons name="keypad" size={18} color={colors.gold} />
               <Text style={styles.sectionTitle}>MANUAL ENTRY</Text>
             </View>
-
             <View style={styles.inputRow}>
               <TextInput
                 value={manualVin}
-                onChangeText={(t) => {
-                  setManualVin(cleanVin(t));
-                  setVinValidation(null);
-                }}
+                onChangeText={(t) => { setManualVin(cleanVin(t)); setVinValidation(null); }}
                 placeholder="Enter 17-digit VIN"
                 placeholderTextColor={colors.textMute}
                 autoCapitalize="characters"
@@ -728,11 +944,9 @@ export function VinScanScreen() {
                 )}
               </Pressable>
             </View>
-
             {manualVin.length > 0 && manualVin.length < 17 && (
               <Text style={styles.charCount}>{manualVin.length}/17 characters</Text>
             )}
-
             {vinValidation && !vinValidation.valid && (
               <View style={styles.validationError}>
                 <Ionicons name="alert-circle" size={16} color={colors.red} />
@@ -748,10 +962,7 @@ export function VinScanScreen() {
         <View style={styles.categoryTabs}>
           <Pressable
             onPress={() => setActiveTab(CATEGORY.DEALER)}
-            style={[
-              styles.categoryTab,
-              activeTab === CATEGORY.DEALER && styles.categoryTabActive,
-            ]}
+            style={[styles.categoryTab, activeTab === CATEGORY.DEALER && styles.categoryTabActive]}
           >
             <Ionicons name="car-sport" size={14} color={activeTab === CATEGORY.DEALER ? colors.gold : colors.textMute} />
             <Text style={[styles.categoryTabText, activeTab === CATEGORY.DEALER && styles.categoryTabTextActive]}>
@@ -766,10 +977,7 @@ export function VinScanScreen() {
 
           <Pressable
             onPress={() => setActiveTab(CATEGORY.TRADEIN)}
-            style={[
-              styles.categoryTab,
-              activeTab === CATEGORY.TRADEIN && styles.categoryTabActiveTrade,
-            ]}
+            style={[styles.categoryTab, activeTab === CATEGORY.TRADEIN && styles.categoryTabActiveTrade]}
           >
             <Ionicons name="swap-horizontal" size={14} color={activeTab === CATEGORY.TRADEIN ? '#40D2FF' : colors.textMute} />
             <Text style={[styles.categoryTabText, activeTab === CATEGORY.TRADEIN && { color: '#40D2FF' }]}>
@@ -843,6 +1051,53 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
   },
+
+  // ── Scan mode row ──
+  scanModeRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  scanModeBezel: {
+    padding: 2,
+    borderRadius: 14,
+  },
+  scanModeCard: {
+    backgroundColor: colors.panel,
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+  },
+  scanModeCardAi: {
+    backgroundColor: 'rgba(10,20,35,0.95)',
+    borderColor: 'rgba(100,200,255,0.2)',
+  },
+  scanModeIconWrap: {
+    marginBottom: 2,
+  },
+  scanModeIconBg: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanModeTitle: {
+    ...type.label,
+    fontSize: 12,
+    color: colors.gold,
+    letterSpacing: 1,
+  },
+  scanModeDesc: {
+    ...type.bodyDim,
+    fontSize: 10,
+    color: colors.textMute,
+    textAlign: 'center',
+  },
+
+  // ── Section layout ──
   sectionBezel: {
     padding: 3,
     borderRadius: 12,
@@ -865,24 +1120,26 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.gold,
   },
-  body: {
-    ...type.bodyDim,
-    color: colors.textMute,
-    marginTop: 6,
-  },
 
   // ── Last scan ──
   lastScanCard: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(64,255,155,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(64,255,155,0.2)',
+    borderRadius: 10,
     padding: 12,
-    borderRadius: 8,
     marginBottom: 12,
+  },
+  lastScanHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
   },
   lastScanLabel: {
     ...type.label,
     fontSize: 10,
-    color: colors.textMute,
-    marginBottom: 6,
+    color: colors.green,
   },
   lastScanVin: {
     ...type.h2,
@@ -894,28 +1151,6 @@ const styles = StyleSheet.create({
     ...type.body,
     color: colors.textDim,
     marginTop: 2,
-  },
-
-  // ── Scan button ──
-  scanButton: {
-    height: 50,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: colors.stroke2,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-  },
-  scanButtonActive: {
-    borderColor: colors.gold,
-    backgroundColor: 'rgba(214,178,94,0.15)',
-  },
-  scanButtonText: {
-    ...type.label,
-    fontSize: 12,
-    color: colors.gold,
   },
 
   // ── Manual entry ──
@@ -945,9 +1180,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addButtonDisabled: {
-    opacity: 0.3,
-  },
+  addButtonDisabled: { opacity: 0.3 },
   charCount: {
     ...type.bodyDim,
     fontSize: 11,
@@ -971,10 +1204,7 @@ const styles = StyleSheet.create({
   },
 
   // ── Category tabs ──
-  categoryTabs: {
-    flexDirection: 'row',
-    gap: 8,
-  },
+  categoryTabs: { flexDirection: 'row', gap: 8 },
   categoryTab: {
     flex: 1,
     flexDirection: 'row',
@@ -987,39 +1217,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.stroke,
   },
-  categoryTabActive: {
-    borderColor: colors.gold,
-    backgroundColor: 'rgba(214,178,94,0.10)',
-  },
-  categoryTabActiveTrade: {
-    borderColor: '#40D2FF',
-    backgroundColor: 'rgba(64,210,255,0.10)',
-  },
-  categoryTabText: {
-    ...type.label,
-    fontSize: 10,
-    color: colors.textMute,
-  },
-  categoryTabTextActive: {
-    color: colors.gold,
-  },
+  categoryTabActive: { borderColor: colors.gold, backgroundColor: 'rgba(214,178,94,0.10)' },
+  categoryTabActiveTrade: { borderColor: '#40D2FF', backgroundColor: 'rgba(64,210,255,0.10)' },
+  categoryTabText: { ...type.label, fontSize: 10, color: colors.textMute },
+  categoryTabTextActive: { color: colors.gold },
   tabCount: {
     backgroundColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  tabCountActive: {
-    backgroundColor: 'rgba(214,178,94,0.3)',
-  },
-  tabCountText: {
-    ...type.label,
-    fontSize: 9,
-    color: colors.textMute,
-  },
-  tabCountTextActive: {
-    color: colors.gold,
-  },
+  tabCountActive: { backgroundColor: 'rgba(214,178,94,0.3)' },
+  tabCountText: { ...type.label, fontSize: 9, color: colors.textMute },
+  tabCountTextActive: { color: colors.gold },
 
   // ── History ──
   historyContainer: {
@@ -1036,10 +1246,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  historyCard: {
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
+  historyCard: { borderRadius: 10, overflow: 'hidden' },
   historyGradient: {
     padding: 12,
     borderWidth: 1,
@@ -1049,10 +1256,7 @@ const styles = StyleSheet.create({
   },
   quiltedPattern: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0,
     borderRadius: 10,
     borderWidth: 0.5,
     borderColor: 'rgba(255,255,255,0.03)',
@@ -1062,10 +1266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  historyLeft: {
-    flex: 1,
-    paddingRight: 12,
-  },
+  historyLeft: { flex: 1, paddingRight: 12 },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1076,48 +1277,16 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginBottom: 6,
   },
-  categoryBadgeText: {
-    ...type.label,
-    fontSize: 8,
-    letterSpacing: 0.8,
-  },
-  vinText: {
-    ...type.h2,
-    fontSize: 16,
-    color: colors.text,
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  vinLabel: {
-    ...type.body,
-    color: colors.textDim,
-    marginBottom: 4,
-  },
+  categoryBadgeText: { ...type.label, fontSize: 8, letterSpacing: 0.8 },
+  vinText: { ...type.h2, fontSize: 16, color: colors.text, letterSpacing: 1.5, marginBottom: 4 },
+  vinLabel: { ...type.body, color: colors.textDim, marginBottom: 4 },
   checksumWarn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
+    flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4,
   },
-  checksumWarnText: {
-    ...type.bodyDim,
-    fontSize: 9,
-    color: '#FFB347',
-  },
-  historyMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  metaText: {
-    ...type.bodyDim,
-    fontSize: 11,
-    color: colors.textMute,
-  },
-  historyRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  checksumWarnText: { ...type.bodyDim, fontSize: 9, color: '#FFB347' },
+  historyMeta: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaText: { ...type.bodyDim, fontSize: 11, color: colors.textMute },
+  historyRight: { flexDirection: 'row', alignItems: 'center' },
   savedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1127,58 +1296,26 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
   },
-  savedText: {
-    ...type.label,
-    fontSize: 9,
-    color: colors.green,
-  },
+  savedText: { ...type.label, fontSize: 9, color: colors.green },
   saveButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 32, height: 32, borderRadius: 8,
     backgroundColor: 'rgba(214,178,94,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
   },
   stitchingTop: {
-    position: 'absolute',
-    top: 4,
-    left: 8,
-    right: 8,
-    height: 1,
-    backgroundColor: colors.contrastStitching,
-    opacity: 0.15,
+    position: 'absolute', top: 4, left: 8, right: 8,
+    height: 1, backgroundColor: colors.contrastStitching, opacity: 0.15,
   },
   stitchingBottom: {
-    position: 'absolute',
-    bottom: 4,
-    left: 8,
-    right: 8,
-    height: 1,
-    backgroundColor: colors.contrastStitching,
-    opacity: 0.15,
+    position: 'absolute', bottom: 4, left: 8, right: 8,
+    height: 1, backgroundColor: colors.contrastStitching, opacity: 0.15,
   },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    ...type.h2,
-    color: colors.textDim,
-    marginTop: 12,
-  },
-  emptySubtext: {
-    ...type.bodyDim,
-    color: colors.textMute,
-    marginTop: 6,
-  },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
+  emptyText: { ...type.h2, color: colors.textDim, marginTop: 12 },
+  emptySubtext: { ...type.bodyDim, color: colors.textMute, marginTop: 6 },
 
   // ── Camera modal ──
-  modalRoot: {
-    flex: 1,
-  },
+  modalRoot: { flex: 1 },
   modalHeader: {
     height: 80,
     paddingTop: 40,
@@ -1189,10 +1326,8 @@ const styles = StyleSheet.create({
   },
   modalClose: {
     position: 'absolute',
-    left: 16,
-    top: 40,
-    width: 40,
-    height: 40,
+    left: 16, top: 40,
+    width: 40, height: 40,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.stroke2,
@@ -1200,16 +1335,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
+  modalTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   modalTitle: {
     ...type.label,
-    fontSize: 14,
-    color: colors.text,
-    letterSpacing: 2,
+    fontSize: 13,
+    letterSpacing: 1.5,
   },
-  modalBody: {
-    flex: 1,
-    padding: 16,
+  modeSwitchBtn: {
+    position: 'absolute',
+    right: 16, top: 40,
+    width: 40, height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.stroke2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
+  modalBody: { flex: 1, padding: 16 },
   scannerWrap: {
     flex: 1,
     borderRadius: 16,
@@ -1217,35 +1364,27 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   scanMaskTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '30%',
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    position: 'absolute', top: 0, left: 0, right: 0,
+    height: '28%',
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
   scanMaskBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '30%',
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: '28%',
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
   scanFrame: {
     position: 'absolute',
-    top: '30%',
-    left: 12,
-    right: 12,
-    height: '40%',
+    top: '28%',
+    left: 12, right: 12,
+    height: '44%',
     borderWidth: 2,
     borderColor: colors.gold,
     borderRadius: 8,
   },
   scanLine: {
     position: 'absolute',
-    left: 4,
-    right: 4,
+    left: 4, right: 4,
     height: 2,
     backgroundColor: colors.gold,
     opacity: 0.9,
@@ -1257,46 +1396,21 @@ const styles = StyleSheet.create({
   },
   corner: {
     position: 'absolute',
-    width: 24,
-    height: 24,
+    width: 24, height: 24,
     borderColor: colors.gold,
     borderWidth: 3,
   },
-  cornerTL: {
-    top: -2,
-    left: -2,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 8,
-  },
-  cornerTR: {
-    top: -2,
-    right: -2,
-    borderLeftWidth: 0,
-    borderBottomWidth: 0,
-    borderTopRightRadius: 8,
-  },
-  cornerBL: {
-    bottom: -2,
-    left: -2,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 8,
-  },
-  cornerBR: {
-    bottom: -2,
-    right: -2,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-    borderBottomRightRadius: 8,
-  },
+  cornerTL: { top: -2, left: -2, borderRightWidth: 0, borderBottomWidth: 0, borderTopLeftRadius: 8 },
+  cornerTR: { top: -2, right: -2, borderLeftWidth: 0, borderBottomWidth: 0, borderTopRightRadius: 8 },
+  cornerBL: { bottom: -2, left: -2, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 8 },
+  cornerBR: { bottom: -2, right: -2, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 8 },
 
   // ── Camera controls ──
   cameraControls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 10,
     paddingHorizontal: 4,
   },
   cameraControlBtn: {
@@ -1310,15 +1424,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
   },
-  cameraControlBtnActive: {
-    backgroundColor: colors.gold,
-    borderColor: colors.gold,
-  },
-  cameraControlLabel: {
-    ...type.label,
-    fontSize: 10,
-    color: colors.text,
-  },
+  cameraControlBtnActive: { backgroundColor: colors.gold, borderColor: colors.gold },
+  cameraControlLabel: { ...type.label, fontSize: 10, color: colors.text },
   zoomControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1331,8 +1438,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.15)',
   },
   zoomBtn: {
-    width: 32,
-    height: 32,
+    width: 32, height: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1346,23 +1452,112 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ── Scan hint ──
-  scanHintCard: {
+  // ── Hint card ──
+  hintCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    marginTop: 12,
+    marginTop: 10,
     padding: 12,
-    backgroundColor: 'rgba(214,178,94,0.15)',
+    backgroundColor: 'rgba(214,178,94,0.10)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.gold,
+    borderColor: 'rgba(214,178,94,0.25)',
   },
-  scanHint: {
-    ...type.body,
-    flex: 1,
+  hintText: { ...type.body, flex: 1, color: colors.text, lineHeight: 18, fontSize: 13 },
+
+  // ── AI Panel ──
+  aiPanel: {
+    marginTop: 10,
+    gap: 10,
+  },
+  ocrStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(100,200,255,0.08)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(100,200,255,0.2)',
+  },
+  ocrStatusText: { ...type.label, fontSize: 12, flex: 1 },
+  ocrResults: {
+    backgroundColor: 'rgba(100,200,255,0.06)',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(100,200,255,0.2)',
+    gap: 8,
+  },
+  ocrResultsTitle: {
+    ...type.label,
+    fontSize: 9,
+    color: '#64C8FF',
+    letterSpacing: 1.5,
+    marginBottom: 4,
+  },
+  ocrVinBtn: { borderRadius: 8, overflow: 'hidden' },
+  ocrVinGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(100,200,255,0.25)',
+  },
+  ocrVinText: {
+    ...type.h2,
+    fontSize: 15,
     color: colors.text,
-    lineHeight: 18,
+    letterSpacing: 1.5,
+    flex: 1,
+  },
+  ocrConfidence: {
+    ...type.label,
+    fontSize: 9,
+    color: colors.textMute,
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  ocrNoResult: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: 'rgba(255,179,71,0.08)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,179,71,0.2)',
+  },
+  ocrNoResultText: {
+    ...type.bodyDim,
+    fontSize: 12,
+    color: '#FFB347',
+    flex: 1,
+    lineHeight: 17,
+  },
+  captureBtn: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  captureBtnDisabled: { opacity: 0.5 },
+  captureBtnInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingVertical: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(100,200,255,0.4)',
+  },
+  captureBtnText: {
+    ...type.label,
+    fontSize: 14,
+    color: '#64C8FF',
+    letterSpacing: 1.5,
   },
 
   // ── Category picker modal ──
@@ -1395,16 +1590,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     letterSpacing: 2,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
   },
-  pickerOption: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 10,
+  pickerSourceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 16,
   },
-  pickerOptionDisabled: {
-    opacity: 0.4,
-  },
+  pickerSourceText: { ...type.label, fontSize: 10, letterSpacing: 0.5 },
+  pickerOption: { borderRadius: 12, overflow: 'hidden', marginBottom: 10 },
+  pickerOptionDisabled: { opacity: 0.4 },
   pickerOptionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1414,31 +1611,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  pickerOptionText: {
-    flex: 1,
-  },
-  pickerOptionTitle: {
-    ...type.label,
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  pickerOptionDesc: {
-    ...type.bodyDim,
-    fontSize: 11,
-    color: colors.textMute,
-  },
-  pickerCancel: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginTop: 4,
-  },
-  pickerCancelText: {
-    ...type.label,
-    fontSize: 12,
-    color: colors.textMute,
-  },
+  pickerOptionText: { flex: 1 },
+  pickerOptionTitle: { ...type.label, fontSize: 13, marginBottom: 4 },
+  pickerOptionDesc: { ...type.bodyDim, fontSize: 11, color: colors.textMute },
+  pickerCancel: { alignItems: 'center', paddingVertical: 12, marginTop: 4 },
+  pickerCancelText: { ...type.label, fontSize: 12, color: colors.textMute },
 
-  pressed: {
-    opacity: 0.7,
-  },
+  pressed: { opacity: 0.7 },
 });
