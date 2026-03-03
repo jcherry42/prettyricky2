@@ -30,20 +30,8 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   const [translatedSms, setTranslatedSms] = useState('');
   const [translatedEmail, setTranslatedEmail] = useState('');
 
-  if (!customer) return null;
-
-  const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
-  const status = customer.lead_status || 'new';
-  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
-  const hasPhone = customer.phone && customer.phone !== '—';
-  const hasEmail = customer.email && customer.email !== '—';
-
-  // ---------- Message templates ----------
-  const smsGreeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
-  const emailSubject = `Follow-up from Supercharg'd`;
-  const emailBody = `Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
-
   // ---------- Translate helper ----------
+  // MUST be declared before any early return to respect Rules of Hooks
   const translateText = useCallback(async (text) => {
     const res = await apiFetch('/api/translate', {
       method: 'POST',
@@ -57,6 +45,20 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     if (!res?.translated_text) throw new Error('Translation returned empty');
     return res.translated_text;
   }, [lang]);
+
+  // Early return after all hooks — safe to exit here
+  if (!customer) return null;
+
+  const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+  const status = customer.lead_status || 'new';
+  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const hasPhone = customer.phone && customer.phone !== '—';
+  const hasEmail = customer.email && customer.email !== '—';
+
+  // ---------- Message templates ----------
+  const smsGreeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
+  const emailSubject = `Follow-up from Supercharg'd`;
+  const emailBody = `Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
 
   // ---------- SMS handlers ----------
   const handleSms = async (useTranslation = false) => {
