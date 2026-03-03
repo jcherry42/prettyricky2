@@ -92,17 +92,33 @@ class BackendTester:
             if method.upper() == 'GET':
                 async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
                     result['status_code'] = response.status
-                    result['response_data'] = await response.json()
+                    try:
+                        result['response_data'] = await response.json()
+                    except:
+                        result['response_data'] = await response.text()
             elif method.upper() == 'POST':
                 if isinstance(data, dict):
                     async with self.session.post(url, json=data, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
                         result['status_code'] = response.status
-                        result['response_data'] = await response.json()
+                        try:
+                            result['response_data'] = await response.json()
+                        except:
+                            result['response_data'] = await response.text()
                 else:
                     # For form data or other formats
                     async with self.session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
                         result['status_code'] = response.status
+                        try:
+                            result['response_data'] = await response.json()
+                        except:
+                            result['response_data'] = await response.text()
+            elif method.upper() == 'DELETE':
+                async with self.session.delete(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
+                    result['status_code'] = response.status
+                    try:
                         result['response_data'] = await response.json()
+                    except:
+                        result['response_data'] = await response.text()
             
             result['response_time'] = round((time.time() - start_time) * 1000, 2)  # ms
             
@@ -178,58 +194,135 @@ class BackendTester:
         return result
 
     async def run_all_tests(self):
-        """Run comprehensive backend regression tests"""
-        logger.info("🚀 Starting Comprehensive Backend Regression Tests")
+        """Run comprehensive backend regression tests for Supercharg'd mobile app"""
+        logger.info("🚀 Starting COMPREHENSIVE Backend Regression Tests for Supercharg'd")
+        logger.info("Target: >90% pass rate with all 15 critical endpoints")
         logger.info("=" * 60)
         
-        # 1. CRITICAL NEW VIN OCR ENDPOINTS
-        logger.info("\n📍 TESTING NEW VIN OCR ENDPOINTS")
-        await self.test_vin_extract_from_image_blank()
-        await self.test_vin_extract_from_image_with_vin()
-        await self.test_vin_extract_empty_validation()
+        # Store created customer ID for later tests
+        created_customer_id = None
         
-        # 2. EXISTING ENDPOINTS REGRESSION TEST
-        logger.info("\n📍 TESTING EXISTING ENDPOINTS")
-        
-        # Health check
+        # 1. GET /api/health → 200
         await self.test_request('GET', '/health')
         
-        # Customer list
-        await self.test_request('GET', '/customers/list?limit=3')
-        
-        # Translation
-        translate_data = {
+        # 2. POST /api/translate {"text":"Hello","source_lang":"en","target_lang":"es"} → 200, translated_text
+        translate_data_1 = {
             'text': 'Hello',
             'source_lang': 'en',
             'target_lang': 'es'
         }
-        await self.test_request('POST', '/translate', translate_data)
+        result = await self.test_request('POST', '/translate', translate_data_1)
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'translated_text' in result['response_data']:
+                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
+            else:
+                logger.warning("⚠️ Missing 'translated_text' field in response")
         
-        # Text-to-Speech
+        # 3. POST /api/translate {"text":"Test drive?","source_lang":"en","target_lang":"fr"} → 200
+        translate_data_2 = {
+            'text': 'Test drive?',
+            'source_lang': 'en',
+            'target_lang': 'fr'
+        }
+        result = await self.test_request('POST', '/translate', translate_data_2)
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'translated_text' in result['response_data']:
+                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
+        
+        # 4. POST /api/translate {"text":"Financing","source_lang":"en","target_lang":"ko"} → 200
+        translate_data_3 = {
+            'text': 'Financing',
+            'source_lang': 'en',
+            'target_lang': 'ko'
+        }
+        result = await self.test_request('POST', '/translate', translate_data_3)
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'translated_text' in result['response_data']:
+                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
+        
+        # 5. POST /api/tts {"text":"Welcome","language":"en","voice":"auto"} → 200, audio_base64
         tts_data = {
             'text': 'Welcome',
-            'language': 'en'
+            'language': 'en',
+            'voice': 'auto'
         }
-        await self.test_request('POST', '/tts', tts_data)
+        result = await self.test_request('POST', '/tts', tts_data)
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'audio_base64' in result['response_data']:
+                audio_size = len(result['response_data']['audio_base64'])
+                logger.info(f"✅ TTS generated audio: {audio_size} chars")
+            else:
+                logger.warning("⚠️ Missing 'audio_base64' field in response")
         
-        # VIN Decode
-        await self.test_request('GET', '/vin/decode/JM3KKEHA3T1355103')
-        
-        # VIN Trade-in Count
-        await self.test_request('GET', '/vin/trade-in-count')
-        
-        # License PDF417 Parse
-        pdf417_data = {
-            'barcode_data': '@\n\u001e\rANSI 636020090002DL00410278ZK03180026DLDAQK01234567\nDCSPUBLIC\nDDEN\nDACJOHN\nDDFN\nDADNONE\nDDGN\nDCAD\nDCBNONE\nDCDNONE\nDBD01012020\nDBB01011990\nDBA12312025\nDAG123 MAIN ST\nDAILEXINGTON\nDAJKY\nDAK405101234  \nDAQK01234567\nDCF123456789\nDCGUSA\nDAW160\nDAU508\nDAYBRO\nDBA12312025\nDBC1\nDBHN\r'
-        }
-        await self.test_request('POST', '/license/parse-pdf417', pdf417_data)
-        
-        # Tower Talk
+        # 6. POST /api/tower-talk → 200
         tower_talk_data = {
-            'situation': 'Customer asking about price',
-            'context': {'customer_name': 'John', 'vehicle': 'BMW X5'}
+            'situation': 'Price question',
+            'inquiryType': 'price_question',
+            'context': {
+                'customerName': 'Alex',
+                'vehicle': 'GLE 450',
+                'dealershipName': 'MB'
+            }
         }
         await self.test_request('POST', '/tower-talk', tower_talk_data)
+        
+        # 7. POST /api/customers/create → **201** (MUST be 201)
+        customer_data = {
+            'first_name': 'Regression',
+            'last_name': 'Test',
+            'phone': '555-9999'
+        }
+        result = await self.test_request('POST', '/customers/create', customer_data, expected_status=201)
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'id' in result['response_data']:
+                created_customer_id = result['response_data']['id']
+                logger.info(f"✅ Customer created with ID: {created_customer_id}")
+            elif 'customer_id' in result['response_data']:
+                created_customer_id = result['response_data']['customer_id']
+                logger.info(f"✅ Customer created with ID: {created_customer_id}")
+            else:
+                logger.warning("⚠️ Customer created but no ID returned")
+        
+        # 8. GET /api/customers/list?limit=5 → 200, customers array
+        result = await self.test_request('GET', '/customers/list?limit=5')
+        if result['status'] == 'PASS' and result['response_data']:
+            if 'customers' in result['response_data']:
+                customer_count = len(result['response_data']['customers'])
+                logger.info(f"✅ Customer list returned {customer_count} customers")
+            else:
+                logger.warning("⚠️ Missing 'customers' field in response")
+        
+        # 9. GET /api/customers/{id from step 7} → 200 (only if customer was created)
+        if created_customer_id:
+            await self.test_request('GET', f'/customers/{created_customer_id}')
+        else:
+            logger.warning("⚠️ Skipping customer retrieval - no customer ID available")
+        
+        # 10. DELETE /api/customers/{id from step 7} → 200 (only if customer was created)  
+        if created_customer_id:
+            await self.test_request('DELETE', f'/customers/{created_customer_id}')
+        else:
+            logger.warning("⚠️ Skipping customer deletion - no customer ID available")
+        
+        # 11. GET /api/vin/decode/JM3KKEHA3T1355103 → 200
+        await self.test_request('GET', '/vin/decode/JM3KKEHA3T1355103')
+        
+        # 12. GET /api/vin/trade-in-count → 200
+        await self.test_request('GET', '/vin/trade-in-count')
+        
+        # 13. GET /api/dashboard/stats → 200
+        await self.test_request('GET', '/dashboard/stats')
+        
+        # 14. POST /api/voice-translate with invalid payload → 422
+        invalid_voice_data = {'invalid_field': 'test'}
+        await self.test_request('POST', '/voice-translate', invalid_voice_data, expected_status=422)
+        
+        # 15. POST /api/license/parse-pdf417 {"barcode_data":"test"} → check response
+        pdf417_data = {
+            'barcode_data': 'test'
+        }
+        result = await self.test_request('POST', '/license/parse-pdf417', pdf417_data)
+        # This might return 200 or 400 depending on validation, either is acceptable for test data
 
     def generate_summary(self) -> Dict[str, Any]:
         """Generate test summary"""

@@ -35,33 +35,27 @@ async function translateTextRequest(text, targetLang) {
 }
 
 export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }) {
-  // ── Hooks (unconditional, stable count = 4) ──────────────────────────
-  const { settings } = useAppSettings();         // Hook 1: useContext
-  const [translating, setTranslating] = useState(false);    // Hook 2
-  const [translatedSms, setTranslatedSms] = useState('');   // Hook 3
-  const [translatedEmail, setTranslatedEmail] = useState(''); // Hook 4
-  // ── End hooks ────────────────────────────────────────────────────────
+  const { settings } = useAppSettings();
+  const [translating, setTranslating] = useState(false);
+  const [translatedSms, setTranslatedSms] = useState('');
+  const [translatedEmail, setTranslatedEmail] = useState('');
 
-  // Derived values (not hooks — safe after hook block)
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
 
-  // Early return — all hooks already called above
-  if (!customer) return null;
-
-  const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
-  const status = customer.lead_status || 'new';
+  const name = customer
+    ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+    : '';
+  const status = customer?.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
-  const hasPhone = customer.phone && customer.phone !== '—';
-  const hasEmail = customer.email && customer.email !== '—';
+  const hasPhone = customer?.phone && customer.phone !== '—';
+  const hasEmail = customer?.email && customer.email !== '—';
 
-  // ---------- Message templates ----------
-  const smsGreeting = `Hi ${customer.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
+  const smsGreeting = `Hi ${customer?.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
   const emailSubject = `Follow-up from Supercharg'd`;
-  const emailBody = `Hi ${customer.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
+  const emailBody = `Hi ${customer?.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
 
-  // ---------- SMS handlers ----------
   const handleSms = async (useTranslation = false) => {
     if (!hasPhone) {
       Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
@@ -88,7 +82,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     }
   };
 
-  // ---------- Email handlers ----------
   const handleEmail = (useTranslation = false) => {
     if (!hasEmail) {
       Alert.alert('No Email', 'This customer does not have an email on file.');
@@ -117,7 +110,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     }
   };
 
-  // ---------- Call handler ----------
   const handleCall = () => {
     if (!hasPhone) {
       Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
@@ -130,7 +122,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     });
   };
 
-  // ---------- Edit/Delete ----------
   const handleDelete = () => {
     impactMedium();
     Alert.alert(
@@ -152,17 +143,17 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     onEdit?.(customer);
   };
 
-  // Reset translation state when modal opens/closes
   const handleClose = () => {
     setTranslatedSms('');
     setTranslatedEmail('');
     onClose();
   };
 
+  if (!customer) return null;
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <LinearGradient colors={[colors.bg0, colors.bg1]} style={styles.container}>
-        {/* Header */}
         <LinearGradient
           colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
           start={{ x: 0, y: 0 }}
@@ -173,7 +164,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             <Ionicons name="close" size={28} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>Customer Details</Text>
-          {/* SPORT mode indicator */}
           {sportOn && (
             <View style={styles.sportBadge}>
               <Ionicons name="flame" size={14} color="#FF5000" />
@@ -184,17 +174,13 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
         </LinearGradient>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Status Badge */}
           <View style={[styles.statusBadgeLarge, { backgroundColor: statusConfig.color }]}>
             <Text style={styles.statusLabel}>{statusConfig.label}</Text>
           </View>
 
-          {/* Name */}
           <Text style={styles.customerName}>{name || 'Unknown Customer'}</Text>
 
-          {/* ======== QUICK ACTIONS: Call / Text / Email ======== */}
           <View style={styles.quickActions}>
-            {/* CALL */}
             <Pressable
               onPress={handleCall}
               style={({ pressed }) => [styles.quickActionBtn, pressed && styles.pressed]}
@@ -206,7 +192,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
               <Text style={styles.quickActionLabel}>Call</Text>
             </Pressable>
 
-            {/* TEXT with translate option */}
             <View style={styles.quickActionGroup}>
               <Pressable
                 onPress={() => handleSms(!!translatedSms)}
@@ -220,7 +205,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
                   {translatedSms ? `Text ${flag}` : 'Text'}
                 </Text>
               </Pressable>
-              {/* Translate flag button */}
               <Pressable
                 onPress={handleTranslateSms}
                 disabled={translating}
@@ -239,7 +223,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
               </Pressable>
             </View>
 
-            {/* EMAIL with translate option */}
             <View style={styles.quickActionGroup}>
               <Pressable
                 onPress={() => handleEmail(!!translatedEmail)}
@@ -253,7 +236,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
                   {translatedEmail ? `Email ${flag}` : 'Email'}
                 </Text>
               </Pressable>
-              {/* Translate flag button */}
               <Pressable
                 onPress={handleTranslateEmail}
                 disabled={translating}
@@ -273,7 +255,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             </View>
           </View>
 
-          {/* SPORT mode translation indicator */}
           {sportOn && (
             <View style={styles.sportTranslateBar}>
               <Ionicons name="flame" size={12} color="#FF5000" />
@@ -283,7 +264,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             </View>
           )}
 
-          {/* Translation preview for SMS */}
           {translatedSms ? (
             <View style={styles.translationPreview}>
               <View style={styles.translationHeader}>
@@ -306,7 +286,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             </View>
           ) : null}
 
-          {/* Translation preview for Email */}
           {translatedEmail ? (
             <View style={styles.translationPreview}>
               <View style={styles.translationHeader}>
@@ -329,7 +308,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             </View>
           ) : null}
 
-          {/* Info sections */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>CONTACT INFORMATION</Text>
             <InfoRow icon="call" label="Phone" value={customer.phone || '—'} />
@@ -357,7 +335,6 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
             <InfoRow icon="pricetag" label="Customer ID" value={customer.customer_id || customer.id || '—'} />
           </View>
 
-          {/* Action buttons */}
           <View style={styles.actions}>
             <Pressable
               onPress={handleEdit}
