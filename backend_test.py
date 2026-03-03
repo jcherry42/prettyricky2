@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class BackendTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
+    def __init__(self, base_url: str = "https://72a93ec5-8448-490e-944d-40c56613a161.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = None
         self.test_results = []

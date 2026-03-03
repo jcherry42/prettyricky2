@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,34 +19,35 @@ const STATUS_CONFIG = {
   lost: { label: 'LOST', color: colors.red },
 };
 
+// ---------- Translate helper (pure async, no hook dependency) ----------
+async function translateTextRequest(text, targetLang) {
+  const res = await apiFetch('/api/translate', {
+    method: 'POST',
+    timeout: 15000,
+    body: JSON.stringify({
+      text: text.trim(),
+      source_lang: 'en',
+      target_lang: targetLang,
+    }),
+  });
+  if (!res?.translated_text) throw new Error('Translation returned empty');
+  return res.translated_text;
+}
+
 export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }) {
-  const { settings } = useAppSettings();
+  // ── Hooks (unconditional, stable count = 4) ──────────────────────────
+  const { settings } = useAppSettings();         // Hook 1: useContext
+  const [translating, setTranslating] = useState(false);    // Hook 2
+  const [translatedSms, setTranslatedSms] = useState('');   // Hook 3
+  const [translatedEmail, setTranslatedEmail] = useState(''); // Hook 4
+  // ── End hooks ────────────────────────────────────────────────────────
+
+  // Derived values (not hooks — safe after hook block)
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
 
-  // Translation state for SMS/Email messages
-  const [translating, setTranslating] = useState(false);
-  const [translatedSms, setTranslatedSms] = useState('');
-  const [translatedEmail, setTranslatedEmail] = useState('');
-
-  // ---------- Translate helper ----------
-  // MUST be declared before any early return to respect Rules of Hooks
-  const translateText = useCallback(async (text) => {
-    const res = await apiFetch('/api/translate', {
-      method: 'POST',
-      timeout: 15000,
-      body: JSON.stringify({
-        text: text.trim(),
-        source_lang: 'en',
-        target_lang: lang,
-      }),
-    });
-    if (!res?.translated_text) throw new Error('Translation returned empty');
-    return res.translated_text;
-  }, [lang]);
-
-  // Early return after all hooks — safe to exit here
+  // Early return — all hooks already called above
   if (!customer) return null;
 
   const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
@@ -76,7 +77,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     try {
       impactLight();
       setTranslating(true);
-      const result = await translateText(smsGreeting);
+      const result = await translateTextRequest(smsGreeting, lang);
       setTranslatedSms(result);
       notificationSuccess();
     } catch (e) {
@@ -105,7 +106,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     try {
       impactLight();
       setTranslating(true);
-      const result = await translateText(emailBody);
+      const result = await translateTextRequest(emailBody, lang);
       setTranslatedEmail(result);
       notificationSuccess();
     } catch (e) {
