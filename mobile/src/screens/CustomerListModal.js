@@ -1,5 +1,16 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, FlatList, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  TextInput,
+  ScrollView,
+  Platform,
+  Keyboard,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
@@ -99,21 +110,38 @@ export function CustomerListModal({ visible, onClose }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent presentationStyle="overFullScreen">
-      <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-        <View style={styles.sheet}>
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Ionicons name="people" size={16} color={colors.blue} />
-              <Text style={styles.headerTitle}>CUSTOMERS</Text>
-            </View>
-            <Pressable onPress={onClose} style={styles.closeBtn}>
-              <Ionicons name="close" size={16} color={colors.text} />
-            </Pressable>
+      {/* Backdrop tap-to-dismiss */}
+      <Pressable style={styles.backdrop} onPress={() => { Keyboard.dismiss(); onClose(); }} />
+
+      {/* Sheet — sits above the backdrop, scrolls internally so keyboard never buries inputs */}
+      <View style={styles.sheet}>
+        <View style={styles.handle} />
+
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Ionicons name="people" size={16} color={colors.blue} />
+            <Text style={styles.headerTitle}>CUSTOMERS</Text>
           </View>
+          <Pressable onPress={() => { Keyboard.dismiss(); onClose(); }} style={styles.closeBtn}>
+            <Ionicons name="close" size={16} color={colors.text} />
+          </Pressable>
+        </View>
 
-          <View style={{ height: 10 }} />
-
+        {/*
+          ScrollView with automaticallyAdjustKeyboardInsets:
+          - iOS 15+: native keyboard avoidance that works correctly inside Modals
+          - Android: falls back to scrolling manually after focus
+          keyboardShouldPersistTaps="handled" lets taps on buttons work while keyboard is up
+        */}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          keyboardDismissMode="interactive"
+        >
+          {/* Search */}
           <GlassCard>
             <View style={styles.searchRow}>
               <Ionicons name="search" size={14} color={colors.textMute} />
@@ -123,6 +151,8 @@ export function CustomerListModal({ visible, onClose }) {
                 placeholder="Search name, address, DL #"
                 placeholderTextColor={colors.textMute}
                 style={styles.searchInput}
+                returnKeyType="search"
+                autoCorrect={false}
               />
               {search.length > 0 && (
                 <Pressable onPress={() => setSearch('')}>
@@ -134,26 +164,34 @@ export function CustomerListModal({ visible, onClose }) {
 
           <View style={{ height: 12 }} />
 
-          <GlassCard style={{ flex: 1 }}>
+          {/* License scan history — fixed height box, scrolls internally */}
+          <GlassCard>
             <View style={styles.sectionRow}>
               <Ionicons name="time-outline" size={16} color={colors.textMute} />
               <Text style={styles.sectionLabel}>From License Scans</Text>
               <Text style={[styles.meta, { marginLeft: 'auto' }]}>{filtered.length}</Text>
             </View>
             <View style={{ height: 8 }} />
-
-            <FlatList
-              data={filtered}
-              keyExtractor={(i) => i.id}
-              renderItem={({ item }) => <CustomerRow item={item} />}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              contentContainerStyle={{ paddingBottom: 16 }}
-              showsVerticalScrollIndicator={false}
-            />
+            <View style={styles.scanListBox}>
+              <FlatList
+                data={filtered}
+                keyExtractor={(i) => i.id}
+                renderItem={({ item }) => <CustomerRow item={item} />}
+                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                contentContainerStyle={{ paddingBottom: 8 }}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>No scans yet</Text>
+                }
+                nestedScrollEnabled
+              />
+            </View>
           </GlassCard>
 
           <View style={{ height: 12 }} />
 
+          {/* Manual entry form */}
           <GlassCard>
             <View style={styles.sectionRow}>
               <Ionicons name="person-add" size={16} color={colors.blue} />
@@ -167,6 +205,8 @@ export function CustomerListModal({ visible, onClose }) {
                 placeholder="First name"
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
+                returnKeyType="next"
+                autoCorrect={false}
               />
               <TextInput
                 value={manualLast}
@@ -174,6 +214,8 @@ export function CustomerListModal({ visible, onClose }) {
                 placeholder="Last name"
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
+                returnKeyType="next"
+                autoCorrect={false}
               />
             </View>
             <View style={{ height: 8 }} />
@@ -183,6 +225,8 @@ export function CustomerListModal({ visible, onClose }) {
               placeholder="Full address"
               placeholderTextColor={colors.textMute}
               style={styles.input}
+              returnKeyType="next"
+              autoCorrect={false}
             />
             <View style={{ height: 8 }} />
             <View style={styles.manualRow}>
@@ -192,6 +236,8 @@ export function CustomerListModal({ visible, onClose }) {
                 placeholder="DL #"
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
+                returnKeyType="next"
+                autoCapitalize="characters"
               />
               <TextInput
                 value={manualExp}
@@ -200,6 +246,7 @@ export function CustomerListModal({ visible, onClose }) {
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
                 keyboardType="numeric"
+                returnKeyType="next"
               />
             </View>
             <View style={{ height: 8 }} />
@@ -207,19 +254,21 @@ export function CustomerListModal({ visible, onClose }) {
               <TextInput
                 value={manualTradeVin}
                 onChangeText={(t) => setManualTradeVin(t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17))}
-                placeholder="Trade In VIN [17 characters]"
+                placeholder="Trade In VIN"
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
                 autoCapitalize="characters"
                 maxLength={17}
+                returnKeyType="next"
               />
               <TextInput
                 value={manualTradeMiles}
                 onChangeText={(t) => setManualTradeMiles(t.replace(/[^0-9,]/g, ''))}
-                placeholder="Trade In Mileage [xxx,xxx]"
+                placeholder="Trade Mileage"
                 placeholderTextColor={colors.textMute}
                 style={[styles.input, { flex: 1 }]}
                 keyboardType="numeric"
+                returnKeyType="next"
               />
             </View>
             <View style={{ height: 8 }} />
@@ -231,6 +280,8 @@ export function CustomerListModal({ visible, onClose }) {
               style={styles.input}
               autoCapitalize="characters"
               maxLength={17}
+              returnKeyType="done"
+              onSubmitEditing={Keyboard.dismiss}
             />
             <View style={{ height: 10 }} />
             <Pressable
@@ -241,28 +292,45 @@ export function CustomerListModal({ visible, onClose }) {
               <Text style={styles.saveBtnText}>Save Customer</Text>
             </Pressable>
           </GlassCard>
-        </View>
-      </KeyboardAvoidingView>
+
+          {/* Bottom padding so last field clears the save button when keyboard is up */}
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.70)',
-    justifyContent: 'flex-end',
   },
   sheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: '88%',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(10,12,16,0.98)',
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 18,
-    maxHeight: '82%',
+    paddingTop: 10,
+    // No paddingBottom — ScrollView handles it
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.20)',
+    marginBottom: 10,
+  },
+  scrollContent: {
+    paddingBottom: 36,
   },
   header: {
     flexDirection: 'row',
@@ -320,6 +388,16 @@ const styles = StyleSheet.create({
   meta: {
     color: colors.textMute,
     fontSize: 11,
+  },
+  // Fixed-height box for the FlatList — prevents it taking all vertical space
+  scanListBox: {
+    maxHeight: 160,
+  },
+  emptyText: {
+    color: colors.textMute,
+    fontSize: 12,
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   manualRow: {
     flexDirection: 'row',
