@@ -7,7 +7,7 @@ import requests
 import time
 import os
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://multilang-voice-app-2.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://crm-scanner-sync.preview.emergentagent.com')
 
 
 class TestHealthEndpoints:

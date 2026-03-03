@@ -47,7 +47,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://multilang-voice-app-2.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://crm-scanner-sync.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -130,7 +130,7 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://multilang-voice-app-2.preview.emergentagent.com` |
+| Default Backend | `https://crm-scanner-sync.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |
 

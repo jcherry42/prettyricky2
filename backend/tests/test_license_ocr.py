@@ -10,7 +10,7 @@ import io
 import base64
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multilang-voice-app-2.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://crm-scanner-sync.preview.emergentagent.com').rstrip('/')
 
 
 class TestLicenseScanOCR:
