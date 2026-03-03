@@ -3056,6 +3056,16 @@ async def extract_vin_from_image(req: VinOcrRequest):
     except HTTPException:
         raise
     except Exception as e:
+        err_msg = str(e).lower()
+        # If the vision model rejects an invalid/unsupported image, return gracefully
+        if any(kw in err_msg for kw in ['unsupported', 'invalid image', 'image url', 'image format', 'cannot process', 'unable to process']):
+            return {
+                "success": True,
+                "vins": [],
+                "confidence": "low",
+                "notes": "Image could not be processed. Use a clear, well-lit photo.",
+                "count": 0
+            }
         logger.error(f"VIN OCR error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"VIN OCR failed: {str(e)}")
 
