@@ -10,7 +10,7 @@ import io
 import base64
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://debug-sales-weapon.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://ios-android-polish.preview.emergentagent.com').rstrip('/')
 
 
 class TestLicenseScanOCR:
