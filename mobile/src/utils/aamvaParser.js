@@ -245,11 +245,19 @@ function extractHeader(data) {
 
 /**
  * Check if data looks like an AAMVA PDF417 barcode.
+ * Handles raw binary chars (\x1c, \x1d, \x1e), different encodings.
  */
 export function isLikelyAamva(data) {
-  if (!data || data.length < 30) return false;
-  if (data.substring(0, 5).includes('@') || data.substring(0, 50).includes('ANSI')) return true;
-  if (['DAQ', 'DCS', 'DAC', 'DAG', 'DAA'].some(c => data.includes(c))) return true;
+  if (!data || data.length < 20) return false;
+  // Standard AAMVA header check: starts with file separator or @ or ANSI
+  const head50 = data.substring(0, 50);
+  if (head50.includes('@') || head50.includes('ANSI')) return true;
+  // Control characters: FS (\x1c), GS (\x1d), RS (\x1e) are standard AAMVA delimiters
+  if (data.charCodeAt(0) === 0x1c || data.charCodeAt(0) === 0x1e) return true;
+  // Common field codes that appear in nearly every AAMVA barcode
+  if (['DAQ', 'DCS', 'DAC', 'DAG', 'DAA', 'DBB', 'DBA'].some(c => data.includes(c))) return true;
+  // Subfile designator — "DL" is present in every US license
+  if (data.includes('\nDL') || data.includes('\rDL') || data.includes('\x1eDL')) return true;
   return false;
 }
 

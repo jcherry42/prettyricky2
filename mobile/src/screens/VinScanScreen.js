@@ -155,6 +155,319 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// ── Vehicle Detail Modal — shows full NHTSA decoded data ──────────────
+// ═══════════════════════════════════════════════════════════════════════
+
+function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
+  const d = item.decoded?.vehicle || item.decoded || {};
+  const validation = item.decoded?.validation || {};
+  const isSaved = Boolean(item.savedToInventoryAt);
+
+  const year = d.year || item.decoded?.year || '';
+  const make = d.make || item.decoded?.make || '';
+  const model = d.model || item.decoded?.model || '';
+  const trim = d.trim || item.decoded?.trim || '';
+  const bodyClass = d.body_class || item.decoded?.body_class || '';
+  const driveType = d.drive_type || item.decoded?.drive_type || '';
+  const fuelType = d.fuel_type || item.decoded?.fuel_type || '';
+  const electrification = d.electrification || item.decoded?.electrification || '';
+  const engineDisplay = d.engine_display || item.decoded?.engine_display || '';
+  const horsepower = d.horsepower || item.decoded?.horsepower || '';
+  const transmission = d.transmission || item.decoded?.transmission || '';
+  const cylinders = d.cylinders || item.decoded?.cylinders || '';
+  const displacement = d.displacement || item.decoded?.displacement || '';
+  const manufacturer = d.manufacturer || item.decoded?.manufacturer || '';
+  const assemblyLocation = d.assembly_location || item.decoded?.assembly_location || '';
+  const vehicleType = d.vehicle_type || item.decoded?.vehicle_type || '';
+  const gvwr = d.gvwr || item.decoded?.gvwr || '';
+  const safetyFeatures = d.safety_features || item.decoded?.safety_features || [];
+  const abs = d.abs || item.decoded?.abs || '';
+  const seatBelts = d.seat_belts || item.decoded?.seat_belts || '';
+
+  const categoryMeta_item = categoryMeta[item.category] || categoryMeta[CATEGORY.DEALER];
+
+  return (
+    <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
+      {/* ── Header ── */}
+      <LinearGradient
+        colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={[vdStyles.header, { paddingTop: insets.top + 14 }]}
+      >
+        <Pressable onPress={onClose} style={vdStyles.closeBtn}>
+          <Ionicons name="chevron-down" size={26} color={colors.text} />
+        </Pressable>
+        <View style={vdStyles.headerCenter}>
+          <View style={[vdStyles.catBadge, { backgroundColor: categoryMeta_item.bg }]}>
+            <Ionicons name={categoryMeta_item.icon} size={11} color={categoryMeta_item.color} />
+            <Text style={[vdStyles.catBadgeText, { color: categoryMeta_item.color }]}>{categoryMeta_item.short}</Text>
+          </View>
+          <Text style={vdStyles.vehicleYear}>{year}</Text>
+          <Text style={vdStyles.vehicleMakeModel}>{[make, model].filter(Boolean).join(' ')}</Text>
+          {trim ? <Text style={vdStyles.vehicleTrim}>{trim}</Text> : null}
+          <Text style={vdStyles.vinText}>{item.vin}</Text>
+        </View>
+
+        {/* Confidence badge */}
+        {validation.confidence_score != null && (
+          <View style={vdStyles.confBadge}>
+            <Ionicons name="shield-checkmark" size={14} color={colors.green} />
+            <Text style={vdStyles.confText}>{validation.confidence_score}%</Text>
+          </View>
+        )}
+      </LinearGradient>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: Math.max(insets.bottom, 24) + 24 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Powertrain ── */}
+        <VDSection title="POWERTRAIN" icon="speedometer">
+          <VDRow label="Engine" value={engineDisplay || (cylinders ? `${cylinders}-Cylinder ${displacement ? `${displacement}L` : ''}` : null)} />
+          <VDRow label="Horsepower" value={horsepower ? `${horsepower} HP` : null} />
+          <VDRow label="Transmission" value={transmission} />
+          <VDRow label="Drive Type" value={driveType} />
+          <VDRow label="Fuel Type" value={fuelType} />
+          {electrification ? <VDRow label="Electrification" value={electrification} highlight /> : null}
+        </VDSection>
+
+        {/* ── Body & Class ── */}
+        <VDSection title="BODY & VEHICLE" icon="car-sport">
+          <VDRow label="Body Style" value={bodyClass} />
+          <VDRow label="Vehicle Type" value={vehicleType} />
+          <VDRow label="GVWR" value={gvwr} />
+        </VDSection>
+
+        {/* ── Safety ── */}
+        {(safetyFeatures.length > 0 || abs || seatBelts) && (
+          <VDSection title="SAFETY SYSTEMS" icon="shield-checkmark">
+            {safetyFeatures.length > 0 && (
+              <View style={vdStyles.tagCloud}>
+                {safetyFeatures.map((f) => (
+                  <View key={f} style={vdStyles.safetyTag}>
+                    <Ionicons name="checkmark-circle" size={12} color={colors.green} />
+                    <Text style={vdStyles.safetyTagText}>{f}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            <VDRow label="ABS" value={abs} />
+            <VDRow label="Seat Belts" value={seatBelts} />
+          </VDSection>
+        )}
+
+        {/* ── Manufacturing ── */}
+        <VDSection title="MANUFACTURING" icon="business">
+          <VDRow label="Manufacturer" value={manufacturer} />
+          <VDRow label="Assembly" value={assemblyLocation} />
+          {validation.checksum_valid != null && (
+            <VDRow
+              label="VIN Checksum"
+              value={validation.checksum_valid ? 'Valid ✓' : 'Invalid ✗'}
+              highlight={!validation.checksum_valid}
+            />
+          )}
+        </VDSection>
+
+        {/* ── Validation ── */}
+        {validation.sources_checked?.length > 0 && (
+          <VDSection title="DATA SOURCES" icon="library">
+            {validation.sources_checked.map((s) => (
+              <View key={s} style={vdStyles.sourceRow}>
+                <Ionicons name="checkmark-circle" size={14} color={colors.green} />
+                <Text style={vdStyles.sourceText}>{s}</Text>
+              </View>
+            ))}
+          </VDSection>
+        )}
+
+        {/* ── Save to Inventory Button ── */}
+        {!isSaved ? (
+          <Pressable
+            onPress={onSaveToInventory}
+            style={({ pressed }) => [vdStyles.saveBtn, pressed && { opacity: 0.82 }]}
+          >
+            <LinearGradient
+              colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={vdStyles.saveBtnGrad}
+            >
+              <Ionicons name="save" size={22} color={colors.gold} />
+              <Text style={vdStyles.saveBtnText}>
+                {item.category === CATEGORY.TRADEIN ? 'SAVE TO TRADE-IN' : 'SAVE TO INVENTORY'}
+              </Text>
+            </LinearGradient>
+          </Pressable>
+        ) : (
+          <View style={vdStyles.savedBadge}>
+            <Ionicons name="checkmark-circle" size={22} color={colors.green} />
+            <Text style={vdStyles.savedBadgeText}>SAVED TO INVENTORY</Text>
+          </View>
+        )}
+      </ScrollView>
+    </LinearGradient>
+  );
+}
+
+// ── Vehicle Detail sub-components ──
+function VDSection({ title, icon, children }) {
+  return (
+    <View style={vdStyles.section}>
+      <View style={vdStyles.sectionHdr}>
+        <Ionicons name={icon} size={14} color={colors.gold} />
+        <Text style={vdStyles.sectionHdrText}>{title}</Text>
+      </View>
+      <View style={vdStyles.sectionBody}>{children}</View>
+    </View>
+  );
+}
+
+function VDRow({ label, value, highlight }) {
+  if (!value) return null;
+  return (
+    <View style={vdStyles.row}>
+      <Text style={vdStyles.rowLabel}>{label}</Text>
+      <Text style={[vdStyles.rowValue, highlight && { color: '#FF9B40' }]}>{value}</Text>
+    </View>
+  );
+}
+
+const vdStyles = StyleSheet.create({
+  header: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: colors.gold,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 18,
+    left: 16,
+    width: 40, height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  headerCenter: { alignItems: 'center', gap: 4, paddingTop: 4 },
+  catBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginBottom: 4,
+  },
+  catBadgeText: { fontSize: 9, fontWeight: '800', letterSpacing: 0.8 },
+  vehicleYear: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: colors.gold,
+    letterSpacing: -1,
+    lineHeight: 46,
+  },
+  vehicleMakeModel: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  vehicleTrim: {
+    fontSize: 13,
+    color: colors.textDim,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  vinText: {
+    fontSize: 11,
+    fontFamily: 'SpaceGrotesk_400Regular',
+    color: colors.textMute,
+    letterSpacing: 2,
+    marginTop: 6,
+  },
+  confBadge: {
+    position: 'absolute',
+    top: 18,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(64,255,155,0.15)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(64,255,155,0.3)',
+  },
+  confText: { fontSize: 11, fontWeight: '800', color: colors.green },
+
+  section: { marginBottom: 12 },
+  sectionHdr: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.stroke,
+    paddingBottom: 6,
+  },
+  sectionHdrText: { fontSize: 11, fontWeight: '800', color: colors.gold, letterSpacing: 1.5 },
+  sectionBody: {
+    backgroundColor: colors.panel,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.stroke,
+  },
+  rowLabel: { fontSize: 12, color: colors.textMute, flex: 1, fontWeight: '600' },
+  rowValue: { fontSize: 13, color: colors.text, flex: 2, textAlign: 'right', fontWeight: '500' },
+
+  tagCloud: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, padding: 12 },
+  safetyTag: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 10, paddingVertical: 5,
+    backgroundColor: 'rgba(64,255,155,0.12)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(64,255,155,0.25)',
+  },
+  safetyTagText: { fontSize: 11, color: colors.text, fontWeight: '600' },
+
+  sourceRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 14, paddingVertical: 9,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.stroke,
+  },
+  sourceText: { fontSize: 13, color: colors.textDim },
+
+  saveBtn: { marginTop: 8, borderRadius: 12, overflow: 'hidden' },
+  saveBtnGrad: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 10, paddingVertical: 16,
+  },
+  saveBtnText: { fontSize: 15, fontWeight: '900', color: colors.gold, letterSpacing: 1.5 },
+  savedBadge: {
+    marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 10, paddingVertical: 16,
+    backgroundColor: 'rgba(64,255,155,0.12)',
+    borderRadius: 12,
+    borderWidth: 1.5, borderColor: colors.green,
+  },
+  savedBadgeText: { fontSize: 15, fontWeight: '900', color: colors.green, letterSpacing: 1.5 },
+});
+
+// ═══════════════════════════════════════════════════════════════════════
 // ── Main VIN Scan Screen ─────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -174,6 +487,9 @@ export function VinScanScreen() {
   const [vinValidation, setVinValidation] = useState(null);
   const [activeTab, setActiveTab] = useState(CATEGORY.DEALER);
   const [saveCategoryPicker, setSaveCategoryPicker] = useState(null);
+
+  // Vehicle detail modal
+  const [vehicleDetailItem, setVehicleDetailItem] = useState(null); // item with .decoded
 
   // Camera state
   const [torchOn, setTorchOn] = useState(false);
@@ -986,6 +1302,32 @@ export function VinScanScreen() {
           </View>
         </Modal>
 
+        {/* ════════════════════════════════════════════════════════════════
+            VEHICLE DETAIL MODAL — Full decoded NHTSA data
+          ════════════════════════════════════════════════════════════════ */}
+        <Modal
+          visible={Boolean(vehicleDetailItem)}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setVehicleDetailItem(null)}
+        >
+          {vehicleDetailItem ? (
+            <VehicleDetailModal
+              item={vehicleDetailItem}
+              onClose={() => setVehicleDetailItem(null)}
+              onSaveToInventory={async () => {
+                await saveToInventory(vehicleDetailItem);
+                // Refresh from history so the save badge updates
+                setVehicleDetailItem((prev) => ({
+                  ...prev,
+                  savedToInventoryAt: new Date().toISOString(),
+                }));
+              }}
+              insets={insets}
+            />
+          ) : null}
+        </Modal>
+
         <View style={{ height: 12 }} />
 
         {/* ── Manual Entry Card ── */}
@@ -1105,7 +1447,15 @@ export function VinScanScreen() {
               renderItem={({ item }) => (
                 <HistoryItem
                   item={item}
-                  onPress={decodeAndSave}
+                  onPress={(it) => {
+                    if (it.decoded) {
+                      // Already decoded — show full vehicle detail
+                      setVehicleDetailItem(it);
+                    } else {
+                      // Not decoded yet — decode now
+                      decodeAndSave(it);
+                    }
+                  }}
                   onSaveToInventory={saveToInventory}
                   isAtLimit={activeTab === CATEGORY.DEALER ? isAtLimit : false}
                   category={activeTab}

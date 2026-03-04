@@ -53,7 +53,7 @@ import { parseAamvaPdf417, isLikelyAamva } from '../utils/aamvaParser';
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 const MAX_HISTORY = 50;
-const PDF417_COOLDOWN_MS = 2000;
+const PDF417_COOLDOWN_MS = 700; // Reduced from 2000ms – retry faster after first attempt
 
 // Credit-card aspect ratio: ISO 7810 ID-1 = 85.6 mm × 54 mm
 const CARD_ASPECT = 85.6 / 54; // ≈ 1.586
@@ -441,23 +441,27 @@ export function DlScanScreen() {
 
     const now = Date.now();
     if (now - lastScanTime.current < PDF417_COOLDOWN_MS) return;
+    // Accept if meaningfully different data (handles slight scan variations)
     if (data === lastScannedData.current) return;
-    if (!data || data.length < 30) return;
+    // PDF417 barcodes start with control chars — minimum 20 chars
+    if (!data || data.length < 20) return;
 
     lastScanTime.current = now;
     lastScannedData.current = data;
 
     impactHeavy();
     setPdf417Scanning(false);
-    setPdf417Status('Parsing license data…');
+    setPdf417Status('Reading barcode…');
 
     try {
       let parsed = null;
 
+      // Client-side parser first (instant, no network)
       if (isLikelyAamva(data)) {
         parsed = parseAamvaPdf417(data);
       }
 
+      // Server fallback — handles edge cases the client misses
       if (!parsed || !parsed.success) {
         setPdf417Status('Verifying with server…');
         try {
@@ -502,23 +506,31 @@ export function DlScanScreen() {
         };
         await saveToHistory(entry);
         setPdf417Open(false);
+        setPdf417Scanning(false);
         setSelectedItem(entry);
         setShowDetail(true);
         notificationSuccess();
         setPdf417Status('');
       } else {
-        setPdf417Status('');
-        setPdf417Open(false);
+        // Keep scanner open — let user try from a better angle
         notificationError();
+        setPdf417Status('');
+        lastScannedData.current = '';
+        lastScanTime.current = 0;
+        setPdf417Scanning(true);
         Alert.alert(
-          'Could Not Read Barcode',
-          'Barcode detected but could not be parsed. Aim at the PDF417 barcode on the BACK of the license.',
-          [{ text: 'OK' }]
+          'Barcode Detected — Could Not Parse',
+          'Move the license a bit closer, make sure the BACK is fully in frame, and hold steady.',
+          [
+            { text: 'Keep Trying', onPress: () => {} },
+            { text: 'Close', style: 'cancel', onPress: () => { setPdf417Open(false); setPdf417Scanning(false); } },
+          ]
         );
       }
     } catch (err) {
       setPdf417Status('');
       setPdf417Open(false);
+      setPdf417Scanning(false);
       notificationError();
       Alert.alert('Parse Error', err.message || 'Unable to process barcode');
     }
@@ -532,7 +544,9 @@ export function DlScanScreen() {
     impactMedium();
     setPdf417Scanning(true);
     setPdf417Status('');
+    // Reset both refs so a new session starts clean
     lastScannedData.current = '';
+    lastScanTime.current = 0;
     setPdf417Open(true);
   }, [permission, requestPermission]);
 
