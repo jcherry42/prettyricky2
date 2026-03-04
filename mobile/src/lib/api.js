@@ -23,9 +23,15 @@ async function getBaseUrl(path) {
   }
   const url = await buildApiUrlAsync(path);
   if (url) {
-    // Store just the base (strip the path component)
-    const base = url.replace(path, '').replace(/\/$/, '');
-    _urlCache = base;
+    // Store just the base (strip the path component) using URL parsing for robustness
+    try {
+      const parsed = new URL(url);
+      _urlCache = `${parsed.protocol}//${parsed.host}`;
+    } catch {
+      // Fallback: naive string replace
+      const base = url.replace(path, '').replace(/\/$/, '');
+      _urlCache = base;
+    }
   }
   return url;
 }
@@ -75,7 +81,11 @@ async function _doFetch(url, options) {
       try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text }; }
 
       if (!res.ok) {
-        const err = new Error(json?.detail || `Request failed: ${res.status}`);
+        const err = new Error(
+          res.status === 404
+            ? `Not found (404): ${url} — check your backend URL in Command Center → Settings → Backend`
+            : (json?.detail || `Request failed: ${res.status}`)
+        );
         err.status = res.status;
         err.payload = json;
         if (isRetryable(err) && attempt < maxRetries) {

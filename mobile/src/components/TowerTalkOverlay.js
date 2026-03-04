@@ -28,6 +28,11 @@ function friendlyBackendError(e) {
   if (typeof msg === 'string' && msg.includes('EXPO_PUBLIC_BACKEND_URL')) {
     return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
   }
+  // 404 most commonly means a stale or missing backend URL.
+  // Guide the user to the settings panel instead of showing a raw error.
+  if (e?.status === 404) {
+    return 'Endpoint not found (404). Your backend URL may be stale. Open Command Center → Settings → Backend, tap Reset, then try again. If the issue persists, run npx expo start --clear.';
+  }
   return msg;
 }
 
