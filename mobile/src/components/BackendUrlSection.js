@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://vin-dl-scanner.preview.emergentagent.com',
+        'Backend URL must start with https://debug-sales-weapon.preview.emergentagent.com',
       );
       return;
     }
