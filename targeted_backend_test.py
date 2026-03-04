@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class TargetedBackendTester:
-    def __init__(self, base_url: str = "https://automotive-sales-app-1.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "https://vin-dl-scanner.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = None
         self.test_results = []

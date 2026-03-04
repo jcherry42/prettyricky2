@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://\n\nExample:\nhttps://automotive-sales-app-1.preview.emergentagent.com',
+        'Backend URL must start with https://vin-dl-scanner.preview.emergentagent.com',
       );
       return;
     }

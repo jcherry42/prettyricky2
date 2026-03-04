@@ -13,7 +13,11 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  PanResponder,
+  Dimensions,
 } from 'react-native';
+
+const { width: SCREEN_W } = Dimensions.get('window');
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -176,6 +180,9 @@ export function VinScanScreen() {
   const [zoom, setZoom] = useState(0);
   const [cameraReady, setCameraReady] = useState(false);
 
+  // "VIN Found" flash banner
+  const [vinFoundBanner, setVinFoundBanner] = useState(''); // The VIN string shown when barcode hits
+
   // AI OCR state
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const [ocrStatus, setOcrStatus] = useState('');
@@ -188,16 +195,49 @@ export function VinScanScreen() {
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const captureFlash = useRef(new Animated.Value(0)).current;
   const ocrPulse = useRef(new Animated.Value(0)).current;
+  const vinFoundAnim = useRef(new Animated.Value(0)).current;
+
+  // Zoom slider pan responder
+  // Slider track width = SCREEN_W - 32 (horizontal padding)
+  const SLIDER_TRACK_W = SCREEN_W - 80;
+  const zoomPanRef = useRef(null);
+  const zoomOffset = useRef(0); // tracks position during drag
+
+  const zoomSliderAnim = useRef(new Animated.Value(0)).current; // 0..1 maps to 0..SLIDER_TRACK_W
+
+  // Keep zoomSliderAnim in sync with zoom state (for external updates)
+  useEffect(() => {
+    zoomSliderAnim.setValue(zoom * SLIDER_TRACK_W);
+  }, [zoom, SLIDER_TRACK_W, zoomSliderAnim]);
+
+  const zoomPanResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: (_, gs) => {
+          zoomOffset.current = zoom * SLIDER_TRACK_W;
+        },
+        onPanResponderMove: (_, gs) => {
+          const raw = zoomOffset.current + gs.dx;
+          const clamped = Math.max(0, Math.min(SLIDER_TRACK_W, raw));
+          const newZoom = parseFloat((clamped / SLIDER_TRACK_W).toFixed(2));
+          setZoom(newZoom);
+        },
+      }),
+    [zoom, SLIDER_TRACK_W]
+  );
 
   // Animate scan line for barcode mode
   useEffect(() => {
     if (scannerOpen && scanMode === SCAN_MODE.BARCODE && scanning) {
-      Animated.loop(
+      const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(scanLineAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
           Animated.timing(scanLineAnim, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
-      ).start();
+      );
+      loop.start();
+      return () => loop.stop();
     } else {
       scanLineAnim.setValue(0);
     }
@@ -408,11 +448,21 @@ export function VinScanScreen() {
     lastScannedVin.current = v;
 
     setScanning(false);
-    setScannerOpen(false);
     impactHeavy();
 
-    setSaveCategoryPicker({ vin: v, source: 'barcode' });
-  }, [scanning]);
+    // Show "VIN FOUND" banner for 800ms, then close scanner
+    setVinFoundBanner(v);
+    vinFoundAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(vinFoundAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
+      Animated.delay(700),
+      Animated.timing(vinFoundAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+    ]).start(() => {
+      setVinFoundBanner('');
+      setScannerOpen(false);
+      setSaveCategoryPicker({ vin: v, source: 'barcode' });
+    });
+  }, [scanning, vinFoundAnim]);
 
   // ── AI Vision OCR capture ────────────────────────────────────────────
 
@@ -637,6 +687,8 @@ export function VinScanScreen() {
                     enableTorch={torchOn && cameraReady}
                     zoom={zoom}
                     style={StyleSheet.absoluteFill}
+                    facing="back"
+                    autofocus="on"
                     barcodeScannerSettings={
                       scanMode === SCAN_MODE.BARCODE
                         ? {
@@ -655,64 +707,91 @@ export function VinScanScreen() {
 
                   {/* Capture flash overlay */}
                   <Animated.View
+                    pointerEvents="none"
                     style={[
                       StyleSheet.absoluteFill,
-                      {
-                        backgroundColor: 'white',
-                        opacity: captureFlash,
-                        pointerEvents: 'none',
-                      },
+                      { backgroundColor: 'white', opacity: captureFlash },
                     ]}
                   />
 
-                  {/* Mask + guide frame */}
-                  <View style={styles.scanMaskTop} />
-                  <View style={styles.scanFrame}>
-                    <View style={[styles.corner, styles.cornerTL]} />
-                    <View style={[styles.corner, styles.cornerTR]} />
-                    <View style={[styles.corner, styles.cornerBL]} />
-                    <View style={[styles.corner, styles.cornerBR]} />
+                  {/* ── BARCODE MODE: Wide landscape scan frame for VIN barcodes ── */}
+                  {scanMode === SCAN_MODE.BARCODE && (
+                    <>
+                      <View style={styles.scanMaskTop} />
+                      <View style={styles.barcodeScanFrame}>
+                        <View style={[styles.corner, styles.cornerTL]} />
+                        <View style={[styles.corner, styles.cornerTR]} />
+                        <View style={[styles.corner, styles.cornerBL]} />
+                        <View style={[styles.corner, styles.cornerBR]} />
+                        <Animated.View
+                          style={[
+                            styles.scanLine,
+                            {
+                              transform: [{
+                                translateY: scanLineAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  // Frame height is 22% of screen height — interpolate full range
+                                  outputRange: [0, 160],
+                                }),
+                              }],
+                            },
+                          ]}
+                        />
+                      </View>
+                      <View style={styles.scanMaskBottom} />
+                    </>
+                  )}
 
-                    {/* Barcode mode: animated scan line */}
-                    {scanMode === SCAN_MODE.BARCODE && (
-                      <Animated.View
-                        style={[
-                          styles.scanLine,
-                          {
-                            borderColor: colors.gold,
-                            transform: [{
-                              translateY: scanLineAnim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0, 80],
-                              }),
-                            }],
-                          },
-                        ]}
-                      />
-                    )}
+                  {/* ── AI VISION MODE: square frame ── */}
+                  {scanMode === SCAN_MODE.CAPTURE && (
+                    <>
+                      <View style={styles.scanMaskTop} />
+                      <View style={styles.scanFrame}>
+                        <View style={[styles.corner, styles.cornerTL]} />
+                        <View style={[styles.corner, styles.cornerTR]} />
+                        <View style={[styles.corner, styles.cornerBL]} />
+                        <View style={[styles.corner, styles.cornerBR]} />
+                        <Animated.View
+                          style={[
+                            StyleSheet.absoluteFill,
+                            {
+                              borderRadius: 6,
+                              borderWidth: 2,
+                              borderColor: '#64C8FF',
+                              opacity: ocrProcessing
+                                ? ocrPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1.0] })
+                                : 0.7,
+                            },
+                          ]}
+                        />
+                      </View>
+                      <View style={styles.scanMaskBottom} />
+                    </>
+                  )}
 
-                    {/* AI mode: pulsing frame */}
-                    {scanMode === SCAN_MODE.CAPTURE && (
-                      <Animated.View
-                        style={[
-                          StyleSheet.absoluteFill,
-                          {
-                            borderRadius: 6,
-                            borderWidth: 2,
-                            borderColor: '#64C8FF',
-                            opacity: ocrProcessing
-                              ? ocrPulse.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1.0] })
-                              : 0.7,
-                          },
-                        ]}
-                      />
-                    )}
-                  </View>
-                  <View style={styles.scanMaskBottom} />
+                  {/* ── VIN FOUND banner overlay ── */}
+                  {vinFoundBanner ? (
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.vinFoundBanner,
+                        { opacity: vinFoundAnim },
+                      ]}
+                    >
+                      <View style={styles.vinFoundInner}>
+                        <Ionicons name="checkmark-circle" size={22} color={colors.green} />
+                        <View>
+                          <Text style={styles.vinFoundLabel}>VIN FOUND</Text>
+                          <Text style={styles.vinFoundVin}>{vinFoundBanner}</Text>
+                        </View>
+                      </View>
+                    </Animated.View>
+                  ) : null}
                 </View>
 
                 {/* Camera controls */}
                 <View style={styles.cameraControls}>
+                  {/* Torch button */}
                   <Pressable
                     onPress={() => setTorchOn((t) => !t)}
                     style={[styles.cameraControlBtn, torchOn && styles.cameraControlBtnActive]}
@@ -727,14 +806,15 @@ export function VinScanScreen() {
                     </Text>
                   </Pressable>
 
-                  <View style={styles.zoomControls}>
-                    <Pressable onPress={() => setZoom((z) => Math.max(0, parseFloat((z - 0.1).toFixed(1))))} style={styles.zoomBtn}>
-                      <Ionicons name="remove" size={20} color={colors.text} />
-                    </Pressable>
+                  {/* Zoom slider */}
+                  <View style={styles.zoomSliderWrap}>
+                    <Ionicons name="remove" size={16} color={colors.textMute} />
+                    <View style={styles.zoomSliderTrack} {...zoomPanResponder.panHandlers}>
+                      <View style={[styles.zoomSliderFill, { width: `${zoom * 100}%` }]} />
+                      <View style={[styles.zoomThumb, { left: zoom * SLIDER_TRACK_W - 10 }]} />
+                    </View>
+                    <Ionicons name="add" size={16} color={colors.textMute} />
                     <Text style={styles.zoomLabel}>{Math.round(zoom * 100)}%</Text>
-                    <Pressable onPress={() => setZoom((z) => Math.min(1, parseFloat((z + 0.1).toFixed(1))))} style={styles.zoomBtn}>
-                      <Ionicons name="add" size={20} color={colors.text} />
-                    </Pressable>
                   </View>
                 </View>
 
@@ -1370,11 +1450,18 @@ const styles = StyleSheet.create({
     height: '28%',
     backgroundColor: 'rgba(0,0,0,0.65)',
   },
-  scanMaskBottom: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    height: '28%',
-    backgroundColor: 'rgba(0,0,0,0.65)',
+
+  // Barcode-optimized wide frame (landscape VIN barcodes need a wider/shorter target)
+  barcodeScanFrame: {
+    position: 'absolute',
+    top: '28%',
+    left: 8, right: 8,
+    height: '44%',
+    borderWidth: 2,
+    borderColor: colors.gold,
+    borderRadius: 8,
   },
+
   scanFrame: {
     position: 'absolute',
     top: '28%',
@@ -1407,6 +1494,40 @@ const styles = StyleSheet.create({
   cornerBL: { bottom: -2, left: -2, borderRightWidth: 0, borderTopWidth: 0, borderBottomLeftRadius: 8 },
   cornerBR: { bottom: -2, right: -2, borderLeftWidth: 0, borderTopWidth: 0, borderBottomRightRadius: 8 },
 
+  // VIN found banner (shows over camera when barcode is detected)
+  vinFoundBanner: {
+    position: 'absolute',
+    bottom: 8,
+    left: 12, right: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  vinFoundInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(64,255,155,0.92)',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: colors.green,
+  },
+  vinFoundLabel: {
+    ...type.label,
+    fontSize: 9,
+    color: '#000',
+    letterSpacing: 2,
+    marginBottom: 2,
+  },
+  vinFoundVin: {
+    ...type.h2,
+    fontSize: 16,
+    color: '#000',
+    letterSpacing: 2,
+    fontFamily: 'SpaceGrotesk_700Bold',
+  },
+
   // ── Camera controls ──
   cameraControls: {
     flexDirection: 'row',
@@ -1414,6 +1535,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     paddingHorizontal: 4,
+    gap: 10,
   },
   cameraControlBtn: {
     flexDirection: 'row',
@@ -1428,30 +1550,60 @@ const styles = StyleSheet.create({
   },
   cameraControlBtnActive: { backgroundColor: colors.gold, borderColor: colors.gold },
   cameraControlLabel: { ...type.label, fontSize: 10, color: colors.text },
-  zoomControls: {
+
+  // Zoom slider (replaces +/- buttons)
+  zoomSliderWrap: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.15)',
   },
-  zoomBtn: {
-    width: 32, height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
+  zoomSliderTrack: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    position: 'relative',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  zoomSliderFill: {
+    height: '100%',
+    backgroundColor: colors.gold,
+    borderRadius: 2,
+  },
+  zoomThumb: {
+    position: 'absolute',
+    top: -8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.gold,
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    elevation: 4,
   },
   zoomLabel: {
     ...type.label,
-    fontSize: 11,
-    color: colors.text,
-    minWidth: 36,
-    textAlign: 'center',
+    fontSize: 10,
+    color: colors.textDim,
+    minWidth: 28,
+    textAlign: 'right',
+  },
+
+  scanMaskBottom: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    height: '28%',
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
 
   // ── Hint card ──
