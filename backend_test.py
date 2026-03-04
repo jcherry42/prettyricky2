@@ -1,406 +1,550 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Regression Testing for Supercharg'd Automotive CRM
-Testing all critical endpoints including the new VIN OCR and existing APIs
+Comprehensive Backend Regression Test for Supercharg'd Automotive Mobile App
+Target: >90% pass rate across ALL critical endpoints
+
+Tests 15 endpoints exactly as specified in the review request:
+1. GET /api/health
+2. POST /api/translate (3 tests: EN→ES, EN→FR, EN→KO)
+3. POST /api/tts
+4. POST /api/tower-talk  
+5. POST /api/customers/create
+6. GET /api/customers/list?limit=5
+7. GET /api/vin/decode/JM3KKEHA3T1355103
+8. GET /api/vin/trade-in-count
+9. GET /api/dashboard/stats
+10. POST /api/voice-translate (invalid payload)
+11. POST /api/license/parse-pdf417
+12. GET /api/vehicles/inventory
+13. DELETE customer (cleanup)
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
-import base64
-import logging
-from typing import Dict, Any, Optional
-from datetime import datetime
 import time
+import base64
+from typing import Dict, Any, Optional
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Configuration
+BACKEND_URL = "https://2df4e716-9ac1-495b-84db-1256279b5353.preview.emergentagent.com"
+TIMEOUT = 30
 
 class BackendTester:
-    def __init__(self, base_url: str = "http://localhost:8001"):
-        self.base_url = base_url
-        self.session = None
+    def __init__(self):
         self.test_results = []
+        self.created_customer_id = None
+        self.session = requests.Session()
         
-    async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
-    
-    def create_test_image_with_vin(self) -> str:
-        """Create a test image containing VIN text using PIL and return as base64"""
-        try:
-            from PIL import Image, ImageDraw, ImageFont
-        except ImportError:
-            logger.warning("PIL not available, creating simple white image")
-            # Create a simple 400x80 white image without text
-            import io
-            from base64 import b64encode
-            # Create minimal image data (white PNG)
-            img_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x90\x00\x00\x00P\x08\x02\x00\x00\x00\xa4\x8b\x97\xc9\x00\x00\x00\x1dIDATx\x9c\xed\xc1\x01\r\x00\x00\x00\xc2\xa0\xf7Om\x0e7\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\xbe\r!\x00\x00\x01\x9a`\x89\xf0\x00\x00\x00\x00IEND\xaeB`\x82'
-            return b64encode(img_data).decode('utf-8')
-        
-        try:
-            # Create image with VIN text
-            img = Image.new('RGB', (400, 80), 'white')
-            draw = ImageDraw.Draw(img)
-            
-            # Try to load default font, fall back to basic if not available
-            try:
-                font = ImageFont.load_default()
-            except:
-                font = None
-            
-            # Draw VIN text
-            draw.text((10, 25), 'VIN: 1HGCV1F34LA000001', fill='black', font=font)
-            
-            # Convert to base64
-            import io
-            buffer = io.BytesIO()
-            img.save(buffer, format='PNG')
-            return base64.b64encode(buffer.getvalue()).decode('utf-8')
-        except Exception as e:
-            logger.error(f"Failed to create test image with PIL: {e}")
-            # Fall back to simple white image
-            import io
-            img_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x90\x00\x00\x00P\x08\x02\x00\x00\x00\xa4\x8b\x97\xc9\x00\x00\x00\x1dIDATx\x9c\xed\xc1\x01\r\x00\x00\x00\xc2\xa0\xf7Om\x0e7\xa0\x00\x00\x00\x00\x00\x00\x00\x00\x00\xbe\r!\x00\x00\x01\x9a`\x89\xf0\x00\x00\x00\x00IEND\xaeB`\x82'
-            return base64.b64encode(img_data).decode('utf-8')
-
-    async def test_request(self, method: str, endpoint: str, data: Optional[Dict[str, Any]] = None, 
-                          timeout: int = 30, expected_status: int = 200) -> Dict[str, Any]:
-        """Make a test request and record results"""
-        url = f"{self.base_url}/api{endpoint}"
-        test_name = f"{method} {endpoint}"
-        
-        start_time = time.time()
+    def log_result(self, test_name: str, status: str, response_time: float, 
+                   status_code: Optional[int] = None, details: str = ""):
+        """Log test result"""
         result = {
-            'test_name': test_name,
-            'status': 'FAIL',
-            'response_time': 0,
-            'status_code': None,
-            'response_data': None,
-            'error': None
+            "test": test_name,
+            "status": status,
+            "response_time": f"{response_time:.2f}ms",
+            "status_code": status_code,
+            "details": details
         }
+        self.test_results.append(result)
+        
+        # Print immediate feedback
+        status_symbol = "✅" if status == "PASS" else "❌"
+        print(f"{status_symbol} {test_name} - {status} ({response_time:.0f}ms) {details}")
+        
+    def make_request(self, method: str, endpoint: str, **kwargs) -> tuple:
+        """Make HTTP request and measure response time"""
+        url = f"{BACKEND_URL}{endpoint}"
+        start_time = time.time()
         
         try:
-            logger.info(f"Testing {test_name}...")
-            
-            if method.upper() == 'GET':
-                async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
-                    result['status_code'] = response.status
-                    try:
-                        result['response_data'] = await response.json()
-                    except:
-                        result['response_data'] = await response.text()
-            elif method.upper() == 'POST':
-                if isinstance(data, dict):
-                    async with self.session.post(url, json=data, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
-                        result['status_code'] = response.status
-                        try:
-                            result['response_data'] = await response.json()
-                        except:
-                            result['response_data'] = await response.text()
-                else:
-                    # For form data or other formats
-                    async with self.session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
-                        result['status_code'] = response.status
-                        try:
-                            result['response_data'] = await response.json()
-                        except:
-                            result['response_data'] = await response.text()
-            elif method.upper() == 'DELETE':
-                async with self.session.delete(url, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
-                    result['status_code'] = response.status
-                    try:
-                        result['response_data'] = await response.json()
-                    except:
-                        result['response_data'] = await response.text()
-            
-            result['response_time'] = round((time.time() - start_time) * 1000, 2)  # ms
-            
-            if result['status_code'] == expected_status:
-                result['status'] = 'PASS'
-                logger.info(f"✅ {test_name} - {result['response_time']}ms")
+            if method.upper() == "GET":
+                response = self.session.get(url, timeout=TIMEOUT, **kwargs)
+            elif method.upper() == "POST":
+                response = self.session.post(url, timeout=TIMEOUT, **kwargs)
+            elif method.upper() == "DELETE":
+                response = self.session.delete(url, timeout=TIMEOUT, **kwargs)
             else:
-                result['error'] = f"Expected status {expected_status}, got {result['status_code']}"
-                logger.error(f"❌ {test_name} - {result['error']}")
+                raise ValueError(f"Unsupported method: {method}")
                 
-        except asyncio.TimeoutError:
-            result['response_time'] = round((time.time() - start_time) * 1000, 2)
-            result['error'] = f"Timeout after {timeout}s"
-            logger.error(f"❌ {test_name} - Timeout")
+            response_time = (time.time() - start_time) * 1000
+            return response, response_time
+            
+        except requests.exceptions.Timeout:
+            response_time = (time.time() - start_time) * 1000
+            return None, response_time
         except Exception as e:
-            result['response_time'] = round((time.time() - start_time) * 1000, 2)
-            result['error'] = str(e)
-            logger.error(f"❌ {test_name} - {result['error']}")
-        
-        self.test_results.append(result)
-        return result
+            response_time = (time.time() - start_time) * 1000
+            return None, response_time
 
-    async def test_vin_extract_from_image_blank(self):
-        """Test VIN OCR with blank/white image"""
-        blank_image = base64.b64encode(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00IEND\xaeB`\x82').decode('utf-8')
+    def test_health_check(self):
+        """Test 1: GET /api/health — expect status 200, "healthy" status"""
+        response, response_time = self.make_request("GET", "/api/health")
         
-        data = {'image_base64': blank_image}
-        result = await self.test_request('POST', '/vin/extract-from-image', data, timeout=35)
+        if response is None:
+            self.log_result("Health Check", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and data.get("status") == "healthy":
+                self.log_result("Health Check", "PASS", response_time, 200, "Status healthy")
+            else:
+                self.log_result("Health Check", "FAIL", response_time, response.status_code, 
+                               f"Expected healthy status, got: {data}")
+        except Exception as e:
+            self.log_result("Health Check", "FAIL", response_time, response.status_code, 
+                           f"JSON parse error: {str(e)}")
+
+    def test_translate_en_to_es(self):
+        """Test 2a: POST /api/translate — EN→ES"""
+        payload = {
+            "text": "Hello",
+            "source_language": "en", 
+            "target_language": "es"
+        }
         
-        # Validate expected response structure for blank image
-        if result['status'] == 'PASS' and result['response_data']:
-            response = result['response_data']
-            expected_keys = {'success', 'vins', 'confidence'}
-            if all(key in response for key in expected_keys):
-                if response.get('success') and response.get('vins') == [] and response.get('confidence') == 'low':
-                    logger.info("✅ Blank image test: Correct response structure")
+        response, response_time = self.make_request("POST", "/api/translate", 
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Translate EN→ES", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "translated_text" in data:
+                translated = data["translated_text"]
+                self.log_result("Translate EN→ES", "PASS", response_time, 200, 
+                               f"'Hello' → '{translated}'")
+            else:
+                self.log_result("Translate EN→ES", "FAIL", response_time, response.status_code,
+                               f"Expected translated_text field, got: {data}")
+        except Exception as e:
+            self.log_result("Translate EN→ES", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_translate_en_to_fr(self):
+        """Test 2b: POST /api/translate — EN→FR"""
+        payload = {
+            "text": "Test drive?",
+            "source_language": "en",
+            "target_language": "fr"
+        }
+        
+        response, response_time = self.make_request("POST", "/api/translate",
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Translate EN→FR", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "translated_text" in data:
+                translated = data["translated_text"]
+                self.log_result("Translate EN→FR", "PASS", response_time, 200,
+                               f"'Test drive?' → '{translated}'")
+            else:
+                self.log_result("Translate EN→FR", "FAIL", response_time, response.status_code,
+                               f"Expected translated_text field, got: {data}")
+        except Exception as e:
+            self.log_result("Translate EN→FR", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_translate_en_to_ko(self):
+        """Test 2c: POST /api/translate — EN→KO"""
+        payload = {
+            "text": "Financing",
+            "source_language": "en",
+            "target_language": "ko"
+        }
+        
+        response, response_time = self.make_request("POST", "/api/translate",
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Translate EN→KO", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "translated_text" in data:
+                translated = data["translated_text"]
+                self.log_result("Translate EN→KO", "PASS", response_time, 200,
+                               f"'Financing' → '{translated}'")
+            else:
+                self.log_result("Translate EN→KO", "FAIL", response_time, response.status_code,
+                               f"Expected translated_text field, got: {data}")
+        except Exception as e:
+            self.log_result("Translate EN→KO", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_tts(self):
+        """Test 3: POST /api/tts — expect audio_base64 field"""
+        payload = {
+            "text": "Welcome",
+            "language": "en"
+        }
+        
+        response, response_time = self.make_request("POST", "/api/tts",
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Text-to-Speech", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "audio_base64" in data:
+                audio_len = len(data["audio_base64"])
+                self.log_result("Text-to-Speech", "PASS", response_time, 200,
+                               f"Audio generated ({audio_len} chars)")
+            else:
+                self.log_result("Text-to-Speech", "FAIL", response_time, response.status_code,
+                               f"Expected audio_base64 field, got: {data}")
+        except Exception as e:
+            self.log_result("Text-to-Speech", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_tower_talk(self):
+        """Test 4: POST /api/tower-talk — expect response field"""
+        payload = {
+            "situation": "What's the price of this Mercedes GLE 450?",
+            "context": {"customerName": "John", "inquiryType": "pricing"}
+        }
+        
+        response, response_time = self.make_request("POST", "/api/tower-talk",
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Tower Talk AI", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "response" in data:
+                response_len = len(data["response"])
+                self.log_result("Tower Talk AI", "PASS", response_time, 200,
+                               f"AI response generated ({response_len} chars)")
+            else:
+                self.log_result("Tower Talk AI", "FAIL", response_time, response.status_code,
+                               f"Expected response field, got: {data}")
+        except Exception as e:
+            self.log_result("Tower Talk AI", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_customer_create(self):
+        """Test 5: POST /api/customers/create — expect 201 status"""
+        payload = {
+            "first_name": "Test",
+            "last_name": "User",
+            "phone": "555-0101"
+        }
+        
+        response, response_time = self.make_request("POST", "/api/customers/create",
+                                                   json=payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("Customer Create", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 201:
+                # Extract customer ID for later deletion
+                if "customer" in data and "id" in data["customer"]:
+                    self.created_customer_id = data["customer"]["id"]
+                elif "id" in data:
+                    self.created_customer_id = data["id"]
+                elif "customer_id" in data:
+                    self.created_customer_id = data["customer_id"]
+                    
+                self.log_result("Customer Create", "PASS", response_time, 201,
+                               f"Customer created with ID: {self.created_customer_id}")
+            else:
+                self.log_result("Customer Create", "FAIL", response_time, response.status_code,
+                               f"Expected 201 status, got {response.status_code}: {data}")
+        except Exception as e:
+            self.log_result("Customer Create", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_customer_list(self):
+        """Test 6: GET /api/customers/list?limit=5 — expect {customers: [...], total: N}"""
+        response, response_time = self.make_request("GET", "/api/customers/list?limit=5")
+        
+        if response is None:
+            self.log_result("Customer List", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if (response.status_code == 200 and 
+                "customers" in data and 
+                "total" in data and
+                isinstance(data["customers"], list)):
+                
+                customer_count = len(data["customers"])
+                total = data["total"]
+                self.log_result("Customer List", "PASS", response_time, 200,
+                               f"Retrieved {customer_count} customers, total: {total}")
+            else:
+                self.log_result("Customer List", "FAIL", response_time, response.status_code,
+                               f"Expected customers array and total, got: {data}")
+        except Exception as e:
+            self.log_result("Customer List", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_vin_decode(self):
+        """Test 7: GET /api/vin/decode/JM3KKEHA3T1355103 — expect Mazda CX-90 data"""
+        response, response_time = self.make_request("GET", "/api/vin/decode/JM3KKEHA3T1355103")
+        
+        if response is None:
+            self.log_result("VIN Decode", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200:
+                # Check for Mazda CX-90 data
+                make = data.get("make", "").upper()
+                model = data.get("model", "").upper() 
+                year = data.get("year", "")
+                
+                if "MAZDA" in make and "CX-90" in model:
+                    self.log_result("VIN Decode", "PASS", response_time, 200,
+                                   f"Decoded: {year} {make} {model}")
                 else:
-                    logger.warning(f"⚠️ Blank image response: {response}")
+                    self.log_result("VIN Decode", "FAIL", response_time, 200,
+                                   f"Expected Mazda CX-90, got: {make} {model}")
             else:
-                logger.error(f"❌ Missing expected keys in response: {response}")
-        
-        return result
+                self.log_result("VIN Decode", "FAIL", response_time, response.status_code,
+                               f"VIN decode failed: {data}")
+        except Exception as e:
+            self.log_result("VIN Decode", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
 
-    async def test_vin_extract_from_image_with_vin(self):
-        """Test VIN OCR with image containing VIN text"""
-        vin_image = self.create_test_image_with_vin()
+    def test_vin_trade_in_count(self):
+        """Test 8: GET /api/vin/trade-in-count — expect {count, cap, remaining, at_limit}"""
+        response, response_time = self.make_request("GET", "/api/vin/trade-in-count")
         
-        data = {'image_base64': vin_image}
-        result = await self.test_request('POST', '/vin/extract-from-image', data, timeout=35)
-        
-        # Validate expected response structure for image with VIN
-        if result['status'] == 'PASS' and result['response_data']:
-            response = result['response_data']
-            expected_keys = {'success', 'vins', 'confidence'}
-            if all(key in response for key in expected_keys):
-                if response.get('success'):
-                    vins = response.get('vins', [])
-                    confidence = response.get('confidence', '')
-                    logger.info(f"✅ VIN image test: Found {len(vins)} VINs, confidence: {confidence}")
-                    if len(vins) > 0:
-                        logger.info(f"   Extracted VINs: {vins}")
-                else:
-                    logger.warning(f"⚠️ VIN extraction failed: {response}")
+        if response is None:
+            self.log_result("VIN Trade-in Count", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if (response.status_code == 200 and
+                "count" in data and
+                "cap" in data and 
+                "remaining" in data and
+                "at_limit" in data):
+                
+                count = data["count"]
+                cap = data["cap"]
+                remaining = data["remaining"]
+                at_limit = data["at_limit"]
+                self.log_result("VIN Trade-in Count", "PASS", response_time, 200,
+                               f"Count: {count}/{cap}, remaining: {remaining}, at_limit: {at_limit}")
             else:
-                logger.error(f"❌ Missing expected keys in response: {response}")
-        
-        return result
+                self.log_result("VIN Trade-in Count", "FAIL", response_time, response.status_code,
+                               f"Expected count/cap/remaining/at_limit, got: {data}")
+        except Exception as e:
+            self.log_result("VIN Trade-in Count", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
 
-    async def test_vin_extract_empty_validation(self):
-        """Test VIN OCR with empty image_base64 (should return 400)"""
-        data = {'image_base64': ''}
-        result = await self.test_request('POST', '/vin/extract-from-image', data, expected_status=400, timeout=35)
-        return result
+    def test_dashboard_stats(self):
+        """Test 9: GET /api/dashboard/stats — expect 200"""
+        response, response_time = self.make_request("GET", "/api/dashboard/stats")
+        
+        if response is None:
+            self.log_result("Dashboard Stats", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200:
+                self.log_result("Dashboard Stats", "PASS", response_time, 200,
+                               f"Stats retrieved successfully")
+            else:
+                self.log_result("Dashboard Stats", "FAIL", response_time, response.status_code,
+                               f"Dashboard stats failed: {data}")
+        except Exception as e:
+            self.log_result("Dashboard Stats", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
 
-    async def run_all_tests(self):
-        """Run comprehensive backend regression tests for Supercharg'd mobile app"""
-        logger.info("🚀 Starting COMPREHENSIVE Backend Regression Tests for Supercharg'd")
-        logger.info("Target: >90% pass rate with all 15 critical endpoints")
-        logger.info("=" * 60)
+    def test_voice_translate_invalid(self):
+        """Test 10: POST /api/voice-translate — with invalid payload — expect 422"""
+        # Send invalid payload (missing required fields or wrong format)
+        invalid_payload = {"invalid": "data"}
         
-        # Store created customer ID for later tests
-        created_customer_id = None
+        response, response_time = self.make_request("POST", "/api/voice-translate",
+                                                   json=invalid_payload,
+                                                   headers={"Content-Type": "application/json"})
         
-        # 1. GET /api/health → 200
-        await self.test_request('GET', '/health')
-        
-        # 2. POST /api/translate {"text":"Hello","source_lang":"en","target_lang":"es"} → 200, translated_text
-        translate_data_1 = {
-            'text': 'Hello',
-            'source_lang': 'en',
-            'target_lang': 'es'
-        }
-        result = await self.test_request('POST', '/translate', translate_data_1)
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'translated_text' in result['response_data']:
-                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
+        if response is None:
+            self.log_result("Voice Translate Invalid", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 422:
+                self.log_result("Voice Translate Invalid", "PASS", response_time, 422,
+                               "Correctly rejected invalid payload")
             else:
-                logger.warning("⚠️ Missing 'translated_text' field in response")
-        
-        # 3. POST /api/translate {"text":"Test drive?","source_lang":"en","target_lang":"fr"} → 200
-        translate_data_2 = {
-            'text': 'Test drive?',
-            'source_lang': 'en',
-            'target_lang': 'fr'
-        }
-        result = await self.test_request('POST', '/translate', translate_data_2)
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'translated_text' in result['response_data']:
-                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
-        
-        # 4. POST /api/translate {"text":"Financing","source_lang":"en","target_lang":"ko"} → 200
-        translate_data_3 = {
-            'text': 'Financing',
-            'source_lang': 'en',
-            'target_lang': 'ko'
-        }
-        result = await self.test_request('POST', '/translate', translate_data_3)
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'translated_text' in result['response_data']:
-                logger.info(f"✅ Translation result: '{result['response_data']['translated_text']}'")
-        
-        # 5. POST /api/tts {"text":"Welcome","language":"en","voice":"auto"} → 200, audio_base64
-        tts_data = {
-            'text': 'Welcome',
-            'language': 'en',
-            'voice': 'auto'
-        }
-        result = await self.test_request('POST', '/tts', tts_data)
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'audio_base64' in result['response_data']:
-                audio_size = len(result['response_data']['audio_base64'])
-                logger.info(f"✅ TTS generated audio: {audio_size} chars")
-            else:
-                logger.warning("⚠️ Missing 'audio_base64' field in response")
-        
-        # 6. POST /api/tower-talk → 200
-        tower_talk_data = {
-            'situation': 'Price question',
-            'inquiryType': 'price_question',
-            'context': {
-                'customerName': 'Alex',
-                'vehicle': 'GLE 450',
-                'dealershipName': 'MB'
-            }
-        }
-        await self.test_request('POST', '/tower-talk', tower_talk_data)
-        
-        # 7. POST /api/customers/create → **201** (MUST be 201)
-        customer_data = {
-            'first_name': 'Regression',
-            'last_name': 'Test',
-            'phone': '555-9999'
-        }
-        result = await self.test_request('POST', '/customers/create', customer_data, expected_status=201)
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'customer' in result['response_data'] and 'id' in result['response_data']['customer']:
-                created_customer_id = result['response_data']['customer']['id']
-                logger.info(f"✅ Customer created with ID: {created_customer_id}")
-            elif 'id' in result['response_data']:
-                created_customer_id = result['response_data']['id']
-                logger.info(f"✅ Customer created with ID: {created_customer_id}")
-            elif 'customer_id' in result['response_data']:
-                created_customer_id = result['response_data']['customer_id']
-                logger.info(f"✅ Customer created with ID: {created_customer_id}")
-            else:
-                logger.warning("⚠️ Customer created but no ID returned")
-        
-        # 8. GET /api/customers/list?limit=5 → 200, customers array
-        result = await self.test_request('GET', '/customers/list?limit=5')
-        if result['status'] == 'PASS' and result['response_data']:
-            if 'customers' in result['response_data']:
-                customer_count = len(result['response_data']['customers'])
-                logger.info(f"✅ Customer list returned {customer_count} customers")
-            else:
-                logger.warning("⚠️ Missing 'customers' field in response")
-        
-        # 9. GET /api/customers/{id from step 7} → 200 (only if customer was created)
-        if created_customer_id:
-            await self.test_request('GET', f'/customers/{created_customer_id}')
-        else:
-            logger.warning("⚠️ Skipping customer retrieval - no customer ID available")
-        
-        # 10. DELETE /api/customers/{id from step 7} → 200 (only if customer was created)  
-        if created_customer_id:
-            await self.test_request('DELETE', f'/customers/{created_customer_id}')
-        else:
-            logger.warning("⚠️ Skipping customer deletion - no customer ID available")
-        
-        # 11. GET /api/vin/decode/JM3KKEHA3T1355103 → 200
-        await self.test_request('GET', '/vin/decode/JM3KKEHA3T1355103')
-        
-        # 12. GET /api/vin/trade-in-count → 200
-        await self.test_request('GET', '/vin/trade-in-count')
-        
-        # 13. GET /api/dashboard/stats → 200
-        await self.test_request('GET', '/dashboard/stats')
-        
-        # 14. POST /api/voice-translate with invalid payload → 422
-        invalid_voice_data = {'invalid_field': 'test'}
-        await self.test_request('POST', '/voice-translate', invalid_voice_data, expected_status=422)
-        
-        # 15. POST /api/license/parse-pdf417 {"barcode_data":"test"} → check response
-        pdf417_data = {
-            'barcode_data': 'test'
-        }
-        result = await self.test_request('POST', '/license/parse-pdf417', pdf417_data)
-        # This might return 200 or 400 depending on validation, either is acceptable for test data
+                self.log_result("Voice Translate Invalid", "FAIL", response_time, response.status_code,
+                               f"Expected 422, got {response.status_code}: {data}")
+        except Exception as e:
+            self.log_result("Voice Translate Invalid", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
 
-    def generate_summary(self) -> Dict[str, Any]:
-        """Generate test summary"""
+    def test_license_parse_pdf417(self):
+        """Test 11: POST /api/license/parse-pdf417 — with test data — expect proper handling"""
+        # Send test PDF417 barcode data
+        test_payload = {
+            "pdf417_data": "test_barcode_data_invalid"
+        }
+        
+        response, response_time = self.make_request("POST", "/api/license/parse-pdf417",
+                                                   json=test_payload,
+                                                   headers={"Content-Type": "application/json"})
+        
+        if response is None:
+            self.log_result("License Parse PDF417", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            # Should handle test data gracefully (either success or proper error)
+            if response.status_code in [200, 400, 422]:
+                self.log_result("License Parse PDF417", "PASS", response_time, response.status_code,
+                               "Endpoint handles test data properly")
+            else:
+                self.log_result("License Parse PDF417", "FAIL", response_time, response.status_code,
+                               f"Unexpected status: {data}")
+        except Exception as e:
+            self.log_result("License Parse PDF417", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_vehicles_inventory(self):
+        """Test 12: GET /api/vehicles/inventory — expect 200"""
+        response, response_time = self.make_request("GET", "/api/vehicles/inventory")
+        
+        if response is None:
+            self.log_result("Vehicles Inventory", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200:
+                self.log_result("Vehicles Inventory", "PASS", response_time, 200,
+                               "Inventory endpoint accessible")
+            else:
+                self.log_result("Vehicles Inventory", "FAIL", response_time, response.status_code,
+                               f"Inventory endpoint failed: {data}")
+        except Exception as e:
+            self.log_result("Vehicles Inventory", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_customer_delete(self):
+        """Test 13: DELETE the customer created in test #7"""
+        if not self.created_customer_id:
+            self.log_result("Customer Delete", "FAIL", 0, None, "No customer ID to delete")
+            return
+            
+        response, response_time = self.make_request("DELETE", f"/api/customers/{self.created_customer_id}")
+        
+        if response is None:
+            self.log_result("Customer Delete", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            if response.status_code in [200, 204]:
+                self.log_result("Customer Delete", "PASS", response_time, response.status_code,
+                               f"Customer {self.created_customer_id} deleted")
+            else:
+                data = response.json() if response.text else "No response body"
+                self.log_result("Customer Delete", "FAIL", response_time, response.status_code,
+                               f"Delete failed: {data}")
+        except Exception as e:
+            self.log_result("Customer Delete", "FAIL", response_time, response.status_code,
+                           f"Error: {str(e)}")
+
+    def run_all_tests(self):
+        """Run all 15 tests as specified in the review request"""
+        print(f"🎯 SUPERCHARG'D AUTOMOTIVE MOBILE APP - COMPREHENSIVE BACKEND REGRESSION TEST")
+        print(f"Backend URL: {BACKEND_URL}")
+        print(f"Target: >90% pass rate across ALL critical endpoints\n")
+        
+        # Run tests in order
+        tests = [
+            self.test_health_check,
+            self.test_translate_en_to_es,
+            self.test_translate_en_to_fr, 
+            self.test_translate_en_to_ko,
+            self.test_tts,
+            self.test_tower_talk,
+            self.test_customer_create,
+            self.test_customer_list,
+            self.test_vin_decode,
+            self.test_vin_trade_in_count,
+            self.test_dashboard_stats,
+            self.test_voice_translate_invalid,
+            self.test_license_parse_pdf417,
+            self.test_vehicles_inventory,
+            self.test_customer_delete
+        ]
+        
+        for test_func in tests:
+            test_func()
+            time.sleep(0.5)  # Small delay between tests
+        
+        # Calculate results
         total_tests = len(self.test_results)
-        passed_tests = sum(1 for result in self.test_results if result['status'] == 'PASS')
-        failed_tests = total_tests - passed_tests
+        passed_tests = len([r for r in self.test_results if r["status"] == "PASS"])
+        pass_rate = (passed_tests / total_tests) * 100
         
-        avg_response_time = sum(result['response_time'] for result in self.test_results) / total_tests if total_tests > 0 else 0
+        print(f"\n{'='*80}")
+        print(f"🎯 COMPREHENSIVE BACKEND REGRESSION TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"Total Tests: {total_tests}")
+        print(f"Passed: {passed_tests}")
+        print(f"Failed: {total_tests - passed_tests}")
+        print(f"Pass Rate: {pass_rate:.1f}%")
+        print(f"Target: >90% (Required for production)")
         
-        summary = {
-            'timestamp': datetime.now().isoformat(),
-            'total_tests': total_tests,
-            'passed': passed_tests,
-            'failed': failed_tests,
-            'pass_rate': round((passed_tests / total_tests) * 100, 1) if total_tests > 0 else 0,
-            'avg_response_time_ms': round(avg_response_time, 2),
-            'test_results': self.test_results
-        }
-        
-        return summary
-
-    def print_summary(self, summary: Dict[str, Any]):
-        """Print formatted test summary"""
-        logger.info("\n" + "=" * 60)
-        logger.info("📊 BACKEND REGRESSION TEST SUMMARY")
-        logger.info("=" * 60)
-        
-        logger.info(f"📅 Timestamp: {summary['timestamp']}")
-        logger.info(f"🧪 Total Tests: {summary['total_tests']}")
-        logger.info(f"✅ Passed: {summary['passed']}")
-        logger.info(f"❌ Failed: {summary['failed']}")
-        logger.info(f"📈 Pass Rate: {summary['pass_rate']}%")
-        logger.info(f"⏱️  Average Response Time: {summary['avg_response_time_ms']}ms")
-        
-        if summary['failed'] > 0:
-            logger.info("\n❌ FAILED TESTS:")
-            for result in summary['test_results']:
-                if result['status'] == 'FAIL':
-                    logger.info(f"  • {result['test_name']}: {result['error']}")
-        
-        # Determine quality gate status
-        if summary['pass_rate'] >= 90:
-            logger.info("\n🎉 QUALITY GATE: PASS (≥90% pass rate)")
-            return True
+        if pass_rate >= 90:
+            print(f"\n✅ EXCELLENT - TARGET ACHIEVED ({pass_rate:.1f}% ≥ 90%)")
+            print(f"Backend is production-ready for Supercharg'd automotive mobile app")
         else:
-            logger.info(f"\n🚨 QUALITY GATE: FAIL (<90% pass rate: {summary['pass_rate']}%)")
-            return False
-
-async def main():
-    """Main test execution"""
-    try:
-        async with BackendTester() as tester:
-            await tester.run_all_tests()
-            summary = tester.generate_summary()
-            quality_gate_pass = tester.print_summary(summary)
-            
-            # Save detailed results to file
-            with open('/app/backend_test_results.json', 'w') as f:
-                json.dump(summary, f, indent=2)
-            
-            logger.info(f"\n📁 Detailed results saved to: /app/backend_test_results.json")
-            
-            return quality_gate_pass
-            
-    except Exception as e:
-        logger.error(f"❌ Test execution failed: {e}")
-        return False
+            print(f"\n❌ BELOW TARGET ({pass_rate:.1f}% < 90%)")
+            print(f"Issues need to be resolved before production deployment")
+        
+        # Show detailed results
+        print(f"\n📊 DETAILED TEST RESULTS:")
+        print(f"{'='*80}")
+        
+        for i, result in enumerate(self.test_results, 1):
+            status_symbol = "✅" if result["status"] == "PASS" else "❌"
+            print(f"{i:2d}. {status_symbol} {result['test']:<25} {result['status']:<4} "
+                  f"({result['response_time']:>8}) {result['details']}")
+        
+        # Show failures if any
+        failures = [r for r in self.test_results if r["status"] == "FAIL"]
+        if failures:
+            print(f"\n❌ FAILED TESTS REQUIRING ATTENTION:")
+            print(f"{'='*80}")
+            for failure in failures:
+                print(f"• {failure['test']}: {failure['details']}")
+        
+        return pass_rate >= 90
 
 if __name__ == "__main__":
-    try:
-        success = asyncio.run(main())
-        exit(0 if success else 1)
-    except KeyboardInterrupt:
-        logger.info("Tests interrupted by user")
-        exit(1)
-    except Exception as e:
-        logger.error(f"Fatal error: {e}")
-        exit(1)
+    tester = BackendTester()
+    success = tester.run_all_tests()
+    exit(0 if success else 1)

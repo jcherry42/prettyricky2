@@ -14,6 +14,29 @@ export function invalidateUrlCache() {
   _urlCache = null;
 }
 
+/**
+ * Health check — pings /api/health to verify backend connectivity.
+ * Returns { ok: boolean, url: string, error?: string, latencyMs?: number }
+ */
+export async function healthCheck() {
+  const start = Date.now();
+  try {
+    const url = await getBaseUrl('/api/health');
+    if (!url) return { ok: false, url: '', error: 'No backend URL configured' };
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(url, { method: 'GET', signal: controller.signal });
+    clearTimeout(timer);
+    const latencyMs = Date.now() - start;
+    if (res.ok) {
+      return { ok: true, url, latencyMs };
+    }
+    return { ok: false, url, error: `HTTP ${res.status}`, latencyMs };
+  } catch (e) {
+    return { ok: false, url: _urlCache || '', error: e.message, latencyMs: Date.now() - start };
+  }
+}
+
 async function getBaseUrl(path) {
   if (_urlCache) {
     // Re-append path to cached base
@@ -81,9 +104,19 @@ async function _doFetch(url, options) {
       try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text }; }
 
       if (!res.ok) {
+        // 404 auto-recovery: if the cached URL produced a 404, clear the cache
+        // and retry with a freshly resolved URL. This handles stale URL cache
+        // scenarios that previously caused persistent 404 errors.
+        if (res.status === 404 && _urlCache && attempt === 0) {
+          _urlCache = null;
+          lastError = new Error(`404 at ${url} — retrying with fresh URL`);
+          lastError.status = 404;
+          continue;
+        }
+
         const err = new Error(
           res.status === 404
-            ? `Not found (404): ${url} — check your backend URL in Command Center → Settings → Backend`
+            ? `Not found (404): ${url} — verify your backend URL in Command Center → Settings`
             : (json?.detail || `Request failed: ${res.status}`)
         );
         err.status = res.status;
