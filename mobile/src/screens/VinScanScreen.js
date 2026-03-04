@@ -17,6 +17,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
 import { useInventory } from '../context/InventoryContext';
@@ -156,6 +157,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
 export function VinScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const { addVehicle, isAtLimit, maxInventory } = useInventory();
+  const insets = useSafeAreaInsets();
 
   const [dealerHistory, setDealerHistory] = useState([]);
   const [tradeInHistory, setTradeInHistory] = useState([]);
@@ -586,9 +588,9 @@ export function VinScanScreen() {
           <View style={styles.modalRoot}>
             <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
 
-              {/* Header */}
-              <View style={styles.modalHeader}>
-                <Pressable onPress={closeScanner} style={styles.modalClose}>
+              {/* Header — dynamically padded for status bar / Dynamic Island */}
+              <View style={[styles.modalHeader, { paddingTop: insets.top + 12, height: 68 + insets.top }]}>
+                <Pressable onPress={closeScanner} style={[styles.modalClose, { top: insets.top + 10 }]}>
                   <Ionicons name="close" size={24} color={colors.text} />
                 </Pressable>
                 <View style={styles.modalTitleRow}>
@@ -613,7 +615,7 @@ export function VinScanScreen() {
                     setOcrResults(null);
                     setOcrStatus('');
                   }}
-                  style={styles.modeSwitchBtn}
+                  style={[styles.modeSwitchBtn, { top: insets.top + 10 }]}
                 >
                   <Ionicons
                     name={scanMode === SCAN_MODE.BARCODE ? 'sparkles' : 'barcode-outline'}
@@ -1030,7 +1032,7 @@ export function VinScanScreen() {
                 />
               )}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              contentContainerStyle={{ paddingBottom: 16 }}
+              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 20 }}
               showsVerticalScrollIndicator={false}
             />
           )}

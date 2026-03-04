@@ -4,6 +4,7 @@ import {
   TextInput, FlatList, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useAppSettings } from '../context/AppSettingsContext';
@@ -93,6 +94,7 @@ function DlRow({ item, onSelect, selected }) {
 export function PrintCenterModal({ visible, onClose }) {
   const { activePrinter } = useAppSettings();
   const [tab, setTab] = useState('customer');
+  const insets = useSafeAreaInsets();
 
   // Customer tab state
   const [search, setSearch] = useState('');
@@ -224,7 +226,7 @@ export function PrintCenterModal({ visible, onClose }) {
       <View style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 18) }]}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert, Platform, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
@@ -101,6 +102,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const insets = useSafeAreaInsets();
 
   // Allow external deep-linking to a specific tab (e.g., Tower Talk → Settings).
   React.useEffect(() => {
@@ -282,7 +284,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
       <View style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 18) }]}>
           {/* Brushed aluminum top specular edge */}
           <LinearGradient
             colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.00)']}
@@ -835,8 +837,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(9,11,15,0.98)',
     paddingHorizontal: 16,
     paddingTop: 14,
-    paddingBottom: 18,
-    maxHeight: '88%',
+    paddingBottom: 18, // overridden inline with safe area
+    maxHeight: '90%',
     shadowColor: '#000',
     shadowOpacity: 0.60,
     shadowRadius: 40,

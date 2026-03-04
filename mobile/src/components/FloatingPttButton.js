@@ -1,13 +1,19 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactMedium, impactHeavy } from '../lib/haptics';
 import { scaleSize } from '../theme/layout';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '→' }) {
+  const insets = useSafeAreaInsets();
+  // Position above cluster (tab bar + safe area + cluster height + gap) — mirrors customer button
+  const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + scaleSize(76);
+
   return (
-    <View style={styles.wrap} pointerEvents="box-none">
+    <View style={[styles.wrap, { bottom: bottomOffset }]} pointerEvents="box-none">
       {flagLabel ? (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{flagLabel}</Text>
@@ -42,7 +48,7 @@ const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
     right: scaleSize(16),
-    bottom: scaleSize(152),
+    // bottom is now dynamic — set inline using insets
   },
   badge: {
     position: 'absolute',

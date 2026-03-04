@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Ionicons } from '@expo/vector-icons';
 
@@ -43,6 +44,9 @@ function TabLabel({ children, focused }) {
   );
 }
 
+// Tab bar content height (icons + labels, no safe area)
+export const TAB_BAR_CONTENT_HEIGHT = 52;
+
 export function RootNavigator() {
   const [ccOpen, setCcOpen] = useState(false);
   const [ccTab, setCcTab] = useState(null);
@@ -55,24 +59,27 @@ export function RootNavigator() {
 
   const { settings } = useAppSettings();
   const ptt = usePtt();
+  const insets = useSafeAreaInsets();
 
   const isHome = currentRoute === 'Home';
 
+  // Safe-area-aware tab bar: height = content + bottom inset
+  // This ensures the tab bar never intrudes into the home indicator zone on iPhone X+
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: 'rgba(4,6,8,0.88)',
-      borderTopColor: 'rgba(214,178,94,0.12)',
+      backgroundColor: 'rgba(4,6,8,0.92)',
+      borderTopColor: 'rgba(214,178,94,0.14)',
       borderTopWidth: 1,
-      height: 68,
+      height: TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4),
       paddingTop: 8,
-      paddingBottom: 12,
+      paddingBottom: Math.max(insets.bottom, 4) + 2,
       shadowColor: '#000',
-      shadowOpacity: 0.6,
-      shadowRadius: 20,
-      shadowOffset: { width: 0, height: -8 },
-      elevation: 20,
+      shadowOpacity: 0.65,
+      shadowRadius: 24,
+      shadowOffset: { width: 0, height: -6 },
+      elevation: 24,
     }),
-    []
+    [insets.bottom]
   );
 
   return (
@@ -82,6 +89,8 @@ export function RootNavigator() {
           headerShown: false,
           tabBarStyle,
           tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: colors.gold,
+          tabBarInactiveTintColor: colors.textMute,
           // Disable react-freeze for tab screens — prevents the
           // Freeze→Suspender→AnimatedComponent→RNSScreen chain that triggers
           // a JSI boolean/string type error in Expo Go.

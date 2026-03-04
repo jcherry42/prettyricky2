@@ -16,14 +16,14 @@ export const type = {
   subtitle: { fontFamily: fontFamilies.semiBold, fontSize: 15, letterSpacing: 0.15, lineHeight: 21 },
   // Label — uppercase identifiers, badges, tabs
   label: { fontFamily: fontFamilies.bold, fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase' },
-  // Overline — tiny uppercase section identifiers
-  overline: { fontFamily: fontFamilies.bold, fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase' },
+  // Overline — tiny uppercase section identifiers (bumped to 10 for mobile legibility)
+  overline: { fontFamily: fontFamilies.bold, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase' },
   // Body — primary readable text
-  body: { fontFamily: fontFamilies.medium, fontSize: 13, letterSpacing: 0.1 },
+  body: { fontFamily: fontFamilies.medium, fontSize: 14, letterSpacing: 0.1 },
   // Body dim — secondary readable text
-  bodyDim: { fontFamily: fontFamilies.medium, fontSize: 12, letterSpacing: 0.1 },
+  bodyDim: { fontFamily: fontFamilies.medium, fontSize: 13, letterSpacing: 0.1 },
   // Caption — timestamps, metadata, helper text
-  caption: { fontFamily: fontFamilies.regular, fontSize: 11, letterSpacing: 0.15, lineHeight: 15 },
+  caption: { fontFamily: fontFamilies.regular, fontSize: 12, letterSpacing: 0.15, lineHeight: 16 },
   // Mono — VINs, codes, technical data
   mono: { fontFamily: fontFamilies.semiBold, fontSize: 13, letterSpacing: 1.5 },
 };

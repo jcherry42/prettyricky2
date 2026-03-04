@@ -12,6 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { loadJson, saveJson } from '../lib/storage';
@@ -47,6 +48,7 @@ function CustomerRow({ item }) {
 export function CustomerListModal({ visible, onClose }) {
   const [entries, setEntries] = useState([]);
   const [search, setSearch] = useState('');
+  const insets = useSafeAreaInsets();
 
   const [manualFirst, setManualFirst] = useState('');
   const [manualLast, setManualLast] = useState('');
@@ -114,7 +116,7 @@ export function CustomerListModal({ visible, onClose }) {
       <Pressable style={styles.backdrop} onPress={() => { Keyboard.dismiss(); onClose(); }} />
 
       {/* Sheet — sits above the backdrop, scrolls internally so keyboard never buries inputs */}
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <View style={styles.handle} />
 
         <View style={styles.header}>
@@ -330,7 +332,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   scrollContent: {
-    paddingBottom: 36,
+    paddingBottom: 24,
   },
   header: {
     flexDirection: 'row',

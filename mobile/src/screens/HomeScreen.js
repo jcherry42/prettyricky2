@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from '
 import { View, Text, StyleSheet, Pressable, FlatList, Animated, TextInput, RefreshControl, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Screen } from '../components/Screen';
 import { CustomerCard } from '../components/CustomerCard';
 import { CustomerDetailModal } from '../components/CustomerDetailModal';
@@ -20,6 +21,7 @@ import { CustomerListSkeleton } from '../components/LoadingSkeleton';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium } from '../lib/haptics';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ---------- Ambient light strip ---------- */
 function AmbientStrip({ active, color }) {
@@ -54,9 +56,6 @@ function AmbientStrip({ active, color }) {
 const HomeListHeader = memo(function HomeListHeader({ stripColor }) {
   return (
     <View>
-      {/* Header clearance */}
-      <View style={{ height: 60 }} />
-
       <AmbientStrip active color={stripColor} />
 
       {/* SPORT button with subtle top branding */}
@@ -86,6 +85,10 @@ export function HomeScreen() {
   const { settings } = useAppSettings();
   const { customers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const toast = useToast();
+  const insets = useSafeAreaInsets();
+
+  // Dynamic bottom padding: tab bar + safe area + floating cluster/buttons + breathing room
+  const listBottomPadding = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 82 + 12;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -262,6 +265,9 @@ export function HomeScreen() {
         {/* ── Search bar lives OUTSIDE FlatList so its TextInput never unmounts.
             Placing it inside ListHeaderComponent caused the keyboard to dismiss
             on every keystroke because searchQuery dep re-created the render fn. ── */}
+        {/* The tab header is transparent. Screen already accounts for status bar height.
+            This extra clearance is for the header content (BrandTaillights, ~52px). */}
+        <View style={{ height: 52 }} />
         <View style={styles.searchContainer}>
           <LinearGradient
             colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]}
@@ -309,7 +315,7 @@ export function HomeScreen() {
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
           removeClippedSubviews
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
@@ -359,7 +365,7 @@ export function HomeScreen() {
 
 const styles = StyleSheet.create({
   listContent: {
-    paddingBottom: 160,
+    paddingBottom: 0, // Overridden dynamically in render via useSafeAreaInsets
   },
   sportRow: {
     alignItems: 'center',
@@ -392,7 +398,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 16,
-    marginTop: 18,
+    marginTop: 12,
     marginBottom: 16,
     borderRadius: 14,
     overflow: 'hidden',

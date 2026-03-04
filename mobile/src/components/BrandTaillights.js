@@ -125,7 +125,7 @@ export function BrandTaillights({ compact = false }) {
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
       <Cluster glowAnim={glowAnim} />
       <View style={styles.centerText}>
-        <Text style={styles.brand}>SUPERCHARG'D</Text>
+        <Text style={styles.brand} allowFontScaling={false}>SUPERCHARG'D</Text>
       </View>
       <Cluster flip glowAnim={glowAnim} />
     </View>

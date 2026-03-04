@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactMedium } from '../lib/haptics';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ─── Liquid glass pill button ─── */
 function GlassButton({ icon, iconColor, glowColor, onPress, size = 52, accessibilityLabel }) {
@@ -44,8 +46,12 @@ function GlassButton({ icon, iconColor, glowColor, onPress, size = 52, accessibi
 }
 
 export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
+  const insets = useSafeAreaInsets();
+  // Position cluster just above the tab bar (tab bar height + safe area + spacing)
+  const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 10;
+
   return (
-    <View style={styles.cluster} pointerEvents="box-none">
+    <View style={[styles.cluster, { bottom: bottomOffset }]} pointerEvents="box-none">
       <View style={styles.pillBar}>
         {/* CHECK - Command Center */}
         <GlassButton
@@ -79,7 +85,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
 const styles = StyleSheet.create({
   cluster: {
     position: 'absolute',
-    bottom: 76,
+    // bottom is now dynamic — set inline using insets
     left: 0,
     right: 0,
     alignItems: 'center',

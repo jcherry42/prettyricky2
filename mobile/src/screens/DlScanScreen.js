@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadJson, saveJson } from '../lib/storage';
 import { uploadFileAuto } from '../utils/chunkedUpload';
 import { useCustomers } from '../context/CustomerContext';
@@ -191,6 +192,7 @@ function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSavedToCustomer }) 
 export function DlScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const { createCustomer } = useCustomers();
+  const insets = useSafeAreaInsets();
 
   const [scanning, setScanning] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -609,14 +611,14 @@ export function DlScanScreen() {
         <Modal visible={scannerOpen && canScan} animationType="slide" presentationStyle="fullScreen">
           <View style={styles.modalRoot}>
             <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
-              <View style={styles.modalHeader}>
+              <View style={[styles.modalHeader, { paddingTop: insets.top + 12, height: 64 + insets.top }]}>
                 <Pressable
                   onPress={() => {
                     setScannerOpen(false);
                     setScanning(false);
                     setScanStatus('');
                   }}
-                  style={styles.modalClose}
+                  style={[styles.modalClose, { top: insets.top + 10 }]}
                 >
                   <Ionicons name="close" size={24} color={colors.text} />
                 </Pressable>
@@ -702,7 +704,7 @@ export function DlScanScreen() {
                 <HistoryCard item={item} onPress={handleItemPress} onSaveToCustomer={() => handleSaveToCustomer(item)} />
               )}
               ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              contentContainerStyle={{ paddingBottom: 16 }}
+              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 20 }}
               showsVerticalScrollIndicator={false}
             />
           )}

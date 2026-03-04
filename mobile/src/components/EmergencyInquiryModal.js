@@ -8,6 +8,7 @@ import React, { useState, useCallback } from 'react';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
@@ -113,6 +114,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
+  const insets = useSafeAreaInsets();
 
   const [selectedType, setSelectedType] = useState(null);
   const [translatingIdx, setTranslatingIdx] = useState(-1);
@@ -177,7 +179,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
           </Pressable>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 16 }}>
           {/* Inquiry type grid */}
           <View style={styles.typeGrid}>
             {INQUIRY_TYPES.map((inq) => {

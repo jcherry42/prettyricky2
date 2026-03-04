@@ -8,12 +8,17 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Animated, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactMedium } from '../lib/haptics';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 export function EmergencyButton({ onPress }) {
   const pulseAnim = useRef(new Animated.Value(0.6)).current;
   const glowAnim = useRef(new Animated.Value(0.3)).current;
+  const insets = useSafeAreaInsets();
+  // Position above the floating cluster (tab bar + safe area + cluster + gap + button stagger)
+  const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 78 + 70;
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -42,7 +47,7 @@ export function EmergencyButton({ onPress }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { bottom: bottomOffset }]}>
       {/* Outer glow ring */}
       <Animated.View style={[styles.glowRing, { opacity: glowAnim }]} />
 
@@ -63,7 +68,7 @@ export function EmergencyButton({ onPress }) {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 220,
+    // bottom is now dynamic — set inline using insets
     left: 20,
     width: 60,
     height: 60,

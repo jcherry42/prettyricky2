@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, TextInput, RefreshControl, Alert, Modal, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
@@ -13,6 +14,7 @@ import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
 import { VinScanScreen } from './VinScanScreen';
 import { DlScanScreen } from './DlScanScreen';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 const STATUS_COLORS = {
   active: colors.green,
@@ -74,6 +76,8 @@ function IntakeHub({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [editing, setEditing] = useState(null);
   const { triggerFlash } = useTaillightFlash();
+  const insets = useSafeAreaInsets();
+  const listPaddingBottom = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 20;
 
   const refresh = useCallback(async () => {
     const data = await loadInventory();
@@ -200,7 +204,7 @@ function IntakeHub({ navigation }) {
               />
             )}
             ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{ paddingBottom: listPaddingBottom }}
             showsVerticalScrollIndicator={false}
             keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"

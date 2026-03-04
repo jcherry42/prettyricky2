@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { Audio } from 'expo-av';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { scaleSize, scaleFont } from '../theme/layout';
@@ -129,6 +130,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   const lang = settings.defaultTargetLanguage;
   const sportOn = Boolean(settings.sportMode);
   const flag = flagFor(lang);
+  const insets = useSafeAreaInsets();
 
   const [situation, setSituation] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -451,8 +453,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={styles.backdrop}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={insets.top}>
+        <View style={[styles.backdrop, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 }]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
 
           <View style={styles.center}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
@@ -17,6 +18,7 @@ const STATUS_OPTIONS = [
 
 export function CustomerFormModal({ visible, customer, onClose, onSave }) {
   const isEditing = Boolean(customer);
+  const insets = useSafeAreaInsets();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -129,6 +131,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
             showsVerticalScrollIndicator={false}
             keyboardDismissMode="on-drag"
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 24 }}
           >
             {/* Validation error banner */}
             {validationError && (

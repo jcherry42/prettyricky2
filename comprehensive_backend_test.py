@@ -26,7 +26,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 # Backend URL from mobile environment
-BACKEND_URL = "https://72a93ec5-8448-490e-944d-40c56613a161.preview.emergentagent.com"
+BACKEND_URL = "https://automotive-sales-app-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 class TestResults:

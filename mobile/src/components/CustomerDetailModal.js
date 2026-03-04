@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, impactLight, notificationSuccess, notificationError } from '../lib/haptics';
@@ -39,7 +40,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   const [translating, setTranslating] = useState(false);
   const [translatedSms, setTranslatedSms] = useState('');
   const [translatedEmail, setTranslatedEmail] = useState('');
-
+  const insets = useSafeAreaInsets();
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
@@ -173,7 +174,11 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
           {!sportOn && <View style={{ width: 28 }} />}
         </LinearGradient>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) + 20 }}
+        >
           <View style={[styles.statusBadgeLarge, { backgroundColor: statusConfig.color }]}>
             <Text style={styles.statusLabel}>{statusConfig.label}</Text>
           </View>

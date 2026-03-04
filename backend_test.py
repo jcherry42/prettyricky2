@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class BackendTester:
-    def __init__(self, base_url: str = "https://72a93ec5-8448-490e-944d-40c56613a161.preview.emergentagent.com"):
+    def __init__(self, base_url: str = "http://localhost:8001"):
         self.base_url = base_url
         self.session = None
         self.test_results = []
@@ -274,7 +274,10 @@ class BackendTester:
         }
         result = await self.test_request('POST', '/customers/create', customer_data, expected_status=201)
         if result['status'] == 'PASS' and result['response_data']:
-            if 'id' in result['response_data']:
+            if 'customer' in result['response_data'] and 'id' in result['response_data']['customer']:
+                created_customer_id = result['response_data']['customer']['id']
+                logger.info(f"✅ Customer created with ID: {created_customer_id}")
+            elif 'id' in result['response_data']:
                 created_customer_id = result['response_data']['id']
                 logger.info(f"✅ Customer created with ID: {created_customer_id}")
             elif 'customer_id' in result['response_data']:

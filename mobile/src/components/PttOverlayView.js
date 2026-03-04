@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View, ActivityIndicator, Animated }
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { usePtt } from '../context/PttContext';
@@ -123,6 +124,7 @@ function RecordingButton({ onStop }) {
 
 export function PttOverlayView({ visible, onClose }) {
   const ptt = usePtt();
+  const insets = useSafeAreaInsets();
 
   const fromLang = ptt.direction === 'en_to_target' ? 'English' : langName(ptt.targetLang);
   const toLang = ptt.direction === 'en_to_target' ? langName(ptt.targetLang) : 'English';
@@ -163,7 +165,7 @@ export function PttOverlayView({ visible, onClose }) {
 
   return (
     <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
-      <View style={styles.backdrop}>
+      <View style={[styles.backdrop, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 }]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
 
         <View style={styles.center}>

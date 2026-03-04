@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
@@ -8,6 +9,7 @@ import { impactLight } from '../lib/haptics';
 
 export function VehicleEditorScreen({ vehicle, onSave, onCancel }) {
   const title = useMemo(() => [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' '), [vehicle]);
+  const insets = useSafeAreaInsets();
 
   const [status, setStatus] = useState(vehicle.status || 'active');
   const [stockNumber, setStockNumber] = useState(vehicle.stockNumber || '');
@@ -29,7 +31,7 @@ export function VehicleEditorScreen({ vehicle, onSave, onCancel }) {
           </Pressable>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) + 32 }}>
           <GlassCard style={{ marginTop: 14 }}>
             <Text style={styles.sectionLabel}>STATUS</Text>
             <View style={{ height: 10 }} />

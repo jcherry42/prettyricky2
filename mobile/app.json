@@ -16,15 +16,17 @@
       "backgroundColor": "#05070A"
     },
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.superchargd.mobile",
       "buildNumber": "1.0.0",
       "requireFullScreen": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to scan VINs and driver's licenses.",
-        "NSMicrophoneUsageDescription": "This app uses the microphone for voice translation features.",
+        "NSCameraUsageDescription": "Supercharg'd uses the camera to scan VINs and driver's licenses.",
+        "NSMicrophoneUsageDescription": "Supercharg'd uses the microphone for the voice push-to-talk translation feature.",
+        "NSPhotoLibraryUsageDescription": "Supercharg'd uses the photo library to attach images.",
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
-        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait"]
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": false
       }
     },
     "android": {
@@ -38,7 +40,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#05070A"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "pan"
     }
   }
 }

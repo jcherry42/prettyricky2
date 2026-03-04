@@ -8,6 +8,10 @@ import { colors } from '../theme/colors';
  * Screen — premium root wrapper with designo deep-obsidian gradient.
  * The gradient runs vertically from pure black to a hint of dark navy,
  * giving depth without competing with card-level surfaces.
+ *
+ * Note: paddingBottom is intentionally minimal here because each screen's
+ * FlatList/ScrollView adds its own dynamic bottom padding based on safe area +
+ * floating button positions. This prevents double-padding.
  */
 export const Screen = memo(function Screen({ children, style }) {
   const insets = useSafeAreaInsets();
@@ -21,10 +25,12 @@ export const Screen = memo(function Screen({ children, style }) {
       <View
         style={{
           flex: 1,
-          paddingTop: Math.max(12, insets.top + 8),
-          paddingBottom: Math.max(12, insets.bottom + 12),
-          paddingLeft: Math.max(16, insets.left + 16),
-          paddingRight: Math.max(16, insets.right + 16),
+          // Top: account for status bar on screens without a navigation header
+          paddingTop: Math.max(8, insets.top + 6),
+          // Bottom: minimal — individual screens manage their own scroll padding
+          paddingBottom: 0,
+          paddingLeft: Math.max(0, insets.left),
+          paddingRight: Math.max(0, insets.right),
         }}
       >
         {children}

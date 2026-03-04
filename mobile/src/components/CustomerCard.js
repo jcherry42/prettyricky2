@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     ...type.overline,
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '800',
   },
   infoRow: {
