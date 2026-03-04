@@ -776,7 +776,7 @@ export function DlScanScreen() {
                           transform: [{
                             translateY: ocrScanLine.interpolate({
                               inputRange: [0, 1],
-                              outputRange: [0, 120],
+                              outputRange: [0, 500],
                             }),
                           }],
                         },
@@ -866,7 +866,7 @@ export function DlScanScreen() {
                           transform: [{
                             translateY: pdf417ScanLine.interpolate({
                               inputRange: [0, 1],
-                              outputRange: [0, 180],
+                              outputRange: [0, 500],
                             }),
                           }],
                         },
@@ -1186,6 +1186,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.gold,
     borderRadius: 10,
+    overflow: 'hidden', // Clips scan line to card frame
   },
   ocrInstruction: {
     flexDirection: 'row',
@@ -1253,6 +1254,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#40D2FF',
     borderRadius: 8,
+    overflow: 'hidden', // Clips scan line to frame
   },
 
   // Shared scan line

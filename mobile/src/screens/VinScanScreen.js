@@ -730,8 +730,8 @@ export function VinScanScreen() {
                               transform: [{
                                 translateY: scanLineAnim.interpolate({
                                   inputRange: [0, 1],
-                                  // Frame height is 22% of screen height — interpolate full range
-                                  outputRange: [0, 160],
+                                  // Use large range; frame overflow:hidden clips it automatically
+                                  outputRange: [0, 500],
                                 }),
                               }],
                             },
@@ -1460,6 +1460,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.gold,
     borderRadius: 8,
+    overflow: 'hidden', // Clips scan line to frame boundaries
   },
 
   scanFrame: {
@@ -1470,6 +1471,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.gold,
     borderRadius: 8,
+    overflow: 'hidden', // Clips pulse effect to frame
   },
   scanLine: {
     position: 'absolute',
