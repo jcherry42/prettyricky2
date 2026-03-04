@@ -8,8 +8,6 @@ import { CustomerCard } from '../components/CustomerCard';
 import { CustomerDetailModal } from '../components/CustomerDetailModal';
 import { CustomerFormModal } from '../components/CustomerFormModal';
 import { QuickCompose } from '../components/QuickCompose';
-import { EmergencyButton } from '../components/EmergencyButton';
-import { EmergencyInquiryModal } from '../components/EmergencyInquiryModal';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
@@ -96,7 +94,7 @@ export function HomeScreen() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
+  // Emergency modal state now lives in RootNavigator
 
   // Remove ambient lighting subscription from HomeScreen \u2014 AmbientLightingSystem
   // overlay handles the visual effect. HomeScreen stays fully memoized.
@@ -333,14 +331,7 @@ export function HomeScreen() {
           }
         />
 
-        {/* Emergency Button */}
-        <EmergencyButton onPress={() => setEmergencyModalVisible(true)} />
-
-        {/* Emergency Inquiry Modal */}
-        <EmergencyInquiryModal
-          visible={emergencyModalVisible}
-          onClose={() => setEmergencyModalVisible(false)}
-        />
+        {/* Emergency Inquiry Modal — moved to RootNavigator */}
 
         {/* Customer Detail Modal */}
         <CustomerDetailModal

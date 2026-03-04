@@ -21,6 +21,8 @@ import { PrintCenterModal } from '../screens/PrintCenterModal';
 
 import { FloatingPttButton } from '../components/FloatingPttButton';
 import { FloatingCustomerButton } from '../components/FloatingCustomerButton';
+import { EmergencyButton } from '../components/EmergencyButton';
+import { EmergencyInquiryModal } from '../components/EmergencyInquiryModal';
 import { PttOverlayView } from '../components/PttOverlayView';
 
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
@@ -55,6 +57,7 @@ export function RootNavigator() {
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(false);
   const [customersOpen, setCustomersOpen] = useState(false);
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState('Home');
 
   const { settings } = useAppSettings();
@@ -179,6 +182,17 @@ export function RootNavigator() {
           // Directly open the Add Customer form (skip the menu since License Scans was removed)
           globalThis.__sc_open_new_customer?.();
         }} />
+      )}
+
+      {/* Emergency button — centered between Bluetooth and PTT, Home only */}
+      {isHome && (
+        <>
+          <EmergencyButton onPress={() => setEmergencyOpen(true)} />
+          <EmergencyInquiryModal
+            visible={emergencyOpen}
+            onClose={() => setEmergencyOpen(false)}
+          />
+        </>
       )}
 
       {/* PTT (only in SPORT mode) */}
