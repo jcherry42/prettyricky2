@@ -190,7 +190,19 @@ const Ember = React.memo(function Ember({ cfg, active }) {
     opacity: opVal.value * cfg.op,
   }));
 
-  const half = cfg.s / 2;
+  // Platform-adaptive sizing: web needs larger particles since CSS blur
+  // spreads them, while native uses shadowRadius for glow
+  const isWeb = Platform.OS === 'web';
+  const sz  = isWeb ? cfg.s * 2.2 : cfg.s;
+  const ht  = isWeb ? sz * 2.0  : sz * 1.3;
+  const half = sz / 2;
+
+  // Web: CSS filter blur + mixBlendMode create realistic soft-glow fire
+  // Native: iOS shadowRadius does the same job natively
+  const webGlow = isWeb ? {
+    filter: `blur(${Math.ceil(cfg.g * 0.7)}px)`,
+    mixBlendMode: 'screen',
+  } : {};
 
   return (
     <Animated.View
@@ -199,18 +211,18 @@ const Ember = React.memo(function Ember({ cfg, active }) {
           position: 'absolute',
           left: cfg.x - half,
           bottom: cfg.y,
-          width: cfg.s,
-          height: cfg.s * 1.3,
+          width: sz,
+          height: ht,
           borderRadius: half,
           backgroundColor: cfg.c,
-          // iOS glow — the shadow IS the visible fire
+          // iOS / Android glow
           shadowColor: cfg.gc,
           shadowOpacity: 0.95,
           shadowRadius: cfg.g,
           shadowOffset: { width: 0, height: -1 },
-          // Android fallback — limited but provides some visual weight
           elevation: Platform.OS === 'android' ? Math.ceil(cfg.g * 0.5) : 0,
           zIndex: cfg.fg ? 12 : 2,
+          ...webGlow,
         },
         animStyle,
       ]}
@@ -329,12 +341,20 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: 'rgba(255,80,0,0.12)',
+    backgroundColor: 'rgba(255,80,0,0.18)',
     shadowColor: '#FF4400',
     shadowOpacity: 1,
     shadowRadius: 40,
     shadowOffset: { width: 0, height: 0 },
     elevation: 0,
+    ...(Platform.OS === 'web' ? {
+      filter: 'blur(18px)',
+      mixBlendMode: 'screen',
+      backgroundColor: 'rgba(255,80,0,0.35)',
+      width: 130,
+      height: 130,
+      borderRadius: 65,
+    } : {}),
   },
   btnWrap: { zIndex: 10 },
   btn: {
