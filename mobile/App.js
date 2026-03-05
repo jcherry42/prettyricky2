@@ -19,7 +19,9 @@ import { InventoryProvider } from './src/context/InventoryContext';
 import { NetworkProvider } from './src/context/NetworkContext';
 import { ToastProvider } from './src/context/ToastContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
-import { View } from 'react-native';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { PinScreen } from './src/screens/PinScreen';
+import { View, ActivityIndicator } from 'react-native';
 
 // Disable native screens (RNSScreen Fabric component) to prevent a Codegen
 // TypeSpec boolean/string mismatch that crashes Expo Go during tab navigator
@@ -43,18 +45,32 @@ function ComposeProviders({ providers, children }) {
   );
 }
 
-export default function App() {
-  const fontsReady = useFontsReady();
+/**
+ * AuthGate — shows PIN screen when not authenticated, main app when authenticated.
+ * Must be inside AuthProvider to access useAuth().
+ */
+function AuthGate() {
+  const { isAuthenticated, isLoading, needsSetup } = useAuth();
 
-  // Hard lock to portrait mode
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
-  }, []);
-
-  if (!fontsReady) {
-    return <View style={{ flex: 1, backgroundColor: '#040608' }} />;
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#040608', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#C0C0C0" />
+      </View>
+    );
   }
 
+  if (!isAuthenticated || needsSetup) {
+    return <PinScreen />;
+  }
+
+  return <MainApp />;
+}
+
+/**
+ * MainApp — the actual app content (only rendered when authenticated).
+ */
+function MainApp() {
   // Provider order matters: outermost first, innermost last.
   // Network/Toast/Settings must be before Customer/Inventory (data deps).
   // AmbientLighting/TaillightFlash are visual-only — innermost.
@@ -71,17 +87,36 @@ export default function App() {
   ];
 
   return (
+    <ComposeProviders providers={providers}>
+      <InfotainmentShell>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+        <OfflineBanner />
+        <StatusBar style="light" />
+      </InfotainmentShell>
+    </ComposeProviders>
+  );
+}
+
+export default function App() {
+  const fontsReady = useFontsReady();
+
+  // Hard lock to portrait mode
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
+  }, []);
+
+  if (!fontsReady) {
+    return <View style={{ flex: 1, backgroundColor: '#040608' }} />;
+  }
+
+  return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ComposeProviders providers={providers}>
-          <InfotainmentShell>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-            <OfflineBanner />
-            <StatusBar style="light" />
-          </InfotainmentShell>
-        </ComposeProviders>
+        <AuthProvider>
+          <AuthGate />
+        </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

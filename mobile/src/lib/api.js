@@ -168,6 +168,24 @@ export async function apiFetch(path, options = {}) {
     throw err;
   }
 
+  // Auto-inject Bearer token unless _skipAuth is set
+  if (!options._skipAuth) {
+    try {
+      const SecureStore = require('expo-secure-store');
+      const token = await SecureStore.getItemAsync('sc_access_token');
+      if (token) {
+        options.headers = {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+        };
+      }
+    } catch {
+      // SecureStore not available (e.g., web) — continue without token
+    }
+  }
+  // Remove internal flag before passing to fetch
+  delete options._skipAuth;
+
   const method = (options.method || 'GET').toUpperCase();
 
   // Deduplicate concurrent identical GET requests

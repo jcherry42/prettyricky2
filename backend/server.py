@@ -90,8 +90,9 @@ async def lifespan(app: FastAPI):
     logger.info("✅ Audit logging initialized")
     
     # Initialize auth router with database
-    from auth_endpoints import init_auth_router
-    init_auth_router(db, audit_logger)
+    # PIN auth replaces email/password auth
+    # from auth_endpoints import init_auth_router
+    # init_auth_router(db, audit_logger)
     logger.info("✅ Auth router initialized")
     
     # Initialize repositories
@@ -178,6 +179,7 @@ from routes.tts_voice import router as tts_voice_router, init_tts_voice_routes, 
 from routes.ai_features import router as ai_features_router, init_ai_features_routes
 from routes.data_management import router as data_mgmt_router, init_data_management_routes
 from routes.integrations_routes import router as integrations_router, init_integrations_routes
+from routes.pin_auth import router as pin_auth_router, init_pin_auth_routes
 
 init_printer_routes_v2(db)
 init_vehicle_routes_v2(db, vehicle_repo)
@@ -188,6 +190,7 @@ init_tts_voice_routes(db)
 init_ai_features_routes(db, ab_testing_service=ab_testing_service)
 init_data_management_routes(db, customer_repo, vehicle_repo, source_repo, import_processor, get_scheduler)
 init_integrations_routes(db)
+init_pin_auth_routes(db)
 
 api_router.include_router(printer_router_v2)
 api_router.include_router(vehicles_router_v2)
@@ -198,6 +201,7 @@ api_router.include_router(tts_voice_router)
 api_router.include_router(ai_features_router)
 api_router.include_router(data_mgmt_router)
 api_router.include_router(integrations_router)
+api_router.include_router(pin_auth_router)
 
 
 # ============== REQUEST/RESPONSE MODELS ==============
@@ -1402,9 +1406,10 @@ async def get_uploaded_file(filename: str):
 
 # ============== ROUTER & MIDDLEWARE ==============
 
-# Include authentication routes (NO AUTH REQUIRED)
-from auth_endpoints import auth_router
-app.include_router(auth_router)
+# PIN Authentication (replaces email/password auth)
+# auth_router disabled — PIN auth registered via pin_auth_router in api_router
+# from auth_endpoints import auth_router
+# app.include_router(auth_router)
 
 # Include main API routes
 app.include_router(api_router)
