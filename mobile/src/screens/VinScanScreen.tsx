@@ -192,7 +192,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
     <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
       {/* ── Header ── */}
       <LinearGradient
-        colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+        colors={['rgba(20,14,8,0.95)', 'rgba(12,8,4,0.95)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={[vdStyles.header, { paddingTop: insets.top + 14 }]}
@@ -292,7 +292,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
             style={({ pressed }) => [vdStyles.saveBtn, pressed && { opacity: 0.82 }]}
           >
             <LinearGradient
-              colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+              colors={['rgba(214,178,94,0.18)', 'rgba(214,178,94,0.08)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={vdStyles.saveBtnGrad}
@@ -342,8 +342,8 @@ const vdStyles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: colors.gold,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(214,178,94,0.20)',
   },
   closeBtn: {
     position: 'absolute',
@@ -416,10 +416,10 @@ const vdStyles = StyleSheet.create({
   },
   sectionHdrText: { fontSize: 11, fontWeight: '800', color: colors.gold, letterSpacing: 1.5 },
   sectionBody: {
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
     overflow: 'hidden',
   },
   row: {
@@ -1383,7 +1383,7 @@ export function VinScanScreen() {
 
         {/* ── Manual Entry Card ── */}
         <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.sectionBezel}
@@ -1541,56 +1541,72 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   scanModeBezel: {
-    padding: 2,
+    padding: 1.5,
     borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   scanModeCard: {
-    backgroundColor: 'rgba(8,10,14,0.92)',
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: 'rgba(8,10,14,0.95)',
+    borderRadius: 13,
+    padding: 16,
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(255,255,255,0.04)',
   },
   scanModeCardAi: {
-    backgroundColor: 'rgba(6,12,22,0.95)',
-    borderColor: 'rgba(100,200,255,0.10)',
+    backgroundColor: 'rgba(6,10,20,0.95)',
+    borderColor: 'rgba(100,200,255,0.08)',
   },
   scanModeIconWrap: {
-    marginBottom: 2,
+    marginBottom: 4,
   },
   scanModeIconBg: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: 'rgba(214,178,94,0.4)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 4,
   },
   scanModeTitle: {
     ...type.label,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.gold,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   scanModeDesc: {
     ...type.bodyDim,
     fontSize: 10,
     color: colors.textMute,
     textAlign: 'center',
+    lineHeight: 14,
   },
 
   // ── Section layout ──
   sectionBezel: {
-    padding: 3,
+    padding: 2,
     borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   sectionCard: {
-    backgroundColor: colors.panel,
-    borderRadius: 9,
+    backgroundColor: 'rgba(10,12,18,0.92)',
+    borderRadius: 10,
     padding: 14,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1646,20 +1662,20 @@ const styles = StyleSheet.create({
     ...type.body,
     flex: 1,
     height: 50,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 14,
     color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.40)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     fontSize: 16,
     fontWeight: '800',
-    letterSpacing: 2,
+    letterSpacing: 2.5,
   },
   addButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1687,7 +1703,7 @@ const styles = StyleSheet.create({
   },
 
   // ── Category tabs ──
-  categoryTabs: { flexDirection: 'row', gap: 8 },
+  categoryTabs: { flexDirection: 'row', gap: 6 },
   categoryTab: {
     flex: 1,
     flexDirection: 'row',
@@ -1696,31 +1712,46 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
-  categoryTabActive: { borderColor: colors.gold, backgroundColor: 'rgba(214,178,94,0.10)' },
-  categoryTabActiveTrade: { borderColor: '#40D2FF', backgroundColor: 'rgba(64,210,255,0.10)' },
+  categoryTabActive: {
+    borderColor: 'rgba(214,178,94,0.35)',
+    backgroundColor: 'rgba(214,178,94,0.08)',
+    shadowColor: 'rgba(214,178,94,0.3)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  categoryTabActiveTrade: {
+    borderColor: 'rgba(64,210,255,0.35)',
+    backgroundColor: 'rgba(64,210,255,0.08)',
+    shadowColor: 'rgba(64,210,255,0.3)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+  },
   categoryTabText: { ...type.label, fontSize: 10, color: colors.textMute },
   categoryTabTextActive: { color: colors.gold },
   tabCount: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  tabCountActive: { backgroundColor: 'rgba(214,178,94,0.3)' },
+  tabCountActive: { backgroundColor: 'rgba(214,178,94,0.20)' },
   tabCountText: { ...type.label, fontSize: 9, color: colors.textMute },
   tabCountTextActive: { color: colors.gold },
 
   // ── History ──
   historyContainer: {
     flex: 1,
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
     padding: 14,
   },
   historyHeader: {
@@ -1729,11 +1760,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
-  historyCard: { borderRadius: 10, overflow: 'hidden' },
+  historyCard: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   historyGradient: {
     padding: 12,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10,
     position: 'relative',
   },
@@ -2128,11 +2167,16 @@ const styles = StyleSheet.create({
   pickerCard: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(12,14,20,0.97)',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 12,
   },
   pickerTitle: {
     ...type.label,

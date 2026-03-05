@@ -158,7 +158,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <LinearGradient colors={[colors.bg0, colors.bg1]} style={styles.container}>
         <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          colors={['rgba(20,14,8,0.95)', 'rgba(12,8,4,0.95)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.header}
@@ -388,8 +388,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.gold,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(214,178,94,0.20)',
   },
   closeButton: { padding: 4 },
   headerTitle: { ...type.h1, color: colors.text },

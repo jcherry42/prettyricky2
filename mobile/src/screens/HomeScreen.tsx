@@ -269,7 +269,7 @@ export function HomeScreen() {
         <View style={{ height: 52 }} />
         <View style={styles.searchContainer}>
           <LinearGradient
-            colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]}
+            colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)', 'rgba(40,25,12,0.85)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.searchBezel}

@@ -556,44 +556,88 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
             >
               {/* ── Personalize ── */}
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>Personalize</SectionTitle>
-                <View style={{ height: 12 }} />
-                <Text style={styles.personalizeLabel}>Sales Rep</Text>
-                <TextInput
-                  value={settings.salesRepName || ''}
-                  onChangeText={(val: string) => setSalesRepName(val)}
-                  placeholder="Your name"
-                  placeholderTextColor={colors.textMute}
-                  style={styles.personalizeInput}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                />
-                <Text style={styles.personalizeHint}>Emails will appear as "From: {settings.salesRepName || 'Your Name'}"</Text>
-                <View style={{ height: 14 }} />
-                <Text style={styles.personalizeLabel}>Dealership Name</Text>
-                <TextInput
-                  value={settings.dealershipName || ''}
-                  onChangeText={(val: string) => setDealershipName(val)}
-                  placeholder="Dealership name"
-                  placeholderTextColor={colors.textMute}
-                  style={styles.personalizeInput}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                />
-                <View style={{ height: 14 }} />
-                <Text style={styles.personalizeLabel}>Dealership Address</Text>
-                <TextInput
-                  value={settings.dealershipAddress || ''}
-                  onChangeText={(val: string) => setDealershipAddress(val)}
-                  placeholder="123 Main St, City, ST 00000"
-                  placeholderTextColor={colors.textMute}
-                  style={styles.personalizeInput}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="done"
-                />
+                <View style={styles.personalizeHeader}>
+                  <View style={styles.personalizeIconWrap}>
+                    <Ionicons name="person-circle" size={20} color={colors.gold} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <SectionTitle>Personalize</SectionTitle>
+                    <Text style={styles.personalizeDesc}>Your identity across all customer communications</Text>
+                  </View>
+                </View>
+
+                <View style={styles.personalizeFieldGroup}>
+                  <View style={styles.personalizeFieldRow}>
+                    <Ionicons name="person" size={15} color={colors.textDim} style={{ marginTop: 14 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.personalizeLabel}>Sales Rep</Text>
+                      <TextInput
+                        value={settings.salesRepName || ''}
+                        onChangeText={(val: string) => setSalesRepName(val)}
+                        placeholder="Your full name"
+                        placeholderTextColor={colors.textMute}
+                        style={styles.personalizeInput}
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                        returnKeyType="next"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.personalizeFieldSep} />
+
+                  <View style={styles.personalizeFieldRow}>
+                    <Ionicons name="business" size={15} color={colors.textDim} style={{ marginTop: 14 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.personalizeLabel}>Dealership</Text>
+                      <TextInput
+                        value={settings.dealershipName || ''}
+                        onChangeText={(val: string) => setDealershipName(val)}
+                        placeholder="Dealership name"
+                        placeholderTextColor={colors.textMute}
+                        style={styles.personalizeInput}
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                        returnKeyType="next"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.personalizeFieldSep} />
+
+                  <View style={styles.personalizeFieldRow}>
+                    <Ionicons name="location" size={15} color={colors.textDim} style={{ marginTop: 14 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.personalizeLabel}>Address</Text>
+                      <TextInput
+                        value={settings.dealershipAddress || ''}
+                        onChangeText={(val: string) => setDealershipAddress(val)}
+                        placeholder="123 Main St, City, ST 00000"
+                        placeholderTextColor={colors.textMute}
+                        style={styles.personalizeInput}
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                        returnKeyType="done"
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Email Preview Card */}
+                <View style={styles.emailPreviewCard}>
+                  <View style={styles.emailPreviewRow}>
+                    <Ionicons name="mail" size={13} color={colors.gold} />
+                    <Text style={styles.emailPreviewLabel}>Email Preview</Text>
+                  </View>
+                  <View style={styles.emailPreviewBody}>
+                    <Text style={styles.emailPreviewFrom}>
+                      From: <Text style={styles.emailPreviewValue}>{settings.salesRepName?.trim() || 'Your Name'}</Text>
+                    </Text>
+                    <Text style={styles.emailPreviewSubject}>
+                      Subject: <Text style={styles.emailPreviewValue}>Follow-up from {settings.salesRepName?.trim() || settings.dealershipName?.trim() || 'your dealership'}</Text>
+                    </Text>
+                  </View>
+                </View>
               </GlassCard>
 
               <View style={{ height: 14 }} />
@@ -952,29 +996,105 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '900',
   },
+  personalizeHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 16,
+  },
+  personalizeIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(214,178,94,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  personalizeDesc: {
+    fontSize: 11,
+    color: colors.textMute,
+    marginTop: 3,
+    lineHeight: 15,
+  },
+  personalizeFieldGroup: {
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+    overflow: 'hidden',
+  },
+  personalizeFieldRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  personalizeFieldSep: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    marginHorizontal: 12,
+  },
   personalizeLabel: {
     color: colors.textDim,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    letterSpacing: 0.8,
-    marginBottom: 6,
+    letterSpacing: 0.6,
+    marginBottom: 4,
+    textTransform: 'uppercase' as const,
   },
   personalizeInput: {
-    height: 44,
-    borderRadius: 10,
+    height: 38,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.stroke,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(0,0,0,0.20)',
     color: colors.text,
     fontSize: 14,
     fontWeight: '600',
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
   },
-  personalizeHint: {
-    marginTop: 6,
+  emailPreviewCard: {
+    marginTop: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.12)',
+    backgroundColor: 'rgba(214,178,94,0.04)',
+    overflow: 'hidden',
+  },
+  emailPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  emailPreviewLabel: {
     fontSize: 10,
+    fontWeight: '700',
+    color: colors.gold,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+  emailPreviewBody: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    gap: 3,
+  },
+  emailPreviewFrom: {
+    fontSize: 12,
     color: colors.textMute,
-    fontStyle: 'italic',
+  },
+  emailPreviewSubject: {
+    fontSize: 12,
+    color: colors.textMute,
+  },
+  emailPreviewValue: {
+    color: colors.text,
+    fontWeight: '600',
   },
   langRow: {
     flexDirection: 'row',

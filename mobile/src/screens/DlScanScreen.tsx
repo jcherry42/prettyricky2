@@ -86,7 +86,7 @@ function HistoryCard({ item, onPress, onSaveToCustomer }) {
       style={({ pressed }) => [styles.historyCard, pressed && styles.pressed]}
     >
       <LinearGradient
-        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
+        colors={['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.historyGradient}
@@ -963,7 +963,7 @@ export function DlScanScreen() {
         >
           <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
             <LinearGradient
-              colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+              colors={['rgba(20,14,8,0.95)', 'rgba(12,8,4,0.95)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.detailHeader}
@@ -1001,13 +1001,21 @@ const styles = StyleSheet.create({
   },
 
   // Section
-  sectionBezel: { padding: 3, borderRadius: 12 },
+  sectionBezel: {
+    padding: 2,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
   sectionCard: {
-    backgroundColor: colors.panel,
-    borderRadius: 9,
+    backgroundColor: 'rgba(10,12,18,0.92)',
+    borderRadius: 10,
     padding: 14,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1043,7 +1051,7 @@ const styles = StyleSheet.create({
   // Scan mode buttons row
   scanModes: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     marginBottom: 12,
   },
   scanModeBtn: {
@@ -1051,28 +1059,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    backgroundColor: 'rgba(6,8,12,0.90)',
+    borderColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(6,8,12,0.92)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   scanModeGrad: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 8,
-    gap: 5,
-    minHeight: 90,
+    gap: 6,
+    minHeight: 95,
   },
-  scanModeLabel: { ...type.label, fontSize: 10, color: colors.gold, letterSpacing: 0.8 },
-  scanModeHint: { ...type.bodyDim, fontSize: 9, color: colors.textMute, textAlign: 'center' },
+  scanModeLabel: { ...type.label, fontSize: 10, color: colors.gold, letterSpacing: 1 },
+  scanModeHint: { ...type.bodyDim, fontSize: 9, color: colors.textMute, textAlign: 'center', lineHeight: 13 },
   tipText: { ...type.bodyDim, fontSize: 11, color: colors.textMute, textAlign: 'center' },
 
   // History
   historyContainer: {
     flex: 1,
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
     padding: 14,
   },
   historyHeaderRow: {
@@ -1082,7 +1095,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   countBadge: {
-    backgroundColor: colors.gold,
+    backgroundColor: 'rgba(214,178,94,0.85)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -1090,11 +1103,19 @@ const styles = StyleSheet.create({
   countText: { ...type.label, fontSize: 10, color: colors.bg0 },
 
   // History card
-  historyCard: { borderRadius: 10, overflow: 'hidden' },
+  historyCard: {
+    borderRadius: 10,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   historyGradient: {
-    padding: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.05)',
     borderRadius: 10,
   },
   quiltedPattern: {
@@ -1269,21 +1290,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   shutterInner: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.gold,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
     elevation: 12,
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.9)',
   },
-  shutterLabel: { ...type.label, fontSize: 11, color: colors.textDim, letterSpacing: 1 },
+  shutterLabel: { ...type.label, fontSize: 10, color: colors.textDim, letterSpacing: 1.2 },
 
   // PDF417 scanner
   scannerWrap: {
@@ -1373,8 +1394,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.gold,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(214,178,94,0.20)',
   },
   detailClose: { padding: 4 },
   detailTitle: { ...type.h1, color: colors.text },
@@ -1385,52 +1406,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 18,
   },
-  extractTitle: { ...type.label, fontSize: 13, color: colors.gold },
+  extractTitle: { ...type.label, fontSize: 13, color: colors.gold, letterSpacing: 1.2 },
   editBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(214,178,94,0.15)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    backgroundColor: 'rgba(214,178,94,0.10)',
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.18)',
   },
   editBtnText: { ...type.label, fontSize: 11, color: colors.gold },
   fieldsScroll: { flex: 1 },
   fieldBox: {
-    marginBottom: 14,
+    marginBottom: 10,
     padding: 12,
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.04)',
   },
   fieldLabelRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6,
   },
-  fieldLabel: { ...type.label, fontSize: 11, color: colors.textDim },
-  fieldValue: { ...type.body, color: colors.text, fontSize: 14 },
+  fieldLabel: { ...type.label, fontSize: 10, color: colors.textDim, letterSpacing: 0.6 },
+  fieldValue: { ...type.body, color: colors.text, fontSize: 15, fontWeight: '600' },
   fieldInput: {
     ...type.body,
     height: 42,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.stroke2,
+    borderColor: 'rgba(214,178,94,0.20)',
     paddingHorizontal: 12,
     color: colors.text,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     fontSize: 14,
   },
   saveCustomerBtn: {
-    marginTop: 8, height: 52,
-    borderRadius: 10,
+    marginTop: 12, height: 52,
+    borderRadius: 12,
     backgroundColor: colors.gold,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: colors.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   saveCustomerText: { ...type.body, fontFamily: 'SpaceGrotesk_700Bold', color: colors.bg0, fontSize: 15 },
   savedCustomerBadge: {
