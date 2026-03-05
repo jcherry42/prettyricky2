@@ -12,7 +12,7 @@ import os
 import time
 
 # Use the configured backend URL from frontend/.env
-BACKEND_URL = "https://rolls-royce-ts.preview.emergentagent.com"
+BACKEND_URL = "https://scanner-elite.preview.emergentagent.com"
 
 class Colors:
     """ANSI color codes for terminal output"""

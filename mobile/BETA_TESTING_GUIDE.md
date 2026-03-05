@@ -47,7 +47,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://rolls-royce-ts.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://scanner-elite.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -130,7 +130,7 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://rolls-royce-ts.preview.emergentagent.com` |
+| Default Backend | `https://scanner-elite.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |
 
