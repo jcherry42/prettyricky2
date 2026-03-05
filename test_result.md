@@ -581,7 +581,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/mobile/src/components/SportModeButton.js, /app/mobile/src/components/SportModeActivation.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
@@ -591,6 +591,12 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Rebuilt flame system using layered flame tongues, gradient core, flicker, and sparks (Expo Go compatible). Pending user verification."
+      - working: false
+        agent: "user"
+        comment: "User reports 1/10; flashing orange circle looks dumb; wants exact GIF used directly for both button and activation overlay."
+      - working: "NA"
+        agent: "main"
+        comment: "Preprocessed provided GIF to transparent background and replaced SportModeButton + SportModeActivation flames with GIF; removed heat cloud/flashing circle. Pending user verification."
 
   - task: "PTT Mobile Pipeline Fix - Recording + Upload + Overlay"
     implemented: true

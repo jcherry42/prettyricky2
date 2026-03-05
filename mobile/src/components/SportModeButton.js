@@ -27,14 +27,12 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Platform, StyleSheet, View, Pressable, Text } from 'react-native';
+import { StyleSheet, View, Pressable, Text, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withRepeat,
   withSequence,
   withTiming,
-  withDelay,
   Easing,
   cancelAnimation,
 } from 'react-native-reanimated';
@@ -46,226 +44,9 @@ import { playActivationSound, playDeactivationSound, SOUND_PROFILES } from '../l
 import { SportModeActivation } from './SportModeActivation';
 import { flagFor } from '../utils/language';
 
-// ─── Flame tongue definitions (match reference GIF) ───────────────────────────
-// Each flame tongue:
-//   x, y: bottom-left anchor
-//   w, h: size of the flame tongue
-//   rise: vertical travel
-//   sway: horizontal sway
-//   sp:  animation period (ms)
-//   dl:  start delay (ms)
-//   op:  peak opacity
-//   fg:  render in FRONT of button face
-//   tilt: base rotation
-//   stretch: peak vertical stretch
+// ─── Flame GIF (transparent background) ──────────────────────────────────────
 
-const FLAMES = [
-  // Back row (tall tongues)
-  { x: -6, y: -10, w: 18, h: 34, rise: 6,  sway: 3, sp: 760, dl:   0, op: 0.82, fg: false, tilt: -6, stretch: 1.10 },
-  { x:  4, y:  -8, w: 20, h: 40, rise: 8,  sway: 4, sp: 820, dl:  70, op: 0.90, fg: false, tilt: -3, stretch: 1.16 },
-  { x: 16, y:  -8, w: 22, h: 46, rise: 10, sway: 5, sp: 880, dl: 140, op: 0.94, fg: false, tilt:  1, stretch: 1.20 },
-  { x: 28, y:  -6, w: 24, h: 52, rise: 12, sway: 6, sp: 920, dl:  30, op: 0.98, fg: false, tilt: -1, stretch: 1.25 },
-  { x: 42, y:  -8, w: 22, h: 48, rise: 10, sway: 5, sp: 900, dl: 110, op: 0.95, fg: false, tilt:  2, stretch: 1.20 },
-  { x: 54, y:  -8, w: 20, h: 42, rise: 8,  sway: 4, sp: 840, dl: 200, op: 0.90, fg: false, tilt:  3, stretch: 1.15 },
-  { x: 66, y: -10, w: 18, h: 34, rise: 6,  sway: 3, sp: 780, dl:  90, op: 0.82, fg: false, tilt:  6, stretch: 1.10 },
-  { x: 74, y: -12, w: 16, h: 30, rise: 5,  sway: 3, sp: 740, dl: 160, op: 0.78, fg: false, tilt:  7, stretch: 1.08 },
-
-  // Foreground tongues (shorter, brighter)
-  { x:  8, y:  -2, w: 16, h: 28, rise: 7,  sway: 3, sp: 720, dl: 120, op: 0.55, fg: true,  tilt: -6, stretch: 1.20 },
-  { x: 34, y:  -1, w: 18, h: 30, rise: 8,  sway: 4, sp: 760, dl:  60, op: 0.60, fg: true,  tilt:  2, stretch: 1.22 },
-  { x: 58, y:  -2, w: 16, h: 26, rise: 6,  sway: 3, sp: 700, dl: 180, op: 0.50, fg: true,  tilt:  5, stretch: 1.18 },
-];
-
-const SPARKS = [
-  { x: 10, y:  6, size: 2.0, rise: 18, sp: 820, dl:  30, op: 0.70 },
-  { x: 24, y:  8, size: 2.6, rise: 20, sp: 900, dl: 110, op: 0.65 },
-  { x: 38, y:  6, size: 2.2, rise: 16, sp: 780, dl: 170, op: 0.60 },
-  { x: 52, y:  8, size: 2.4, rise: 18, sp: 860, dl:  80, op: 0.65 },
-  { x: 66, y:  6, size: 2.0, rise: 15, sp: 820, dl: 140, op: 0.60 },
-];
-
-// ─── Flame tongue particle (matches reference GIF) ───────────────────────────
-
-const FlameTongue = React.memo(function FlameTongue({ cfg, active }) {
-  const riseVal    = useSharedValue(0);
-  const swayVal    = useSharedValue(0);
-  const stretchVal = useSharedValue(1);
-  const opVal      = useSharedValue(0);
-
-  useEffect(() => {
-    if (!active) {
-      cancelAnimation(riseVal);
-      cancelAnimation(swayVal);
-      cancelAnimation(stretchVal);
-      cancelAnimation(opVal);
-      riseVal.value = 0;
-      swayVal.value = 0;
-      stretchVal.value = 1;
-      opVal.value = withTiming(0, { duration: 250 });
-      return;
-    }
-
-    opVal.value = withTiming(1, { duration: 180 });
-    const eio = Easing.inOut(Easing.sin);
-
-    riseVal.value = withDelay(cfg.dl,
-      withRepeat(
-        withSequence(
-          withTiming(-cfg.rise, { duration: cfg.sp, easing: eio }),
-          withTiming(0,         { duration: Math.floor(cfg.sp * 1.12), easing: eio })
-        ), -1
-      )
-    );
-
-    swayVal.value = withDelay(Math.floor(cfg.dl * 0.6),
-      withRepeat(
-        withSequence(
-          withTiming( cfg.sway, { duration: Math.floor(cfg.sp * 0.6), easing: eio }),
-          withTiming(-cfg.sway, { duration: Math.floor(cfg.sp * 0.6), easing: eio })
-        ), -1
-      )
-    );
-
-    stretchVal.value = withDelay(Math.floor(cfg.dl * 0.45),
-      withRepeat(
-        withSequence(
-          withTiming(cfg.stretch, { duration: Math.floor(cfg.sp * 0.45), easing: Easing.inOut(Easing.ease) }),
-          withTiming(1,           { duration: Math.floor(cfg.sp * 0.45), easing: Easing.inOut(Easing.ease) })
-        ), -1
-      )
-    );
-  }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const animStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: swayVal.value },
-      { translateY: riseVal.value },
-      { scaleY: stretchVal.value },
-      { rotateZ: `${cfg.tilt}deg` },
-    ],
-    opacity: opVal.value * cfg.op,
-  }));
-
-  const topRadius = cfg.w * 0.6;
-  const bottomRadius = cfg.w * 0.28;
-
-  return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          left: cfg.x,
-          bottom: cfg.y,
-          width: cfg.w,
-          height: cfg.h,
-          borderTopLeftRadius: topRadius,
-          borderTopRightRadius: topRadius,
-          borderBottomLeftRadius: bottomRadius,
-          borderBottomRightRadius: bottomRadius,
-          overflow: 'hidden',
-          shadowColor: '#FF6D00',
-          shadowOpacity: 0.9,
-          shadowRadius: cfg.w * 1.2,
-          shadowOffset: { width: 0, height: -2 },
-          elevation: Platform.OS === 'android' ? Math.ceil(cfg.w * 0.6) : 0,
-          zIndex: cfg.fg ? 12 : 2,
-        },
-        animStyle,
-      ]}
-    >
-      <LinearGradient
-        colors={['rgba(255,255,230,0.98)', '#FFD36A', '#FF8A00', '#FF3D00']}
-        locations={[0, 0.35, 0.7, 1]}
-        start={{ x: 0.5, y: 1 }}
-        end={{ x: 0.5, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={['rgba(255,255,255,0.92)', 'rgba(255,214,120,0.85)', 'rgba(255,120,0,0)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0.5, y: 1 }}
-        end={{ x: 0.5, y: 0 }}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          alignSelf: 'center',
-          width: cfg.w * 0.42,
-          height: cfg.h * 0.6,
-          borderRadius: cfg.w * 0.4,
-        }}
-      />
-    </Animated.View>
-  );
-});
-
-// ─── Flying sparks ───────────────────────────────────────────────────────────
-
-const FlameSpark = React.memo(function FlameSpark({ cfg, active }) {
-  const riseVal = useSharedValue(0);
-  const opVal   = useSharedValue(0);
-  const scVal   = useSharedValue(0.6);
-
-  useEffect(() => {
-    if (!active) {
-      cancelAnimation(riseVal);
-      cancelAnimation(opVal);
-      cancelAnimation(scVal);
-      riseVal.value = 0;
-      opVal.value = 0;
-      scVal.value = 0.6;
-      return;
-    }
-
-    riseVal.value = withDelay(cfg.dl,
-      withRepeat(withSequence(
-        withTiming(-cfg.rise, { duration: cfg.sp, easing: Easing.out(Easing.quad) }),
-        withTiming(0,         { duration: 0 })
-      ), -1)
-    );
-
-    opVal.value = withDelay(cfg.dl,
-      withRepeat(withSequence(
-        withTiming(cfg.op, { duration: Math.floor(cfg.sp * 0.2) }),
-        withTiming(0,      { duration: Math.floor(cfg.sp * 0.8), easing: Easing.out(Easing.ease) })
-      ), -1)
-    );
-
-    scVal.value = withDelay(cfg.dl,
-      withRepeat(withSequence(
-        withTiming(1.4, { duration: Math.floor(cfg.sp * 0.25) }),
-        withTiming(0.6, { duration: Math.floor(cfg.sp * 0.75) })
-      ), -1)
-    );
-  }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const animStyle = useAnimatedStyle(() => ({
-    opacity: opVal.value,
-    transform: [{ translateY: riseVal.value }, { scale: scVal.value }],
-  }));
-
-  return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          left: cfg.x,
-          bottom: cfg.y,
-          width: cfg.size,
-          height: cfg.size,
-          borderRadius: cfg.size / 2,
-          backgroundColor: '#FFD36A',
-          shadowColor: '#FF6D00',
-          shadowOpacity: 0.9,
-          shadowRadius: cfg.size * 4,
-          shadowOffset: { width: 0, height: -1 },
-          elevation: Platform.OS === 'android' ? 3 : 0,
-          zIndex: 8,
-        },
-        animStyle,
-      ]}
-    />
-  );
-});
+const FLAME_GIF = require('../../assets/flames/flame.gif');
 
 // ─── Main Button ──────────────────────────────────────────────────────────────
 
@@ -284,15 +65,10 @@ export function SportModeButton() {
 
   useEffect(() => {
     if (active) {
-      glowOpacity.value = withRepeat(
-        withSequence(
-          withTiming(0.9, { duration: 700, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0.4, { duration: 700, easing: Easing.inOut(Easing.ease) })
-        ), -1
-      );
+      glowOpacity.value = withTiming(1, { duration: 220 });
     } else {
       cancelAnimation(glowOpacity);
-      glowOpacity.value = withTiming(0, { duration: 400 });
+      glowOpacity.value = withTiming(0, { duration: 250 });
     }
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -323,17 +99,13 @@ export function SportModeButton() {
     }
   }, [active, toggleSportMode, profileId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const bg = FLAMES.filter(p => !p.fg);
-  const fg = FLAMES.filter(p =>  p.fg);
 
   return (
     <View style={styles.wrap}>
-      {/* Ambient heat cloud — soft orange/red radial glow */}
-      <Animated.View style={[styles.heatCloud, glowStyle]} />
 
-      {/* Background flame tongues */}
-      {bg.map((cfg, i) => <FlameTongue key={`bg${i}`} cfg={cfg} active={active} />)}
-      {SPARKS.map((cfg, i) => <FlameSpark key={`sp${i}`} cfg={cfg} active={active} />)}
+      <Animated.View style={[styles.flameWrap, glowStyle]} pointerEvents="none">
+        <Image source={FLAME_GIF} style={styles.flameGif} />
+      </Animated.View>
 
       {/* Button face (zIndex 10) */}
       <Animated.View style={[styles.btnWrap, pressStyle]}>
@@ -358,8 +130,7 @@ export function SportModeButton() {
         </Pressable>
       </Animated.View>
 
-      {/* Foreground flame tongues */}
-      {fg.map((cfg, i) => <FlameTongue key={`fg${i}`} cfg={cfg} active={active} />)}
+
 
       <SportModeActivation visible={showActivation} profileId={profileId} onComplete={() => setShowActivation(false)} />
     </View>
@@ -374,25 +145,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  heatCloud: {
+  flameWrap: {
     position: 'absolute',
-    width: 96,
-    height: 130,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255,120,20,0.22)',
-    shadowColor: '#FF6A00',
-    shadowOpacity: 0.95,
-    shadowRadius: 48,
-    shadowOffset: { width: 0, height: -6 },
-    elevation: 0,
-    ...(Platform.OS === 'web' ? {
-      filter: 'blur(18px)',
-      mixBlendMode: 'screen',
-      backgroundColor: 'rgba(255,120,20,0.35)',
-      width: 120,
-      height: 150,
-      borderRadius: 70,
-    } : {}),
+    width: 140,
+    height: 200,
+    left: -30,
+    bottom: -80,
+    zIndex: 2,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  flameGif: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   btnWrap: { zIndex: 10 },
   btn: {
