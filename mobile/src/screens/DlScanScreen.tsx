@@ -338,9 +338,8 @@ export function DlScanScreen() {
 
       const response = await apiFetch('/api/license/scan-from-url', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_url: imageUrl, retry_count: 0 }),
-        signal, // Abort after 30s
+        timeout: 30000, // AI Vision OCR can take 10-15 seconds
       });
 
       abortCleanup();
@@ -631,7 +630,7 @@ export function DlScanScreen() {
 
         {/* ── Scan Action Cards ── */}
         <LinearGradient
-          colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+          colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.sectionBezel}

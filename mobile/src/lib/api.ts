@@ -85,7 +85,13 @@ async function _doFetch(url: string, options: any) {
 
     try {
       const headers = { ...(options.headers || {}) };
-      if (!options.isFormData && !headers['Content-Type']) {
+
+      // For FormData bodies let the runtime set Content-Type (with boundary).
+      // For everything else default to JSON.
+      const isForm = options.isFormData || (options.body instanceof FormData);
+      if (isForm) {
+        delete headers['Content-Type'];
+      } else if (!headers['Content-Type']) {
         headers['Content-Type'] = 'application/json';
       }
 
