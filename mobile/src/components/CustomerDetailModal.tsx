@@ -53,9 +53,11 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   const hasPhone = customer?.phone && customer.phone !== '—';
   const hasEmail = customer?.email && customer.email !== '—';
 
-  const smsGreeting = `Hi ${customer?.first_name || 'there'}, this is your sales consultant at Supercharg'd. `;
-  const emailSubject = `Follow-up from Supercharg'd`;
-  const emailBody = `Hi ${customer?.first_name || 'there'},\n\nThank you for visiting our dealership. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards`;
+  const salesRep = settings.salesRepName?.trim() || '';
+  const dealership = settings.dealershipName?.trim() || '';
+  const smsGreeting = `Hi ${customer?.first_name || 'there'}, this is ${salesRep || 'your sales consultant'}${dealership ? ` at ${dealership}` : ''}. `;
+  const emailSubject = `Follow-up from ${salesRep || dealership || 'your dealership'}`;
+  const emailBody = `Hi ${customer?.first_name || 'there'},\n\nThank you for visiting${dealership ? ` ${dealership}` : ' our dealership'}. I wanted to follow up regarding your vehicle interest.\n\nPlease let me know if you have any questions.\n\nBest regards${salesRep ? `,\n${salesRep}` : ''}`;
 
   const handleSms = async (useTranslation = false) => {
     if (!hasPhone) {

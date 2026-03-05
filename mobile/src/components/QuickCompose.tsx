@@ -175,12 +175,13 @@ export function QuickCompose() {
     if (!message) return;
     impactMedium();
     const to = selectedCustomer?.email || '';
-    const subject = encodeURIComponent('From Supercharg\'d');
+    const fromName = settings.salesRepName?.trim() || 'Your Sales Rep';
+    const subject = encodeURIComponent(`From ${fromName}`);
     const body = encodeURIComponent(message);
     Linking.openURL(`mailto:${to}?subject=${subject}&body=${body}`).catch(() => {
       toast.showError('Unable to open email app');
     });
-  }, [text, translatedText, selectedCustomer, toast]);
+  }, [text, translatedText, selectedCustomer, toast, settings.salesRepName]);
 
   // Link customer
   const linkCustomer = useCallback((c) => {

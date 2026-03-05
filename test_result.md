@@ -9,29 +9,25 @@ user_problem_statement: |
 
 latest_fix:
   date: "2025-07"
-  issue: "Full TypeScript Migration of Mobile Application"
-  root_cause: "Entire mobile/src/ codebase was JavaScript — no static type checking, no compile-time error detection"
-  fix_applied: |
-    Complete TypeScript migration of 74 files:
-    - 30 .ts files (utilities, libs, configs, hooks, theme, types)
-    - 44 .tsx files (components, contexts, screens, navigation)
-    - App.js → App.tsx
-    - Removed duplicate .js files where .ts already existed (useCameraLifecycle, events)
-    - Added proper type annotations: component props interfaces, function signatures, context types, API error types
-    - Fixed all 169 initial TypeScript errors to zero
-    - Added `as const` to typography and colors exports for literal type inference
-    - Added GlassCard, Screen, ScreenHeader, CustomerCard, FloatingCustomerButton, ActionButton, VDRow, HomeListHeader, GlowIconButton, SkeletonLine prop interfaces
-    - Typed API module with ApiError interface and proper error casting
-    - Typed CustomerContext fetchCustomers options
-    - Fixed FormData.append for React Native file objects with `as any` casts
-    - Fixed Ionicons name prop with proper `as any` casts for dynamic icon names
-    - Added missing StyleSheet entries (quiltedPattern, stitchingTop, stitchingBottom)
-    - Added missing colors.chrome token
-    - Added Stack.Navigator id prop for @react-navigation v7 compatibility
-    - Added `typecheck` npm script
-    - TypeScript 5.9.3, @types/react 19.2.14 installed
-  user_action_required: "Run 'yarn install' then 'yarn typecheck' to verify. Run 'npx expo start --clear' to test."
+  issue: "Three UI/UX improvements: Personalize settings, flame animation, scanner dark theme"
+  fixes_applied: |
+    1. PERSONALIZE SECTION IN COMMAND CENTER SETTINGS:
+       - Added salesRepName, dealershipName, dealershipAddress to AppSettingsContext with AsyncStorage persistence
+       - Added "Personalize" section at top of Settings tab in CommandCenterModal with labeled text inputs
+       - QuickCompose email subject now reads "From {salesRepName}" instead of "From Supercharg'd"
+       - CustomerDetailModal email subject/body/SMS now uses salesRepName and dealershipName dynamically
+       - Live preview hint shows how the email From line will appear
+    
+    2. FLAME ANIMATION LOWERED 6px:
+       - SportModeButton.tsx flameWrap bottom: 6 → 0
+    
+    3. VIN/DL SCANNER SUBMENUS DARKENED:
+       - VinScanScreen: Replaced bright woodBurrWalnut LinearGradient bezels with dark rgba(40,25,12) tones
+       - VinScanScreen: Darkened scanModeCard backgrounds to rgba(8,10,14,0.92), reduced icon gradient opacity
+       - DlScanScreen: Reduced FRONT SCAN/PDF417/GALLERY gradient opacity from 0.22→0.10, added dark background
+       - IntakeScreen: Darkened VIN/DL scan entry cards (opacity reduced from 0.25/0.06 to 0.12/0.03)
   status: "COMPLETED"
+  tsc_check: "ZERO ERRORS"
 
 latest_fix_prev:
   date: "2025-07"

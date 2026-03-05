@@ -98,7 +98,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
 }
 
 export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }) {
-  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile } = useAppSettings();
+  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -554,6 +554,49 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingBottom: 20 }}
             >
+              {/* ── Personalize ── */}
+              <GlassCard style={{ marginTop: 14 }}>
+                <SectionTitle>Personalize</SectionTitle>
+                <View style={{ height: 12 }} />
+                <Text style={styles.personalizeLabel}>Sales Rep</Text>
+                <TextInput
+                  value={settings.salesRepName || ''}
+                  onChangeText={(val: string) => setSalesRepName(val)}
+                  placeholder="Your name"
+                  placeholderTextColor={colors.textMute}
+                  style={styles.personalizeInput}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+                <Text style={styles.personalizeHint}>Emails will appear as "From: {settings.salesRepName || 'Your Name'}"</Text>
+                <View style={{ height: 14 }} />
+                <Text style={styles.personalizeLabel}>Dealership Name</Text>
+                <TextInput
+                  value={settings.dealershipName || ''}
+                  onChangeText={(val: string) => setDealershipName(val)}
+                  placeholder="Dealership name"
+                  placeholderTextColor={colors.textMute}
+                  style={styles.personalizeInput}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="next"
+                />
+                <View style={{ height: 14 }} />
+                <Text style={styles.personalizeLabel}>Dealership Address</Text>
+                <TextInput
+                  value={settings.dealershipAddress || ''}
+                  onChangeText={(val: string) => setDealershipAddress(val)}
+                  placeholder="123 Main St, City, ST 00000"
+                  placeholderTextColor={colors.textMute}
+                  style={styles.personalizeInput}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                />
+              </GlassCard>
+
+              <View style={{ height: 14 }} />
               <GlassCard style={{ marginTop: 14 }}>
                 <SectionTitle>Language</SectionTitle>
                 <View style={{ height: 14 }} />
@@ -908,6 +951,30 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
     fontWeight: '900',
+  },
+  personalizeLabel: {
+    color: colors.textDim,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  personalizeInput: {
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+    paddingHorizontal: 14,
+  },
+  personalizeHint: {
+    marginTop: 6,
+    fontSize: 10,
+    color: colors.textMute,
+    fontStyle: 'italic',
   },
   langRow: {
     flexDirection: 'row',

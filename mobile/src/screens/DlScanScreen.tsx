@@ -666,7 +666,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(214,178,94,0.22)', 'rgba(214,178,94,0.06)']}
+                  colors={['rgba(214,178,94,0.10)', 'rgba(214,178,94,0.03)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="camera" size={28} color={uploading ? colors.textMute : colors.gold} />
@@ -682,7 +682,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(64,210,255,0.22)', 'rgba(64,210,255,0.06)']}
+                  colors={['rgba(64,210,255,0.10)', 'rgba(64,210,255,0.03)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="barcode" size={28} color={uploading ? colors.textMute : '#40D2FF'} />
@@ -698,7 +698,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(100,155,255,0.22)', 'rgba(100,155,255,0.06)']}
+                  colors={['rgba(100,155,255,0.10)', 'rgba(100,155,255,0.03)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="images" size={28} color={uploading ? colors.textMute : '#649BFF'} />
@@ -1052,7 +1052,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(6,8,12,0.90)',
   },
   scanModeGrad: {
     alignItems: 'center',

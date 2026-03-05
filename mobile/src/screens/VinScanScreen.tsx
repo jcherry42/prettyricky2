@@ -929,7 +929,7 @@ export function VinScanScreen() {
         <View style={styles.scanModeRow}>
           {/* BARCODE SCAN */}
           <LinearGradient
-            colors={[colors.woodBurrWalnut, colors.woodBurrWalnutLight]}
+            colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.scanModeBezel, { flex: 1, marginRight: 6 }]}
@@ -939,7 +939,7 @@ export function VinScanScreen() {
               style={({ pressed }) => [styles.scanModeCard, pressed && styles.pressed]}
             >
               <View style={styles.scanModeIconWrap}>
-                <LinearGradient colors={['rgba(214,178,94,0.25)', 'rgba(214,178,94,0.08)']} style={styles.scanModeIconBg}>
+                <LinearGradient colors={['rgba(214,178,94,0.15)', 'rgba(214,178,94,0.04)']} style={styles.scanModeIconBg}>
                   <Ionicons name="barcode" size={28} color={colors.gold} />
                 </LinearGradient>
               </View>
@@ -950,7 +950,7 @@ export function VinScanScreen() {
 
           {/* AI VISION CAPTURE */}
           <LinearGradient
-            colors={['#1a2a3a', '#0d1e2e']}
+            colors={['rgba(12,20,30,0.85)', 'rgba(8,14,22,0.85)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.scanModeBezel, { flex: 1, marginLeft: 6 }]}
@@ -960,7 +960,7 @@ export function VinScanScreen() {
               style={({ pressed }) => [styles.scanModeCard, styles.scanModeCardAi, pressed && styles.pressed]}
             >
               <View style={styles.scanModeIconWrap}>
-                <LinearGradient colors={['rgba(100,200,255,0.3)', 'rgba(100,200,255,0.08)']} style={styles.scanModeIconBg}>
+                <LinearGradient colors={['rgba(100,200,255,0.15)', 'rgba(100,200,255,0.04)']} style={styles.scanModeIconBg}>
                   <Ionicons name="sparkles" size={28} color="#64C8FF" />
                 </LinearGradient>
               </View>
@@ -1545,17 +1545,17 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   scanModeCard: {
-    backgroundColor: colors.panel,
+    backgroundColor: 'rgba(8,10,14,0.92)',
     borderRadius: 12,
     padding: 14,
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: colors.stroke,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   scanModeCardAi: {
-    backgroundColor: 'rgba(10,20,35,0.95)',
-    borderColor: 'rgba(100,200,255,0.2)',
+    backgroundColor: 'rgba(6,12,22,0.95)',
+    borderColor: 'rgba(100,200,255,0.10)',
   },
   scanModeIconWrap: {
     marginBottom: 2,

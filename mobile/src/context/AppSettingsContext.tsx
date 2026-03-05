@@ -8,11 +8,14 @@ const DEFAULT_SETTINGS = {
   sportMode: false,
   ecoMode: false,
   pttDirection: 'en_to_target',
-  printers: [],
-  activePrinterId: null,
+  printers: [] as any[],
+  activePrinterId: null as string | null,
   ambientLightingEnabled: true,
   ambientLightingIntensity: 'medium',
   soundProfile: 'merica',
+  salesRepName: '',
+  dealershipName: '',
+  dealershipAddress: '',
 };
 
 const AppSettingsContext = createContext(null);
@@ -111,9 +114,21 @@ export function AppSettingsProvider({ children }) {
     await persist({ ...settingsRef.current, ambientLightingEnabled: !settingsRef.current.ambientLightingEnabled });
   }, [persist]);
 
-  const setSoundProfile = useCallback(async (profile) => {
+  const setSoundProfile = useCallback(async (profile: string) => {
     const valid = ['merica', 'euro', 'jdm'];
     await persist({ ...settingsRef.current, soundProfile: valid.includes(profile) ? profile : 'merica' });
+  }, [persist]);
+
+  const setSalesRepName = useCallback(async (name: string) => {
+    await persist({ ...settingsRef.current, salesRepName: name });
+  }, [persist]);
+
+  const setDealershipName = useCallback(async (name: string) => {
+    await persist({ ...settingsRef.current, dealershipName: name });
+  }, [persist]);
+
+  const setDealershipAddress = useCallback(async (address: string) => {
+    await persist({ ...settingsRef.current, dealershipAddress: address });
   }, [persist]);
 
   const activePrinter = useMemo(() => {
@@ -142,6 +157,9 @@ export function AppSettingsProvider({ children }) {
       setAmbientLightingIntensity,
       toggleAmbientLighting,
       setSoundProfile,
+      setSalesRepName,
+      setDealershipName,
+      setDealershipAddress,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [loaded, settings, activePrinter]
