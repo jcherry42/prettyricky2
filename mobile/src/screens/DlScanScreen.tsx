@@ -35,7 +35,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { loadJson, saveJson } from '../lib/storage';
-import { uploadFileAuto } from '../utils/chunkedUpload';
 import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
 import { buildApiUrlAsync } from '../config/backend';
@@ -292,27 +291,29 @@ export function DlScanScreen() {
   }, []);
 
   // ── Upload + AI OCR core ─────────────────────────────────────────────────
-  const uploadAndScan = useCallback(async (uri, scanMethod = 'ocr') => {
-    // AbortController with 30s timeout (PTT pattern)
-    const { signal, cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(30000);
+  // ── Single-step scan: upload + OCR in one request ──────────────────────────
+  const scanDirect = useCallback(async (uri: string, scanMethod = 'ocr') => {
+    const { signal, cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(45000);
 
     try {
       setUploading(true);
       setUploadProgress(0);
 
-      const imageUrl = await uploadFileAuto({
+      // Build FormData with the image — single round trip
+      const formData = new FormData();
+      formData.append('image', {
         uri,
-        filename: `license_${Date.now()}.jpg`,
-        contentType: 'image/jpeg',
-        onProgress: (cur, tot) => setUploadProgress(Math.round((cur / tot) * 50)),
-      });
+        type: 'image/jpeg',
+        name: `license_${Date.now()}.jpg`,
+      } as any);
 
-      setUploadProgress(60);
+      setUploadProgress(15);
 
-      const response = await apiFetch('/api/license/scan-from-url', {
+      const response = await apiFetch('/api/license/scan-direct', {
         method: 'POST',
-        body: JSON.stringify({ image_url: imageUrl, retry_count: 0 }),
-        timeout: 30000, // AI Vision OCR can take 10-15 seconds
+        body: formData,
+        isFormData: true,
+        timeout: 45000,
       });
 
       abortCleanup();
@@ -325,7 +326,7 @@ export function DlScanScreen() {
         id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
         scanMethod,
         savedAt: new Date().toISOString(),
-        imageUrl,
+        imageUrl: response.image_url || null,
         confidence,
         first_name: extracted.first_name || '',
         middle_name: extracted.middle_name || '',
@@ -353,11 +354,11 @@ export function DlScanScreen() {
       } else {
         notificationSuccess();
       }
-    } catch (err) {
+    } catch (err: any) {
       abortCleanup();
       notificationError();
       if (err.name === 'AbortError') {
-        Alert.alert('Timeout', 'License scan timed out (30s). Try with better lighting.');
+        Alert.alert('Timeout', 'License scan timed out. Try with better lighting.');
       } else {
         Alert.alert('Scan Failed', err.message || 'Unable to scan license');
       }
@@ -398,38 +399,38 @@ export function DlScanScreen() {
 
     try {
       const photo = await ocrCamRef.current.takePictureAsync({
-        quality: 0.88,
+        quality: 0.65,
         base64: false,
-        skipProcessing: false,
+        skipProcessing: true,
       });
 
       setOcrCamOpen(false);
       setOcrTorch(false);
 
       if (photo?.uri) {
-        await uploadAndScan(photo.uri, 'ocr');
+        await scanDirect(photo.uri, 'ocr');
       }
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       Alert.alert('Capture Failed', e.message || 'Could not capture photo');
     } finally {
       setOcrCapturing(false);
     }
-  }, [ocrCapturing, ocrCamReady, captureFlash, uploadAndScan]);
+  }, [ocrCapturing, ocrCamReady, captureFlash, scanDirect]);
 
   // ── Gallery picker ────────────────────────────────────────────────────────
   const handleGallery = useCallback(async () => {
     impactMedium();
     const result = await ImagePicker.launchImageLibraryAsync({
-      quality: 0.9,
+      quality: 0.7,
       allowsEditing: false,
       base64: false,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
     if (!result.canceled && result.assets?.[0]) {
-      await uploadAndScan(result.assets[0].uri, 'ocr');
+      await scanDirect(result.assets[0].uri, 'ocr');
     }
-  }, [uploadAndScan]);
+  }, [scanDirect]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const handleItemPress = (item) => {
@@ -500,7 +501,7 @@ export function DlScanScreen() {
                 <ActivityIndicator size="small" color={colors.gold} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.uploadText}>
-                    {uploadProgress < 55 ? `Uploading… ${uploadProgress}%` : 'Reading with AI Vision…'}
+                    {uploadProgress < 20 ? 'Sending to AI Vision…' : uploadProgress < 95 ? 'Reading license…' : 'Finalizing…'}
                   </Text>
                   <View style={styles.progressBar}>
                     <View style={[styles.progressFill, { width: `${uploadProgress}%` }]} />

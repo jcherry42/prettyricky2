@@ -968,6 +968,164 @@ CRITICAL RULES:
         )
 
 
+@api_router.post("/license/scan-direct", response_model=LicenseScanResponse)
+async def scan_license_direct(
+    image: UploadFile = File(...),
+):
+    """
+    Single-step license scan: upload image + OCR in one request.
+    Eliminates the two-step upload→scan round-trip for faster processing.
+    """
+    import base64
+    import json
+    import re
+
+    try:
+        image_data = await image.read()
+        if not image_data or len(image_data) == 0:
+            return LicenseScanResponse(success=False, error="Empty image file")
+
+        if len(image_data) < 5 * 1024:
+            return LicenseScanResponse(
+                success=False, confidence=0,
+                error="Image appears too small for reliable OCR. Please take a clearer photo."
+            )
+
+        logger.info(f"scan-direct: received {len(image_data)} bytes")
+
+        # Save to disk (for history / re-scan capability)
+        ext = (image.filename or "").rsplit(".", 1)[-1].lower() if image.filename else "jpg"
+        if ext not in ("jpg", "jpeg", "png", "webp", "heic"):
+            ext = "jpg"
+        safe_name = f"license_{uuid.uuid4().hex[:12]}.{ext}"
+        filepath = UPLOADS_DIR / safe_name
+        filepath.write_bytes(image_data)
+        image_url = f"/api/uploads/{safe_name}"
+
+        # Resize for OCR (JPEG — smaller payload, same accuracy)
+        from utils.image_processing import resize_image_for_ocr_jpeg
+        optimized_data = resize_image_for_ocr_jpeg(image_data)
+        base64_image = base64.b64encode(optimized_data).decode('utf-8')
+
+        extraction_prompt = """You are an expert OCR system specialized in reading US Driver's Licenses from all 50 states.
+
+Analyze this driver's license image carefully and extract information EXACTLY as printed.
+
+Return ONLY a JSON object (no markdown, no explanation):
+{
+  "first_name": "First/Given name (Title Case)",
+  "middle_name": "Middle name or null if not visible",
+  "last_name": "Last/Family name (Title Case)",
+  "license_number": "DL/ID number exactly as printed",
+  "expiration": "Expiration date as MM/DD/YYYY",
+  "date_of_birth": "Date of birth as MM/DD/YYYY",
+  "address": "Street address (number and street only)",
+  "city": "City name (Title Case)",
+  "state": "2-letter state abbreviation (e.g. CA, TX, NY)",
+  "zip_code": "5-digit or 5+4 ZIP code"
+}
+
+CRITICAL RULES:
+1. NAME may be "LAST, FIRST MIDDLE" or "FIRST MIDDLE LAST" — split correctly
+2. Look for labels: DL, LIC, ID #, CUSTOMER ID, DOB, EXP, ISS, CLASS
+3. State is ALWAYS a 2-letter abbreviation
+4. Convert dates to MM/DD/YYYY regardless of source format
+5. Use Title Case for names and city (not ALL CAPS)
+6. If a field is unreadable, use null
+7. License number: include ALL characters exactly as shown (letters + digits)
+8. ZIP: prefer 5-digit, include +4 if clearly visible
+9. Address: street only — do NOT include city/state/zip in address field
+10. Return ONLY the JSON — no explanations, no markdown fences"""
+
+        chat = LlmChat(
+            api_key=os.getenv('EMERGENT_LLM_KEY'),
+            session_id=f"license-scan-direct-{uuid.uuid4()}",
+            system_message="You are an expert document OCR system specializing in US driver's licenses from all 50 states. Be precise."
+        ).with_model("openai", "gpt-4o")
+
+        from emergentintegrations.llm.openai import ImageContent
+        image_content = ImageContent(image_base64=base64_image)
+
+        user_message = UserMessage(
+            text=extraction_prompt,
+            file_contents=[image_content]
+        )
+
+        response = await chat.send_message(user_message)
+        logger.info(f"scan-direct Vision API response ({len(response)} chars)")
+
+        # Parse JSON
+        cleaned = response.strip()
+        if '```' in cleaned:
+            json_match = re.search(r'```(?:json)?\s*([\s\S]*?)\s*```', cleaned)
+            if json_match:
+                cleaned = json_match.group(1)
+            else:
+                cleaned = re.sub(r'^```json?\s*', '', cleaned)
+                cleaned = re.sub(r'\s*```$', '', cleaned)
+
+        json_match = re.search(r'\{[\s\S]*\}', cleaned)
+        if json_match:
+            cleaned = json_match.group(0)
+
+        extracted_data = json.loads(cleaned)
+
+        # Normalize
+        if extracted_data.get('first_name'):
+            extracted_data['first_name'] = normalize_name(extracted_data['first_name'])
+        if extracted_data.get('last_name'):
+            extracted_data['last_name'] = normalize_name(extracted_data['last_name'])
+        if extracted_data.get('middle_name'):
+            extracted_data['middle_name'] = normalize_name(extracted_data['middle_name'])
+        if extracted_data.get('city'):
+            extracted_data['city'] = normalize_name(extracted_data['city'])
+        if extracted_data.get('state'):
+            extracted_data['state'] = normalize_state(extracted_data['state'])
+        if extracted_data.get('zip_code'):
+            extracted_data['zip_code'] = re.sub(r'[^\d-]', '', str(extracted_data['zip_code']))
+        if extracted_data.get('license_number'):
+            extracted_data['license_number'] = str(extracted_data['license_number']).strip()
+        if extracted_data.get('expiration'):
+            extracted_data['expiration'] = normalize_date_mmddyyyy(str(extracted_data['expiration']))
+        if extracted_data.get('date_of_birth'):
+            extracted_data['date_of_birth'] = normalize_date_mmddyyyy(str(extracted_data['date_of_birth']))
+
+        confidence, notes = calculate_license_confidence(extracted_data)
+        has_name = extracted_data.get('first_name') or extracted_data.get('last_name')
+
+        if not has_name:
+            return LicenseScanResponse(
+                success=False,
+                image_url=image_url,
+                confidence=0,
+                extraction_notes=["Could not read name from license"],
+                error="Could not extract name. Please ensure the license is clearly visible and well-lit."
+            )
+
+        logger.info(f"scan-direct extracted: {extracted_data.get('first_name')} {extracted_data.get('last_name')} (confidence: {confidence}%)")
+
+        return LicenseScanResponse(
+            success=True,
+            image_url=image_url,
+            extracted_data=extracted_data,
+            confidence=confidence,
+            extraction_notes=notes if notes else None,
+        )
+
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON parse error in scan-direct: {e}")
+        return LicenseScanResponse(
+            success=False, confidence=0,
+            error="Could not read license data. Please try again with a clearer photo."
+        )
+    except Exception as e:
+        logger.error(f"scan-direct error: {e}", exc_info=True)
+        return LicenseScanResponse(
+            success=False, confidence=0,
+            error=f"Scan failed: {str(e)}"
+        )
+
+
 @api_router.post("/license/create-customer")
 async def create_customer_from_license(
     first_name: str = Form(...),
