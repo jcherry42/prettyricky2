@@ -2,7 +2,7 @@
  * DL Scan Screen — Driver's License Scanner
  *
  * Scan Modes:
- *  1. PDF417 Barcode (back of license) — CameraView with full-screen guide frame
+ *  1. OCR Photo Capture (front of license) — Custom in-app CameraView (credit-card frame)
  *  2. OCR Photo Capture (front of license) — Custom in-app CameraView (credit-card frame)
  *  3. Gallery Pick — From the device photo library
  *
@@ -42,19 +42,16 @@ import { buildApiUrlAsync } from '../config/backend';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import {
-  impactHeavy,
   impactLight,
   impactMedium,
   notificationError,
   notificationSuccess,
 } from '../lib/haptics';
-import { parseAamvaPdf417, isLikelyAamva } from '../utils/aamvaParser';
 import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 const MAX_HISTORY = 50;
-const PDF417_COOLDOWN_MS = 700; // Reduced from 2000ms – retry faster after first attempt
 
 // Credit-card aspect ratio: ISO 7810 ID-1 = 85.6 mm × 54 mm
 const CARD_ASPECT = 85.6 / 54; // ≈ 1.586
@@ -76,9 +73,9 @@ const EXTRACTION_FIELDS = [
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function HistoryCard({ item, onPress, onSaveToCustomer }) {
-  const isPdf417 = item.scanMethod === 'pdf417';
   const confidence = item.confidence || 0;
   const isSaved = Boolean(item.savedToCustomerAt);
+  const methodLabel = item.scanMethod === 'ocr' ? 'OCR' : 'MANUAL';
 
   return (
     <Pressable
@@ -95,11 +92,9 @@ function HistoryCard({ item, onPress, onSaveToCustomer }) {
 
         {/* Badges */}
         <View style={styles.historyTop}>
-          <View style={[styles.methodBadge, isPdf417 && styles.methodBadgePdf]}>
-            <Ionicons name={isPdf417 ? 'barcode' : 'camera'} size={12} color="#000" />
-            <Text style={styles.methodBadgeText}>
-              {isPdf417 ? 'PDF417' : item.scanMethod === 'ocr' ? 'OCR' : 'MANUAL'}
-            </Text>
+          <View style={styles.methodBadge}>
+            <Ionicons name="camera" size={12} color="#000" />
+            <Text style={styles.methodBadgeText}>{methodLabel}</Text>
           </View>
           {confidence > 0 && (
             <View style={styles.confBadge}>
@@ -237,13 +232,6 @@ export function DlScanScreen() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
 
-  // ── PDF417 barcode scanner modal ──
-  const [pdf417Open, setPdf417Open] = useState(false);
-  const [pdf417Scanning, setPdf417Scanning] = useState(false);
-  const [pdf417Status, setPdf417Status] = useState('');
-  const lastScanTime = useRef(0);
-  const lastScannedData = useRef('');
-
   // ── Custom OCR camera modal (replaces system ImagePicker camera) ──
   const [ocrCamOpen, setOcrCamOpen] = useState(false);
   const [ocrCamReady, setOcrCamReady] = useState(false);
@@ -256,30 +244,15 @@ export function DlScanScreen() {
   historyRef.current = history;
 
   // World-class camera lifecycle: AppState-aware, AbortController, Settings link
-  const pdf417Lifecycle = useCameraLifecycle(pdf417Open);
   const ocrLifecycle = useCameraLifecycle(ocrCamOpen);
 
   // Animations
-  const pdf417ScanLine = useRef(new Animated.Value(0)).current;
   const ocrScanLine = useRef(new Animated.Value(0)).current;
   const captureFlash = useRef(new Animated.Value(0)).current;
 
   const canScan = permission?.granted === true;
 
   // Animate scan lines
-  useEffect(() => {
-    if (pdf417Open) {
-      const loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pdf417ScanLine, { toValue: 1, duration: 2200, useNativeDriver: true }),
-          Animated.timing(pdf417ScanLine, { toValue: 0, duration: 2200, useNativeDriver: true }),
-        ])
-      );
-      loop.start();
-      return () => loop.stop();
-    }
-  }, [pdf417Open, pdf417ScanLine]);
-
   useEffect(() => {
     if (ocrCamOpen) {
       const loop = Animated.loop(
@@ -458,126 +431,6 @@ export function DlScanScreen() {
     }
   }, [uploadAndScan]);
 
-  // ── PDF417 Barcode handler ────────────────────────────────────────────────
-  const onBarcodeScanned = useCallback(async ({ data }) => {
-    if (!pdf417Scanning) return;
-
-    const now = Date.now();
-    if (now - lastScanTime.current < PDF417_COOLDOWN_MS) return;
-    // Accept if meaningfully different data (handles slight scan variations)
-    if (data === lastScannedData.current) return;
-    // PDF417 barcodes start with control chars — minimum 20 chars
-    if (!data || data.length < 20) return;
-
-    lastScanTime.current = now;
-    lastScannedData.current = data;
-
-    impactHeavy();
-    setPdf417Scanning(false);
-    setPdf417Status('Reading barcode…');
-
-    try {
-      let parsed = null;
-
-      // Client-side parser first (instant, no network)
-      if (isLikelyAamva(data)) {
-        parsed = parseAamvaPdf417(data);
-      }
-
-      // Server fallback — handles edge cases the client misses
-      if (!parsed || !parsed.success) {
-        setPdf417Status('Verifying with server…');
-        try {
-          const serverResp = await apiFetch('/api/license/parse-pdf417', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ barcode_data: data, scan_source: 'camera' }),
-          });
-          if (serverResp.success) {
-            parsed = {
-              success: true,
-              ...serverResp.extracted_data,
-              confidence: serverResp.confidence,
-              aamva_version: serverResp.aamva_version,
-              scan_method: 'pdf417',
-              errors: serverResp.errors || [],
-            };
-          }
-        } catch (sErr) {
-          console.warn('Server PDF417 fallback failed:', sErr.message);
-        }
-      }
-
-      if (parsed && parsed.success) {
-        const entry = {
-          id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
-          scanMethod: 'pdf417',
-          savedAt: new Date().toISOString(),
-          imageUrl: null,
-          confidence: parsed.confidence || 0,
-          aamvaVersion: parsed.aamva_version,
-          first_name: parsed.first_name || '',
-          middle_name: parsed.middle_name || '',
-          last_name: parsed.last_name || '',
-          license_number: parsed.license_number || '',
-          expiration: parsed.expiration || '',
-          date_of_birth: parsed.date_of_birth || '',
-          address: parsed.address || '',
-          city: parsed.city || '',
-          state: parsed.state || '',
-          zip_code: parsed.zip_code || '',
-        };
-        await saveToHistory(entry);
-        setPdf417Open(false);
-        setPdf417Scanning(false);
-        setSelectedItem(entry);
-        setShowDetail(true);
-        notificationSuccess();
-        setPdf417Status('');
-      } else {
-        // Keep scanner open — let user try from a better angle
-        notificationError();
-        setPdf417Status('');
-        lastScannedData.current = '';
-        lastScanTime.current = 0;
-        setPdf417Scanning(true);
-        Alert.alert(
-          'Barcode Detected — Could Not Parse',
-          'Move the license a bit closer, make sure the BACK is fully in frame, and hold steady.',
-          [
-            { text: 'Keep Trying', onPress: () => {} },
-            { text: 'Close', style: 'cancel', onPress: () => { setPdf417Open(false); setPdf417Scanning(false); } },
-          ]
-        );
-      }
-    } catch (err) {
-      setPdf417Status('');
-      setPdf417Open(false);
-      setPdf417Scanning(false);
-      notificationError();
-      Alert.alert('Parse Error', err.message || 'Unable to process barcode');
-    }
-  }, [pdf417Scanning, saveToHistory]);
-
-  const openPdf417 = useCallback(async () => {
-    if (!permission?.granted) {
-      const result = await requestPermission();
-      if (!result.granted) {
-        if (result.canAskAgain === false) {
-          pdf417Lifecycle.showSettingsAlert();
-        }
-        return;
-      }
-    }
-    impactMedium();
-    setPdf417Scanning(true);
-    setPdf417Status('');
-    // Reset both refs so a new session starts clean
-    lastScannedData.current = '';
-    lastScanTime.current = 0;
-    setPdf417Open(true);
-  }, [permission, requestPermission, pdf417Lifecycle]);
-
   // ── Helpers ───────────────────────────────────────────────────────────────
   const handleItemPress = (item) => {
     setSelectedItem(item);
@@ -656,7 +509,7 @@ export function DlScanScreen() {
               </View>
             )}
 
-            {/* Three scan mode buttons */}
+            {/* Scan mode buttons */}
             <View style={styles.scanModes}>
               {/* OCR Camera (custom in-app camera) */}
               <Pressable
@@ -671,22 +524,6 @@ export function DlScanScreen() {
                   <Ionicons name="camera" size={28} color={uploading ? colors.textMute : colors.gold} />
                   <Text style={[styles.scanModeLabel, uploading && { color: colors.textMute }]}>FRONT SCAN</Text>
                   <Text style={styles.scanModeHint}>Capture front of license</Text>
-                </LinearGradient>
-              </Pressable>
-
-              {/* PDF417 barcode scanner */}
-              <Pressable
-                onPress={openPdf417}
-                disabled={uploading}
-                style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
-              >
-                <LinearGradient
-                  colors={['rgba(64,210,255,0.06)', 'rgba(64,210,255,0.02)']}
-                  style={styles.scanModeGrad}
-                >
-                  <Ionicons name="barcode" size={28} color={uploading ? colors.textMute : '#40D2FF'} />
-                  <Text style={[styles.scanModeLabel, { color: uploading ? colors.textMute : '#40D2FF' }]}>PDF417</Text>
-                  <Text style={styles.scanModeHint}>Scan back barcode</Text>
                 </LinearGradient>
               </Pressable>
 
@@ -708,7 +545,7 @@ export function DlScanScreen() {
             </View>
 
             <Text style={styles.tipText}>
-              💡 PDF417 (back barcode) is the fastest and most accurate method.
+              💡 Front Scan uses AI Vision for instant, accurate extraction.
             </Text>
           </View>
         </LinearGradient>
@@ -866,87 +703,6 @@ export function DlScanScreen() {
                 </Pressable>
 
                 <View style={{ height: Math.max(insets.bottom, 16) + 8 }} />
-              </View>
-            </LinearGradient>
-          </View>
-        </Modal>
-
-        {/* ════════════════════════════════════════════════════════════════
-            PDF417 BARCODE SCANNER MODAL
-          ════════════════════════════════════════════════════════════════ */}
-        <Modal visible={pdf417Open && canScan} animationType="slide" presentationStyle="fullScreen">
-          <View style={styles.modalRoot}>
-            <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
-
-              <View style={[styles.modalHeader, { paddingTop: insets.top + 10, height: 60 + insets.top }]}>
-                <Pressable
-                  onPress={() => { setPdf417Open(false); setPdf417Scanning(false); setPdf417Status(''); }}
-                  style={[styles.modalCloseBtn, { top: insets.top + 8 }]}
-                >
-                  <Ionicons name="close" size={24} color={colors.text} />
-                </Pressable>
-                <View style={styles.modalTitleRow}>
-                  <Ionicons name="barcode" size={16} color="#40D2FF" />
-                  <Text style={[styles.modalTitle, { color: '#40D2FF' }]}>PDF417 SCANNER</Text>
-                </View>
-              </View>
-
-              <View style={styles.modalBody}>
-                <View style={styles.scannerWrap}>
-                  {pdf417Lifecycle.isActive ? (
-                  <CameraView
-                    onBarcodeScanned={pdf417Scanning ? onBarcodeScanned : undefined}
-                    style={StyleSheet.absoluteFill}
-                    barcodeScannerSettings={{ barcodeTypes: ['pdf417'] }}
-                    facing="back"
-                    autofocus="on"
-                  />
-                  ) : (
-                    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0E14', justifyContent: 'center', alignItems: 'center' }]}>
-                      <Ionicons name="pause-circle-outline" size={48} color={colors.textDim} />
-                      <Text style={{ color: colors.textDim, marginTop: 8, fontSize: 12 }}>Camera paused</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.pdf417MaskTop} />
-                  <View style={styles.pdf417Frame}>
-                    <View style={[styles.corner, { borderColor: '#40D2FF' }, styles.cornerTL]} />
-                    <View style={[styles.corner, { borderColor: '#40D2FF' }, styles.cornerTR]} />
-                    <View style={[styles.corner, { borderColor: '#40D2FF' }, styles.cornerBL]} />
-                    <View style={[styles.corner, { borderColor: '#40D2FF' }, styles.cornerBR]} />
-                    <Animated.View
-                      style={[
-                        styles.scanLine,
-                        { borderColor: '#40D2FF', backgroundColor: '#40D2FF' },
-                        {
-                          transform: [{
-                            translateY: pdf417ScanLine.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, 500],
-                            }),
-                          }],
-                        },
-                      ]}
-                    />
-                  </View>
-                  <View style={styles.pdf417MaskBottom} />
-                </View>
-
-                {pdf417Status ? (
-                  <View style={styles.statusCard}>
-                    <ActivityIndicator size="small" color={colors.gold} />
-                    <Text style={styles.statusText}>{pdf417Status}</Text>
-                  </View>
-                ) : (
-                  <View style={styles.hintCard}>
-                    <Ionicons name="information-circle" size={20} color="#40D2FF" />
-                    <Text style={[styles.hintText, { color: '#40D2FF' }]}>
-                      Point at the PDF417 barcode on the{' '}
-                      <Text style={{ fontFamily: 'SpaceGrotesk_700Bold' }}>BACK</Text>
-                      {' '}of the license. Scanning automatically.
-                    </Text>
-                  </View>
-                )}
               </View>
             </LinearGradient>
           </View>
@@ -1139,7 +895,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.gold,
   },
-  methodBadgePdf: { backgroundColor: colors.green },
   methodBadgeText: { ...type.label, fontSize: 9, color: '#000' },
   confBadge: {
     paddingHorizontal: 8,
@@ -1306,33 +1061,12 @@ const styles = StyleSheet.create({
   },
   shutterLabel: { ...type.label, fontSize: 10, color: colors.textDim, letterSpacing: 1.2 },
 
-  // PDF417 scanner
+  // Scanner
   scannerWrap: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
-  },
-  pdf417MaskTop: {
-    position: 'absolute', top: 0, left: 0, right: 0,
-    height: '25%',
-    backgroundColor: 'rgba(0,0,0,0.72)',
-  },
-  pdf417MaskBottom: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    height: '25%',
-    backgroundColor: 'rgba(0,0,0,0.72)',
-  },
-  pdf417Frame: {
-    position: 'absolute',
-    top: '25%',
-    left: 20,
-    right: 20,
-    height: '50%',
-    borderWidth: 2,
-    borderColor: '#40D2FF',
-    borderRadius: 8,
-    overflow: 'hidden', // Clips scan line to frame
   },
 
   // Shared scan line
