@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     width: 140,
     height: 200,
     left: -30,
-    bottom: 11,
+    bottom: 6,
     zIndex: 2,
     alignItems: 'center',
     justifyContent: 'flex-end',
