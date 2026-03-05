@@ -90,7 +90,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
       style={({ pressed }) => [styles.historyCard, pressed && styles.pressed]}
     >
       <LinearGradient
-        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.04)']}
+        colors={['rgba(255,255,255,0.04)', 'rgba(255,255,255,0.02)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.historyGradient}
@@ -929,7 +929,7 @@ export function VinScanScreen() {
         <View style={styles.scanModeRow}>
           {/* BARCODE SCAN */}
           <LinearGradient
-            colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
+            colors={['rgba(10,12,18,0.92)', 'rgba(6,8,14,0.92)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.scanModeBezel, { flex: 1, marginRight: 6 }]}
@@ -939,7 +939,7 @@ export function VinScanScreen() {
               style={({ pressed }) => [styles.scanModeCard, pressed && styles.pressed]}
             >
               <View style={styles.scanModeIconWrap}>
-                <LinearGradient colors={['rgba(214,178,94,0.15)', 'rgba(214,178,94,0.04)']} style={styles.scanModeIconBg}>
+                <LinearGradient colors={['rgba(214,178,94,0.08)', 'rgba(214,178,94,0.02)']} style={styles.scanModeIconBg}>
                   <Ionicons name="barcode" size={28} color={colors.gold} />
                 </LinearGradient>
               </View>
@@ -950,7 +950,7 @@ export function VinScanScreen() {
 
           {/* AI VISION CAPTURE */}
           <LinearGradient
-            colors={['rgba(12,20,30,0.85)', 'rgba(8,14,22,0.85)']}
+            colors={['rgba(8,10,18,0.92)', 'rgba(4,6,14,0.92)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.scanModeBezel, { flex: 1, marginLeft: 6 }]}
@@ -960,7 +960,7 @@ export function VinScanScreen() {
               style={({ pressed }) => [styles.scanModeCard, styles.scanModeCardAi, pressed && styles.pressed]}
             >
               <View style={styles.scanModeIconWrap}>
-                <LinearGradient colors={['rgba(100,200,255,0.15)', 'rgba(100,200,255,0.04)']} style={styles.scanModeIconBg}>
+                <LinearGradient colors={['rgba(100,200,255,0.08)', 'rgba(100,200,255,0.02)']} style={styles.scanModeIconBg}>
                   <Ionicons name="sparkles" size={28} color="#64C8FF" />
                 </LinearGradient>
               </View>
@@ -1383,7 +1383,7 @@ export function VinScanScreen() {
 
         {/* ── Manual Entry Card ── */}
         <LinearGradient
-          colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
+          colors={['rgba(10,12,18,0.92)', 'rgba(6,8,14,0.92)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.sectionBezel}
@@ -1571,11 +1571,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: 'rgba(214,178,94,0.4)',
+    shadowColor: 'rgba(214,178,94,0.2)',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 3,
   },
   scanModeTitle: {
     ...type.label,
@@ -1986,9 +1986,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.10)',
   },
   cameraControlBtnActive: { backgroundColor: colors.gold, borderColor: colors.gold },
   cameraControlLabel: { ...type.label, fontSize: 10, color: colors.text },
@@ -1999,17 +1999,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.10)',
   },
   zoomSliderTrack: {
     flex: 1,
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 2,
     position: 'relative',
     justifyContent: 'center',
@@ -2027,10 +2027,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: colors.gold,
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.6)',
     shadowColor: colors.gold,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 4,
   },

@@ -8,9 +8,9 @@ import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
 import { Screen } from '../components/Screen';
 import { ScreenHeader } from '../components/ScreenHeader';
-import { loadInventory, removeFromInventory, updateVehicle } from '../lib/inventory';
+import { useInventory } from '../context/InventoryContext';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
-import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
+import { impactLight, notificationSuccess } from '../lib/haptics';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
 import { VinScanScreen } from './VinScanScreen';
 import { DlScanScreen } from './DlScanScreen';
@@ -23,10 +23,20 @@ const STATUS_COLORS = {
   sold: colors.textMute,
 };
 
+/* ---------- Helpers ---------- */
+function deriveDisplayStatus(v: any): string {
+  if (v.status && v.status !== 'available') return v.status;
+  if (v.category === 'trade_in') return 'trade';
+  return 'active';
+}
+
 /* ---------- Vehicle Card ---------- */
 function VehicleCard({ item, onEdit, onRemove }) {
   const title = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
-  const statusColor = STATUS_COLORS[item.status] || colors.textMute;
+  const displayStatus = deriveDisplayStatus(item);
+  const statusColor = STATUS_COLORS[displayStatus] || colors.textMute;
+  const stockNum = item.stockNumber || item.stock_number;
+  const dateStr = item.addedAt || item.created_at;
 
   return (
     <Pressable
@@ -40,24 +50,25 @@ function VehicleCard({ item, onEdit, onRemove }) {
         </View>
         <View style={[styles.statusBadge, { borderColor: statusColor }]}>
           <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-          <Text style={[styles.statusText, { color: statusColor }]}>{(item.status || 'active').toUpperCase()}</Text>
+          <Text style={[styles.statusText, { color: statusColor }]}>{displayStatus.toUpperCase()}</Text>
         </View>
       </View>
 
       <View style={styles.vehicleMeta}>
-        {item.stockNumber ? <Text style={styles.metaChip}>Stock: {item.stockNumber}</Text> : null}
+        {stockNum ? <Text style={styles.metaChip}>Stock: {stockNum}</Text> : null}
         {typeof item.price === 'number' ? <Text style={styles.metaChip}>${item.price.toLocaleString()}</Text> : null}
         {typeof item.mileage === 'number' ? <Text style={styles.metaChip}>{item.mileage.toLocaleString()} mi</Text> : null}
       </View>
 
       <View style={styles.vehicleFooter}>
-        <Text style={styles.dateText}>{new Date(item.addedAt).toLocaleDateString()}</Text>
+        <Text style={styles.dateText}>{dateStr ? new Date(dateStr).toLocaleDateString() : '—'}</Text>
         <Pressable
           onPress={(e) => {
             e.stopPropagation?.();
+            const vid = item.id || item.vehicle_id;
             Alert.alert('Remove Vehicle', `Remove ${title || item.vin} from inventory?`, [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Remove', style: 'destructive', onPress: () => onRemove(item.id) },
+              { text: 'Remove', style: 'destructive', onPress: () => onRemove(vid) },
             ]);
           }}
           style={({ pressed }) => [styles.removeBtn, pressed && { opacity: 0.85 }]}
@@ -71,7 +82,7 @@ function VehicleCard({ item, onEdit, onRemove }) {
 
 /* ---------- Intake Hub (main screen) ---------- */
 function IntakeHub({ navigation }) {
-  const [inv, setInv] = useState({ vehicles: [] });
+  const { vehicles, fetchInventory, deleteVehicle: ctxDeleteVehicle, updateVehicle: ctxUpdateVehicle } = useInventory();
   const [search, setSearch] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -79,32 +90,28 @@ function IntakeHub({ navigation }) {
   const insets = useSafeAreaInsets();
   const listPaddingBottom = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 20;
 
-  const refresh = useCallback(async () => {
-    const data = await loadInventory();
-    setInv(data);
-  }, []);
+  // Fetch from backend on mount
+  useEffect(() => { fetchInventory().catch(() => {}); }, [fetchInventory]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refresh();
+    try { await fetchInventory(); } catch (_) {}
     setRefreshing(false);
-  }, [refresh]);
-
-  useEffect(() => { refresh(); }, [refresh]);
+  }, [fetchInventory]);
 
   const filtered = search.trim()
-    ? inv.vehicles.filter((v) => {
+    ? vehicles.filter((v) => {
         const q = search.toLowerCase();
-        const text = [v.vin, v.year, v.make, v.model, v.trim, v.stockNumber, v.status].filter(Boolean).join(' ').toLowerCase();
+        const text = [v.vin, v.year, v.make, v.model, v.trim, v.stockNumber, v.stock_number, deriveDisplayStatus(v)].filter(Boolean).join(' ').toLowerCase();
         return text.includes(q);
       })
-    : inv.vehicles;
+    : vehicles;
 
   const stats = {
-    total: inv.vehicles.length,
-    active: inv.vehicles.filter((v) => v.status === 'active').length,
-    trade: inv.vehicles.filter((v) => v.status === 'trade').length,
-    sold: inv.vehicles.filter((v) => v.status === 'sold').length,
+    total: vehicles.length,
+    active: vehicles.filter((v) => deriveDisplayStatus(v) === 'active').length,
+    trade: vehicles.filter((v) => deriveDisplayStatus(v) === 'trade').length,
+    sold: vehicles.filter((v) => deriveDisplayStatus(v) === 'sold').length,
   };
 
   return (
@@ -191,15 +198,18 @@ function IntakeHub({ navigation }) {
         ) : (
           <FlatList
             data={filtered}
-            keyExtractor={(i) => i.id}
+            keyExtractor={(i) => i.id || i.vehicle_id || i.vin}
             renderItem={({ item }) => (
               <VehicleCard
                 item={item}
                 onEdit={setEditing}
-                onRemove={async (id) => {
-                  const next = await removeFromInventory(id);
-                  setInv(next);
-                  notificationSuccess();
+                onRemove={async (vid) => {
+                  try {
+                    await ctxDeleteVehicle(vid);
+                    notificationSuccess();
+                  } catch (e: any) {
+                    Alert.alert('Error', e?.message || 'Failed to remove vehicle');
+                  }
                 }}
               />
             )}
@@ -222,10 +232,20 @@ function IntakeHub({ navigation }) {
                 vehicle={editing}
                 onCancel={() => setEditing(null)}
                 onSave={async (nextVehicle) => {
-                  const next = await updateVehicle(editing.id, nextVehicle);
-                  setInv(next);
-                  setEditing(null);
-                  notificationSuccess();
+                  try {
+                    const vid = editing.id || editing.vehicle_id;
+                    await ctxUpdateVehicle(vid, {
+                      status: nextVehicle.status,
+                      stock_number: (nextVehicle.stockNumber || '').trim() || undefined,
+                      price: nextVehicle.price,
+                      mileage: nextVehicle.mileage,
+                      notes: nextVehicle.notes,
+                    });
+                    setEditing(null);
+                    notificationSuccess();
+                  } catch (e: any) {
+                    Alert.alert('Error', e?.message || 'Failed to save changes');
+                  }
                 }}
               />
             </View>

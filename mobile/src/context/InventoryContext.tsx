@@ -116,17 +116,17 @@ export function InventoryProvider({ children }) {
 
   const updateVehicle = useCallback(async (id, updates) => {
     try {
-      const data = await apiFetch(`/api/vehicles/${id}`, {
+      await apiFetch(`/api/vehicles/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(updates),
       });
 
-      const updatedVehicle = data?.vehicle;
-      if (updatedVehicle) {
-        setVehicles(prev => prev.map(v => v.vehicle_id === id ? updatedVehicle : v));
-      }
+      // Merge updates into local state (backend returns {success, updated} not full vehicle)
+      setVehicles(prev => prev.map(v =>
+        (v.vehicle_id === id || v.id === id) ? { ...v, ...updates, updated_at: new Date().toISOString() } : v
+      ));
 
-      return updatedVehicle;
+      return { ...updates, id };
     } catch (e) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
@@ -134,7 +134,9 @@ export function InventoryProvider({ children }) {
           method: 'PATCH',
           body: JSON.stringify(updates),
         });
-        setVehicles(prev => prev.map(v => v.vehicle_id === id ? { ...v, ...updates, _queued: true } : v));
+        setVehicles(prev => prev.map(v =>
+          (v.vehicle_id === id || v.id === id) ? { ...v, ...updates, _queued: true } : v
+        ));
         return { ...updates, vehicle_id: id, _queued: true };
       }
       setError(e.message || 'Failed to update vehicle');
@@ -148,12 +150,12 @@ export function InventoryProvider({ children }) {
         method: 'DELETE',
       });
 
-      setVehicles(prev => prev.filter(v => v.vehicle_id !== id));
+      setVehicles(prev => prev.filter(v => v.vehicle_id !== id && v.id !== id));
     } catch (e) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation(`/api/vehicles/${id}`, { method: 'DELETE' });
-        setVehicles(prev => prev.filter(v => v.vehicle_id !== id));
+        setVehicles(prev => prev.filter(v => v.vehicle_id !== id && v.id !== id));
         return;
       }
       setError(e.message || 'Failed to delete vehicle');

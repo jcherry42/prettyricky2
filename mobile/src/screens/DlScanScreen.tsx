@@ -630,7 +630,7 @@ export function DlScanScreen() {
 
         {/* ── Scan Action Cards ── */}
         <LinearGradient
-          colors={['rgba(40,25,12,0.85)', 'rgba(30,18,8,0.85)']}
+          colors={['rgba(10,12,18,0.92)', 'rgba(6,8,14,0.92)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.sectionBezel}
@@ -665,7 +665,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(214,178,94,0.10)', 'rgba(214,178,94,0.03)']}
+                  colors={['rgba(214,178,94,0.06)', 'rgba(214,178,94,0.02)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="camera" size={28} color={uploading ? colors.textMute : colors.gold} />
@@ -681,7 +681,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(64,210,255,0.10)', 'rgba(64,210,255,0.03)']}
+                  colors={['rgba(64,210,255,0.06)', 'rgba(64,210,255,0.02)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="barcode" size={28} color={uploading ? colors.textMute : '#40D2FF'} />
@@ -697,7 +697,7 @@ export function DlScanScreen() {
                 style={({ pressed }) => [styles.scanModeBtn, uploading && styles.disabled, pressed && styles.pressed]}
               >
                 <LinearGradient
-                  colors={['rgba(100,155,255,0.10)', 'rgba(100,155,255,0.03)']}
+                  colors={['rgba(100,155,255,0.06)', 'rgba(100,155,255,0.02)']}
                   style={styles.scanModeGrad}
                 >
                   <Ionicons name="images" size={28} color={uploading ? colors.textMute : '#649BFF'} />
