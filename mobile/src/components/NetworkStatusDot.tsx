@@ -1,21 +1,23 @@
 /**
  * Network Status Indicator
- * Small dot indicator for network connectivity in headers.
+ * Shows network + WebSocket connectivity with a dual-dot indicator.
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useNetwork } from '../context/NetworkContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import { colors } from '../theme/colors';
 import { impactLight } from '../lib/haptics';
 
-export function NetworkStatusDot({ showLabel = false }) {
+export function NetworkStatusDot({ showLabel = false }: { showLabel?: boolean }) {
   const { isOnline, queueCount, syncStatus, triggerSync } = useNetwork();
+  const { connected: wsConnected } = useWebSocket();
 
-  const dotColor = isOnline ? colors.green : '#FF9500';
+  const netColor = isOnline ? colors.green : '#FF9500';
+  const wsColor = wsConnected ? colors.green : 'rgba(255,255,255,0.2)';
   const label = isOnline
-    ? syncStatus === 'syncing' ? 'SYNCING' : 'ONLINE'
+    ? syncStatus === 'syncing' ? 'SYNCING' : wsConnected ? 'LIVE' : 'ONLINE'
     : 'OFFLINE';
 
   return (
@@ -28,10 +30,13 @@ export function NetworkStatusDot({ showLabel = false }) {
       }}
       style={styles.container}
       accessibilityRole="button"
-      accessibilityLabel={`Network status: ${label}`}
+      accessibilityLabel={`Network: ${isOnline ? 'online' : 'offline'}, Realtime: ${wsConnected ? 'connected' : 'disconnected'}`}
     >
-      <View style={[styles.dot, { backgroundColor: dotColor }]} />
-      {showLabel && <Text style={[styles.label, { color: dotColor }]}>{label}</Text>}
+      <View style={styles.dotGroup}>
+        <View style={[styles.dot, { backgroundColor: netColor }]} />
+        <View style={[styles.dotSmall, { backgroundColor: wsColor }]} />
+      </View>
+      {showLabel && <Text style={[styles.label, { color: netColor }]}>{label}</Text>}
       {queueCount > 0 && (
         <View style={styles.queueBadge}>
           <Text style={styles.queueText}>{queueCount}</Text>
@@ -49,10 +54,20 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
+  dotGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  dotSmall: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
   },
   label: {
     fontSize: 8,
