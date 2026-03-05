@@ -657,9 +657,9 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 <View style={{ height: 12 }} />
                 <View style={styles.intensityRow}>
                   {[
-                    { key: 'merica', name: 'V8', emoji: '\uD83C\uDDFA\uD83C\uDDF8', desc: 'American V8', color: '#FF4444' },
-                    { key: 'euro', name: 'EURO', emoji: '\uD83C\uDDE9\uD83C\uDDEA', desc: 'Exotic', color: '#FFD700' },
-                    { key: 'jdm', name: 'JDM', emoji: '\uD83C\uDDEF\uD83C\uDDF5', desc: 'Turbo', color: '#00CCFF' },
+                    { key: 'merica', name: 'V8', emoji: '\uD83C\uDDFA\uD83C\uDDF8', color: '#FF4444' },
+                    { key: 'euro', name: 'EURO', emoji: '\uD83C\uDDE9\uD83C\uDDEA', color: '#FFD700' },
+                    { key: 'jdm', name: 'JDM', emoji: '\uD83C\uDDEF\uD83C\uDDF5', color: '#00CCFF' },
                   ].map((p) => {
                     const active = settings.soundProfile === p.key;
                     return (
@@ -674,13 +674,11 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                       >
                         <Text style={styles.soundEmoji}>{p.emoji}</Text>
                         <Text style={[styles.soundName, active && { color: p.color }]}>{p.name}</Text>
-                        <Text style={styles.soundDesc}>{p.desc}</Text>
                         {active && <View style={[styles.soundActiveDot, { backgroundColor: p.color }]} />}
                       </Pressable>
                     );
                   })}
                 </View>
-                <Text style={styles.ambientSubtext}>Haptic feedback plays on SPORT mode toggle</Text>
               </GlassCard>
             </ScrollView>
           ) : null}

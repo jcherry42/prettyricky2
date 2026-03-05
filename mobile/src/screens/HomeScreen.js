@@ -60,7 +60,7 @@ const HomeListHeader = memo(function HomeListHeader({ stripColor }) {
       <View style={styles.sportRow}>
         <View style={styles.brandMark}>
           <View style={styles.brandLine} />
-          <Text style={styles.brandText}>SUPERCHARG'D</Text>
+          <Text style={styles.brandText}>Sport Mode</Text>
           <View style={styles.brandLine} />
         </View>
         <View style={{ height: 16 }} />
@@ -233,7 +233,6 @@ export function HomeScreen() {
         <View style={styles.emptyContainer}>
           <Ionicons name="people" size={48} color={colors.textMute} />
           <Text style={styles.emptyText}>No customers yet</Text>
-          <Text style={styles.emptySubtext}>Tap the + button to add your first customer</Text>
         </View>
       );
     }
