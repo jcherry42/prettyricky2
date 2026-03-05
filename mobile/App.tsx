@@ -20,6 +20,7 @@ import { NetworkProvider } from './src/context/NetworkContext';
 import { ToastProvider } from './src/context/ToastContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { WebSocketProvider } from './src/context/WebSocketContext';
 import { PinScreen } from './src/screens/PinScreen';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -79,6 +80,7 @@ function MainApp() {
     NetworkProvider,
     ToastProvider,
     AppSettingsProvider,
+    WebSocketProvider,
     CustomerProvider,
     InventoryProvider,
     PttProvider,
