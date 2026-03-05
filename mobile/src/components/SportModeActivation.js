@@ -24,84 +24,58 @@ import { SOUND_PROFILES } from '../lib/soundProfiles';
 const { width: W, height: H } = Dimensions.get('window');
 const DURATION = 1900;
 
-// ─── Procedural screen-wide ember generation ──────────────────────────────────
-// Deterministic — no Math.random() — same particles every render.
+// ─── Procedural flame wall generation (deterministic) ─────────────────────────
+// No Math.random() — same flames every render.
 
-const makeScreenEmbers = () => {
-  const particles = [];
-  const cols = 22;
+const makeFlameWall = () => {
+  const flames = [];
+  const cols = 16;
 
-  // Tier 0: Base ember bed (bright white-hot row along bottom)
+  // Primary tongues (bright core)
   for (let i = 0; i < cols; i++) {
-    const x = (i / cols) * W + ((i * 7 + 3) % 11) - 5;
-    particles.push({
-      x, y: -8 + (i % 3) * 4,
-      s: 6 + (i % 3) * 2, g: 22,
-      c: ['#FFFFFF', '#FFF8E1', '#FFFDE7'][i % 3],
-      gc: ['#FFC107', '#FFD54F', '#FFCA28'][i % 3],
-      rise: 6, sway: 3,
-      sp: 480 + (i % 4) * 18,
-      dl: (i * 23) % 180,
-      op: 0.95,
-      tier: 0,
+    const layer = i % 3;
+    const x = (i / cols) * W + ((i * 11 + 5) % 13) - 10;
+    const w = 24 + (i % 4) * 6;
+    const h = H * 0.25 + (i % 5) * 14;
+    flames.push({
+      x,
+      y: -10 + layer * 3,
+      w,
+      h,
+      rise: 18 + layer * 6,
+      sway: 6 + (i % 3) * 3,
+      sp: 1100 + (i % 5) * 120,
+      dl: (i * 73) % 500,
+      op: 0.85 - layer * 0.12,
+      tilt: i % 2 === 0 ? -4 : 4,
+      stretch: 1.12 + layer * 0.06,
+      fg: layer === 2,
     });
   }
 
-  // Tier 1: Core flames (yellow → orange, rising)
-  for (let i = 0; i < cols; i++) {
-    const x = (i / cols) * W + ((i * 11 + 5) % 13) - 6;
-    particles.push({
-      x, y: 5 + (i % 4) * 5,
-      s: 5 + (i % 3), g: 18,
-      c: ['#FFD54F', '#FF9800', '#FF6D00', '#FFCA28'][i % 4],
-      gc: ['#FF3D00', '#DD2C00', '#FF5722', '#FF6D00'][i % 4],
-      rise: 22 + (i % 5) * 5,
-      sway: 6 + (i % 3) * 2,
-      sp: 700 + (i % 5) * 35,
-      dl: (i * 31) % 280,
-      op: 0.88,
-      tier: 1,
+  // Back row (larger, dimmer glow for depth)
+  for (let i = 0; i < cols - 3; i++) {
+    const x = (i / (cols - 3)) * W + ((i * 9 + 3) % 17) - 18;
+    flames.push({
+      x,
+      y: -22,
+      w: 34 + (i % 4) * 8,
+      h: H * 0.30 + (i % 5) * 16,
+      rise: 12 + (i % 4) * 4,
+      sway: 4 + (i % 2) * 2,
+      sp: 1400 + (i % 4) * 150,
+      dl: (i * 91) % 650,
+      op: 0.42,
+      tilt: i % 2 === 0 ? -2 : 2,
+      stretch: 1.08,
+      fg: false,
     });
   }
 
-  // Tier 2: Mid tongues (orange → red)
-  for (let i = 0; i < Math.floor(cols * 0.75); i++) {
-    const x = (i / (cols * 0.75)) * W + ((i * 13 + 7) % 17) - 8;
-    particles.push({
-      x, y: 15 + (i % 4) * 8,
-      s: 4 + (i % 2), g: 14,
-      c: ['#FF6D00', '#FF3D00', '#DD2C00', '#F4511E'][i % 4],
-      gc: ['#B71C1C', '#D32F2F', '#C62828', '#BF360C'][i % 4],
-      rise: 32 + (i % 5) * 7,
-      sway: 8 + (i % 4) * 2,
-      sp: 860 + (i % 5) * 45,
-      dl: (i * 43) % 360,
-      op: 0.78,
-      tier: 2,
-    });
-  }
-
-  // Tier 3: Upper wisps (red → crimson, tall)
-  for (let i = 0; i < Math.floor(cols * 0.5); i++) {
-    const x = (i / (cols * 0.5)) * W * 0.85 + W * 0.075 + ((i * 17 + 3) % 11) - 5;
-    particles.push({
-      x, y: 30 + (i % 3) * 12,
-      s: 3 + (i % 2), g: 10,
-      c: ['#D32F2F', '#B71C1C', '#880E4F', '#FF3D00'][i % 4],
-      gc: ['#4A0000', '#880E4F', '#311B92', '#B71C1C'][i % 4],
-      rise: 42 + (i % 4) * 8,
-      sway: 10 + (i % 3) * 3,
-      sp: 1000 + (i % 4) * 55,
-      dl: (i * 57) % 450,
-      op: 0.58,
-      tier: 3,
-    });
-  }
-
-  return particles;
+  return flames;
 };
 
-const SCREEN_EMBERS = makeScreenEmbers();
+const SCREEN_FLAMES = makeFlameWall();
 
 // ─── Flying sparks ────────────────────────────────────────────────────────────
 const SPARKS = Array.from({ length: 20 }, (_, i) => ({
@@ -113,75 +87,106 @@ const SPARKS = Array.from({ length: 20 }, (_, i) => ({
   dl: (i * 37) % 500,
 }));
 
-// ─── Screen Ember ─────────────────────────────────────────────────────────────
+// ─── Screen Flame Tongue ─────────────────────────────────────────────────────
 
-const ScreenEmber = React.memo(function ScreenEmber({ cfg, run }) {
+const ScreenFlame = React.memo(function ScreenFlame({ cfg, run }) {
   const riseVal    = useSharedValue(0);
   const swayVal    = useSharedValue(0);
-  const flickerSc  = useSharedValue(1);
+  const stretchVal = useSharedValue(1);
+  const opVal      = useSharedValue(0);
 
   useEffect(() => {
     if (!run) {
       cancelAnimation(riseVal);
       cancelAnimation(swayVal);
-      cancelAnimation(flickerSc);
-      riseVal.value   = 0;
-      swayVal.value   = 0;
-      flickerSc.value = 1;
+      cancelAnimation(stretchVal);
+      cancelAnimation(opVal);
+      riseVal.value = 0;
+      swayVal.value = 0;
+      stretchVal.value = 1;
+      opVal.value = 0;
       return;
     }
 
+    opVal.value = withTiming(1, { duration: 200 });
     const eio = Easing.inOut(Easing.sin);
 
     riseVal.value = withDelay(cfg.dl,
       withRepeat(withSequence(
         withTiming(-cfg.rise, { duration: cfg.sp, easing: eio }),
-        withTiming(0, { duration: cfg.sp * 1.15, easing: eio })
+        withTiming(0,         { duration: Math.floor(cfg.sp * 1.12), easing: eio })
       ), -1)
     );
 
     swayVal.value = withDelay(Math.floor(cfg.dl * 0.6),
       withRepeat(withSequence(
-        withTiming( cfg.sway, { duration: Math.floor(cfg.sp * 0.65), easing: eio }),
-        withTiming(-cfg.sway, { duration: Math.floor(cfg.sp * 0.65), easing: eio })
+        withTiming( cfg.sway, { duration: Math.floor(cfg.sp * 0.6), easing: eio }),
+        withTiming(-cfg.sway, { duration: Math.floor(cfg.sp * 0.6), easing: eio })
       ), -1)
     );
 
-    const fm = Math.max(80, Math.floor(cfg.sp * 0.16));
-    flickerSc.value = withRepeat(withSequence(
-      withTiming(1.35, { duration: fm,                    easing: Easing.inOut(Easing.ease) }),
-      withTiming(0.60, { duration: Math.floor(fm * 0.70), easing: Easing.inOut(Easing.ease) }),
-      withTiming(1.18, { duration: Math.floor(fm * 0.48), easing: Easing.inOut(Easing.ease) }),
-      withTiming(0.78, { duration: Math.floor(fm * 0.55), easing: Easing.inOut(Easing.ease) })
-    ), -1);
+    stretchVal.value = withDelay(Math.floor(cfg.dl * 0.45),
+      withRepeat(withSequence(
+        withTiming(cfg.stretch, { duration: Math.floor(cfg.sp * 0.45), easing: Easing.inOut(Easing.ease) }),
+        withTiming(1,           { duration: Math.floor(cfg.sp * 0.45), easing: Easing.inOut(Easing.ease) })
+      ), -1)
+    );
   }, [run]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const style = useAnimatedStyle(() => ({
+    opacity: opVal.value * cfg.op,
     transform: [
       { translateY: riseVal.value },
       { translateX: swayVal.value },
-      { scale: flickerSc.value },
+      { scaleY: stretchVal.value },
+      { rotateZ: `${cfg.tilt}deg` },
     ],
   }));
 
-  const half = cfg.s / 2;
+  const topRadius = cfg.w * 0.6;
+  const bottomRadius = cfg.w * 0.28;
 
   return (
     <Animated.View style={[{
       position: 'absolute',
-      left: cfg.x - half,
-      bottom: cfg.y - cfg.s * 0.2,
-      width: cfg.s,
-      height: cfg.s * 1.4,
-      borderRadius: half,
-      backgroundColor: cfg.c,
-      opacity: cfg.op,
-      shadowColor: cfg.gc,
-      shadowOpacity: 0.95,
-      shadowRadius: cfg.g,
-      shadowOffset: { width: 0, height: -1 },
-      elevation: Platform.OS === 'android' ? Math.ceil(cfg.g * 0.4) : 0,
-    }, style]} />
+      left: cfg.x,
+      bottom: cfg.y,
+      width: cfg.w,
+      height: cfg.h,
+      borderTopLeftRadius: topRadius,
+      borderTopRightRadius: topRadius,
+      borderBottomLeftRadius: bottomRadius,
+      borderBottomRightRadius: bottomRadius,
+      overflow: 'hidden',
+      shadowColor: '#FF6D00',
+      shadowOpacity: 0.9,
+      shadowRadius: cfg.w * 1.4,
+      shadowOffset: { width: 0, height: -2 },
+      elevation: Platform.OS === 'android' ? Math.ceil(cfg.w * 0.6) : 0,
+      zIndex: cfg.fg ? 12 : 2,
+    }, style]}>
+      <LinearGradient
+        colors={['rgba(255,255,230,0.98)', '#FFD36A', '#FF8A00', '#FF3D00']}
+        locations={[0, 0.35, 0.7, 1]}
+        start={{ x: 0.5, y: 1 }}
+        end={{ x: 0.5, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <LinearGradient
+        colors={['rgba(255,255,255,0.92)', 'rgba(255,214,120,0.85)', 'rgba(255,120,0,0)']}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0.5, y: 1 }}
+        end={{ x: 0.5, y: 0 }}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          alignSelf: 'center',
+          width: cfg.w * 0.45,
+          height: cfg.h * 0.6,
+          borderRadius: cfg.w * 0.4,
+        }}
+      />
+    </Animated.View>
   );
 });
 
@@ -309,10 +314,10 @@ export function SportModeActivation({ visible, profileId = 'merica', onComplete 
         {/* Bottom heat gradient — intense warm glow from base */}
         <LinearGradient
           colors={[
-            'rgba(150,20,0,0)',
-            'rgba(200,50,0,0.30)',
-            'rgba(255,80,0,0.50)',
-            'rgba(255,120,20,0.65)',
+            'rgba(0,0,0,0)',
+            'rgba(80,20,0,0.35)',
+            'rgba(255,90,10,0.70)',
+            'rgba(255,160,50,0.85)',
           ]}
           locations={[0, 0.4, 0.7, 1]}
           start={{ x: 0.5, y: 0 }}
@@ -320,8 +325,8 @@ export function SportModeActivation({ visible, profileId = 'merica', onComplete 
           style={styles.bottomHeat}
         />
 
-        {/* Glow ember particles — the fire */}
-        {SCREEN_EMBERS.map((cfg, i) => <ScreenEmber key={i} cfg={cfg} run={run} />)}
+        {/* Flame tongues — layered wildfire wall */}
+        {SCREEN_FLAMES.map((cfg, i) => <ScreenFlame key={`fl${i}`} cfg={cfg} run={run} />)}
 
         {/* Flying sparks */}
         {SPARKS.map((s, i) => <ScreenSpark key={`sp${i}`} cfg={s} run={run} />)}

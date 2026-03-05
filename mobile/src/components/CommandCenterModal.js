@@ -658,7 +658,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 <View style={styles.intensityRow}>
                   {[
                     { key: 'merica', name: 'V8', emoji: '\uD83C\uDDFA\uD83C\uDDF8', desc: 'American V8', color: '#FF4444' },
-                    { key: 'euro', name: 'EURO', emoji: '\uD83C\uDDEA\uD83C\uDDFA', desc: 'Exotic', color: '#FFD700' },
+                    { key: 'euro', name: 'EURO', emoji: '\uD83C\uDDE9\uD83C\uDDEA', desc: 'Exotic', color: '#FFD700' },
                     { key: 'jdm', name: 'JDM', emoji: '\uD83C\uDDEF\uD83C\uDDF5', desc: 'Turbo', color: '#00CCFF' },
                   ].map((p) => {
                     const active = settings.soundProfile === p.key;

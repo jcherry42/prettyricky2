@@ -577,6 +577,21 @@ test_plan:
   test_priority: "high_first"
 
 frontend:
+  - task: "Sport Mode Flame Animation - Realism"
+    implemented: true
+    working: false
+    file: "/app/mobile/src/components/SportModeButton.js, /app/mobile/src/components/SportModeActivation.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reports flame animation is 0/10 (cartoon-like) on iPhone 12 Pro Max iOS 26.2; wants realistic flame matching provided GIF."
+      - working: "NA"
+        agent: "main"
+        comment: "Rebuilt flame system using layered flame tongues, gradient core, flicker, and sparks (Expo Go compatible). Pending user verification."
+
   - task: "PTT Mobile Pipeline Fix - Recording + Upload + Overlay"
     implemented: true
     working: "NA"
