@@ -47,7 +47,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://ios-android-polish.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://elite-mobility-hub.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -130,7 +130,7 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://ios-android-polish.preview.emergentagent.com` |
+| Default Backend | `https://elite-mobility-hub.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |
 

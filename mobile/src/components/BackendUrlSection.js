@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://ios-android-polish.preview.emergentagent.com',
+        'Backend URL must start with https://elite-mobility-hub.preview.emergentagent.com',
       );
       return;
     }

@@ -26,7 +26,7 @@ import base64
 from typing import Dict, Any, Optional
 
 # Configuration
-BACKEND_URL = "https://ios-android-polish.preview.emergentagent.com"
+BACKEND_URL = "https://elite-mobility-hub.preview.emergentagent.com"
 TIMEOUT = 30
 
 class BackendTester:

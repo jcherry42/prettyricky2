@@ -10,7 +10,7 @@ import { getBackendUrlOverride } from './backendOverride';
  *
  * Updated on each deployment. EXPO_PUBLIC_BACKEND_URL in .env takes priority.
  */
-const FALLBACK_BACKEND_URL = 'https://ios-android-polish.preview.emergentagent.com';
+const FALLBACK_BACKEND_URL = 'https://elite-mobility-hub.preview.emergentagent.com';
 
 /**
  * Sanitize a backend base URL.
