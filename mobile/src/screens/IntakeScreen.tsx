@@ -242,6 +242,7 @@ const Stack = createNativeStackNavigator();
 export function IntakeScreen() {
   return (
     <Stack.Navigator
+      id="IntakeStack"
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: 'rgba(4,6,8,0.95)' },
@@ -250,11 +251,10 @@ export function IntakeScreen() {
           color: colors.text,
           fontWeight: '800',
           fontSize: 14,
-          letterSpacing: 1.2,
-        },
+        } as any,
         headerBackTitleVisible: false,
         headerShadowVisible: false,
-      }}
+      } as any}
     >
       <Stack.Screen name="IntakeHub" component={IntakeHub} options={{ headerShown: false }} />
       <Stack.Screen name="VinScan" component={VinScanScreen} options={{ title: 'VIN SCANNER' }} />

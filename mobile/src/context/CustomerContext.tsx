@@ -39,7 +39,7 @@ export function CustomerProvider({ children }) {
     return { ...c, id, customer_id: id };
   }
 
-  const fetchCustomers = useCallback(async (options = {}) => {
+  const fetchCustomers = useCallback(async (options: { limit?: number; search?: string; append?: boolean; skip?: number } = {}) => {
     const { limit = 50, search = '', append = false, skip = 0 } = options;
 
     if (!append) setLoading(true);

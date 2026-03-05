@@ -22,7 +22,7 @@ function SectionTitle({ children }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
-function ActionButton({ label, icon, onPress, disabled, loading }) {
+function ActionButton({ label, icon, onPress, disabled, loading }: { label: string; icon: string; onPress: () => void; disabled?: boolean; loading?: boolean }) {
   return (
     <Pressable
       onPress={() => { impactLight(); onPress(); }}
@@ -32,7 +32,7 @@ function ActionButton({ label, icon, onPress, disabled, loading }) {
       {loading ? (
         <ActivityIndicator color={colors.gold} size="small" />
       ) : (
-        icon && <Ionicons name={icon} size={16} color={colors.gold} />
+        icon && <Ionicons name={icon as any} size={16} color={colors.gold} />
       )}
       <Text style={styles.btnText}>{label}</Text>
     </Pressable>
@@ -268,7 +268,7 @@ export function PrintCenterModal({ visible, onClose }) {
                   pressed && { opacity: 0.9 },
                 ]}
               >
-                <Ionicons name={icon} size={14} color={tab === key ? colors.gold : colors.textMute} />
+                <Ionicons name={icon as any} size={14} color={tab === key ? colors.gold : colors.textMute} />
                 <Text style={[styles.tabText, tab === key && styles.tabTextActive]}>{label}</Text>
               </Pressable>
             ))}

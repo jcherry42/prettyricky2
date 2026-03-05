@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 
-export function ScreenHeader({ title, subtitle, right }) {
+interface ScreenHeaderProps {
+  title: string;
+  subtitle?: string;
+  right?: ReactNode;
+}
+
+export function ScreenHeader({ title, subtitle, right }: ScreenHeaderProps) {
   return (
     <View style={styles.wrap} accessibilityRole="header">
       <View style={{ flex: 1 }}>

@@ -54,4 +54,5 @@ export const colors = {
 
   // Branded accent colors
   electricBlue: '#00D4FF',
-};
+  chrome: '#C0C8D0',
+} as const;

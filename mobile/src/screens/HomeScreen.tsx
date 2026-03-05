@@ -58,7 +58,7 @@ function AmbientStrip({ active, color, ecoMode }) {
  * keyboard dismissal on every keystroke (a known React Native issue when
  * a TextInput lives inside ListHeaderComponent).
  * -------------------------------------------------------------------------- */
-const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }) {
+const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }: { stripColor: string; ecoMode: boolean }) {
   return (
     <View>
       <AmbientStrip active color={stripColor} ecoMode={ecoMode} />

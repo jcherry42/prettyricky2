@@ -1430,4 +1430,24 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginTop: 2,
   },
+  quiltedPattern: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.03,
+  },
+  stitchingTop: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(214,178,94,0.15)',
+  },
+  stitchingBottom: {
+    position: 'absolute' as const,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(214,178,94,0.08)',
+  },
 });

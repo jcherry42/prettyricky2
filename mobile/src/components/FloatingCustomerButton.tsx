@@ -8,7 +8,7 @@ import { impactMedium, impactHeavy } from '../lib/haptics';
 import { scaleSize } from '../theme/layout';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
-export function FloatingCustomerButton({ onPress, disabled }) {
+export function FloatingCustomerButton({ onPress, disabled }: { onPress?: () => void; disabled?: boolean }) {
   const insets = useSafeAreaInsets();
   // Position above cluster (tab bar + safe area + cluster height + gap)
   const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + scaleSize(76);

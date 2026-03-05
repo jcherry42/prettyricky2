@@ -65,9 +65,9 @@ export function QuiltedLeatherOverlay({ style, tint = 'dark' }) {
  * Burr walnut or Bird's-Eye Maple frame effect.
  */
 export function WoodBezelFrame({ children, style, variant = 'walnut' }) {
-  const woodColors = variant === 'maple'
+  const woodColors = (variant === 'maple'
     ? [colors.woodBirdsEyeMaple, colors.woodBirdsEyeMapleLight, colors.woodBirdsEyeMaple]
-    : [colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut];
+    : [colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]) as [string, string, ...string[]];
 
   return (
     <View style={[styles.woodBezelOuter, style]}>

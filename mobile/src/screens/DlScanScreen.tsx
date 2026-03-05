@@ -180,7 +180,7 @@ function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSaved }) {
         {EXTRACTION_FIELDS.map((f) => (
           <View key={f.key} style={styles.fieldBox}>
             <View style={styles.fieldLabelRow}>
-              <Ionicons name={f.icon} size={14} color={f.required ? colors.gold : colors.textMute} />
+              <Ionicons name={f.icon as any} size={14} color={f.required ? colors.gold : colors.textMute} />
               <Text style={styles.fieldLabel}>
                 {f.label}
                 {f.required && <Text style={{ color: colors.red }}> *</Text>}

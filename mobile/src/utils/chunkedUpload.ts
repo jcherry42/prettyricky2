@@ -149,7 +149,7 @@ export async function uploadFileAuto(options) {
       uri,
       type: contentType,
       name: filename,
-    });
+    } as any);
   }
 
   const data = await apiFetch('/api/license/upload', {

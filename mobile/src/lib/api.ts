@@ -4,11 +4,15 @@ const DEFAULT_TIMEOUT = 12000;
 const MAX_RETRIES = 1; // Reduced: fast fail is better UX than silent 4x retry
 const RETRY_DELAYS = [1200, 3000];
 
+// ----- Extended Error type for API errors --------------------------------
+interface ApiError extends Error {
+  status?: number;
+  payload?: any;
+  code?: string;
+}
+
 // ----- URL cache --------------------------------------------------------
-// buildApiUrlAsync reads AsyncStorage every call. We resolve it once and
-// cache it for the lifetime of the session. Call invalidateUrlCache() if
-// the user changes the backend URL in settings.
-let _urlCache = null;
+let _urlCache: string | null = null;
 
 export function invalidateUrlCache() {
   _urlCache = null;
@@ -16,7 +20,6 @@ export function invalidateUrlCache() {
 
 /**
  * Health check — pings /api/health to verify backend connectivity.
- * Returns { ok: boolean, url: string, error?: string, latencyMs?: number }
  */
 export async function healthCheck() {
   const start = Date.now();
@@ -32,26 +35,23 @@ export async function healthCheck() {
       return { ok: true, url, latencyMs };
     }
     return { ok: false, url, error: `HTTP ${res.status}`, latencyMs };
-  } catch (e) {
+  } catch (e: any) {
     return { ok: false, url: _urlCache || '', error: e.message, latencyMs: Date.now() - start };
   }
 }
 
-async function getBaseUrl(path) {
+async function getBaseUrl(path: string): Promise<string | null> {
   if (_urlCache) {
-    // Re-append path to cached base
     const base = _urlCache.replace(/\/$/, '');
     const clean = path.startsWith('/') ? path : `/${path}`;
     return `${base}${clean}`;
   }
   const url = await buildApiUrlAsync(path);
   if (url) {
-    // Store just the base (strip the path component) using URL parsing for robustness
     try {
       const parsed = new URL(url);
       _urlCache = `${parsed.protocol}//${parsed.host}`;
     } catch {
-      // Fallback: naive string replace
       const base = url.replace(path, '').replace(/\/$/, '');
       _urlCache = base;
     }
@@ -60,11 +60,9 @@ async function getBaseUrl(path) {
 }
 
 // ----- Inflight GET deduplication ---------------------------------------
-// If two components fire the same GET simultaneously we resolve both from
-// a single network request.
-const _inflight = new Map();
+const _inflight = new Map<string, Promise<any>>();
 
-function isRetryable(error) {
+function isRetryable(error: any): boolean {
   if (error.code === 'TIMEOUT') return true;
   if (error.code === 'NETWORK_ERROR') return true;
   if (error.status >= 500 && error.status < 600) return true;
@@ -72,14 +70,14 @@ function isRetryable(error) {
   return false;
 }
 
-function delay(ms) {
+function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function _doFetch(url, options) {
+async function _doFetch(url: string, options: any) {
   const maxRetries = options.retries ?? MAX_RETRIES;
   const timeout = options.timeout || DEFAULT_TIMEOUT;
-  let lastError = null;
+  let lastError: ApiError | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const controller = new AbortController();
@@ -109,8 +107,8 @@ async function _doFetch(url, options) {
         // scenarios that previously caused persistent 404 errors.
         if (res.status === 404 && _urlCache && attempt === 0) {
           _urlCache = null;
-          lastError = new Error(`404 at ${url} — retrying with fresh URL`);
-          lastError.status = 404;
+          lastError = new Error(`404 at ${url} — retrying with fresh URL`) as ApiError;
+          (lastError as ApiError).status = 404;
           continue;
         }
 
@@ -118,7 +116,7 @@ async function _doFetch(url, options) {
           res.status === 404
             ? `Not found (404): ${url} — verify your backend URL in Command Center → Settings`
             : (json?.detail || `Request failed: ${res.status}`)
-        );
+        ) as ApiError;
         err.status = res.status;
         err.payload = json;
         if (isRetryable(err) && attempt < maxRetries) {
@@ -130,11 +128,11 @@ async function _doFetch(url, options) {
       }
 
       return json;
-    } catch (e) {
+    } catch (e: any) {
       clearTimeout(timer);
 
       if (e.name === 'AbortError') {
-        const err = new Error(`Request timed out after ${timeout / 1000}s`);
+        const err = new Error(`Request timed out after ${timeout / 1000}s`) as ApiError;
         err.code = 'TIMEOUT';
         if (attempt < maxRetries) {
           lastError = err;
@@ -160,10 +158,10 @@ async function _doFetch(url, options) {
   }
 }
 
-export async function apiFetch(path, options = {}) {
+export async function apiFetch(path: string, options: any = {}) {
   const url = await getBaseUrl(path);
   if (!url) {
-    const err = new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL or configure in-app.');
+    const err = new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL or configure in-app.') as ApiError;
     err.code = 'BACKEND_URL_MISSING';
     throw err;
   }

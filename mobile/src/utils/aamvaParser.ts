@@ -267,7 +267,7 @@ export function isLikelyAamva(data) {
  * @param {string} rawData - Raw barcode string from scanner
  * @returns {object} Parsed result with all fields + metadata
  */
-export function parseAamvaPdf417(rawData) {
+export function parseAamvaPdf417(rawData: string) {
   const result = {
     success: false,
     first_name: '',
@@ -303,7 +303,7 @@ export function parseAamvaPdf417(rawData) {
     result.issuing_state = header.issuingState;
 
     // Fields
-    const fields = extractFields(rawData);
+    const fields: Record<string, string> = extractFields(rawData);
 
     if (Object.keys(fields).length < 2) {
       result.errors.push('Could not parse fields from barcode');

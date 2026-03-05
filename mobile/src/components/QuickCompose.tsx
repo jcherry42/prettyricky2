@@ -45,7 +45,15 @@ const MAX_CHARS = 500;
  * Animated.multiply with useNativeDriver:true can fail in RN 0.81 new architecture,
  * causing the Animated.View overlay to silently break and absorb all touch events.
  */
-const GlowIconButton = memo(function GlowIconButton({ icon, glowColor, selected, onPress, label }) {
+interface GlowIconButtonProps {
+  icon: string;
+  glowColor: string;
+  selected?: boolean;
+  onPress?: () => void;
+  label?: string;
+}
+
+const GlowIconButton = memo(function GlowIconButton({ icon, glowColor, selected, onPress, label }: GlowIconButtonProps) {
   const glowAnim = useRef(new Animated.Value(0.15)).current;
 
   useEffect(() => {
@@ -77,7 +85,7 @@ const GlowIconButton = memo(function GlowIconButton({ icon, glowColor, selected,
         ]}
         pointerEvents="none"
       />
-      <Ionicons name={icon} size={16} color={glowColor} />
+      <Ionicons name={icon as any} size={16} color={glowColor} />
     </Pressable>
   );
 });

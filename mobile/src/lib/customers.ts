@@ -3,7 +3,7 @@ import { apiFetch } from './api';
 // Create a backend customer from a local DL/Bluetooth entry.
 // Entry shape (from DlScanScreen / CustomerListModal):
 // { fullName, address, dlNumber, expiration, licenseImageBase64?, source?, savedAt? }
-export async function createCustomerFromLocalEntry(entry, options = {}) {
+export async function createCustomerFromLocalEntry(entry: any, options: any = {}) {
   if (!entry) return null;
 
   const fullName = (entry.fullName || '').trim();
@@ -11,7 +11,7 @@ export async function createCustomerFromLocalEntry(entry, options = {}) {
   const firstName = options.firstName || (parts[0] || '');
   const lastName = options.lastName || (parts.slice(1).join(' ') || '');
 
-  const payload = {
+  const payload: any = {
     firstName,
     lastName,
     name: fullName || undefined,

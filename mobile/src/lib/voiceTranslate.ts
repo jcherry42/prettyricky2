@@ -24,7 +24,7 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     uri,
     name: filename,
     type: mime,
-  });
+  } as any);
   form.append('source_lang', sourceLang);
   form.append('target_lang', targetLang);
 

@@ -8,7 +8,8 @@
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
     "build:android": "eas build --platform android",
-    "build:ios": "eas build --platform ios"
+    "build:ios": "eas build --platform ios",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo-google-fonts/space-grotesk": "^0.4.1",
@@ -46,10 +47,11 @@
     "@expo/ngrok": "^4.1.3",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
-    "@types/react": "^19.2.13",
+    "@types/react": "^19.2.14",
     "@types/react-native": "^0.73.0",
     "jest": "^30.2.0",
     "jest-expo": "^55.0.9",
-    "react-test-renderer": "19.1.0"
+    "react-test-renderer": "19.1.0",
+    "typescript": "^5.9.3"
   }
 }

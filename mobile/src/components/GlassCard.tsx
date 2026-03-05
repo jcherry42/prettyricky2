@@ -1,7 +1,12 @@
-import React, { memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { memo, ReactNode } from 'react';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+
+interface GlassCardProps {
+  children?: ReactNode;
+  style?: ViewStyle;
+}
 
 /**
  * GlassCard — memoized, brushed aluminum premium finish.
@@ -10,7 +15,7 @@ import { colors } from '../theme/colors';
  * individual cards stay fully static so they are never re-rendered
  * by the 468 ms ambient color cycle.
  */
-export const GlassCard = memo(function GlassCard({ children, style }) {
+export const GlassCard = memo(function GlassCard({ children, style }: GlassCardProps) {
   return (
     <View style={[styles.wrap, style]}>
       {/* Brushed aluminum base — subtle horizontal gradient bands */}

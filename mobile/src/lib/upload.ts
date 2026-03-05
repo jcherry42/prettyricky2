@@ -1,6 +1,6 @@
 import { buildApiUrlAsync } from '../config/backend';
 
-export async function uploadImageToLicenseScan({ uri, mimeType }) {
+export async function uploadImageToLicenseScan({ uri, mimeType }: { uri: string; mimeType?: string }) {
   const url = await buildApiUrlAsync('/api/license/scan');
   if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
 
@@ -9,7 +9,7 @@ export async function uploadImageToLicenseScan({ uri, mimeType }) {
     uri,
     name: 'license.jpg',
     type: mimeType || 'image/jpeg',
-  });
+  } as any);
 
   const res = await fetch(url, {
     method: 'POST',

@@ -194,7 +194,7 @@ async function playAsset(asset) {
     _activeSound = sound;
 
     // Auto-release when playback finishes naturally
-    sound.setOnPlaybackStatusUpdate((status) => {
+    sound.setOnPlaybackStatusUpdate((status: any) => {
       if (status.didJustFinish) {
         sound.unloadAsync().catch(() => {});
         if (_activeSound === sound) _activeSound = null;

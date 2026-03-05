@@ -65,7 +65,12 @@ function Avatar({ name, color }) {
   );
 }
 
-export const CustomerCard = memo(function CustomerCard({ customer, onPress }) {
+interface CustomerCardProps {
+  customer: any;
+  onPress?: (customer: any) => void;
+}
+
+export const CustomerCard = memo(function CustomerCard({ customer, onPress }: CustomerCardProps) {
   const status = customer?.lead_status || 'new';
   const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
   const scaleAnim = useRef(new Animated.Value(1)).current;

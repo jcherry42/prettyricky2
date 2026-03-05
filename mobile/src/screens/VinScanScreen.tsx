@@ -15,6 +15,7 @@ import {
   Easing,
   PanResponder,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -98,7 +99,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
         <View style={styles.historyContent}>
           <View style={styles.historyLeft}>
             <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}>
-              <Ionicons name={meta.icon} size={10} color={meta.color} />
+              <Ionicons name={meta.icon as any} size={10} color={meta.color} />
               <Text style={[styles.categoryBadgeText, { color: meta.color }]}>{meta.short}</Text>
             </View>
             <Text style={styles.vinText}>{item.vin}</Text>
@@ -201,7 +202,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
         </Pressable>
         <View style={vdStyles.headerCenter}>
           <View style={[vdStyles.catBadge, { backgroundColor: categoryMeta_item.bg }]}>
-            <Ionicons name={categoryMeta_item.icon} size={11} color={categoryMeta_item.color} />
+            <Ionicons name={categoryMeta_item.icon as any} size={11} color={categoryMeta_item.color} />
             <Text style={[vdStyles.catBadgeText, { color: categoryMeta_item.color }]}>{categoryMeta_item.short}</Text>
           </View>
           <Text style={vdStyles.vehicleYear}>{year}</Text>
@@ -326,7 +327,7 @@ function VDSection({ title, icon, children }) {
   );
 }
 
-function VDRow({ label, value, highlight }) {
+function VDRow({ label, value, highlight }: { label: string; value: any; highlight?: boolean }) {
   if (!value) return null;
   return (
     <View style={vdStyles.row}>
@@ -634,7 +635,7 @@ export function VinScanScreen() {
     if (!validation.valid) {
       setVinValidation(validation);
       notificationError();
-      Alert.alert('Invalid VIN', validation.error || 'VIN format validation failed');
+      Alert.alert('Invalid VIN', (validation as any).error || 'VIN format validation failed');
       return null;
     }
 

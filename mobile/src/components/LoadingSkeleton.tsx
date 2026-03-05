@@ -6,7 +6,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 
-export function SkeletonLine({ width = '100%', height = 14, style }) {
+export function SkeletonLine({ width = '100%', height = 14, style }: { width?: string | number; height?: number; style?: any }) {
   const shimmer = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -1,8 +1,13 @@
-import React, { memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { memo, ReactNode } from 'react';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+
+interface ScreenProps {
+  children?: ReactNode;
+  style?: ViewStyle;
+}
 
 /**
  * Screen — premium root wrapper with designo deep-obsidian gradient.
@@ -13,7 +18,7 @@ import { colors } from '../theme/colors';
  * FlatList/ScrollView adds its own dynamic bottom padding based on safe area +
  * floating button positions. This prevents double-padding.
  */
-export const Screen = memo(function Screen({ children, style }) {
+export const Screen = memo(function Screen({ children, style }: ScreenProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.root, style]}>

@@ -527,7 +527,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                           )}
                           <View style={styles.inquiryInner}>
                             <Ionicons
-                              name={it.icon}
+                              name={it.icon as any}
                               size={15}
                               color={active ? colors.gold : colors.textMute}
                             />

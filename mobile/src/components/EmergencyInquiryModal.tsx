@@ -194,7 +194,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
                     pressed && { opacity: 0.85 },
                   ]}
                 >
-                  <Ionicons name={inq.icon} size={20} color={active ? inq.color : colors.textMute} />
+                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} />
                   <Text style={[styles.typeLabel, active && { color: inq.color }]}>{inq.label}</Text>
                 </Pressable>
               );
