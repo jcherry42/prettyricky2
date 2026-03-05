@@ -185,7 +185,9 @@ async def list_customers_filtered(
             ]
 
         total = await _db.customers.count_documents(query)
-        return {"customers": customers, "total": total}
+        has_more = (skip + limit) < total
+        next_cursor = customers[-1].get("id") if has_more and customers else None
+        return {"customers": customers, "total": total, "has_more": has_more, "next_cursor": next_cursor}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
