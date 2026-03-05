@@ -10,6 +10,7 @@ import { CustomerFormModal } from '../components/CustomerFormModal';
 import { QuickCompose } from '../components/QuickCompose';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
+import { on } from '../lib/events';
 import { useCustomers } from '../context/CustomerContext';
 import { useToast } from '../context/ToastContext';
 import { SportModeButton } from '../components/SportModeButton';
@@ -22,10 +23,16 @@ import { impactMedium } from '../lib/haptics';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ---------- Ambient light strip ---------- */
-function AmbientStrip({ active, color }) {
+function AmbientStrip({ active, color, ecoMode }) {
   const anim = useRef(new Animated.Value(0.12)).current;
 
   useEffect(() => {
+    if (ecoMode) {
+      // Eco mode: static low-opacity strip, no animation to save battery
+      anim.stopAnimation();
+      anim.setValue(0.06);
+      return;
+    }
     if (active) {
       Animated.loop(
         Animated.sequence([
@@ -37,7 +44,7 @@ function AmbientStrip({ active, color }) {
       anim.stopAnimation();
       anim.setValue(0.06);
     }
-  }, [active, anim]);
+  }, [active, anim, ecoMode]);
 
   return (
     <Animated.View style={[styles.ambientStrip, { backgroundColor: color, opacity: anim }]} />
@@ -51,10 +58,10 @@ function AmbientStrip({ active, color }) {
  * keyboard dismissal on every keystroke (a known React Native issue when
  * a TextInput lives inside ListHeaderComponent).
  * -------------------------------------------------------------------------- */
-const HomeListHeader = memo(function HomeListHeader({ stripColor }) {
+const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }) {
   return (
     <View>
-      <AmbientStrip active color={stripColor} />
+      <AmbientStrip active color={stripColor} ecoMode={ecoMode} />
 
       {/* SPORT button with subtle top branding */}
       <View style={styles.sportRow}>
@@ -67,7 +74,7 @@ const HomeListHeader = memo(function HomeListHeader({ stripColor }) {
         <SportModeButton />
       </View>
 
-      <AmbientStrip active color={stripColor} />
+      <AmbientStrip active color={stripColor} ecoMode={ecoMode} />
 
       {/* Chrome accent divider */}
       <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 10 }} />
@@ -127,15 +134,8 @@ export function HomeScreen() {
     setShowFormModal(true);
   }, []);
 
-  // Exposed to RootNavigator so the Bluetooth "Customer Entry" menu can open this form.
-  useEffect(() => {
-    globalThis.__sc_open_new_customer = handleAddNew;
-    return () => {
-      if (globalThis.__sc_open_new_customer === handleAddNew) {
-        globalThis.__sc_open_new_customer = null;
-      }
-    };
-  }, [handleAddNew]);
+  // Exposed to RootNavigator via event bus (replaces globalThis pattern)
+  useEffect(() => on('openNewCustomer', handleAddNew), [handleAddNew]);
 
   const handleEdit = (customer) => {
     setShowDetailModal(false);
@@ -189,10 +189,12 @@ export function HomeScreen() {
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   );
 
-  // renderHeader only depends on stripColor now — never re-creates due to typing
+  const ecoMode = Boolean(settings.ecoMode);
+
+  // renderHeader depends on stripColor and ecoMode — stable identity
   const renderHeader = useCallback(() => (
-    <HomeListHeader stripColor={stripColor} />
-  ), [stripColor]);
+    <HomeListHeader stripColor={stripColor} ecoMode={ecoMode} />
+  ), [stripColor, ecoMode]);
 
   const renderEmpty = () => {
     if (loading) {

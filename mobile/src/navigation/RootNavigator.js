@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import Constants from 'expo-constants';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +11,7 @@ import { type } from '../theme/typography';
 
 import { useAppSettings } from '../context/AppSettingsContext';
 import { usePtt } from '../context/PttContext';
+import { emit } from '../lib/events';
 
 import { HomeScreen } from '../screens/HomeScreen';
 import { BrandTaillights } from '../components/BrandTaillights';
@@ -94,13 +96,10 @@ export function RootNavigator() {
           tabBarHideOnKeyboard: true,
           tabBarActiveTintColor: colors.gold,
           tabBarInactiveTintColor: colors.textMute,
-          // Disable react-freeze for tab screens — prevents the
-          // Freeze→Suspender→AnimatedComponent→RNSScreen chain that triggers
-          // a JSI boolean/string type error in Expo Go.
-          freezeOnBlur: false,
-          // Inactive screens are detached from the tree to save memory
-          // (works fine with enableScreens(false) in App.js).
-          detachInactiveScreens: false,
+          // Enable native screen optimizations in production builds.
+          // Disable in Expo Go to avoid JSI boolean/string type error.
+          freezeOnBlur: Constants.appOwnership !== 'expo',
+          detachInactiveScreens: Constants.appOwnership !== 'expo',
         }}
         screenListeners={{
           state: (e) => {
@@ -180,7 +179,7 @@ export function RootNavigator() {
       {isHome && (
         <FloatingCustomerButton onPress={() => {
           // Directly open the Add Customer form (skip the menu since License Scans was removed)
-          globalThis.__sc_open_new_customer?.();
+          emit('openNewCustomer');
         }} />
       )}
 

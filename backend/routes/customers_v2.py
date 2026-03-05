@@ -118,8 +118,14 @@ async def list_customers(
     merged = local_frontend + [c for c in integrated_frontend if c.get("id") not in local_ids]
 
     paged = merged[skip : skip + limit] if limit else merged[skip:]
+    has_more = len(merged) > skip + limit
 
-    return {"customers": paged, "count": len(merged)}
+    # Return next_cursor for infinite-scroll pagination
+    next_cursor = None
+    if has_more and paged:
+        next_cursor = paged[-1].get("id")
+
+    return {"customers": paged, "count": len(merged), "has_more": has_more, "next_cursor": next_cursor}
 
 
 @router.get("/customers/stats")

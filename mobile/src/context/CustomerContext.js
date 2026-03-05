@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { apiFetch } from '../lib/api';
 import { loadJson, saveJson } from '../lib/storage';
 import { queueOperation } from '../utils/offlineQueue';
@@ -13,6 +13,10 @@ export function CustomerProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastFetch, setLastFetch] = useState(null);
+
+  // Ref always pointing to latest customers — prevents stale closures in callbacks
+  const customersRef = useRef(customers);
+  customersRef.current = customers;
 
   // Load cached customers on mount
   useEffect(() => {
@@ -36,27 +40,41 @@ export function CustomerProvider({ children }) {
   }
 
   const fetchCustomers = useCallback(async (options = {}) => {
-    setLoading(true);
+    const { limit = 50, search = '', append = false, skip = 0 } = options;
+
+    if (!append) setLoading(true);
     setError(null);
 
     try {
-      const { limit = 200, search = '' } = options;
-      let path = `/api/customers/list?limit=${limit}`;
+      let path = `/api/customers/list?limit=${limit}&skip=${skip}`;
       if (search) path += `&search=${encodeURIComponent(search)}`;
 
       const data = await apiFetch(path);
       const list = (data?.customers || []).map(normalizeCustomer);
+      const hasMore = data?.has_more ?? (list.length >= limit);
 
-      setCustomers(list);
+      if (append) {
+        setCustomers(prev => {
+          // Deduplicate by id
+          const existing = new Set(prev.map(c => c.customer_id || c.id));
+          const fresh = list.filter(c => !existing.has(c.customer_id || c.id));
+          return [...prev, ...fresh];
+        });
+      } else {
+        setCustomers(list);
+      }
+
       setLastFetch(Date.now());
 
-      // Cache for offline access
-      await saveJson(CACHE_KEY, {
-        customers: list,
-        timestamp: Date.now(),
-      });
+      // Cache first page for offline access
+      if (!append) {
+        await saveJson(CACHE_KEY, {
+          customers: list,
+          timestamp: Date.now(),
+        });
+      }
 
-      return list;
+      return { customers: list, hasMore };
     } catch (e) {
       // If network error, serve from cache
       const cached = await loadJson(CACHE_KEY, null);
@@ -64,6 +82,7 @@ export function CustomerProvider({ children }) {
         const normalized = cached.customers.map(normalizeCustomer);
         setCustomers(normalized);
         setError('Serving cached data (offline)');
+        return { customers: normalized, hasMore: false };
         return normalized;
       }
       setError(e.message || 'Failed to fetch customers');
@@ -79,13 +98,13 @@ export function CustomerProvider({ children }) {
       // Backend returns the customer object directly (not wrapped).
       return normalizeCustomer(data) || null;
     } catch (e) {
-      // Try to find in cached list
-      const found = customers.find((c) => (c.customer_id || c.id) === id);
+      // Try to find in cached list (use ref for latest data)
+      const found = customersRef.current.find((c) => (c.customer_id || c.id) === id);
       if (found) return found;
       setError(e.message || 'Failed to fetch customer');
       throw e;
     }
-  }, [customers]);
+  }, []);
 
   const createCustomer = useCallback(async (customerData) => {
     setLoading(true);
@@ -98,9 +117,9 @@ export function CustomerProvider({ children }) {
       const newCustomer = normalizeCustomer(data?.customer);
       if (newCustomer) {
         setCustomers((prev) => [newCustomer, ...prev]);
-        // Update cache
+        // Update cache using ref to avoid stale closure
         await saveJson(CACHE_KEY, {
-          customers: [newCustomer, ...customers.map(normalizeCustomer)],
+          customers: [newCustomer, ...customersRef.current.map(normalizeCustomer)],
           timestamp: Date.now(),
         });
       }
@@ -124,7 +143,7 @@ export function CustomerProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [customers]);
+  }, []);
 
   const updateCustomer = useCallback(async (id, updates) => {
     const cid = id;

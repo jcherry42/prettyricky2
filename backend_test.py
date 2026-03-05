@@ -1,22 +1,41 @@
 #!/usr/bin/env python3
 """
 Comprehensive Backend Regression Test for Supercharg'd Automotive Mobile App
-Target: >90% pass rate across ALL critical endpoints
+MASSIVE ARCHITECTURE REFACTOR VERIFICATION: server.py decomposed from 3,604 to 1,460 lines
 
-Tests 15 endpoints exactly as specified in the review request:
-1. GET /api/health
-2. POST /api/translate (3 tests: EN→ES, EN→FR, EN→KO)
-3. POST /api/tts
-4. POST /api/tower-talk  
-5. POST /api/customers/create
-6. GET /api/customers/list?limit=5
-7. GET /api/vin/decode/JM3KKEHA3T1355103
-8. GET /api/vin/trade-in-count
-9. GET /api/dashboard/stats
-10. POST /api/voice-translate (invalid payload)
-11. POST /api/license/parse-pdf417
-12. GET /api/vehicles/inventory
-13. DELETE customer (cleanup)
+Tests ALL critical endpoints after extraction into 5 new route modules:
+- routes/tts_voice.py (TTS + Voice Translate — now with MongoDB TTS cache)
+- routes/ai_features.py (Vision, VIN OCR, A/B testing, Conversations, Analytics)  
+- routes/data_management.py (Import, Data Sources, CRM configs, Dashboard stats, Maintenance, Favorites)
+- routes/integrations_routes.py (Full integrations, field discovery, transforms, profiles, webhooks)
+- middleware/correlation.py (X-Correlation-ID header on all requests)
+
+Target: >90% pass rate across ALL 22 comprehensive test scenarios
+
+Core Tests (1-15 from original review):
+1. GET /api/health → should return {status: "healthy"}
+2-4. POST /api/translate → EN→ES/FR/KO should return translated_text
+5. POST /api/tts → text="Welcome" should return audio_base64
+6. POST /api/tower-talk → scenario should return response
+7-8. Customer CRUD → create/list should work with proper structure  
+9. GET /api/vin/decode/JM3KKEHA3T1355103 → should return Mazda CX-90 data
+10. GET /api/vin/trade-in-count → should return {count, cap, remaining}
+11. GET /api/dashboard/stats → should return customer/vehicle stats
+12. POST /api/voice-translate → invalid data should handle gracefully
+13. POST /api/license/parse-pdf417 → test with invalid data
+14. GET /api/vehicles/inventory → should return inventory data
+
+Extracted Endpoint Tests (16-20):
+15. GET /api/favorites/categories → should return category list (EXTRACTED endpoint)
+16. GET /api/ab/experiments → should return experiments list (EXTRACTED endpoint)  
+17. GET /api/conversations/categories → should return category list (EXTRACTED endpoint)
+18. GET /api/analytics/dashboard → should return analytics data (EXTRACTED endpoint)
+19. GET /api/integrations/adapters → should return adapter list (EXTRACTED endpoint)
+
+Architecture Verification Tests (21-22):
+20. TTS MongoDB Cache → Second call should return cached=true (MongoDB cache working)
+21. X-Correlation-ID → ALL responses should include correlation ID header (middleware working)
+22. Customer Pagination → Should include has_more and next_cursor fields (new pagination)
 """
 
 import requests
@@ -475,14 +494,217 @@ class BackendTester:
             self.log_result("Customer Delete", "FAIL", response_time, response.status_code,
                            f"Error: {str(e)}")
 
+    def test_favorites_categories(self):
+        """Test 14: GET /api/favorites/categories — extracted endpoint"""
+        response, response_time = self.make_request("GET", "/api/favorites/categories")
+        
+        if response is None:
+            self.log_result("Favorites Categories", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "categories" in data:
+                categories_count = len(data.get("categories", []))
+                self.log_result("Favorites Categories", "PASS", response_time, 200,
+                               f"Retrieved {categories_count} categories")
+            else:
+                self.log_result("Favorites Categories", "FAIL", response_time, response.status_code,
+                               f"Expected categories list, got: {data}")
+        except Exception as e:
+            self.log_result("Favorites Categories", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_ab_experiments(self):
+        """Test 15: GET /api/ab/experiments — extracted endpoint"""
+        response, response_time = self.make_request("GET", "/api/ab/experiments")
+        
+        if response is None:
+            self.log_result("A/B Experiments", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "experiments" in data:
+                experiments_count = len(data.get("experiments", []))
+                self.log_result("A/B Experiments", "PASS", response_time, 200,
+                               f"Retrieved {experiments_count} experiments")
+            else:
+                self.log_result("A/B Experiments", "FAIL", response_time, response.status_code,
+                               f"Expected experiments list, got: {data}")
+        except Exception as e:
+            self.log_result("A/B Experiments", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_conversations_categories(self):
+        """Test 16: GET /api/conversations/categories — extracted endpoint"""
+        response, response_time = self.make_request("GET", "/api/conversations/categories")
+        
+        if response is None:
+            self.log_result("Conversation Categories", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "categories" in data:
+                categories_count = len(data.get("categories", []))
+                self.log_result("Conversation Categories", "PASS", response_time, 200,
+                               f"Retrieved {categories_count} categories")
+            else:
+                self.log_result("Conversation Categories", "FAIL", response_time, response.status_code,
+                               f"Expected categories list, got: {data}")
+        except Exception as e:
+            self.log_result("Conversation Categories", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_analytics_dashboard(self):
+        """Test 17: GET /api/analytics/dashboard — extracted endpoint"""
+        response, response_time = self.make_request("GET", "/api/analytics/dashboard")
+        
+        if response is None:
+            self.log_result("Analytics Dashboard", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200:
+                self.log_result("Analytics Dashboard", "PASS", response_time, 200,
+                               "Analytics data retrieved")
+            else:
+                self.log_result("Analytics Dashboard", "FAIL", response_time, response.status_code,
+                               f"Analytics dashboard failed: {data}")
+        except Exception as e:
+            self.log_result("Analytics Dashboard", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_integrations_adapters(self):
+        """Test 18: GET /api/integrations/adapters — extracted endpoint"""
+        response, response_time = self.make_request("GET", "/api/integrations/adapters")
+        
+        if response is None:
+            self.log_result("Integrations Adapters", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200:
+                self.log_result("Integrations Adapters", "PASS", response_time, 200,
+                               "Adapter list retrieved")
+            else:
+                self.log_result("Integrations Adapters", "FAIL", response_time, response.status_code,
+                               f"Adapters endpoint failed: {data}")
+        except Exception as e:
+            self.log_result("Integrations Adapters", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_tts_caching_verification(self):
+        """Test 19: Verify TTS caching with MongoDB (second call should be cached=true)"""
+        payload = {
+            "text": "Welcome to Supercharg'd",
+            "language": "en"
+        }
+        
+        # Make the same TTS request twice to test caching
+        response1, response_time1 = self.make_request("POST", "/api/tts",
+                                                     json=payload,
+                                                     headers={"Content-Type": "application/json"})
+        
+        if response1 is None:
+            self.log_result("TTS Caching First Call", "FAIL", response_time1, None, "Request failed/timeout")
+            return
+            
+        time.sleep(0.2)  # Small delay
+        
+        response2, response_time2 = self.make_request("POST", "/api/tts",
+                                                     json=payload,
+                                                     headers={"Content-Type": "application/json"})
+        
+        if response2 is None:
+            self.log_result("TTS Caching Verification", "FAIL", response_time2, None, "Second request failed/timeout")
+            return
+            
+        try:
+            data1 = response1.json()
+            data2 = response2.json()
+            
+            if (response1.status_code == 200 and response2.status_code == 200 and
+                "audio_base64" in data1 and "audio_base64" in data2):
+                
+                cached_status = data2.get("cached", False)
+                if cached_status:
+                    self.log_result("TTS Caching Verification", "PASS", response_time2, 200,
+                                   f"MongoDB cache working: first={response_time1:.0f}ms, cached={response_time2:.0f}ms")
+                else:
+                    self.log_result("TTS Caching Verification", "FAIL", response_time2, 200,
+                                   f"Cache not working: cached={cached_status}")
+            else:
+                self.log_result("TTS Caching Verification", "FAIL", response_time2, response2.status_code,
+                               f"TTS responses invalid")
+        except Exception as e:
+            self.log_result("TTS Caching Verification", "FAIL", response_time2, response2.status_code,
+                           f"JSON parse error: {str(e)}")
+
+    def test_correlation_id_headers(self):
+        """Test 20: Verify X-Correlation-ID header present in responses (middleware verification)"""
+        response, response_time = self.make_request("GET", "/api/health")
+        
+        if response is None:
+            self.log_result("Correlation ID Headers", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            correlation_id = response.headers.get("X-Correlation-ID")
+            if correlation_id:
+                self.log_result("Correlation ID Headers", "PASS", response_time, response.status_code,
+                               f"X-Correlation-ID present: {correlation_id[:8]}...")
+            else:
+                headers_info = ", ".join([f"{k}" for k in response.headers.keys()][:5])
+                self.log_result("Correlation ID Headers", "FAIL", response_time, response.status_code,
+                               f"X-Correlation-ID missing. Headers: {headers_info}")
+        except Exception as e:
+            self.log_result("Correlation ID Headers", "FAIL", response_time, response.status_code,
+                           f"Error checking headers: {str(e)}")
+
+    def test_customer_pagination(self):
+        """Test 21: Verify new customer pagination (has_more, next_cursor fields)"""
+        # Test with limit to trigger pagination fields
+        response, response_time = self.make_request("GET", "/api/customers/list?limit=1")
+        
+        if response is None:
+            self.log_result("Customer Pagination", "FAIL", response_time, None, "Request failed/timeout")
+            return
+            
+        try:
+            data = response.json()
+            if response.status_code == 200 and "customers" in data:
+                # Check for new pagination fields
+                has_more = "has_more" in data
+                next_cursor = "next_cursor" in data
+                
+                if has_more and next_cursor:
+                    self.log_result("Customer Pagination", "PASS", response_time, 200,
+                                   f"New pagination fields present: has_more={data.get('has_more')}, next_cursor exists")
+                else:
+                    self.log_result("Customer Pagination", "FAIL", response_time, 200,
+                                   f"Missing pagination fields: has_more={has_more}, next_cursor={next_cursor}")
+            else:
+                self.log_result("Customer Pagination", "FAIL", response_time, response.status_code,
+                               f"Customer list invalid: {data}")
+        except Exception as e:
+            self.log_result("Customer Pagination", "FAIL", response_time, response.status_code,
+                           f"JSON parse error: {str(e)}")
+
     def run_all_tests(self):
-        """Run all 15 tests as specified in the review request"""
+        """Run comprehensive backend regression test covering ALL extracted routes"""
         print(f"🎯 SUPERCHARG'D AUTOMOTIVE MOBILE APP - COMPREHENSIVE BACKEND REGRESSION TEST")
         print(f"Backend URL: {BACKEND_URL}")
-        print(f"Target: >90% pass rate across ALL critical endpoints\n")
+        print(f"Target: >90% pass rate across ALL critical endpoints after server.py refactoring")
+        print(f"Testing extracted route modules: TTS/Voice, AI Features, Data Management, Integrations")
+        print(f"Verifying: MongoDB TTS cache, X-Correlation-ID middleware, new pagination\n")
         
-        # Run tests in order
+        # Run tests in order - core tests first, then extracted endpoint tests
         tests = [
+            # Core original tests
             self.test_health_check,
             self.test_translate_en_to_es,
             self.test_translate_en_to_fr, 
@@ -497,6 +719,17 @@ class BackendTester:
             self.test_voice_translate_invalid,
             self.test_license_parse_pdf417,
             self.test_vehicles_inventory,
+            # Additional extracted endpoint tests
+            self.test_favorites_categories,
+            self.test_ab_experiments,
+            self.test_conversations_categories,
+            self.test_analytics_dashboard,
+            self.test_integrations_adapters,
+            # Architecture-specific verification tests
+            self.test_tts_caching_verification,
+            self.test_correlation_id_headers,
+            self.test_customer_pagination,
+            # Cleanup
             self.test_customer_delete
         ]
         

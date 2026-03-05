@@ -4,6 +4,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Constants from 'expo-constants';
 import { enableScreens } from 'react-native-screens';
 import { InfotainmentShell } from './src/components/InfotainmentShell';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -25,7 +26,22 @@ import { View } from 'react-native';
 // initialisation. Without this, the Freeze→Suspender→AnimatedComponent→RNSScreen
 // chain triggers a JSI type error: "expected dynamic type 'boolean', had 'string'".
 // Using JS-based screen rendering is a safe fallback for Expo Go testing.
-enableScreens(false);
+// Enable native screens in production builds for optimal performance.
+// Disable in Expo Go to avoid JSI boolean/string type mismatch
+// in react-native-screens 4.16.0 + SDK 54.
+const isExpoGo = Constants.appOwnership === 'expo';
+enableScreens(!isExpoGo);
+
+/**
+ * ComposeProviders — reduces deep nesting from 11 levels to a flat list.
+ * Renders providers inside-out: last in the array is innermost.
+ */
+function ComposeProviders({ providers, children }) {
+  return providers.reduceRight(
+    (acc, Provider) => <Provider>{acc}</Provider>,
+    children
+  );
+}
 
 export default function App() {
   const fontsReady = useFontsReady();
@@ -39,34 +55,33 @@ export default function App() {
     return <View style={{ flex: 1, backgroundColor: '#040608' }} />;
   }
 
+  // Provider order matters: outermost first, innermost last.
+  // Network/Toast/Settings must be before Customer/Inventory (data deps).
+  // AmbientLighting/TaillightFlash are visual-only — innermost.
+  const providers = [
+    ErrorBoundary,
+    NetworkProvider,
+    ToastProvider,
+    AppSettingsProvider,
+    CustomerProvider,
+    InventoryProvider,
+    PttProvider,
+    AmbientLightingProvider,
+    TaillightFlashProvider,
+  ];
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ErrorBoundary>
-          <NetworkProvider>
-            <ToastProvider>
-              <AppSettingsProvider>
-                <AmbientLightingProvider>
-                  <CustomerProvider>
-                    <InventoryProvider>
-                      <PttProvider>
-                        <TaillightFlashProvider>
-                          <InfotainmentShell>
-                            <NavigationContainer>
-                              <RootNavigator />
-                            </NavigationContainer>
-                            <OfflineBanner />
-                            <StatusBar style="light" />
-                          </InfotainmentShell>
-                        </TaillightFlashProvider>
-                      </PttProvider>
-                    </InventoryProvider>
-                  </CustomerProvider>
-                </AmbientLightingProvider>
-              </AppSettingsProvider>
-            </ToastProvider>
-          </NetworkProvider>
-        </ErrorBoundary>
+        <ComposeProviders providers={providers}>
+          <InfotainmentShell>
+            <NavigationContainer>
+              <RootNavigator />
+            </NavigationContainer>
+            <OfflineBanner />
+            <StatusBar style="light" />
+          </InfotainmentShell>
+        </ComposeProviders>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
