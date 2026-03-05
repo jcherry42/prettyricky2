@@ -49,6 +49,7 @@ import {
   notificationSuccess,
 } from '../lib/haptics';
 import { parseAamvaPdf417, isLikelyAamva } from '../utils/aamvaParser';
+import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
@@ -250,6 +251,14 @@ export function DlScanScreen() {
   const [ocrCapturing, setOcrCapturing] = useState(false);
   const ocrCamRef = useRef(null);
 
+  // Ref pattern (PTT-style) — prevent stale closure in barcode callback
+  const historyRef = useRef(history);
+  historyRef.current = history;
+
+  // World-class camera lifecycle: AppState-aware, AbortController, Settings link
+  const pdf417Lifecycle = useCameraLifecycle(pdf417Open);
+  const ocrLifecycle = useCameraLifecycle(ocrCamOpen);
+
   // Animations
   const pdf417ScanLine = useRef(new Animated.Value(0)).current;
   const ocrScanLine = useRef(new Animated.Value(0)).current;
@@ -311,6 +320,9 @@ export function DlScanScreen() {
 
   // ── Upload + AI OCR core ─────────────────────────────────────────────────
   const uploadAndScan = useCallback(async (uri, scanMethod = 'ocr') => {
+    // AbortController with 30s timeout (PTT pattern)
+    const { signal, cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(30000);
+
     try {
       setUploading(true);
       setUploadProgress(0);
@@ -328,8 +340,10 @@ export function DlScanScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_url: imageUrl, retry_count: 0 }),
+        signal, // Abort after 30s
       });
 
+      abortCleanup();
       setUploadProgress(100);
 
       const extracted = response.success ? (response.extracted_data || {}) : {};
@@ -368,26 +382,36 @@ export function DlScanScreen() {
         notificationSuccess();
       }
     } catch (err) {
+      abortCleanup();
       notificationError();
-      Alert.alert('Scan Failed', err.message || 'Unable to scan license');
+      if (err.name === 'AbortError') {
+        Alert.alert('Timeout', 'License scan timed out (30s). Try with better lighting.');
+      } else {
+        Alert.alert('Scan Failed', err.message || 'Unable to scan license');
+      }
     } finally {
       setUploading(false);
       setUploadProgress(0);
     }
-  }, [saveToHistory]);
+  }, [saveToHistory, ocrLifecycle]);
 
   // ── OCR Custom Camera Capture (replaces system ImagePicker camera) ────────
   const openOcrCamera = useCallback(async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
-      if (!result.granted) return;
+      if (!result.granted) {
+        if (result.canAskAgain === false) {
+          ocrLifecycle.showSettingsAlert();
+        }
+        return;
+      }
     }
     impactMedium();
     setOcrCamReady(false);
     setOcrTorch(false);
     setOcrCapturing(false);
     setOcrCamOpen(true);
-  }, [permission, requestPermission]);
+  }, [permission, requestPermission, ocrLifecycle]);
 
   const handleOcrCapture = useCallback(async () => {
     if (!ocrCamRef.current || ocrCapturing || !ocrCamReady) return;
@@ -539,7 +563,12 @@ export function DlScanScreen() {
   const openPdf417 = useCallback(async () => {
     if (!permission?.granted) {
       const result = await requestPermission();
-      if (!result.granted) return;
+      if (!result.granted) {
+        if (result.canAskAgain === false) {
+          pdf417Lifecycle.showSettingsAlert();
+        }
+        return;
+      }
     }
     impactMedium();
     setPdf417Scanning(true);
@@ -548,7 +577,7 @@ export function DlScanScreen() {
     lastScannedData.current = '';
     lastScanTime.current = 0;
     setPdf417Open(true);
-  }, [permission, requestPermission]);
+  }, [permission, requestPermission, pdf417Lifecycle]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const handleItemPress = (item) => {
@@ -752,9 +781,10 @@ export function DlScanScreen() {
                 </Pressable>
               </View>
 
-              {/* Camera + frame guide */}
+              {/* Camera + frame guide — paused when app backgrounds */}
               <View style={styles.ocrCamBody}>
                 <View style={styles.ocrCamWrap}>
+                  {ocrLifecycle.isActive ? (
                   <CameraView
                     ref={ocrCamRef}
                     style={StyleSheet.absoluteFill}
@@ -763,6 +793,12 @@ export function DlScanScreen() {
                     autofocus="on"
                     facing="back"
                   />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0E14', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Ionicons name="pause-circle-outline" size={48} color={colors.textDim} />
+                      <Text style={{ color: colors.textDim, marginTop: 8, fontSize: 12 }}>Camera paused</Text>
+                    </View>
+                  )}
 
                   {/* White flash overlay */}
                   <Animated.View
@@ -858,6 +894,7 @@ export function DlScanScreen() {
 
               <View style={styles.modalBody}>
                 <View style={styles.scannerWrap}>
+                  {pdf417Lifecycle.isActive ? (
                   <CameraView
                     onBarcodeScanned={pdf417Scanning ? onBarcodeScanned : undefined}
                     style={StyleSheet.absoluteFill}
@@ -865,6 +902,12 @@ export function DlScanScreen() {
                     facing="back"
                     autofocus="on"
                   />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0E14', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Ionicons name="pause-circle-outline" size={48} color={colors.textDim} />
+                      <Text style={{ color: colors.textDim, marginTop: 8, fontSize: 12 }}>Camera paused</Text>
+                    </View>
+                  )}
 
                   <View style={styles.pdf417MaskTop} />
                   <View style={styles.pdf417Frame}>

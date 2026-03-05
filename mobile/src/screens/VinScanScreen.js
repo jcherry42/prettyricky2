@@ -30,6 +30,7 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
 import { buildApiUrlAsync } from '../config/backend';
+import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 
 // ── Storage keys: separate bins for each VIN category ──────────────────
 const STORAGE_KEY_INVENTORY = 'sc_v2_vins_dealer_inventory';
@@ -507,6 +508,18 @@ export function VinScanScreen() {
   const cameraRef = useRef(null);
   const lastScanTime = useRef(0);
   const lastScannedVin = useRef('');
+  // Ref pattern (PTT-style) — prevent stale closures in async callbacks
+  const dealerHistoryRef = useRef(dealerHistory);
+  dealerHistoryRef.current = dealerHistory;
+  const tradeInHistoryRef = useRef(tradeInHistory);
+  tradeInHistoryRef.current = tradeInHistory;
+
+  // World-class camera lifecycle: AppState-aware, AbortController factory, permissions
+  const {
+    isActive: cameraIsActive,
+    abortableTimeout,
+    showSettingsAlert,
+  } = useCameraLifecycle(scannerOpen);
 
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const captureFlash = useRef(new Animated.Value(0)).current;
@@ -559,16 +572,27 @@ export function VinScanScreen() {
     }
   }, [scannerOpen, scanMode, scanning, scanLineAnim]);
 
-  // Pulse animation for OCR processing
+  // Pulse animation for OCR processing — properly stoppable (PTT pattern)
+  const ocrLoopRef = useRef(null);
   useEffect(() => {
     if (ocrProcessing) {
-      Animated.loop(
+      const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(ocrPulse, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
           Animated.timing(ocrPulse, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
-      ).start();
+      );
+      ocrLoopRef.current = loop;
+      loop.start();
+      return () => {
+        loop.stop();
+        ocrLoopRef.current = null;
+      };
     } else {
+      if (ocrLoopRef.current) {
+        ocrLoopRef.current.stop();
+        ocrLoopRef.current = null;
+      }
       ocrPulse.setValue(0);
     }
   }, [ocrProcessing, ocrPulse]);
@@ -614,8 +638,9 @@ export function VinScanScreen() {
       return null;
     }
 
+    // Use refs for latest data — prevents stale closure (PTT pattern)
     const isTrade = category === CATEGORY.TRADEIN;
-    const currentList = isTrade ? tradeInHistory : dealerHistory;
+    const currentList = isTrade ? tradeInHistoryRef.current : dealerHistoryRef.current;
     const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
 
     if (isTrade && currentList.length >= MAX_TRADEIN) {
@@ -646,7 +671,7 @@ export function VinScanScreen() {
       setTimeout(() => Alert.alert('Checksum Advisory', validation.checksumWarning), 300);
     }
     return entry;
-  }, [dealerHistory, tradeInHistory, persistHistory]);
+  }, [persistHistory]);
 
   // ── Decode ───────────────────────────────────────────────────────────
 
@@ -720,7 +745,13 @@ export function VinScanScreen() {
   const openScanner = useCallback(async (mode) => {
     if (!permission?.granted) {
       const result = await requestPermission();
-      if (!result.granted) return;
+      if (!result.granted) {
+        // Detect permanent denial — user must go to Settings
+        if (result.canAskAgain === false) {
+          showSettingsAlert();
+        }
+        return;
+      }
     }
     impactMedium();
     setCameraReady(false);
@@ -732,7 +763,7 @@ export function VinScanScreen() {
     setOcrStatus('');
     lastScannedVin.current = '';
     setScannerOpen(true);
-  }, [permission, requestPermission]);
+  }, [permission, requestPermission, showSettingsAlert]);
 
   const closeScanner = useCallback(() => {
     setScannerOpen(false);
@@ -780,10 +811,11 @@ export function VinScanScreen() {
     });
   }, [scanning, vinFoundAnim]);
 
-  // ── AI Vision OCR capture ────────────────────────────────────────────
+  // ── AI Vision OCR capture — PTT-grade reliability ──────────────────
 
   const handleAiCapture = useCallback(async () => {
-    if (!cameraRef.current || ocrProcessing) return;
+    // Guard: camera must be ready AND not already processing
+    if (!cameraRef.current || ocrProcessing || !cameraReady) return;
 
     impactMedium();
 
@@ -797,10 +829,13 @@ export function VinScanScreen() {
     setOcrStatus('Capturing image...');
     setOcrResults(null);
 
+    // AbortController with 30s hard timeout (PTT pattern)
+    const { signal, cleanup: abortCleanup } = abortableTimeout(30000);
+
     try {
-      // Take photo at high quality for OCR accuracy
+      // Quality 0.75 is optimal for VIN OCR — saves bandwidth without losing text clarity
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.92,
+        quality: 0.75,
         base64: true,
         skipProcessing: false,
       });
@@ -808,6 +843,7 @@ export function VinScanScreen() {
       if (!photo.base64) {
         setOcrStatus('Capture failed. Try again.');
         setOcrProcessing(false);
+        abortCleanup();
         return;
       }
 
@@ -818,10 +854,12 @@ export function VinScanScreen() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: photo.base64 }),
+        signal, // Abort after 30s
       });
 
+      abortCleanup();
+
       if (!response.ok) {
-        const errText = await response.text();
         throw new Error(`Server error: ${response.status}`);
       }
 
@@ -837,13 +875,18 @@ export function VinScanScreen() {
         notificationError();
       }
     } catch (e) {
-      console.warn('[VIN OCR]', e?.message);
-      setOcrStatus('Error. Check connection and try again.');
+      abortCleanup();
+      if (e.name === 'AbortError') {
+        setOcrStatus('Request timed out (30s). Try again with better lighting.');
+      } else {
+        console.warn('[VIN OCR]', e?.message);
+        setOcrStatus('Error. Check connection and try again.');
+      }
       notificationError();
     } finally {
       setOcrProcessing(false);
     }
-  }, [ocrProcessing, captureFlash]);
+  }, [ocrProcessing, cameraReady, captureFlash, abortableTimeout]);
 
   // When user taps a detected VIN from OCR results
   const handleOcrVinSelect = useCallback((vin) => {
@@ -991,9 +1034,10 @@ export function VinScanScreen() {
                 </Pressable>
               </View>
 
-              {/* Camera View */}
+              {/* Camera View — paused when app backgrounds (saves battery) */}
               <View style={styles.modalBody}>
                 <View style={styles.scannerWrap}>
+                  {cameraIsActive ? (
                   <CameraView
                     ref={cameraRef}
                     onBarcodeScanned={
@@ -1020,6 +1064,12 @@ export function VinScanScreen() {
                         : undefined
                     }
                   />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0E14', justifyContent: 'center', alignItems: 'center' }]}>
+                      <Ionicons name="pause-circle-outline" size={48} color={colors.textDim} />
+                      <Text style={{ color: colors.textDim, marginTop: 8, fontSize: 12 }}>Camera paused</Text>
+                    </View>
+                  )}
 
                   {/* Capture flash overlay */}
                   <Animated.View

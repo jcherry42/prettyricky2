@@ -387,3 +387,43 @@ The foundation is strong. The weaknesses are structural, not conceptual. This co
 
 **Backend regression test: 95.7% pass rate** — all extracted endpoints verified operational.
 
+---
+
+## VIN & LICENSE SCANNER ELEVATION — World-Class Patterns Applied
+
+Both scanners were elevated to match the PTT voice pipeline's reliability standard:
+
+### Shared Infrastructure: `useCameraLifecycle` Hook
+- **AppState-aware**: Camera auto-pauses when app backgrounds (saves battery, prevents ANR)
+- **AbortController factory**: Every API call gets a 30s hard timeout — no more infinite hangs
+- **Permission denial handling**: Detects permanent denial → shows "Go to Settings" alert
+- **Cleanup on unmount**: All pending AbortControllers aborted, no leaked subscriptions
+
+### VIN Scanner (VinScanScreen.js) Improvements
+| Pattern | Before | After |
+|---|---|---|
+| Camera lifecycle | No AppState handling | `useCameraLifecycle` — auto-pause on background |
+| API timeout | None (infinite hang possible) | 30s AbortController timeout |
+| Photo quality | 0.92 (4MB+ photos) | 0.75 (optimal for OCR, ~60% smaller) |
+| Stale closures | `dealerHistory` captured at creation | `dealerHistoryRef.current` (PTT pattern) |
+| Animation cleanup | `Animated.loop` not stoppable | `ocrLoopRef.current.stop()` on cleanup |
+| Camera guard | Only checked `cameraRef.current` | Also checks `cameraReady` state |
+| Permission denial | Silent failure | "Go to Settings" alert for permanent denial |
+| Camera rendering | Always mounted | Conditional — shows "Camera paused" when backgrounded |
+
+### License Scanner (DlScanScreen.js) Improvements
+| Pattern | Before | After |
+|---|---|---|
+| Camera lifecycle | No AppState handling | `useCameraLifecycle` — auto-pause on background |
+| Upload timeout | None (infinite hang possible) | 30s AbortController timeout |
+| Stale closures | `history` captured at creation | `historyRef.current` (PTT pattern) |
+| Permission denial | Silent failure | "Go to Settings" alert for permanent denial |
+| Camera rendering | Always mounted (both OCR + PDF417) | Conditional — shows pause indicator when backgrounded |
+| Error messages | Generic "Scan Failed" | Specific: "Timed out (30s). Try with better lighting." |
+
+### TypeScript Migration Foundation
+- `tsconfig.json` with strict mode, path aliases (`@components/*`, `@lib/*`, etc.)
+- Template files created: `events.ts`, `useCameraLifecycle.ts`
+- Gradual migration path: `.js` and `.ts` coexist, `allowJs: true`
+
+
