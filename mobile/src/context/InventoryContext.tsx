@@ -55,35 +55,55 @@ export function InventoryProvider({ children }) {
     }
   }, []);
 
-  const addVehicle = useCallback(async (vehicleData) => {
+  const addVehicle = useCallback(async (vehicleData: any) => {
     try {
       // Check 150 limit
       if (vehicles.length >= MAX_INVENTORY) {
         throw new Error(`Inventory limit reached (${MAX_INVENTORY} vehicles max)`);
       }
 
+      // The backend expects { vin, vehicle_data: {...}, category, customer_id, ... }
+      // but the caller sends a flat object. Restructure to match the API contract.
+      const { vin, category, customer_id, trade_in_value, condition, ...rest } = vehicleData;
+      const payload = {
+        vin,
+        vehicle_data: rest,
+        category: category || 'active_inventory',
+        ...(customer_id ? { customer_id } : {}),
+        ...(trade_in_value != null ? { trade_in_value } : {}),
+        ...(condition ? { condition } : {}),
+      };
+
       const data = await apiFetch('/api/vin/save-to-inventory', {
         method: 'POST',
-        body: JSON.stringify(vehicleData),
+        body: JSON.stringify(payload),
       });
 
-      const newVehicle = data?.vehicle;
-      if (newVehicle) {
-        setVehicles(prev => [newVehicle, ...prev]);
-        // Update cache
-        await saveJson(CACHE_KEY, {
-          vehicles: [newVehicle, ...vehicles],
-          timestamp: Date.now(),
-        });
-      }
+      // Backend returns { success, message, id, category }
+      // Build a vehicle object for the local list
+      const newVehicle = {
+        vehicle_id: data?.id,
+        vin,
+        ...rest,
+        category: data?.category || category || 'active_inventory',
+        status: 'available',
+      };
+
+      setVehicles(prev => [newVehicle, ...prev]);
+      // Update cache
+      await saveJson(CACHE_KEY, {
+        vehicles: [newVehicle, ...vehicles],
+        timestamp: Date.now(),
+      });
 
       return newVehicle;
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+        const { vin, category, ...rest } = vehicleData;
         await queueOperation('/api/vin/save-to-inventory', {
           method: 'POST',
-          body: JSON.stringify(vehicleData),
+          body: JSON.stringify({ vin, vehicle_data: rest, category: category || 'active_inventory' }),
         });
         const tempVehicle = { ...vehicleData, vehicle_id: `temp_${Date.now()}`, _queued: true };
         setVehicles(prev => [tempVehicle, ...prev]);
