@@ -274,6 +274,7 @@ export function IntakeScreen() {
         } as any,
         headerBackTitleVisible: false,
         headerShadowVisible: false,
+        contentStyle: { backgroundColor: colors.bg0 },
       } as any}
     >
       <Stack.Screen name="IntakeHub" component={IntakeHub} options={{ headerShown: false }} />

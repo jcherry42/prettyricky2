@@ -739,7 +739,7 @@ export function DlScanScreen() {
         <Modal
           visible={showDetail}
           animationType="slide"
-          presentationStyle="pageSheet"
+          presentationStyle="fullScreen"
           onRequestClose={() => setShowDetail(false)}
         >
           <LinearGradient colors={[colors.bg0, colors.bg1]} style={{ flex: 1 }}>
@@ -779,6 +779,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
+    backgroundColor: '#040608',
   },
 
   // Section

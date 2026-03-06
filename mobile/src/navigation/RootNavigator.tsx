@@ -96,6 +96,7 @@ export function RootNavigator() {
           tabBarHideOnKeyboard: true,
           tabBarActiveTintColor: colors.gold,
           tabBarInactiveTintColor: colors.textMute,
+          sceneContainerStyle: { backgroundColor: colors.bg0 },
           // Enable native screen optimizations in production builds.
           // Disable in Expo Go to avoid JSI boolean/string type error.
           freezeOnBlur: Constants.appOwnership !== 'expo',

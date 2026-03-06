@@ -1404,7 +1404,7 @@ export function VinScanScreen() {
         <Modal
           visible={Boolean(vehicleDetailItem)}
           animationType="slide"
-          presentationStyle="pageSheet"
+          presentationStyle="fullScreen"
           onRequestClose={() => setVehicleDetailItem(null)}
         >
           {vehicleDetailItem ? (
@@ -1578,6 +1578,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
+    backgroundColor: '#040608',
   },
 
   // ── Scan mode row ──
