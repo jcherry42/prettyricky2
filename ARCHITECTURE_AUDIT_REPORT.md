@@ -279,7 +279,7 @@ If two creates happen rapidly, the second one's closure may have stale `customer
 Using global mutable state to communicate between HomeScreen and RootNavigator is a React anti-pattern. Should use Context, navigation params, or an event emitter.
 
 ### M2. Hardcoded FALLBACK_BACKEND_URL
-`https://scanner-elite.preview.emergentagent.com` in backend.js must be updated on every deployment. Should be build-time injected only.
+`https://deal-closer-ai-3.preview.emergentagent.com` in backend.js must be updated on every deployment. Should be build-time injected only.
 
 ### M3. Upload Directory Accumulation
 `/backend/uploads/` has 200+ license images with no cleanup. No size limits, no TTL, no disk monitoring. Will fill disk in production.
