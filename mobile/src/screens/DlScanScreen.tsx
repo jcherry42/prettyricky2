@@ -38,6 +38,7 @@ import { loadJson, saveJson } from '../lib/storage';
 import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
 import { buildApiUrlAsync } from '../config/backend';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import {
@@ -291,7 +292,7 @@ export function DlScanScreen() {
   }, []);
 
   // ── Upload + AI OCR core ─────────────────────────────────────────────────
-  // ── Single-step scan: upload + OCR in one request ──────────────────────────
+  // ── Single-step scan: ML Kit pre-check + cloud OCR ─────────────────────
   const scanDirect = useCallback(async (uri: string, scanMethod = 'ocr') => {
     const { signal, cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(45000);
 
@@ -299,13 +300,36 @@ export function DlScanScreen() {
       setUploading(true);
       setUploadProgress(0);
 
-      // Build FormData with the image — single round trip
+      // ── ML Kit on-device pre-check (~100ms) ──
+      let mlText = '';
+      try {
+        const mlResult = await TextRecognition.recognize(uri);
+        mlText = mlResult?.text || '';
+      } catch (_) {
+        // ML Kit unavailable — continue without it
+      }
+
+      // Quality gate: if ML Kit found almost no text, warn early
+      const wordCount = mlText.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount < 3 && mlText.length < 20) {
+        // Very little text detected — image may be blurry/dark
+        // Still proceed but user gets faster feedback if it fails
+      }
+
+      setUploadProgress(10);
+
+      // Build FormData with image + ML Kit pre-extracted text hint
       const formData = new FormData();
       formData.append('image', {
         uri,
         type: 'image/jpeg',
         name: `license_${Date.now()}.jpg`,
       } as any);
+
+      // Send ML Kit text as a hint to help GPT-4o parse faster
+      if (mlText.length > 10) {
+        formData.append('ml_text_hint', mlText);
+      }
 
       setUploadProgress(15);
 

@@ -404,10 +404,11 @@ def calculate_license_confidence(data: dict) -> tuple:
 @api_router.post("/license/scan-direct", response_model=LicenseScanResponse)
 async def scan_license_direct(
     image: UploadFile = File(...),
+    ml_text_hint: Optional[str] = Form(None),
 ):
     """
     Single-step license scan: upload image + OCR in one request.
-    Eliminates the two-step upload→scan round-trip for faster processing.
+    Optionally accepts ML Kit pre-extracted text as a parsing hint.
     """
     import base64
     import json
@@ -469,6 +470,11 @@ CRITICAL RULES:
 8. ZIP: prefer 5-digit, include +4 if clearly visible
 9. Address: street only — do NOT include city/state/zip in address field
 10. Return ONLY the JSON — no explanations, no markdown fences"""
+
+        # If ML Kit pre-extracted text is available, append as a parsing hint
+        if ml_text_hint and len(ml_text_hint.strip()) > 10:
+            extraction_prompt += f"\n\nON-DEVICE OCR PRE-EXTRACTION (use as reference to improve accuracy):\n{ml_text_hint.strip()}"
+            logger.info(f"scan-direct: ML Kit hint provided ({len(ml_text_hint)} chars)")
 
         response = await ai_gateway.chat(
             feature='license_ocr',

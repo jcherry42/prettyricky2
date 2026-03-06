@@ -27,6 +27,7 @@ import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
 import { useInventory } from '../context/InventoryContext';
 import { validateVin } from '../utils/vinChecksum';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
@@ -812,10 +813,9 @@ export function VinScanScreen() {
     });
   }, [scanning, vinFoundAnim]);
 
-  // ── AI Vision OCR capture — PTT-grade reliability ──────────────────
+  // ── AI Vision OCR capture — ML Kit on-device first, cloud fallback ──
 
   const handleAiCapture = useCallback(async () => {
-    // Guard: camera must be ready AND not already processing
     if (!cameraRef.current || ocrProcessing || !cameraReady) return;
 
     impactMedium();
@@ -827,35 +827,80 @@ export function VinScanScreen() {
     ]).start();
 
     setOcrProcessing(true);
-    setOcrStatus('Capturing image...');
     setOcrResults(null);
 
     // AbortController with 30s hard timeout (PTT pattern)
     const { signal, cleanup: abortCleanup } = abortableTimeout(30000);
 
     try {
-      // Quality 0.75 is optimal for VIN OCR — saves bandwidth without losing text clarity
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.75,
+        quality: 0.65,
         base64: true,
-        skipProcessing: false,
+        skipProcessing: true,
       });
 
-      if (!photo.base64) {
+      if (!photo?.uri) {
         setOcrStatus('Capture failed. Try again.');
         setOcrProcessing(false);
         abortCleanup();
         return;
       }
 
-      setOcrStatus('AI reading VIN numbers...');
+      // ── PHASE 1: ML Kit on-device text recognition (~100ms) ──
+      setOcrStatus('Reading with ML Kit...');
+      try {
+        const mlResult = await TextRecognition.recognize(photo.uri);
+        if (mlResult?.text) {
+          // Extract VINs from recognized text — 17 alphanumeric, no I/O/Q
+          const vinRegex = /[A-HJ-NPR-Z0-9]{17}/g;
+          const rawText = mlResult.text.toUpperCase().replace(/\s/g, '');
+          const candidates = rawText.match(vinRegex) || [];
+
+          // Validate each candidate with checksum
+          const validVins = candidates.filter((v: string) => {
+            const check = validateVin(v);
+            return check.valid;
+          });
+
+          // Also keep unvalidated candidates as secondary (checksum may fail for some legit VINs)
+          const allUnique = [...new Set([...validVins, ...candidates])];
+
+          if (allUnique.length > 0) {
+            const result = {
+              vins: allUnique,
+              confidence: validVins.length > 0 ? 'high' : 'medium',
+              notes: `ML Kit on-device (${validVins.length} checksum-verified)`,
+            };
+            setOcrResults(result);
+            setOcrStatus(`Found ${allUnique.length} VIN${allUnique.length > 1 ? 's' : ''} — on-device`);
+            notificationSuccess();
+            abortCleanup();
+            setOcrProcessing(false);
+            return;
+          }
+        }
+      } catch (mlErr: any) {
+        // ML Kit failed — continue to cloud fallback silently
+        console.warn('[ML Kit]', mlErr?.message);
+      }
+
+      // ── PHASE 2: Cloud fallback (GPT-4o Vision via AI Gateway) ──
+      if (!photo.base64) {
+        setOcrStatus('No VIN detected. Reposition and try again.');
+        setOcrProcessing(false);
+        abortCleanup();
+        notificationError();
+        return;
+      }
+
+      setOcrStatus('AI Vision scanning...');
 
       const apiUrl = await buildApiUrlAsync('/api/vin/extract-from-image');
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: photo.base64 }),
-        signal, // Abort after 30s
+        signal,
       });
 
       abortCleanup();
@@ -875,7 +920,7 @@ export function VinScanScreen() {
         setOcrStatus('No VIN detected. Reposition and try again.');
         notificationError();
       }
-    } catch (e) {
+    } catch (e: any) {
       abortCleanup();
       if (e.name === 'AbortError') {
         setOcrStatus('Request timed out (30s). Try again with better lighting.');
