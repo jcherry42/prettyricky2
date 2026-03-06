@@ -7,16 +7,17 @@ import { AmbientLightingSystem } from './AmbientLightingSystem';
 export function InfotainmentShell({ children }) {
   return (
     <View style={styles.root}>
+      {/* Deep obsidian base gradient */}
       <LinearGradient
-        colors={[colors.bg0, colors.bg1, '#05070A']}
-        locations={[0, 0.55, 1]}
+        colors={[colors.bg0, '#060810', colors.bg1, '#05070A']}
+        locations={[0, 0.3, 0.65, 1]}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* subtle "machined" highlight */}
+      {/* Precision machined highlight — anisotropic shimmer */}
       <LinearGradient
-        colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.00)', 'rgba(255,255,255,0.06)']}
-        locations={[0, 0.4, 1]}
+        colors={['rgba(214,178,94,0.06)', 'rgba(255,255,255,0.04)', 'rgba(255,255,255,0.00)', 'rgba(214,178,94,0.03)']}
+        locations={[0, 0.2, 0.5, 1]}
         style={styles.highlight}
         start={{ x: 0.0, y: 0.0 }}
         end={{ x: 1.0, y: 1.0 }}
@@ -40,7 +41,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
-
   highlight: {
     position: 'absolute',
     left: -120,
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
     width: 520,
     height: 520,
     transform: [{ rotate: '18deg' }],
-    opacity: 0.9,
+    opacity: 0.85,
   },
 });

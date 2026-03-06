@@ -1,5 +1,9 @@
 /**
- * Core color system + Mercedes-Benz designo palette
+ * Core color system — Supercharg'd
+ *
+ * Ferrari-infotainment-inspired elevation model:
+ *   Deep obsidian blacks with warm gold accents, precision gradients,
+ *   and jewel-like status indicators. Every surface conveys depth.
  *
  * Elevation model — panels darken with depth for spatial hierarchy:
  *   panel  → panel2 → panel3 → panel4
@@ -25,11 +29,20 @@ export const colors = {
   gold: '#D6B25E',
   goldDim: 'rgba(214,178,94,0.55)',
   goldGlow: 'rgba(214,178,94,0.18)',
+  goldMicro: 'rgba(214,178,94,0.08)',
   red: '#FF2D2D',
   green: '#40FF9B',
   blue: '#5EA7FF',
   shadow: 'rgba(0,0,0,0.6)',
   shadowDeep: 'rgba(0,0,0,0.85)',
+
+  // Premium depth layers — for layered shadow effects
+  shadowAmbient: 'rgba(0,0,0,0.35)',
+  shadowKey: 'rgba(0,0,0,0.70)',
+
+  // Warm tint for premium surfaces (very subtle warm shift)
+  warmBlack: '#080604',
+  warmPanel: 'rgba(214,178,94,0.03)',
 
   // designo colors
   leatherBurgundy: '#4A1F2F',

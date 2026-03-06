@@ -10,29 +10,33 @@ interface ScreenProps {
 }
 
 /**
- * Screen — premium root wrapper with designo deep-obsidian gradient.
- * The gradient runs vertically from pure black to a hint of dark navy,
- * giving depth without competing with card-level surfaces.
- *
- * Note: paddingBottom is intentionally minimal here because each screen's
- * FlatList/ScrollView adds its own dynamic bottom padding based on safe area +
- * floating button positions. This prevents double-padding.
+ * Screen — premium root wrapper with deep obsidian gradient.
+ * Multi-stop gradient creates spatial depth without competing
+ * with card-level surfaces. Subtle warm undertone at the centre
+ * gives the screen a rich, automotive-cockpit feel.
  */
 export const Screen = memo(function Screen({ children, style }: ScreenProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.root, style]}>
+      {/* Primary depth gradient */}
       <LinearGradient
-        colors={[colors.bg0, colors.bg1, colors.bg2, colors.bg1]}
-        locations={[0, 0.3, 0.7, 1]}
+        colors={[colors.bg0, '#060810', colors.bg2, '#060810', colors.bg0]}
+        locations={[0, 0.2, 0.5, 0.8, 1]}
         style={StyleSheet.absoluteFill}
+      />
+      {/* Subtle warm vignette at centre — premium depth perception */}
+      <LinearGradient
+        colors={['rgba(214,178,94,0.012)', 'rgba(214,178,94,0.006)', 'rgba(0,0,0,0)']}
+        style={styles.warmVignette}
+        start={{ x: 0.5, y: 0.3 }}
+        end={{ x: 0.5, y: 1 }}
+        pointerEvents="none"
       />
       <View
         style={{
           flex: 1,
-          // Top: account for status bar on screens without a navigation header
           paddingTop: Math.max(8, insets.top + 6),
-          // Bottom: minimal — individual screens manage their own scroll padding
           paddingBottom: 0,
           paddingLeft: Math.max(0, insets.left),
           paddingRight: Math.max(0, insets.right),
@@ -48,5 +52,8 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: colors.bg0,
+  },
+  warmVignette: {
+    ...StyleSheet.absoluteFillObject,
   },
 });

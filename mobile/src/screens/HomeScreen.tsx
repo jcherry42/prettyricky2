@@ -395,9 +395,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
   },
   searchBezel: {
     padding: 3,
@@ -406,13 +406,13 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.50)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 11,
     paddingHorizontal: 14,
     paddingVertical: 11,
     gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(214,178,94,0.06)',
   },
   searchInput: {
     ...type.body,
