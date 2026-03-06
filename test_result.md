@@ -605,12 +605,18 @@ agent_communication:
 
 test_plan:
   current_focus:
-    - "Backend regression after mobile app polish fixes"
-    - "Translation endpoint connectivity verification"
-    - "CustomerDetailModal hook fix verification"
+    - "VectorDB semantic search - knowledge base endpoints"
+    - "Telemetry service - event tracking and analytics endpoints"
+    - "Tower Talk enhanced personality with vector search enrichment"
+    - "Audio pipeline preprocessing (noise suppression, normalization)"
+    - "Existing regression - translation, TTS, customers, health"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "PHASE 5 - ELITE UPGRADE: Implemented 4 major enhancements. 1) VectorDB/Semantic Search: TF-IDF based vector search in MongoDB, 32 entries in sales knowledge base across 10 categories (objection_handling, appointment_setting, closing_techniques, follow_up, etc.), IDF-weighted cosine similarity. Endpoints: GET /api/knowledge/stats, POST /api/knowledge/search, POST /api/knowledge/seed. 2) Telemetry Service: Comprehensive MongoDB-based event tracking with 90-day TTL, PostHog integration path documented. Endpoints: GET /api/telemetry/summary, GET /api/telemetry/sales-funnel, GET /api/telemetry/ai-usage, POST /api/telemetry/track. 3) Tower Talk Elite Personality: Rewrote system prompt with SPIN selling, assumptive close, loss aversion techniques. Added appointment_setting inquiry type. Enriched with vector search context. 4) Audio Pipeline: Noise suppression (spectral gating), silence trimming, peak normalization, Whisper automotive vocabulary prompt biasing. PLEASE TEST: knowledge search, telemetry tracking, and verify existing endpoints still work (regression)."
 
 frontend:
   - task: "Sport Mode Flame Animation - Realism"
@@ -755,11 +761,50 @@ backend:
     file: "/app/backend/routes/tower_talk_v2.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: "gpt-4o upgrade + 8 inquiry types + _strip_emoji() server-side safety net. All 8 inquiry types manually verified: zero emojis, 2-3 sentences, professional tone. Translation upgraded to gpt-4o with automotive domain guidance."
+      - working: "NA"
+        agent: "main"
+        comment: "ELITE UPGRADE: Rewrote system prompt with master closer personality, SPIN selling, assumptive close, loss aversion, future pacing. Added appointment_setting inquiry type (9 types total). Added vector search context enrichment (knowledge base + past winning responses). Added telemetry tracking for every generation. Needs regression testing."
+
+  - task: "VectorDB Semantic Search - Knowledge Base"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/vector_search.py, /app/backend/sales_knowledge_base.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented TF-IDF based semantic search in MongoDB. 32 sales knowledge entries across 10 categories. IDF-weighted cosine similarity. Endpoints: GET /api/knowledge/stats (verified 200), POST /api/knowledge/search (verified - returns ranked results), POST /api/knowledge/seed (verified - seeds 32 entries)."
+
+  - task: "Telemetry Service - Event Tracking"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/telemetry_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Comprehensive MongoDB telemetry with 90-day TTL. PostHog integration path documented. Endpoints: GET /api/telemetry/summary (verified 200), GET /api/telemetry/sales-funnel, GET /api/telemetry/ai-usage, POST /api/telemetry/track (verified 200). In-memory counters for real-time dashboard."
+
+  - task: "Audio Pipeline - Noise Suppression + Whisper Biasing"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/audio_pipeline.py, /app/backend/routes/tts_voice.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Audio preprocessing pipeline: spectral gating noise suppression, silence trimming, peak normalization. Automotive vocabulary Whisper prompt biasing. Integrated into /api/voice-translate endpoint. Graceful fallback if preprocessing fails."
 
 
 

@@ -141,7 +141,37 @@ async def lifespan(app: FastAPI):
     # Initialize AI Gateway with DB for telemetry
     ai_gateway.init(db=db)
     logger.info("✅ AI Gateway initialised")
-    
+
+    # Initialize Vector Search + Sales Knowledge Base
+    from vector_search import VectorSearchService
+    from sales_knowledge_base import seed_knowledge_base
+    vector_svc = VectorSearchService(db)
+    await vector_svc.ensure_indexes()
+    app.state.vector_search = vector_svc
+    logger.info("✅ Vector Search service initialized")
+
+    # Seed knowledge base in background (idempotent — skips duplicates)
+    async def _seed_kb():
+        try:
+            count = await seed_knowledge_base(vector_svc)
+            logger.info(f"✅ Sales knowledge base seeded ({count} entries)")
+        except Exception as e:
+            logger.warning(f"Knowledge base seed failed (non-fatal): {e}")
+    asyncio.create_task(_seed_kb())
+
+    # Initialize Telemetry Service
+    from telemetry_service import TelemetryService
+    telemetry_svc = TelemetryService(db)
+    await telemetry_svc.ensure_indexes()
+    telemetry_svc._init_posthog()
+    app.state.telemetry = telemetry_svc
+    logger.info("✅ Telemetry service initialized")
+
+    # Inject vector search + telemetry into Tower Talk routes
+    from routes.tower_talk_v2 import init_tower_talk_routes as _reinit_tt
+    _reinit_tt(vector_search=vector_svc, telemetry=telemetry_svc)
+    logger.info("✅ Tower Talk enriched with vector search + telemetry")
+
     logger.info("Server startup complete")
     
     yield
@@ -211,6 +241,72 @@ api_router.include_router(pin_auth_router)
 async def ai_gateway_stats():
     """AI Gateway observability — cost, latency, cache, circuit breakers."""
     return ai_gateway.stats()
+
+
+# ============== VECTOR SEARCH / KNOWLEDGE BASE ==============
+
+@api_router.get("/knowledge/stats")
+async def knowledge_stats(request: Request):
+    """Vector search + knowledge base statistics."""
+    vs = request.app.state.vector_search
+    return await vs.stats()
+
+
+@api_router.post("/knowledge/search")
+async def knowledge_search(request: Request, body: dict):
+    """Semantic search across the sales knowledge base."""
+    vs = request.app.state.vector_search
+    query = body.get("query", "")
+    category = body.get("category")
+    top_k = body.get("top_k", 5)
+    if not query:
+        raise HTTPException(status_code=400, detail="query is required")
+    results = await vs.search_knowledge(query, category=category, top_k=top_k)
+    return {"results": results, "count": len(results)}
+
+
+@api_router.post("/knowledge/seed")
+async def knowledge_seed(request: Request):
+    """Re-seed the sales knowledge base (idempotent)."""
+    from sales_knowledge_base import seed_knowledge_base
+    vs = request.app.state.vector_search
+    count = await seed_knowledge_base(vs)
+    return {"seeded": count}
+
+
+# ============== TELEMETRY ==============
+
+@api_router.get("/telemetry/summary")
+async def telemetry_summary(request: Request, hours: int = 24):
+    """Telemetry event summary."""
+    telem = request.app.state.telemetry
+    return await telem.get_summary(hours=hours)
+
+
+@api_router.get("/telemetry/sales-funnel")
+async def telemetry_sales_funnel(request: Request, days: int = 30):
+    """Sales funnel analytics from telemetry."""
+    telem = request.app.state.telemetry
+    return await telem.get_sales_funnel(days=days)
+
+
+@api_router.get("/telemetry/ai-usage")
+async def telemetry_ai_usage(request: Request, days: int = 7):
+    """AI feature usage breakdown."""
+    telem = request.app.state.telemetry
+    return await telem.get_ai_usage_breakdown(days=days)
+
+
+@api_router.post("/telemetry/track")
+async def telemetry_track(request: Request, body: dict):
+    """Track a client-side telemetry event."""
+    telem = request.app.state.telemetry
+    category = body.get("category", "user_actions")
+    action = body.get("action", "unknown")
+    properties = body.get("properties", {})
+    session_id = body.get("session_id")
+    await telem.track(category, action, properties, session_id=session_id)
+    return {"tracked": True}
 
 
 @api_router.get("/")

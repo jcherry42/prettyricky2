@@ -1,16 +1,39 @@
 import { buildApiUrlAsync } from '../config/backend';
+import { onDeviceTranscribe, isOnDeviceSttAvailable } from './onDeviceStt';
 
 /**
  * Upload recorded audio for voice translation.
+ * Falls back to on-device speech recognition if the server is unreachable.
  * @param {object} opts
  * @param {string} opts.uri       - Local file URI from Audio.Recording
  * @param {string} opts.targetLang - Target language code (en|es|fr|ko)
  * @param {string} [opts.sourceLang='en'] - Source language code
  * @param {string} [opts.mimeType='audio/mp4'] - MIME type (audio/mp4 for m4a, audio/webm for web)
  * @param {string} [opts.fileExtension='m4a'] - File extension
+ * @param {boolean} [opts.preferOnDevice=false] - Force on-device STT (no translation)
  */
-export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en', mimeType, fileExtension }) {
+export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en', mimeType, fileExtension, preferOnDevice = false }) {
   if (!targetLang) throw new Error('Target language is required');
+
+  // On-device STT mode (offline fallback)
+  if (preferOnDevice) {
+    const onDeviceAvailable = await isOnDeviceSttAvailable();
+    if (onDeviceAvailable) {
+      const result = await onDeviceTranscribe(sourceLang, 10000);
+      if (result) {
+        return {
+          success: true,
+          transcript: result.transcript,
+          translated_text: result.transcript, // No translation in offline mode
+          source_lang: sourceLang,
+          target_lang: targetLang,
+          on_device: true,
+          confidence: result.confidence,
+        };
+      }
+    }
+  }
+
   const url = await buildApiUrlAsync('/api/voice-translate');
   if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
 
@@ -54,8 +77,52 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
   } catch (e) {
     clearTimeout(timer);
     if (e.name === 'AbortError') {
+      // On timeout, attempt on-device STT as fallback
+      try {
+        const onDeviceAvailable = await isOnDeviceSttAvailable();
+        if (onDeviceAvailable) {
+          const fallback = await onDeviceTranscribe(sourceLang, 10000);
+          if (fallback) {
+            return {
+              success: true,
+              transcript: fallback.transcript,
+              translated_text: fallback.transcript,
+              source_lang: sourceLang,
+              target_lang: targetLang,
+              on_device: true,
+              fallback_reason: 'server_timeout',
+            };
+          }
+        }
+      } catch (fallbackErr) {
+        console.warn('[VoiceTranslate] On-device fallback failed:', fallbackErr);
+      }
       throw new Error('Voice translation timed out. Try a shorter phrase.');
     }
+
+    // On network errors, attempt on-device STT fallback
+    if (e.message?.includes('Network request failed') || e.message?.includes('fetch')) {
+      try {
+        const onDeviceAvailable = await isOnDeviceSttAvailable();
+        if (onDeviceAvailable) {
+          const fallback = await onDeviceTranscribe(sourceLang, 10000);
+          if (fallback) {
+            return {
+              success: true,
+              transcript: fallback.transcript,
+              translated_text: fallback.transcript,
+              source_lang: sourceLang,
+              target_lang: targetLang,
+              on_device: true,
+              fallback_reason: 'network_error',
+            };
+          }
+        }
+      } catch (fallbackErr) {
+        console.warn('[VoiceTranslate] On-device fallback failed:', fallbackErr);
+      }
+    }
+
     throw e;
   }
 }

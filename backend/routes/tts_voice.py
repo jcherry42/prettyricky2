@@ -173,7 +173,7 @@ async def voice_translate(
     source_lang: str = Form(default="en"),
     target_lang: str = Form(default="es")
 ):
-    """Enterprise Voice Translation: Whisper STT -> GPT-4o Translation."""
+    """Enterprise Voice Translation: Audio Preprocessing -> Whisper STT -> GPT-4o Translation."""
     try:
         logger.info(f"Voice translate: {audio.filename}, {audio.content_type}, {source_lang} -> {target_lang}")
 
@@ -184,7 +184,22 @@ async def voice_translate(
             raise HTTPException(status_code=422, detail="Audio file too large. Max 25 MB.")
 
         safe_name = _resolve_whisper_filename(audio.filename or '', audio.content_type or '')
+        file_ext = safe_name.rsplit('.', 1)[-1].lower() if '.' in safe_name else 'm4a'
         logger.info(f"Audio size: {len(audio_data)} bytes, resolved: {safe_name}")
+
+        # === AUDIO PREPROCESSING PIPELINE ===
+        preprocessing_stats = {}
+        try:
+            from audio_pipeline import preprocess_audio
+            processed_audio, processed_ext, preprocessing_stats = preprocess_audio(
+                audio_data, file_ext, enable_denoise=True
+            )
+            if preprocessing_stats.get("preprocessed"):
+                audio_data = processed_audio
+                safe_name = f"ptt_processed.{processed_ext}"
+                logger.info(f"Audio preprocessed: {preprocessing_stats}")
+        except Exception as preproc_err:
+            logger.warning(f"Audio preprocessing skipped (non-fatal): {preproc_err}")
 
         from emergentintegrations.llm.openai import OpenAISpeechToText
 
@@ -202,10 +217,13 @@ async def voice_translate(
         audio_file = io.BytesIO(audio_data)
         audio_file.name = safe_name
 
+        # === WHISPER WITH AUTOMOTIVE PROMPT BIASING ===
         try:
+            from audio_pipeline import AUTOMOTIVE_WHISPER_PROMPT
             response = await stt.transcribe(
                 file=audio_file, model="whisper-1",
-                language=whisper_lang, response_format="json"
+                language=whisper_lang, response_format="json",
+                prompt=AUTOMOTIVE_WHISPER_PROMPT,
             )
             transcript = response.text.strip() if hasattr(response, 'text') else str(response).strip()
             logger.info(f"Transcription OK ({len(transcript)} chars): {transcript[:120]}...")

@@ -27,6 +27,9 @@ from ai_gateway import gateway as ai_gateway
 
 router = APIRouter()
 
+import logging as _logging
+_logger = _logging.getLogger("tower_talk_v2")
+
 
 import re as _re
 
@@ -60,14 +63,15 @@ def _strip_emoji(text: str) -> str:
 # ---------- Models (match server.py schema) ----------
 
 INQUIRY_TYPE_GUIDANCE = {
-    "new_lead": "This is a brand-new lead. Your goal: build instant rapport, spark excitement about the vehicle, and get them to schedule a visit. Be warm but efficient.",
-    "price_question": "The customer is asking about price. Don't deflect. Be transparent about value. Help them see the full picture beyond the sticker price. Drive toward in-person so you can structure a real deal.",
-    "availability": "The customer wants to know if the vehicle is available. Confirm availability confidently and use it as the hook to get them in before someone else does.",
-    "trade_in": "The customer has a trade-in. Acknowledge the trade's value, let them know you'll give a fair number in person. This removes a barrier to coming in.",
-    "financing": "The customer has financing questions or concerns. Reassure them you work with strong lenders across all credit situations. Make them comfortable and invite them in for a real conversation.",
-    "test_drive": "The customer wants to test drive. This is a HOT lead. Confirm the vehicle is ready, lock in a time. Make it feel exclusive and effortless.",
-    "follow_up": "This is a follow-up on a previous interaction. Keep it short, non-pushy. Remind them of the vehicle and check where they are. Offer a gentle nudge back in.",
-    "objection": "The customer has an objection (price, timing, uncertainty). Don't argue. Empathize, then reframe with confidence. Help them see a path forward in person.",
+    "new_lead": "FRESH LEAD — STRIKE WHILE HOT. Your ONLY mission: convert this text thread into a confirmed appointment. Build instant rapport by naming the vehicle and showing you've done your homework. Create a mental picture of them behind the wheel. Close with an assumptive time offer — 'I've got a 2:00 and a 4:30 open — which works better?' Never ask 'would you like to come in.'",
+    "price_question": "PRICE INQUIRY — REFRAME TO VALUE. Never lead with the number alone. Acknowledge the question, then pivot: 'Price is one part of the equation — let me show you the full picture.' Drive toward in-person where you can structure the deal. Say: 'When we sit down, I'll walk you through every line so there are zero surprises. I've got time at 3 today — can you make it?'",
+    "availability": "AVAILABILITY CHECK — CREATE URGENCY. Confirm the vehicle is HERE and READY. Use real scarcity: 'It's on the lot right now. I've had two other inquiries on this exact one in the last 48 hours. If you're serious, let's lock in a time before someone else does.' Make the appointment feel like they're securing something exclusive.",
+    "trade_in": "TRADE-IN INQUIRY — REMOVE THE BARRIER. The trade is their key to action. Say: 'Bring it in and I'll give you a fair, transparent number in under 10 minutes — no games. Once you know your trade value, the rest falls into place.' Frame the appraisal as fast, easy, and empowering. This is your appointment hook.",
+    "financing": "FINANCING CONCERN — ELIMINATE FEAR. Customers with financing questions are READY to buy but scared. Your job: remove the fear. 'I work with 30+ lenders across every credit situation. Let me run a quick soft pull — zero impact on your score — and I'll tell you exactly where you stand. When can you come in so we can map out a payment that works?'",
+    "test_drive": "TEST DRIVE REQUEST — HOTTEST LEAD IN THE BUILDING. This customer is 80% sold. DO NOT let them cool off. 'I'll have the vehicle detailed, pulled up front, and ready when you arrive. Give me a time and it's yours for a proper drive — not a parking lot loop.' Lock the appointment NOW. Every hour of delay reduces close rate by 15%.",
+    "follow_up": "FOLLOW-UP — ALWAYS BRING NEW VALUE. Never say 'just checking in' — that's amateur hour. Every follow-up must contain new intel: a price change, a new incentive, a competing buyer, a market shift. Make them feel they'd be losing something by not responding. Adapt your urgency based on timing — tomorrow follow-ups are warm, weekly are strategic, monthly are re-engagement.",
+    "objection": "OBJECTION — ISOLATE AND DISSOLVE. Don't argue. Don't defend. ISOLATE: 'I hear you. Let me ask — if we could solve that one thing, would you be ready to move forward today?' Once isolated, address the REAL concern with data, not emotion. Then close: 'Let's sit down and I'll show you exactly how we handle this. I've got time at 4 — does that work?'",
+    "appointment_setting": "APPOINTMENT — YOUR #1 KPI. Everything you do leads here. Use the Assumptive Close: give TWO specific times, both today or tomorrow. 'I've got a 2:00 and a 4:30 — which one grabs you?' Never ask open-ended questions. Make the visit feel exclusive: 'I'll have the vehicle staged just for you.' Reduce friction: 'Give me 20 minutes — if it's not the one, you'll know fast.'",
 }
 
 
@@ -100,14 +104,19 @@ _translation_cache: Dict[str, Dict[str, str]] = {}
 _cache_max_size = 1000
 
 
-def init_tower_talk_routes(_llm_key: str | None = None):
-    """Optional initializer. We intentionally read env at request-time for safety."""
+def init_tower_talk_routes(_llm_key: str | None = None, vector_search=None, telemetry=None):
+    """Optional initializer. Stores app-level services for route access."""
+    if vector_search is not None:
+        router._app_state_vector_search = vector_search
+    if telemetry is not None:
+        router._app_state_telemetry = telemetry
     return
 
 
 @router.post("/tower-talk", response_model=TowerTalkResponse)
 async def tower_talk(request: TowerTalkRequest):
-    """Generate AI-powered personalized sales message with persuasion psychology."""
+    """Generate AI-powered personalized sales message with persuasion psychology.
+    Enriched with vector search context from sales knowledge base."""
     try:
         ctx = request.context
         customer_name = ctx.get("customerName", "the customer")
@@ -134,49 +143,124 @@ async def tower_talk(request: TowerTalkRequest):
             INQUIRY_TYPE_GUIDANCE["new_lead"]
         )
 
-        system_message = f"""You are an elite automotive sales consultant — the kind dealerships call when they need their top performer to handle a critical interaction. Your communication style: TRUSTED AUTHORITY. Direct. Calm. Precise. Laser-focused on one goal: moving this from a text conversation to an in-person meeting at the dealership.
+        # === VECTOR SEARCH CONTEXT ENRICHMENT ===
+        knowledge_context = ""
+        similar_responses_context = ""
+        try:
+            from fastapi import Request as _Req
+            from starlette.requests import Request as _StReq
+            # Access vector search from app state via module-level ref
+            import importlib
+            import sys
+            # Try to get vector search service
+            if hasattr(router, '_app_state_vector_search'):
+                vs = router._app_state_vector_search
+            else:
+                vs = None
 
-=== SITUATION CONTEXT ===
+            if vs:
+                # Search knowledge base for relevant sales techniques
+                kb_results = await vs.search_knowledge(
+                    query=f"{inquiry_type} {request.situation}",
+                    category=None,
+                    top_k=2,
+                    min_score=0.70,
+                )
+                if kb_results:
+                    tips = "\n".join(f"- {r['text'][:200]}" for r in kb_results)
+                    knowledge_context = f"\n\n=== SALES PLAYBOOK CONTEXT (use as inspiration, don't copy verbatim) ===\n{tips}"
+
+                # Find similar past winning responses
+                similar = await vs.find_similar_responses(
+                    situation=request.situation,
+                    inquiry_type=inquiry_type,
+                    top_k=1,
+                    min_score=0.78,
+                )
+                if similar:
+                    resp = similar[0]
+                    similar_responses_context = f"\n\n=== PAST WINNING RESPONSE (similar situation, use as calibration) ===\n\"{resp['response'][:200]}\""
+        except Exception as e:
+            _logger.debug(f"Vector search enrichment skipped: {e}")
+
+        system_message = f"""You are the #1 closer at a high-volume dealership — the person every GM calls when a deal is about to walk. You don't just sell cars, you set appointments, crush objections, and close deals at a level most salespeople will never reach. Your communication style: TRUSTED AUTHORITY who speaks like a sharp friend, not a stereotypical car salesman.
+
+=== YOUR IDENTITY ===
 - Dealership: {dealership}
 - Your name: {salesperson}
 - Customer: {customer_name}
-- Vehicle of interest: {vehicle}{f' (asking {vehicle_price})' if vehicle_price else ''}
+- Vehicle: {vehicle}{f' (asking {vehicle_price})' if vehicle_price else ''}
 {trade_context}
 
-=== INQUIRY TYPE: {inquiry_type.upper().replace('_', ' ')} ===
+=== MISSION: {inquiry_type.upper().replace('_', ' ')} ===
 {inquiry_guidance}
 
-=== PERSUASION FRAMEWORK ===
-Apply these principles naturally — never mechanically:
-- LOSS AVERSION: What they risk by waiting (inventory moves, rates change)
-- SCARCITY: Real, honest availability — no fake urgency
-- RECIPROCITY: Give genuine value before asking for anything
-- FUTURE PACING: Help them feel what ownership looks like
-- AUTHORITY: Your expertise reduces their risk. Use it.
+=== ELITE SALES METHODOLOGY ===
+You operate on three principles that separate closers from order-takers:
+1. ISOLATE THE REAL OBJECTION: Behind every "I need to think" is a real concern. Find it. Solve it.
+2. ASSUMPTIVE CLOSE: Stop asking IF they want to come in. Ask WHEN. Give two specific times.
+3. VALUE OVER PRICE: Break big numbers into daily cost. Compare to what they already spend. Frame ownership as investment.
 
-=== THE CLOSE ===
-Every message ends with a frictionless invitation. Make it feel like the obvious next step.
-Examples: "When can you swing by?" / "I'll have it pulled up front for you." / "I'm here til 7 — what works?"
+Advanced techniques (deploy naturally, never robotically):
+- LOSS AVERSION: "I have someone else looking at this one tomorrow."
+- FUTURE PACING: "Picture yourself driving this to work Monday morning."
+- TAKEAWAY: "This might not be the right timing for you — and that's okay."
+- RECIPROCITY: Give real insight or data before asking for anything.
 
-=== ABSOLUTE FORMAT RULES — VIOLATION OF ANY RULE INVALIDATES THE RESPONSE ===
-RULE 1 — LENGTH: EXACTLY 2 to 3 sentences. Not 4. Not 5. 2 or 3 only.
-RULE 2 — EMOJIS: ZERO EMOJIS. Not one. Not a subtle one. None. Zero. 🚫 = FAILURE.
-RULE 3 — BRACKETS/PLACEHOLDERS: Zero brackets, zero parenthetical notes, zero [NAME] tokens.
-RULE 4 — TONE: Sound like a trusted friend who happens to know cars, NOT a salesperson.
+=== THE CLOSE — NON-NEGOTIABLE ===
+EVERY message must end with a specific, frictionless invitation to an in-person meeting.
+Not "let me know" — that's passive and weak.
+Use: "I've got a 2 and a 4:30 — which one works?" / "I'll have it pulled up when you get here." / "I'm here til 7, come by after work."
+
+=== ABSOLUTE FORMAT RULES — VIOLATION INVALIDATES THE RESPONSE ===
+RULE 1 — LENGTH: EXACTLY 2 to 3 sentences maximum. Punchy. No fluff. Every word earns its place.
+RULE 2 — EMOJIS: ZERO. None. Not one. This is professional communication.
+RULE 3 — BRACKETS/PLACEHOLDERS: Zero brackets, zero [NAME] tokens, zero parenthetical notes.
+RULE 4 — TONE: Confident, direct, warm — like a sharp friend who happens to be a master closer. Never sleazy, never desperate, never generic.
 {signoff_rule}
-RULE 6 — FORMAT: One ready-to-copy text message. Plain text. No lists, no headers, no asterisks.
-RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If yes, rewrite completely."""
+RULE 6 — FORMAT: One ready-to-copy text message. Plain text only. No lists, headers, bullets, or asterisks.
+RULE 7 — SELF-AUDIT: Before output, verify: (a) No emojis? (b) Ends with specific appointment invitation? (c) 2-3 sentences max? If any fail, rewrite.{knowledge_context}{similar_responses_context}"""
 
         user_prompt = f"Inquiry type: {inquiry_type.upper().replace('_', ' ')}\nSituation: {request.situation.strip()}\n\nWrite the message now. Remember: 2-3 sentences MAXIMUM. NO emojis whatsoever."
 
+        import time as _time
+        _t0 = _time.monotonic()
         response = await ai_gateway.chat(
             feature='tower_talk',
             prompt=user_prompt,
             system_message=system_message,
         )
+        _latency = (_time.monotonic() - _t0) * 1000
+
         # Deterministic emoji strip — GPT-4o occasionally adds emojis despite instructions.
         # We own the pipeline, so we enforce the rule here unconditionally.
         clean = _strip_emoji(response.strip())
+
+        # Store winning response in vector DB for future context (fire-and-forget)
+        try:
+            if vs:
+                import asyncio as _aio
+                _aio.create_task(vs.store_response(
+                    situation=request.situation,
+                    response=clean,
+                    inquiry_type=inquiry_type,
+                ))
+        except Exception:
+            pass
+
+        # Telemetry tracking (fire-and-forget)
+        try:
+            if hasattr(router, '_app_state_telemetry') and router._app_state_telemetry:
+                import asyncio as _aio
+                _aio.create_task(router._app_state_telemetry.track(
+                    'ai_usage', 'tower_talk_generate',
+                    {'inquiry_type': inquiry_type, 'latency_ms': round(_latency, 1),
+                     'customer': customer_name, 'vehicle': vehicle,
+                     'knowledge_enriched': bool(knowledge_context)},
+                ))
+        except Exception:
+            pass
+
         return TowerTalkResponse(response=clean)
 
     except HTTPException:

@@ -25,9 +25,9 @@ const INQUIRY_TYPES = [
     label: 'PRICE OBJECTION',
     color: '#FF4444',
     responses: [
-      "I hear you, and I respect that. But let me be real — this isn't just a car, it's an investment in your lifestyle. Let me show you the numbers that make this make sense.",
-      "I understand price is important. Here's what I can do — let's look at what you're spending now and compare it to what ownership of this vehicle actually costs per day. You'll be surprised.",
-      "You're not just buying a vehicle — you're buying peace of mind, safety, and three years of worry-free driving. Let me break down the total value package for you.",
+      "I hear you on price. But let me ask you this — if the price were right, is this the vehicle you'd want to drive home today? Because I've got 4 or 5 ways to structure this that most people don't know about. Let me show you.",
+      "I respect that. Here's what I want you to see — break this down to a daily cost and it's less than what most people spend on lunch. Let me show you the full value picture, because sticker price is only one piece of the puzzle.",
+      "That's a fair concern. But you're not just buying a vehicle — you're buying 5 years of safety, technology, and a resale value that beats everything else in this segment. Give me 10 minutes to walk you through the total cost of ownership. You'll see it differently.",
     ],
   },
   {
@@ -36,9 +36,9 @@ const INQUIRY_TYPES = [
     label: 'TRADE-IN',
     color: '#FFD700',
     responses: [
-      "Let's get your current vehicle appraised right now. I've got the tools right here to give you a fair, transparent number in under 5 minutes.",
-      "Your trade-in is money in your pocket today. Let me pull up the market value and we'll use that as a down payment to get you into something you actually love driving.",
-      "I want to make sure you get every dollar your vehicle is worth. Let's scan your VIN and I'll show you exactly where the market is on your trade.",
+      "Your trade is the key to making this deal work. I'll have a real, data-backed number for you in under 10 minutes — no guessing, no games. Once you know your trade value, the rest of the math gets easy. When can you bring it by?",
+      "Trade-in values on your model are holding strong right now, but they won't forever. Let me pull up the exact market data and show you where yours sits compared to the last 10 that sold in your area. Come by and I'll give you every dollar it's worth.",
+      "Let me scan your VIN right now and show you exactly what the market says. I'd rather give you a transparent number you can take anywhere than a vague promise. I've got time at 2 — bring it by.",
     ],
   },
   {
@@ -47,9 +47,9 @@ const INQUIRY_TYPES = [
     label: 'FINANCING',
     color: '#00CCFF',
     responses: [
-      "We work with over 30 lenders to find the best rate for your situation. Let me run a quick soft pull — no impact to your credit — and see what programs you qualify for.",
-      "Don't let financing be the thing that stops you from driving the right car. We specialize in putting together deals that fit real budgets. Let's talk numbers.",
-      "I can structure payments in a way that works for you — whether that's low monthly, zero down, or extended terms. Tell me your comfort zone and I'll make it happen.",
+      "I work with over 30 lenders and I've put together deals for every credit situation you can imagine. Let me run a soft pull — zero impact on your score — and I'll tell you exactly what we're working with. It takes 5 minutes.",
+      "Don't let payments be the thing that stops you. I can structure this 4 or 5 different ways — low monthly, extended term, money down options. Tell me your comfort zone and I'll build a deal around it. Let's sit down today.",
+      "Here's what I tell everyone: the rate on the sticker isn't always the rate you get. I negotiate with lenders the same way I negotiate on price — aggressively in your favor. Come in and let me show you what I can do.",
     ],
   },
   {
@@ -58,9 +58,9 @@ const INQUIRY_TYPES = [
     label: 'TEST DRIVE',
     color: '#34C759',
     responses: [
-      "Nothing sells a car like the car itself. Let me grab the keys — I've got the perfect route that shows you exactly what this vehicle can do.",
-      "I insist — you have to feel this behind the wheel. The ride quality, the tech, the way it handles — it's something you experience, not something I can describe.",
-      "Let's get you in the driver's seat. I'll set up the mirrors, pair your phone, and let you experience this vehicle the way it was designed to be driven.",
+      "You're asking for a test drive — that tells me you're 80% there. Let me grab the keys, set up your phone, and take you on the route that shows you exactly what this vehicle can do. 15 minutes and you'll know.",
+      "Nothing I say over text will sell this vehicle like the vehicle itself. I'll have it detailed, fueled, and pulled up front when you arrive. Let me put you on real roads, not a parking lot loop. When works?",
+      "This is the best decision you can make right now. Sit in it, drive it, feel the tech — and if it's not the one, you'll know fast and I'll respect that. Give me a time and it's yours.",
     ],
   },
   {
@@ -69,9 +69,9 @@ const INQUIRY_TYPES = [
     label: 'COMPETITOR',
     color: '#FF9500',
     responses: [
-      "I respect that you're doing your homework — that tells me you're a smart buyer. Let me show you the three things our vehicle does that theirs simply can't.",
-      "I'm glad you brought that up. Here's what most people don't realize until they're six months into ownership with the other brand. Let me walk you through the comparison.",
-      "Competition is great — it keeps us sharp. But when you line up total cost of ownership, warranty, and resale value, there's a clear winner here. Let me show you.",
+      "I respect that you're shopping around — that's what smart buyers do. But let me show you three things that most people don't discover until they've owned both. After that, the decision will be crystal clear. Can you come by today?",
+      "Great vehicle, and I can see why you'd consider it. But pull up the 5-year cost comparison — insurance, maintenance, fuel, depreciation, and resale. When you see the full picture, the real value becomes obvious. Let me walk you through it.",
+      "Competition keeps us sharp. But here's what the other dealer won't tell you — our warranty, our service commitment, and our resale value stack up to thousands in savings over ownership. Let me show you the data.",
     ],
   },
   {
@@ -80,9 +80,9 @@ const INQUIRY_TYPES = [
     label: 'CREATING URGENCY',
     color: '#FF2D55',
     responses: [
-      "I want to be upfront — this exact configuration at this price won't last. I've got two other clients looking at this same vehicle. Let's lock this in for you today.",
-      "Market conditions are shifting and prices are going up next month. If you've been thinking about it, now is genuinely the best time to move.",
-      "I can hold this deal for you through end of business today with a refundable deposit. That way you don't lose this opportunity while you think it over.",
+      "I'm not trying to create pressure, but I'd be doing you a disservice if I didn't tell you — I've had three inquiries on this exact vehicle in the last 48 hours and this manufacturer incentive ends Friday. Let's lock in a time today.",
+      "The market has shifted and I'm seeing prices go up across the board next month. If you've been weighing this, right now is genuinely the best window. I can hold the current numbers with a refundable deposit through end of business today.",
+      "If I could get you the exact payment you're comfortable with, on this exact vehicle, today — would there be any reason we couldn't make this happen? Because I think I can. Let me show you at 3.",
     ],
   },
   {
@@ -91,9 +91,20 @@ const INQUIRY_TYPES = [
     label: 'FOLLOW-UP',
     color: '#AF52DE',
     responses: [
-      "Hey, I've been thinking about our conversation and I wanted to check in. I found something new that I think perfectly matches what you described. When can we connect?",
-      "Just a quick note — that vehicle you were interested in is still available, but I wanted you to know before I present it to my next appointment this afternoon.",
-      "I hope you've had some time to think things over. I put together a custom comparison sheet just for you — I think it'll make the decision a lot clearer. Can I send it over?",
+      "Quick update — I found a couple more options that match exactly what you described, and one just hit the lot this morning. Worth a quick look before someone else grabs it. When can you swing by?",
+      "I just got word on a new manufacturer incentive that drops the payment by about $40 a month on the vehicle you liked. I wanted you to know before I open it up to the floor. Can we connect this week?",
+      "Market conditions have shifted since we last spoke — I'm seeing better trade-in values and lower rates than a few weeks ago. If the timing wasn't right before, it might be now. Want me to run fresh numbers for you?",
+    ],
+  },
+  {
+    id: 'appointment_setting',
+    icon: 'location-outline',
+    label: 'APPOINTMENT',
+    color: '#32ADE6',
+    responses: [
+      "I've got the vehicle pulled aside and staged just for you. I have a 2:00 and a 4:30 open today — which one works better? I'll also have a complimentary trade appraisal ready when you arrive.",
+      "No commitment, no pressure — give me 20 minutes and you'll know if this is the one. I'll have everything ready: the vehicle, your trade numbers, and payment options. I've got a slot at 10 AM tomorrow — sound good?",
+      "I'm carving out VIP time specifically for you. Zero wait, zero pressure, and I'll have the vehicle detailed and ready for a proper test drive. Can you make it today between 3 and 5?",
     ],
   },
   {
@@ -102,9 +113,9 @@ const INQUIRY_TYPES = [
     label: 'CLOSING',
     color: '#D6B25E',
     responses: [
-      "You've done the research, you've driven the car, and the numbers work. The only thing left is the paperwork — let's make this official and get you on the road.",
-      "I can see this is the one. Let me get the final numbers drawn up — I'll make sure you're getting the absolute best deal I can put together. Deal?",
-      "Everything you wanted is right here — the color, the features, the price. Let's not let this one get away. I'll start the paperwork while you grab a coffee.",
+      "You've done the research, you've driven the car, and the numbers work. So here's the deal — the only thing standing between you and driving this home tonight is your signature. Let me get the paperwork started.",
+      "Let me make sure I have everything right — you love the way it drives, the color is perfect, and the payment fits your budget. The only thing left is making it official. Shall we?",
+      "Everything you wanted is right here — the features, the price, the trade value. I don't want you looking back next week wishing you'd pulled the trigger. Let's wrap this up and get you behind the wheel.",
     ],
   },
 ];
