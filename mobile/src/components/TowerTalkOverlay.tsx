@@ -996,10 +996,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     rowGap: 7,
+    columnGap: 0,
     marginTop: 8,
   },
   inquiryPill: {
-    width: '23.5%',
+    width: '31.5%',
     height: 52,
     borderRadius: 14,
     overflow: 'hidden',

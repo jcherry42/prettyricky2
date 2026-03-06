@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.96)' },
   flameWall: {
     position: 'absolute',
-    bottom: -H * 0.05,
+    bottom: -H * 0.05 - 5,
     width: W,
     height: H * 0.9,
     resizeMode: 'contain',
