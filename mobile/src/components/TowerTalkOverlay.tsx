@@ -39,12 +39,12 @@ function friendlyBackendError(e) {
 const INQUIRY_TYPES = [
   { id: 'new_lead',           label: 'New Lead',  icon: 'star' },
   { id: 'price_question',     label: 'Price',     icon: 'pricetag' },
-  { id: 'availability',       label: 'Avail',     icon: 'calendar' },
+  { id: 'availability',       label: 'In Stock',    icon: 'calendar' },
   { id: 'trade_in',           label: 'Trade',     icon: 'repeat' },
   { id: 'financing',          label: 'Finance',   icon: 'card' },
-  { id: 'test_drive',         label: 'Test',      icon: 'car' },
-  { id: 'follow_up',          label: 'Follow',    icon: 'time' },
-  { id: 'objection',          label: 'Obj',       icon: 'chatbubble' },
+  { id: 'test_drive',         label: 'Drive',       icon: 'car' },
+  { id: 'follow_up',          label: 'Follow Up',  icon: 'time' },
+  { id: 'objection',          label: 'Objections', icon: 'chatbubble' },
   { id: 'appointment_setting', label: 'Appt',     icon: 'location' },
 ];
 
