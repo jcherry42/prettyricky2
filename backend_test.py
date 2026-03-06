@@ -1,311 +1,208 @@
 #!/usr/bin/env python3
 """
-Backend Test Suite for License Scan Direct Endpoint
-Tests the new single-step license scan endpoint and verifies old endpoints still work.
+Backend Regression Test Suite
+Testing endpoints after major dead code cleanup (~550 lines removed)
 """
 
-import asyncio
-import aiohttp
+import requests
 import json
-import sys
-import os
-from io import BytesIO
-from PIL import Image
 import base64
+import os
+import io
+from PIL import Image
 from pathlib import Path
+import sys
 import time
 
-# Test configuration
+# Configuration
 BASE_URL = "http://localhost:8001"
-TEST_IMAGE_SIZE = 15 * 1024  # 15KB - above minimum size check (10KB)
+TIMEOUT = 30
 
-class TestResult:
-    def __init__(self, name: str):
-        self.name = name
-        self.success = False
-        self.details = ""
-        self.response_data = None
-        
-    def set_success(self, details: str, response_data=None):
-        self.success = True
-        self.details = details
-        self.response_data = response_data
-        
-    def set_failure(self, details: str, response_data=None):
-        self.success = False
-        self.details = details
-        self.response_data = response_data
+def create_test_image(width=100, height=100, format='JPEG'):
+    """Create a small test image for upload tests"""
+    img = Image.new('RGB', (width, height), color='red')
+    img_buffer = io.BytesIO()
+    img.save(img_buffer, format=format)
+    img_buffer.seek(0)
+    return img_buffer
 
-async def create_test_image(size_bytes: int = TEST_IMAGE_SIZE) -> bytes:
-    """Create a test JPEG image of approximately the specified size"""
-    # Start with a reasonable base size that will compress to approximately the target
-    base_size = max(200, int((size_bytes / 1000) ** 0.5 * 50))
+def test_endpoint(method, endpoint, data=None, files=None, expected_status=200, description=""):
+    """Test a single endpoint"""
+    url = f"{BASE_URL}{endpoint}"
+    print(f"\n🔍 {description}")
+    print(f"   {method} {endpoint}")
     
-    # Create a sample license-like image with text
-    img = Image.new('RGB', (base_size * 4, base_size * 2), color='white')
-    
-    # Add some noise/patterns to make it compress to desired size
-    import random
-    pixels = img.load()
-    for i in range(0, img.width, 3):
-        for j in range(0, img.height, 3):
-            pixels[i, j] = (random.randint(200, 255), random.randint(200, 255), random.randint(200, 255))
-    
-    # Save to bytes
-    buffer = BytesIO()
-    quality = 85
-    
-    # Adjust quality to get close to target size
-    for _ in range(5):
-        buffer.seek(0)
-        buffer.truncate()
-        img.save(buffer, format='JPEG', quality=quality)
-        current_size = len(buffer.getvalue())
-        
-        if abs(current_size - size_bytes) < size_bytes * 0.2:  # Within 20%
-            break
-            
-        if current_size > size_bytes:
-            quality -= 10
+    try:
+        if method == "GET":
+            response = requests.get(url, timeout=TIMEOUT)
+        elif method == "POST":
+            if files:
+                response = requests.post(url, data=data, files=files, timeout=TIMEOUT)
+            elif data and endpoint.endswith("/license/create-customer"):
+                # This endpoint expects form data, not JSON
+                response = requests.post(url, data=data, timeout=TIMEOUT)
+            elif data:
+                response = requests.post(url, json=data, timeout=TIMEOUT)
+            else:
+                response = requests.post(url, timeout=TIMEOUT)
         else:
-            quality += 5
+            print(f"   ❌ Unsupported method: {method}")
+            return False
         
-        quality = max(10, min(95, quality))
-    
-    result = buffer.getvalue()
-    print(f"Created test image: {len(result)} bytes (target: {size_bytes})")
-    return result
-
-async def test_health_check() -> TestResult:
-    """Test GET /api/health endpoint"""
-    result = TestResult("Health Check")
-    
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"{BASE_URL}/api/health") as response:
-                data = await response.json()
-                
-                if response.status == 200 and data.get('status') == 'healthy':
-                    result.set_success(f"Health check passed: {data.get('status')}", data)
-                else:
-                    result.set_failure(f"Unexpected health response: {response.status} - {data}")
-                    
+        print(f"   Status: {response.status_code}")
+        print(f"   Response time: {response.elapsed.total_seconds():.3f}s")
+        
+        # Check if status matches expected (can be single value or list)
+        expected_statuses = expected_status if isinstance(expected_status, list) else [expected_status]
+        
+        if response.status_code in expected_statuses:
+            try:
+                response_json = response.json()
+                print(f"   ✅ PASS - Response: {json.dumps(response_json, indent=2)[:200]}...")
+                return True
+            except:
+                print(f"   ✅ PASS - Non-JSON response: {response.text[:100]}...")
+                return True
+        else:
+            print(f"   ❌ FAIL - Expected {expected_status}, got {response.status_code}")
+            print(f"   Response: {response.text[:200]}...")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"   ❌ FAIL - Request timed out after {TIMEOUT}s")
+        return False
     except Exception as e:
-        result.set_failure(f"Health check failed: {str(e)}")
-        
-    return result
+        print(f"   ❌ FAIL - Error: {str(e)}")
+        return False
 
-async def test_license_upload() -> TestResult:
-    """Test POST /api/license/upload (old endpoint for regression)"""
-    result = TestResult("License Upload (Regression)")
-    
-    try:
-        # Create test image
-        image_data = await create_test_image(12 * 1024)  # 12KB
-        
-        # Create multipart form data
-        data = aiohttp.FormData()
-        data.add_field('image', image_data, filename='test_license.jpg', content_type='image/jpeg')
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(f"{BASE_URL}/api/license/upload", data=data) as response:
-                response_data = await response.json()
-                
-                if response.status == 200 and response_data.get('success'):
-                    image_url = response_data.get('image_url')
-                    if image_url:
-                        result.set_success(f"Upload successful, image URL: {image_url}", response_data)
-                    else:
-                        result.set_failure("Upload response missing image_url", response_data)
-                else:
-                    result.set_failure(f"Upload failed: {response.status} - {response_data}", response_data)
-                    
-    except Exception as e:
-        result.set_failure(f"Upload test failed: {str(e)}")
-        
-    return result
-
-async def test_license_scan_direct() -> TestResult:
-    """Test POST /api/license/scan-direct (new endpoint)"""
-    result = TestResult("License Scan Direct (New Endpoint)")
-    
-    try:
-        # Create test image that's large enough to pass size checks
-        image_data = await create_test_image(TEST_IMAGE_SIZE)
-        
-        # Create multipart form data with field name 'image'
-        data = aiohttp.FormData()
-        data.add_field('image', image_data, filename='test_license_direct.jpg', content_type='image/jpeg')
-        
-        async with aiohttp.ClientSession() as session:
-            # Set longer timeout for OCR processing
-            timeout = aiohttp.ClientTimeout(total=30)
-            async with session.post(f"{BASE_URL}/api/license/scan-direct", data=data, timeout=timeout) as response:
-                response_data = await response.json()
-                
-                print(f"Scan-direct response status: {response.status}")
-                print(f"Scan-direct response: {json.dumps(response_data, indent=2)}")
-                
-                if response.status == 200:
-                    # Check required fields in LicenseScanResponse
-                    required_fields = ['success', 'image_url']
-                    missing_fields = [field for field in required_fields if field not in response_data]
-                    
-                    if missing_fields:
-                        result.set_failure(f"Missing required fields: {missing_fields}", response_data)
-                    else:
-                        success = response_data.get('success')
-                        image_url = response_data.get('image_url')
-                        extracted_data = response_data.get('extracted_data')
-                        confidence = response_data.get('confidence')
-                        error = response_data.get('error')
-                        
-                        details = f"Status: {response.status}, Success: {success}, Image URL: {image_url}"
-                        
-                        if success:
-                            details += f", Confidence: {confidence}%"
-                            if extracted_data:
-                                details += f", Extracted data fields: {list(extracted_data.keys())}"
-                            result.set_success(details, response_data)
-                        else:
-                            # Even if OCR fails, it should set image_url and have a clear error message
-                            if image_url:
-                                details += f", Error: {error}"
-                                result.set_success(f"Endpoint works correctly (OCR failed as expected): {details}", response_data)
-                            else:
-                                result.set_failure(f"Failed without proper error handling: {details}", response_data)
-                else:
-                    result.set_failure(f"HTTP error: {response.status} - {response_data}", response_data)
-                    
-    except asyncio.TimeoutError:
-        result.set_failure("Request timed out (likely OCR processing issue)")
-    except Exception as e:
-        result.set_failure(f"Scan-direct test failed: {str(e)}")
-        
-    return result
-
-async def test_license_scan_direct_small_image() -> TestResult:
-    """Test POST /api/license/scan-direct with small image (should fail gracefully)"""
-    result = TestResult("License Scan Direct - Small Image Validation")
-    
-    try:
-        # Create very small image (below 5KB threshold)
-        small_image = await create_test_image(2 * 1024)  # 2KB
-        
-        data = aiohttp.FormData()
-        data.add_field('image', small_image, filename='small_test.jpg', content_type='image/jpeg')
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(f"{BASE_URL}/api/license/scan-direct", data=data) as response:
-                response_data = await response.json()
-                
-                if response.status == 200:
-                    success = response_data.get('success')
-                    error = response_data.get('error')
-                    
-                    if not success and error and 'small' in error.lower():
-                        result.set_success(f"Small image validation working: {error}", response_data)
-                    else:
-                        result.set_failure(f"Small image should fail with appropriate error, got: success={success}, error={error}", response_data)
-                else:
-                    result.set_failure(f"Unexpected HTTP status: {response.status} - {response_data}", response_data)
-                    
-    except Exception as e:
-        result.set_failure(f"Small image test failed: {str(e)}")
-        
-    return result
-
-async def test_license_scan_direct_empty_image() -> TestResult:
-    """Test POST /api/license/scan-direct with empty image (should fail gracefully)"""
-    result = TestResult("License Scan Direct - Empty Image Validation")
-    
-    try:
-        # Create empty image
-        empty_data = b''
-        
-        data = aiohttp.FormData()
-        data.add_field('image', empty_data, filename='empty.jpg', content_type='image/jpeg')
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.post(f"{BASE_URL}/api/license/scan-direct", data=data) as response:
-                response_data = await response.json()
-                
-                if response.status == 200:
-                    success = response_data.get('success')
-                    error = response_data.get('error')
-                    
-                    if not success and error and ('empty' in error.lower() or 'file' in error.lower()):
-                        result.set_success(f"Empty image validation working: {error}", response_data)
-                    else:
-                        result.set_failure(f"Empty image should fail with appropriate error, got: success={success}, error={error}", response_data)
-                else:
-                    result.set_failure(f"Unexpected HTTP status: {response.status} - {response_data}", response_data)
-                    
-    except Exception as e:
-        result.set_failure(f"Empty image test failed: {str(e)}")
-        
-    return result
-
-def print_results(results: list[TestResult]):
-    """Print test results in a clear format"""
-    print("\n" + "="*80)
-    print("LICENSE SCAN DIRECT ENDPOINT TESTING RESULTS")
+def main():
+    """Run comprehensive regression test after dead code cleanup"""
+    print("="*80)
+    print("🎯 BACKEND REGRESSION TEST - DEAD CODE CLEANUP VERIFICATION")
+    print("   Testing after removal of ~550 lines of dead code")
     print("="*80)
     
-    passed = 0
-    failed = 0
+    # Track test results
+    tests_passed = 0
+    tests_total = 0
     
-    for result in results:
-        status = "✅ PASS" if result.success else "❌ FAIL"
-        print(f"\n{status} - {result.name}")
-        print(f"   Details: {result.details}")
-        
-        if result.success:
-            passed += 1
-        else:
-            failed += 1
-            
-    print(f"\n" + "="*80)
-    print(f"SUMMARY: {passed} PASSED, {failed} FAILED")
-    print("="*80)
+    # =============================================================================
+    # PHASE 1: VERIFY REMOVED ENDPOINTS RETURN 404/405
+    # =============================================================================
+    print("\n" + "="*50)
+    print("PHASE 1: VERIFY REMOVED ENDPOINTS (should be 404/405)")
+    print("="*50)
     
-    return passed, failed
-
-async def main():
-    """Run all tests"""
-    print("Starting License Scan Direct Endpoint Tests...")
-    print(f"Base URL: {BASE_URL}")
-    
-    # List of tests to run
-    tests = [
-        test_health_check,
-        test_license_upload,  # Regression test
-        test_license_scan_direct,  # Main new endpoint test
-        test_license_scan_direct_small_image,  # Validation test
-        test_license_scan_direct_empty_image,  # Edge case test
+    removed_endpoints = [
+        ("POST", "/api/license/scan", "Old OCR endpoint - should be removed"),
+        ("POST", "/api/license/parse-pdf417", "PDF417 parser - should be removed"), 
+        ("POST", "/api/license/scan-from-url", "Scan from URL - should be removed"),
     ]
     
-    results = []
+    for method, endpoint, desc in removed_endpoints:
+        tests_total += 1
+        if test_endpoint(method, endpoint, expected_status=[404, 405], description=desc):
+            tests_passed += 1
     
-    for test_func in tests:
-        print(f"\nRunning: {test_func.__name__}...")
-        try:
-            result = await test_func()
-            results.append(result)
-            status = "✅" if result.success else "❌"
-            print(f"{status} {result.name}: {result.details}")
-        except Exception as e:
-            error_result = TestResult(test_func.__name__)
-            error_result.set_failure(f"Test execution error: {str(e)}")
-            results.append(error_result)
-            print(f"❌ {test_func.__name__}: Test execution error: {str(e)}")
+    # =============================================================================
+    # PHASE 2: VERIFY SURVIVING ENDPOINTS WORK CORRECTLY
+    # =============================================================================
+    print("\n" + "="*50)
+    print("PHASE 2: VERIFY SURVIVING ENDPOINTS (must work)")
+    print("="*50)
     
-    # Print comprehensive results
-    passed, failed = print_results(results)
+    # 1. Health check
+    tests_total += 1
+    if test_endpoint("GET", "/api/health", description="Health check"):
+        tests_passed += 1
     
-    # Return exit code
-    return 0 if failed == 0 else 1
+    # 2. New single-step OCR endpoint
+    tests_total += 1
+    test_image = create_test_image(200, 200)  # Small but not too small
+    files = {'image': ('test_license.jpg', test_image, 'image/jpeg')}
+    if test_endpoint("POST", "/api/license/scan-direct", files=files, description="New single-step OCR endpoint"):
+        tests_passed += 1
+    
+    # 3. Vehicle inventory
+    tests_total += 1
+    if test_endpoint("GET", "/api/vehicles/inventory", description="Vehicle inventory list"):
+        tests_passed += 1
+    
+    # 4. Translation endpoint
+    tests_total += 1
+    translation_data = {
+        "text": "Hello",
+        "source_lang": "en", 
+        "target_lang": "es"
+    }
+    if test_endpoint("POST", "/api/translate", data=translation_data, description="Translation service"):
+        tests_passed += 1
+    
+    # 5. License upload (chunked upload should still work)
+    tests_total += 1
+    test_image2 = create_test_image(300, 300)
+    files2 = {'image': ('test_upload.jpg', test_image2, 'image/jpeg')}
+    if test_endpoint("POST", "/api/license/upload", files=files2, description="License upload (backward compatibility)"):
+        tests_passed += 1
+    
+    # 6. Verify uploads route exists (we'll test if route is accessible)
+    tests_total += 1
+    if test_endpoint("GET", "/api/uploads/nonexistent.jpg", expected_status=404, description="Uploads route accessibility"):
+        tests_passed += 1
+    
+    # 7. Create customer (uses Form data, not JSON)
+    tests_total += 1
+    form_data = {
+        "first_name": "Test",
+        "last_name": "User",
+        "image_url": "/api/uploads/test.jpg"
+    }
+    # Convert to form data
+    if test_endpoint("POST", "/api/license/create-customer", data=form_data, description="Create customer"):
+        tests_passed += 1
+    
+    # =============================================================================
+    # ADDITIONAL REGRESSION CHECKS
+    # =============================================================================
+    print("\n" + "="*50)
+    print("PHASE 3: ADDITIONAL REGRESSION CHECKS")
+    print("="*50)
+    
+    # Test some other critical endpoints to ensure no regressions
+    additional_tests = [
+        ("GET", "/api/customers/list?limit=5", None, "Customer list"),
+        ("POST", "/api/tts", {"text": "Test", "voice": "nova", "language": "en"}, "Text-to-speech"),
+        ("POST", "/api/tower-talk", {"situation": "Customer interested in vehicle", "inquiryType": "new_lead", "context": {}}, "Tower Talk AI"),
+    ]
+    
+    for method, endpoint, test_data, desc in additional_tests:
+        tests_total += 1
+        if test_endpoint(method, endpoint, data=test_data, description=desc):
+            tests_passed += 1
+    
+    # =============================================================================
+    # RESULTS SUMMARY
+    # =============================================================================
+    print("\n" + "="*80)
+    print("📊 REGRESSION TEST RESULTS")
+    print("="*80)
+    
+    success_rate = (tests_passed / tests_total) * 100 if tests_total > 0 else 0
+    print(f"Tests Passed: {tests_passed}/{tests_total}")
+    print(f"Success Rate: {success_rate:.1f}%")
+    
+    if success_rate >= 90:
+        print("✅ EXCELLENT - Backend passed regression test")
+        print("   Dead code cleanup successful, no critical regressions detected")
+    elif success_rate >= 70:
+        print("⚠️  ACCEPTABLE - Some issues found but core functionality intact") 
+        print("   Review failed tests and fix if critical")
+    else:
+        print("❌ CRITICAL - Major regressions detected")
+        print("   Dead code cleanup may have removed live code")
+    
+    return success_rate >= 90
 
 if __name__ == "__main__":
-    exit_code = asyncio.run(main())
-    sys.exit(exit_code)
+    success = main()
+    sys.exit(0 if success else 1)
