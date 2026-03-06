@@ -94,8 +94,7 @@ async def extract_vin_from_image(req: VinOcrRequest):
         # Resize for optimal OCR performance
         b64_clean = resize_base64_for_ocr(b64_clean)
 
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        from emergentintegrations.llm.openai import ImageContent
+        from ai_gateway import gateway as ai_gateway
 
         system_prompt = (
             "You are a precision VIN reader for automotive dealerships. "
@@ -110,19 +109,12 @@ async def extract_vin_from_image(req: VinOcrRequest):
             "IMPORTANT: Return ONLY the JSON object."
         )
 
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"vin_ocr_{os.urandom(6).hex()}",
-            system_message=system_prompt
-        ).with_model("openai", "gpt-4o")
-
-        image_content = ImageContent(image_base64=b64_clean)
-        user_message = UserMessage(
-            text="Find all VIN numbers in this image. Return ONLY valid 17-character VINs.",
-            file_contents=[image_content]
+        response = await ai_gateway.chat(
+            feature='vehicle_vision',
+            prompt="Find all VIN numbers in this image. Return ONLY valid 17-character VINs.",
+            system_message=system_prompt,
+            images=[b64_clean],
         )
-
-        response = await chat.send_message(user_message)
         raw = response.strip()
 
         import json as _json

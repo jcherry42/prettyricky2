@@ -35,6 +35,7 @@ from data_integration import (
     shutdown_scheduler,
 )
 from repositories import CustomerRepository, VehicleRepository, DataSourceRepository
+from ai_gateway import gateway as ai_gateway
 
 
 ROOT_DIR = Path(__file__).parent
@@ -136,6 +137,10 @@ async def lifespan(app: FastAPI):
     
     # Initialize scheduler
     await init_scheduler(db)
+
+    # Initialize AI Gateway with DB for telemetry
+    ai_gateway.init(db=db)
+    logger.info("✅ AI Gateway initialised")
     
     logger.info("Server startup complete")
     
@@ -201,6 +206,12 @@ api_router.include_router(pin_auth_router)
 
 
 # ============== HEALTH & STATUS ==============
+
+@api_router.get("/ai/stats")
+async def ai_gateway_stats():
+    """AI Gateway observability — cost, latency, cache, circuit breakers."""
+    return ai_gateway.stats()
+
 
 @api_router.get("/")
 async def root():
@@ -459,21 +470,12 @@ CRITICAL RULES:
 9. Address: street only — do NOT include city/state/zip in address field
 10. Return ONLY the JSON — no explanations, no markdown fences"""
 
-        chat = LlmChat(
-            api_key=os.getenv('EMERGENT_LLM_KEY'),
-            session_id=f"license-scan-direct-{uuid.uuid4()}",
-            system_message="You are an expert document OCR system specializing in US driver's licenses from all 50 states. Be precise."
-        ).with_model("openai", "gpt-4o")
-
-        from emergentintegrations.llm.openai import ImageContent
-        image_content = ImageContent(image_base64=base64_image)
-
-        user_message = UserMessage(
-            text=extraction_prompt,
-            file_contents=[image_content]
+        response = await ai_gateway.chat(
+            feature='license_ocr',
+            prompt=extraction_prompt,
+            system_message="You are an expert document OCR system specializing in US driver's licenses from all 50 states. Be precise.",
+            images=[base64_image],
         )
-
-        response = await chat.send_message(user_message)
         logger.info(f"scan-direct Vision API response ({len(response)} chars)")
 
         # Parse JSON

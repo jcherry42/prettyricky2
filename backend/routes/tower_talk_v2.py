@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 import os
 import uuid
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from ai_gateway import gateway as ai_gateway
 
 router = APIRouter()
 
@@ -109,10 +109,6 @@ def init_tower_talk_routes(_llm_key: str | None = None):
 async def tower_talk(request: TowerTalkRequest):
     """Generate AI-powered personalized sales message with persuasion psychology."""
     try:
-        api_key = os.environ.get("EMERGENT_LLM_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
-
         ctx = request.context
         customer_name = ctx.get("customerName", "the customer")
         vehicle = ctx.get("vehicle", "the vehicle")
@@ -171,20 +167,13 @@ RULE 4 — TONE: Sound like a trusted friend who happens to know cars, NOT a sal
 RULE 6 — FORMAT: One ready-to-copy text message. Plain text. No lists, no headers, no asterisks.
 RULE 7 — SELF-AUDIT: Before outputting, ask: "Does this contain an emoji?" If yes, rewrite completely."""
 
-        chat = (
-            LlmChat(
-                api_key=api_key,
-                session_id=f"tower-talk-{uuid.uuid4()}",
-                system_message=system_message,
-            )
-            .with_model("openai", "gpt-4o")
-        )
+        user_prompt = f"Inquiry type: {inquiry_type.upper().replace('_', ' ')}\nSituation: {request.situation.strip()}\n\nWrite the message now. Remember: 2-3 sentences MAXIMUM. NO emojis whatsoever."
 
-        user_message = UserMessage(
-            text=f"Inquiry type: {inquiry_type.upper().replace('_', ' ')}\nSituation: {request.situation.strip()}\n\nWrite the message now. Remember: 2-3 sentences MAXIMUM. NO emojis whatsoever."
+        response = await ai_gateway.chat(
+            feature='tower_talk',
+            prompt=user_prompt,
+            system_message=system_message,
         )
-
-        response = await chat.send_message(user_message)
         # Deterministic emoji strip — GPT-4o occasionally adds emojis despite instructions.
         # We own the pipeline, so we enforce the rule here unconditionally.
         clean = _strip_emoji(response.strip())
@@ -215,10 +204,6 @@ async def translate_text(request: TranslateRequest):
                 confidence=0.99,
             )
 
-        api_key = os.environ.get("EMERGENT_LLM_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
-
         lang_names = {
             "en": "English",
             "es": "Spanish",
@@ -236,16 +221,12 @@ async def translate_text(request: TranslateRequest):
 
         start_time = datetime.now(timezone.utc)
 
-        chat = (
-            LlmChat(
-                api_key=api_key,
-                session_id=f"translate-{uuid.uuid4()}",
-                system_message=system_message,
-            )
-            .with_model("openai", "gpt-4o-mini")
+        translated = await ai_gateway.chat(
+            feature='translate',
+            prompt=text,
+            system_message=system_message,
+            cache_ttl=3600,
         )
-
-        translated = await chat.send_message(UserMessage(text=text))
         _ = (datetime.now(timezone.utc) - start_time).total_seconds()
 
         detected = request.source_lang if request.source_lang != "auto" else None

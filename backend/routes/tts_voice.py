@@ -142,16 +142,15 @@ async def text_to_speech(request: TTSRequest):
             logger.info(f"TTS cache hit: {len(text)} chars, voice={voice}")
             return TTSResponse(audio_base64=cached_audio, format="mp3", voice_used=voice, cached=True)
 
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
-
-        from emergentintegrations.llm.openai import OpenAITextToSpeech
+        from ai_gateway import gateway as ai_gateway
 
         start_time = datetime.now(timezone.utc)
-        tts = OpenAITextToSpeech(api_key=api_key)
-        audio_base64 = await tts.generate_speech_base64(
-            text=text, model=request.model, voice=voice, speed=request.speed
+        audio_base64 = await ai_gateway.tts(
+            feature='tts',
+            text=text,
+            voice=voice,
+            model=request.model,
+            speed=request.speed,
         )
         gen_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         logger.info(f"TTS generated: {len(text)} chars, voice={voice}, time={gen_time:.2f}s")
@@ -188,7 +187,6 @@ async def voice_translate(
         logger.info(f"Audio size: {len(audio_data)} bytes, resolved: {safe_name}")
 
         from emergentintegrations.llm.openai import OpenAISpeechToText
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
 
         api_key = os.environ.get('EMERGENT_LLM_KEY')
         if not api_key:
@@ -249,13 +247,14 @@ async def voice_translate(
             f"Output ONLY the translation."
         )
 
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=f"voice-translate-{uuid.uuid4()}",
-            system_message=system_prompt,
-        ).with_model("openai", "gpt-4o")
+        from ai_gateway import gateway as ai_gateway
 
-        translated_text = (await chat.send_message(UserMessage(text=transcript))).strip()
+        translated_text = (await ai_gateway.chat(
+            feature='translate',
+            prompt=transcript,
+            system_message=system_prompt,
+            cache_ttl=3600,
+        )).strip()
         logger.info(f"Translation OK: {translated_text[:120]}...")
 
         return VoiceTranslateResponse(

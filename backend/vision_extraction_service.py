@@ -11,8 +11,7 @@ import logging
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 
-# Import the elite vision model
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+from ai_gateway import gateway as ai_gateway
 
 load_dotenv()
 
@@ -89,35 +88,20 @@ class VisionExtractionService:
             Dict with extracted customer fields
         """
         try:
-            # Create new chat instance for this extraction
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"vision_extract_{os.urandom(8).hex()}",
-                system_message=EXTRACTION_SYSTEM_PROMPT
-            )
-            
-            # Use GPT-5.1 - the elite vision model
-            chat.with_model("openai", "gpt-5.1")
-            
-            # Create image content
-            image_content = ImageContent(image_base64=image_base64)
-            
             # Build extraction prompt
             prompt = "Extract all customer information from this image."
             if additional_context:
                 prompt += f"\n\nAdditional context: {additional_context}"
-            
-            # Create message with image
-            user_message = UserMessage(
-                text=prompt,
-                file_contents=[image_content]
+
+            logger.info("Sending image to AI Gateway [extraction] for data extraction...")
+            response = await ai_gateway.chat(
+                feature='extraction',
+                prompt=prompt,
+                system_message=EXTRACTION_SYSTEM_PROMPT,
+                images=[image_base64],
             )
-            
-            # Send to vision model
-            logger.info("Sending image to GPT-5.1 for extraction...")
-            response = await chat.send_message(user_message)
-            
-            logger.info(f"GPT-5.1 response: {response}")
+
+            logger.info(f"Extraction response: {response}")
             
             # Parse JSON response
             try:
