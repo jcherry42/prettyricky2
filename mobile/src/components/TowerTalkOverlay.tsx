@@ -315,10 +315,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   // Auto-translate when SPORT mode triggers
   useEffect(() => {
     if (autoTranslateRef.current && sportOn) {
-      const text = autoTranslateRef.current;
       autoTranslateRef.current = null;
-      const timer = setTimeout(() => translateReply(), 600);
-      return () => clearTimeout(timer);
+      translateReply();
     }
   }, [reply, sportOn]);
 
