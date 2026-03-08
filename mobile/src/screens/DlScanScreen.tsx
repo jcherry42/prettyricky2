@@ -797,7 +797,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(214,178,94,0.04)',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -841,7 +841,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(214,178,94,0.04)',
     backgroundColor: 'rgba(6,8,12,0.92)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
@@ -867,7 +867,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(214,178,94,0.04)',
     padding: 14,
   },
   historyHeaderRow: {
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
   historyGradient: {
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(214,178,94,0.05)',
     borderRadius: 10,
   },
   quiltedPattern: {
@@ -1188,7 +1188,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.02)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(214,178,94,0.04)',
   },
   fieldLabelRow: {
     flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6,
@@ -1225,7 +1225,7 @@ const styles = StyleSheet.create({
     marginTop: 8, height: 52,
     borderRadius: 10,
     backgroundColor: 'rgba(64,255,155,0.15)',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.green,
     flexDirection: 'row',
     alignItems: 'center',

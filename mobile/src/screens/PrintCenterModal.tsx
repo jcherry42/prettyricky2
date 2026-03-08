@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(214,178,94,0.06)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(214,178,94,0.05)',
   },
   tabActive: {
     borderColor: 'rgba(214,178,94,0.35)',

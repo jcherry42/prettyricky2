@@ -72,17 +72,17 @@ export function RootNavigator() {
   // This ensures the tab bar never intrudes into the home indicator zone on iPhone X+
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: 'rgba(4,6,8,0.92)',
-      borderTopColor: 'rgba(214,178,94,0.14)',
-      borderTopWidth: 1,
+      backgroundColor: 'rgba(4,6,8,0.95)',
+      borderTopColor: 'rgba(214,178,94,0.10)',
+      borderTopWidth: 0.5,
       height: TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4),
       paddingTop: 8,
       paddingBottom: Math.max(insets.bottom, 4) + 2,
       shadowColor: '#000',
-      shadowOpacity: 0.65,
-      shadowRadius: 24,
-      shadowOffset: { width: 0, height: -6 },
-      elevation: 24,
+      shadowOpacity: 0.75,
+      shadowRadius: 30,
+      shadowOffset: { width: 0, height: -8 },
+      elevation: 28,
     }),
     [insets.bottom]
   );

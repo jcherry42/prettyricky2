@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0.5,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(214,178,94,0.06)',
     backgroundColor: 'rgba(20,24,30,0.55)',
   },
   glowRing: {

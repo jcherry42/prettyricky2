@@ -57,7 +57,7 @@ export function CustomerListSkeleton({ count = 5 }) {
 const styles = StyleSheet.create({
   line: {
     borderRadius: 6,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(214,178,94,0.06)',
   },
   card: {
     marginHorizontal: 16,
@@ -65,8 +65,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: 'rgba(8,10,12,0.50)',
+    borderColor: 'rgba(214,178,94,0.04)',
+    backgroundColor: 'rgba(6,8,12,0.55)',
   },
   listContainer: {
     paddingTop: 8,
