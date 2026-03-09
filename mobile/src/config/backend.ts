@@ -10,7 +10,7 @@ import { getBackendUrlOverride } from './backendOverride';
  *
  * Updated on each deployment. EXPO_PUBLIC_BACKEND_URL in .env takes priority.
  */
-const FALLBACK_BACKEND_URL = 'https://deal-closer-ai-3.preview.emergentagent.com';
+const FALLBACK_BACKEND_URL = 'https://scanner-debug-test.preview.emergentagent.com';
 
 /**
  * Sanitize a backend base URL.

@@ -15,6 +15,29 @@
       "resizeMode": "contain",
       "backgroundColor": "#05070A"
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Supercharg'd uses the camera to scan VINs and driver's licenses.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Supercharg'd accesses the photo library to attach license images.",
+          "cameraPermission": "Supercharg'd uses the camera to capture license images."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Supercharg'd uses the microphone for the voice push-to-talk translation feature."
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.superchargd.mobile",
@@ -34,7 +57,11 @@
       "versionCode": 1,
       "permissions": [
         "CAMERA",
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

@@ -27,12 +27,21 @@ import { loadJson, saveJson } from '../lib/storage';
 import { decodeVinWithBackend } from '../lib/nhtsa';
 import { useInventory } from '../context/InventoryContext';
 import { validateVin } from '../utils/vinChecksum';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
 import { buildApiUrlAsync } from '../config/backend';
 import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
+
+// ── Safe ML Kit import — gracefully unavailable in Expo Go ─────────────
+let TextRecognition: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  TextRecognition = require('@react-native-ml-kit/text-recognition').default;
+} catch {
+  // ML Kit not available in this environment (Expo Go, simulator, etc.)
+  console.warn('[VinScan] @react-native-ml-kit/text-recognition not available — cloud fallback will be used.');
+}
 
 // ── Storage keys: separate bins for each VIN category ──────────────────
 const STORAGE_KEY_INVENTORY = 'sc_v2_vins_dealer_inventory';
@@ -847,41 +856,45 @@ export function VinScanScreen() {
       }
 
       // ── PHASE 1: ML Kit on-device text recognition (~100ms) ──
-      setOcrStatus('Reading with ML Kit...');
-      try {
-        const mlResult = await TextRecognition.recognize(photo.uri);
-        if (mlResult?.text) {
-          // Extract VINs from recognized text — 17 alphanumeric, no I/O/Q
-          const vinRegex = /[A-HJ-NPR-Z0-9]{17}/g;
-          const rawText = mlResult.text.toUpperCase().replace(/\s/g, '');
-          const candidates = rawText.match(vinRegex) || [];
+      if (TextRecognition) {
+        setOcrStatus('Reading with ML Kit...');
+        try {
+          const mlResult = await TextRecognition.recognize(photo.uri);
+          if (mlResult?.text) {
+            // Extract VINs from recognized text — 17 alphanumeric, no I/O/Q
+            const vinRegex = /[A-HJ-NPR-Z0-9]{17}/g;
+            const rawText = mlResult.text.toUpperCase().replace(/\s/g, '');
+            const candidates = rawText.match(vinRegex) || [];
 
-          // Validate each candidate with checksum
-          const validVins = candidates.filter((v: string) => {
-            const check = validateVin(v);
-            return check.valid;
-          });
+            // Validate each candidate with checksum
+            const validVins = candidates.filter((v: string) => {
+              const check = validateVin(v);
+              return check.valid;
+            });
 
-          // Also keep unvalidated candidates as secondary (checksum may fail for some legit VINs)
-          const allUnique = [...new Set([...validVins, ...candidates])];
+            // Also keep unvalidated candidates as secondary (checksum may fail for some legit VINs)
+            const allUnique = [...new Set([...validVins, ...candidates])];
 
-          if (allUnique.length > 0) {
-            const result = {
-              vins: allUnique,
-              confidence: validVins.length > 0 ? 'high' : 'medium',
-              notes: `ML Kit on-device (${validVins.length} checksum-verified)`,
-            };
-            setOcrResults(result);
-            setOcrStatus(`Found ${allUnique.length} VIN${allUnique.length > 1 ? 's' : ''} — on-device`);
-            notificationSuccess();
-            abortCleanup();
-            setOcrProcessing(false);
-            return;
+            if (allUnique.length > 0) {
+              const result = {
+                vins: allUnique,
+                confidence: validVins.length > 0 ? 'high' : 'medium',
+                notes: `ML Kit on-device (${validVins.length} checksum-verified)`,
+              };
+              setOcrResults(result);
+              setOcrStatus(`Found ${allUnique.length} VIN${allUnique.length > 1 ? 's' : ''} — on-device`);
+              notificationSuccess();
+              abortCleanup();
+              setOcrProcessing(false);
+              return;
+            }
           }
+        } catch (mlErr: any) {
+          // ML Kit failed — continue to cloud fallback silently
+          console.warn('[ML Kit]', mlErr?.message);
         }
-      } catch (mlErr: any) {
-        // ML Kit failed — continue to cloud fallback silently
-        console.warn('[ML Kit]', mlErr?.message);
+      } else {
+        setOcrStatus('AI Vision scanning...');
       }
 
       // ── PHASE 2: Cloud fallback (GPT-4o Vision via AI Gateway) ──
@@ -1086,29 +1099,30 @@ export function VinScanScreen() {
                   {cameraIsActive ? (
                   <CameraView
                     ref={cameraRef}
-                    onBarcodeScanned={
-                      scanMode === SCAN_MODE.BARCODE && scanning ? onBarcodeScanned : undefined
-                    }
-                    onCameraReady={() => setCameraReady(true)}
-                    enableTorch={torchOn && cameraReady}
-                    zoom={zoom}
                     style={StyleSheet.absoluteFill}
                     facing="back"
                     autofocus="on"
+                    // ── Barcode scanner — explicitly enabled with minimal reliable types ──
+                    barcodeScannerEnabled={scanMode === SCAN_MODE.BARCODE}
                     barcodeScannerSettings={
                       scanMode === SCAN_MODE.BARCODE
                         ? {
                             barcodeTypes: [
                               'code39',     // Most common VIN barcode (OEM window stickers)
                               'code128',    // Second most common (dealer/aftermarket labels)
-                              'datamatrix', // Newer vehicles, stamped metal plates
+                              'datamatrix', // Newer vehicles — 2D stamped metal plates
                               'qr',         // Some dealers add QR to window stickers
-                              'code93',     // Some OEM labels
-                              'itf14',      // International logistics labels
                             ],
                           }
-                        : undefined
+                        : { barcodeTypes: ['qr'] }
                     }
+                    // Only attach scanner callback when actively scanning to prevent double-fire
+                    onBarcodeScanned={
+                      scanMode === SCAN_MODE.BARCODE && scanning ? onBarcodeScanned : undefined
+                    }
+                    onCameraReady={() => setCameraReady(true)}
+                    enableTorch={torchOn && cameraReady}
+                    zoom={zoom}
                   />
                   ) : (
                     <View style={[StyleSheet.absoluteFill, { backgroundColor: '#0A0E14', justifyContent: 'center', alignItems: 'center' }]}>
@@ -1230,13 +1244,31 @@ export function VinScanScreen() {
                   </View>
                 </View>
 
-                {/* ── BARCODE MODE: hint ── */}
+                {/* ── BARCODE MODE: hint + re-scan button ── */}
                 {scanMode === SCAN_MODE.BARCODE && (
                   <View style={styles.hintCard}>
-                    <Ionicons name="scan" size={18} color={colors.gold} />
-                    <Text style={styles.hintText}>
-                      Point at the barcode on the door jamb label or window sticker. Hold steady — scanning automatically.
-                    </Text>
+                    <View style={styles.hintCardInner}>
+                      <Ionicons name="scan" size={18} color={colors.gold} />
+                      <Text style={styles.hintText}>
+                        {scanning
+                          ? 'Point at the barcode on the door jamb label or window sticker. Hold steady — scanning automatically.'
+                          : 'Scanning paused. Tap below to scan again.'}
+                      </Text>
+                    </View>
+                    {!scanning && (
+                      <Pressable
+                        onPress={() => {
+                          lastScannedVin.current = '';
+                          lastScanTime.current = 0;
+                          setScanning(true);
+                          impactLight();
+                        }}
+                        style={({ pressed }) => [styles.rescanBtn, pressed && { opacity: 0.7 }]}
+                      >
+                        <Ionicons name="refresh" size={16} color={colors.gold} />
+                        <Text style={styles.rescanBtnText}>TAP TO SCAN AGAIN</Text>
+                      </Pressable>
+                    )}
                   </View>
                 )}
 
@@ -1253,10 +1285,12 @@ export function VinScanScreen() {
                       </View>
                     ) : (
                       <View style={styles.hintCard}>
-                        <Ionicons name="sparkles" size={18} color="#64C8FF" />
-                        <Text style={[styles.hintText, { color: colors.textDim }]}>
-                          Frame the VIN plate in the guide box. Works on windshield engravings, dashboard stamps, and door jamb text.
-                        </Text>
+                        <View style={styles.hintCardInner}>
+                          <Ionicons name="sparkles" size={18} color="#64C8FF" />
+                          <Text style={[styles.hintText, { color: colors.textDim }]}>
+                            Frame the VIN plate in the guide box. Works on windshield engravings, dashboard stamps, and door jamb text.
+                          </Text>
+                        </View>
                       </View>
                     )}
 
@@ -2096,9 +2130,9 @@ const styles = StyleSheet.create({
 
   // ── Hint card ──
   hintCard: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 8,
     marginTop: 10,
     padding: 12,
     backgroundColor: 'rgba(214,178,94,0.10)',
@@ -2106,7 +2140,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(214,178,94,0.25)',
   },
+  hintCardInner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
   hintText: { ...type.body, flex: 1, color: colors.text, lineHeight: 18, fontSize: 13 },
+  rescanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'center',
+    marginTop: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(214,178,94,0.18)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(214,178,94,0.4)',
+  },
+  rescanBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.gold,
+    letterSpacing: 1.2,
+  },
 
   // ── AI Panel ──
   aiPanel: {

@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://deal-closer-ai-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://scanner-debug-test.preview.emergentagent.com')
 
 
 class TestHealthAndStatus:

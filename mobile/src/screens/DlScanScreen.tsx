@@ -38,7 +38,6 @@ import { loadJson, saveJson } from '../lib/storage';
 import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
 import { buildApiUrlAsync } from '../config/backend';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import {
@@ -48,6 +47,15 @@ import {
   notificationSuccess,
 } from '../lib/haptics';
 import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
+
+// ── Safe ML Kit import — gracefully unavailable in Expo Go ─────────────
+let TextRecognition: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  TextRecognition = require('@react-native-ml-kit/text-recognition').default;
+} catch {
+  console.warn('[DlScan] @react-native-ml-kit/text-recognition not available — cloud fallback will be used.');
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
@@ -302,11 +310,13 @@ export function DlScanScreen() {
 
       // ── ML Kit on-device pre-check (~100ms) ──
       let mlText = '';
-      try {
-        const mlResult = await TextRecognition.recognize(uri);
-        mlText = mlResult?.text || '';
-      } catch (_) {
-        // ML Kit unavailable — continue without it
+      if (TextRecognition) {
+        try {
+          const mlResult = await TextRecognition.recognize(uri);
+          mlText = mlResult?.text || '';
+        } catch (_) {
+          // ML Kit unavailable — continue without it
+        }
       }
 
       // Quality gate: if ML Kit found almost no text, warn early

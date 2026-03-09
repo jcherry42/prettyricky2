@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://deal-closer-ai-3.preview.emergentagent.com',
+        'Backend URL must start with https://scanner-debug-test.preview.emergentagent.com',
       );
       return;
     }
