@@ -80,13 +80,14 @@ export function InventoryProvider({ children }) {
       });
 
       // Backend returns { success, message, id, category }
-      // Build a vehicle object for the local list
+      // Build a vehicle object for the local list — preserve _source for UI badge
       const newVehicle = {
         vehicle_id: data?.id,
         vin,
         ...rest,
         category: data?.category || category || 'active_inventory',
         status: 'available',
+        _source: rest._source || vehicleData._source || 'scan',
       };
 
       setVehicles(prev => [newVehicle, ...prev]);

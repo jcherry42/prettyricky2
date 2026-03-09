@@ -733,7 +733,9 @@ export function VinScanScreen() {
     try {
       impactMedium();
       const vehicleData = item.decoded?.vehicle || item.decoded;
-      await addVehicle({ vin: item.vin, ...vehicleData, category: item.category });
+      // Preserve source tag so the Intake Hub badge shows SCAN vs MANUAL
+      const sourceTag = item.source === 'manual' ? 'manual' : 'scan';
+      await addVehicle({ vin: item.vin, ...vehicleData, category: item.category, _source: sourceTag });
       const entry = { ...item, savedToInventoryAt: new Date().toISOString() };
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
