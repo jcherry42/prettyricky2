@@ -19,9 +19,11 @@ const AuthContext = createContext(null);
  */
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // boot-time check
+  const [isLoading, setIsLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [error, setError] = useState(null);
+  const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
+  const [pendingResetCode, setPendingResetCode] = useState<string | null>(null); // shown once after setup
   const accessTokenRef = useRef(null);
   const refreshTokenRef = useRef(null);
 
@@ -124,7 +126,7 @@ export function AuthProvider({ children }) {
     })();
   }, [refreshAccessToken, _clearTokens]);
 
-  // Login with PIN
+  // Login with PIN — reads lockout details from 429 / 401 responses
   const login = useCallback(async (pin) => {
     setError(null);
     try {
@@ -137,14 +139,21 @@ export function AuthProvider({ children }) {
         await _storeTokens(data.access_token, data.refresh_token);
         setIsAuthenticated(true);
         setNeedsSetup(false);
+        setLockoutUntil(null);
         return true;
       }
       setError('Invalid PIN');
       return false;
     } catch (e) {
       const msg = e?.message || '';
-      if (msg.includes('Invalid PIN') || msg.includes('401')) {
-        setError('Invalid PIN');
+      // Parse lockout duration from 429 detail
+      const lockMatch = msg.match(/(\d+)\s*second/);
+      if (lockMatch) {
+        const seconds = parseInt(lockMatch[1], 10);
+        setLockoutUntil(new Date(Date.now() + seconds * 1000));
+        setError(`Too many attempts. Locked for ${seconds}s.`);
+      } else if (msg.includes('Invalid PIN') || msg.includes('401')) {
+        setError(msg.replace(/^.*?:\s*/, '')); // strip "Error: " prefix
       } else {
         setError('Connection error. Try again.');
       }
@@ -152,7 +161,7 @@ export function AuthProvider({ children }) {
     }
   }, [_storeTokens]);
 
-  // Setup new PIN
+  // Setup new PIN — returns reset_code that must be shown to user once
   const setupPin = useCallback(async (pin) => {
     setError(null);
     try {
@@ -163,6 +172,8 @@ export function AuthProvider({ children }) {
       });
       if (data?.success && data.access_token) {
         await _storeTokens(data.access_token, data.refresh_token);
+        // Store reset code temporarily so PinScreen can display it
+        if (data.reset_code) setPendingResetCode(data.reset_code);
         setIsAuthenticated(true);
         setNeedsSetup(false);
         return true;
@@ -174,6 +185,32 @@ export function AuthProvider({ children }) {
       return false;
     }
   }, [_storeTokens]);
+
+  // Reset PIN using the master reset code — wipes PIN record, returns to setup
+  const resetPin = useCallback(async (resetCode: string) => {
+    setError(null);
+    try {
+      const data = await apiFetch('/api/auth/reset-pin', {
+        method: 'POST',
+        body: JSON.stringify({ reset_code: resetCode.toUpperCase().trim() }),
+        _skipAuth: true,
+      });
+      if (data?.success) {
+        await _clearTokens();
+        setIsAuthenticated(false);
+        setNeedsSetup(true);
+        setLockoutUntil(null);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      const msg = e?.message || 'Invalid reset code';
+      setError(msg.replace(/^.*?:\s*/, ''));
+      return false;
+    }
+  }, [_clearTokens]);
+
+  const dismissResetCode = useCallback(() => setPendingResetCode(null), []);
 
   // Logout — clear tokens, lock screen
   const logout = useCallback(async () => {
@@ -189,8 +226,12 @@ export function AuthProvider({ children }) {
     isLoading,
     needsSetup,
     error,
+    lockoutUntil,
+    pendingResetCode,
     login,
     setupPin,
+    resetPin,
+    dismissResetCode,
     logout,
     getAccessToken,
     refreshAccessToken,
