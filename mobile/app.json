@@ -47,6 +47,13 @@
         {
           "microphonePermission": "Supercharg'd uses the microphone for the voice push-to-talk translation feature."
         }
+      ],
+      [
+        "@jamsch/expo-speech-recognition",
+        {
+          "microphonePermission": "Supercharg'd uses the microphone for voice recognition.",
+          "speechRecognitionPermission": "Supercharg'd uses speech recognition for on-device voice transcription."
+        }
       ]
     ],
     "ios": {
@@ -57,6 +64,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Supercharg'd uses the camera to scan VINs and driver's licenses.",
         "NSMicrophoneUsageDescription": "Supercharg'd uses the microphone for the voice push-to-talk translation feature.",
+        "NSSpeechRecognitionUsageDescription": "Supercharg'd uses speech recognition for on-device voice transcription.",
         "NSPhotoLibraryUsageDescription": "Supercharg'd uses the photo library to attach images.",
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
         "UIStatusBarStyle": "UIStatusBarStyleLightContent",
