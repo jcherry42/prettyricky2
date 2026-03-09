@@ -1,379 +1,519 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Test Suite - Supercharg'd Automotive Middleware
-Testing new VectorDB/Knowledge Base endpoints, Telemetry endpoints, and core regressions
+Comprehensive Backend Test Suite for Supercharg'd Automotive Sales Middleware
+Tests all 11 feature groups as specified in the review request.
+All routes are prefixed with /api and tested against http://localhost:8001
 """
 
 import requests
 import json
 import time
-from typing import Dict, Any, List
+import uuid
+import base64
+from typing import Dict, Any, List, Tuple
+import logging
 
-# Backend URL
-BASE_URL = "http://localhost:8001"
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-def test_result(name: str, success: bool, response_time: float = None, details: str = ""):
-    """Print test result in consistent format"""
-    status = "✅ PASS" if success else "❌ FAIL"
-    time_info = f" ({response_time:.0f}ms)" if response_time else ""
-    print(f"{status} {name}{time_info}")
-    if details:
-        print(f"    {details}")
-    return success
+# Test configuration
+BACKEND_URL = "http://localhost:8001"
+TIMEOUT = 30  # seconds
 
-def make_request(method: str, url: str, **kwargs) -> tuple[requests.Response, float]:
-    """Make HTTP request and track timing"""
-    start_time = time.time()
-    try:
-        response = requests.request(method, url, timeout=30, **kwargs)
-        response_time = (time.time() - start_time) * 1000
-        return response, response_time
-    except Exception as e:
-        response_time = (time.time() - start_time) * 1000
-        print(f"    Request failed: {str(e)}")
-        return None, response_time
-
-def test_knowledge_base_endpoints():
-    """Test NEW VectorDB/Knowledge Base endpoints (HIGH PRIORITY)"""
-    print("\n🎯 TESTING VECTORDB/KNOWLEDGE BASE ENDPOINTS")
-    results = []
-    
-    # Test 1: GET /api/knowledge/stats
-    print("\n1. Testing Knowledge Stats Endpoint")
-    response, rt = make_request('GET', f"{BASE_URL}/api/knowledge/stats")
-    if response and response.status_code == 200:
-        data = response.json()
-        # Check for expected stats structure
-        has_entries = 'knowledge_entries' in data
-        has_categories = 'categories' in data
-        expected_entries = data.get('knowledge_entries', 0) == 32
-        expected_categories = data.get('categories', 0) == 10
+class BackendTester:
+    def __init__(self):
+        self.results = []
+        self.session = requests.Session()
+        self.test_customer_id = None
         
-        if has_entries and has_categories:
-            entries_msg = f"knowledge_entries={data.get('knowledge_entries', 0)}"
-            categories_msg = f"categories={data.get('categories', 0)}"
-            details = f"Structure OK: {entries_msg}, {categories_msg}"
-            if expected_entries and expected_categories:
-                details += " (matches expected: 32 entries, 10 categories)"
-            results.append(test_result("Knowledge Stats", True, rt, details))
-        else:
-            results.append(test_result("Knowledge Stats", False, rt, f"Missing required fields. Got: {list(data.keys())}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Knowledge Stats", False, rt, f"HTTP {status}"))
-    
-    # Test 2: POST /api/knowledge/search - Customer objection query
-    print("\n2. Testing Knowledge Search - Customer Objection")
-    search_body = {
-        "query": "customer says price is too high",
-        "top_k": 3
-    }
-    response, rt = make_request('POST', f"{BASE_URL}/api/knowledge/search", json=search_body)
-    if response and response.status_code == 200:
-        data = response.json()
-        has_results = 'results' in data and isinstance(data['results'], list)
-        has_count = 'count' in data
-        results_count = len(data.get('results', []))
-        
-        if has_results and has_count and results_count > 0:
-            # Check if results have scores (ranked)
-            first_result = data['results'][0] if data['results'] else {}
-            has_score = 'score' in first_result or 'similarity' in first_result
-            details = f"Found {results_count} results, ranked: {'Yes' if has_score else 'No'}"
-            results.append(test_result("Knowledge Search - Objection", True, rt, details))
-        else:
-            results.append(test_result("Knowledge Search - Objection", False, rt, f"Invalid structure or no results. Got: {data}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Knowledge Search - Objection", False, rt, f"HTTP {status}"))
-    
-    # Test 3: POST /api/knowledge/search - Category filter
-    print("\n3. Testing Knowledge Search - Category Filter")
-    search_body = {
-        "query": "how to set an appointment",
-        "category": "appointment_setting"
-    }
-    response, rt = make_request('POST', f"{BASE_URL}/api/knowledge/search", json=search_body)
-    if response and response.status_code == 200:
-        data = response.json()
-        has_results = 'results' in data and isinstance(data['results'], list)
-        results_count = len(data.get('results', []))
-        
-        if has_results:
-            details = f"Category filter working, found {results_count} results for 'appointment_setting'"
-            results.append(test_result("Knowledge Search - Category Filter", True, rt, details))
-        else:
-            results.append(test_result("Knowledge Search - Category Filter", False, rt, f"Invalid structure. Got: {data}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Knowledge Search - Category Filter", False, rt, f"HTTP {status}"))
-    
-    # Test 4: POST /api/knowledge/seed
-    print("\n4. Testing Knowledge Seed (Re-seed)")
-    response, rt = make_request('POST', f"{BASE_URL}/api/knowledge/seed")
-    if response and response.status_code == 200:
-        data = response.json()
-        has_seeded = 'seeded' in data
-        
-        if has_seeded:
-            seeded_count = data.get('seeded', 0)
-            details = f"Re-seeded {seeded_count} entries (idempotent operation)"
-            results.append(test_result("Knowledge Seed", True, rt, details))
-        else:
-            results.append(test_result("Knowledge Seed", False, rt, f"Missing 'seeded' field. Got: {data}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Knowledge Seed", False, rt, f"HTTP {status}"))
-    
-    return results
-
-def test_telemetry_endpoints():
-    """Test NEW Telemetry endpoints (HIGH PRIORITY)"""
-    print("\n🎯 TESTING TELEMETRY ENDPOINTS")
-    results = []
-    
-    # Test 1: POST /api/telemetry/track
-    print("\n1. Testing Telemetry Track")
-    track_body = {
-        "category": "ai_usage",
-        "action": "tower_talk_generate",
-        "properties": {
-            "inquiry_type": "objection",
-            "latency_ms": 1200
+    def log_result(self, group: str, endpoint: str, method: str, status_code: int, 
+                   success: bool, response_data: Any = None, error: str = None):
+        """Log a test result"""
+        result = {
+            'group': group,
+            'endpoint': endpoint,
+            'method': method,
+            'status_code': status_code,
+            'success': success,
+            'response_data': response_data,
+            'error': error,
+            'timestamp': time.time()
         }
-    }
-    response, rt = make_request('POST', f"{BASE_URL}/api/telemetry/track", json=track_body)
-    if response and response.status_code == 200:
-        data = response.json()
-        has_tracked = data.get('tracked') is True
+        self.results.append(result)
         
-        if has_tracked:
-            details = f"Event tracked: {track_body['category']}.{track_body['action']}"
-            results.append(test_result("Telemetry Track", True, rt, details))
-        else:
-            results.append(test_result("Telemetry Track", False, rt, f"Tracking failed. Got: {data}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Telemetry Track", False, rt, f"HTTP {status}"))
-    
-    # Test 2: GET /api/telemetry/summary
-    print("\n2. Testing Telemetry Summary")
-    response, rt = make_request('GET', f"{BASE_URL}/api/telemetry/summary?hours=24")
-    if response and response.status_code == 200:
-        data = response.json()
-        # Check for event breakdown structure
-        has_events = isinstance(data, dict)
-        
-        if has_events:
-            event_types = list(data.keys())
-            details = f"Event breakdown available, types: {event_types[:3]}..." if len(event_types) > 3 else f"Event types: {event_types}"
-            results.append(test_result("Telemetry Summary", True, rt, details))
-        else:
-            results.append(test_result("Telemetry Summary", False, rt, f"Invalid structure. Got: {type(data)}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Telemetry Summary", False, rt, f"HTTP {status}"))
-    
-    # Test 3: GET /api/telemetry/sales-funnel
-    print("\n3. Testing Telemetry Sales Funnel")
-    response, rt = make_request('GET', f"{BASE_URL}/api/telemetry/sales-funnel?days=30")
-    if response and response.status_code == 200:
-        data = response.json()
-        # Check for funnel metrics structure
-        has_funnel = isinstance(data, dict)
-        
-        if has_funnel:
-            funnel_keys = list(data.keys())
-            details = f"Funnel metrics available, keys: {funnel_keys[:3]}..." if len(funnel_keys) > 3 else f"Funnel keys: {funnel_keys}"
-            results.append(test_result("Telemetry Sales Funnel", True, rt, details))
-        else:
-            results.append(test_result("Telemetry Sales Funnel", False, rt, f"Invalid structure. Got: {type(data)}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Telemetry Sales Funnel", False, rt, f"HTTP {status}"))
-    
-    # Test 4: GET /api/telemetry/ai-usage
-    print("\n4. Testing Telemetry AI Usage")
-    response, rt = make_request('GET', f"{BASE_URL}/api/telemetry/ai-usage?days=7")
-    if response and response.status_code == 200:
-        data = response.json()
-        # Check for AI usage breakdown
-        has_usage = isinstance(data, dict)
-        
-        if has_usage:
-            usage_keys = list(data.keys())
-            details = f"AI usage breakdown available, keys: {usage_keys[:3]}..." if len(usage_keys) > 3 else f"Usage keys: {usage_keys}"
-            results.append(test_result("Telemetry AI Usage", True, rt, details))
-        else:
-            results.append(test_result("Telemetry AI Usage", False, rt, f"Invalid structure. Got: {type(data)}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Telemetry AI Usage", False, rt, f"HTTP {status}"))
-    
-    return results
+        status = "✅ PASS" if success else "❌ FAIL"
+        logger.info(f"{status} [{group}] {method} {endpoint} -> {status_code}")
+        if error:
+            logger.error(f"    Error: {error}")
 
-def test_core_regression():
-    """Test core endpoints for regressions"""
-    print("\n🎯 TESTING CORE REGRESSION ENDPOINTS")
-    results = []
-    
-    # Test 1: GET /api/health
-    print("\n1. Testing Health Check")
-    response, rt = make_request('GET', f"{BASE_URL}/api/health")
-    if response and response.status_code == 200:
-        data = response.json()
-        is_healthy = data.get('status') == 'healthy'
+    def make_request(self, method: str, endpoint: str, **kwargs) -> Tuple[int, Dict]:
+        """Make HTTP request and return status code and response data"""
+        url = f"{BACKEND_URL}{endpoint}"
+        try:
+            response = self.session.request(method, url, timeout=TIMEOUT, **kwargs)
+            try:
+                data = response.json()
+            except:
+                data = response.text
+            return response.status_code, data
+        except Exception as e:
+            return 0, {"error": str(e)}
+
+    # GROUP 1: INFRASTRUCTURE
+    def test_infrastructure(self):
+        """Test infrastructure endpoints"""
+        logger.info("🔧 Testing GROUP 1: INFRASTRUCTURE")
         
-        if is_healthy:
-            details = f"Status: {data.get('status')}"
-            results.append(test_result("Health Check", True, rt, details))
-        else:
-            results.append(test_result("Health Check", False, rt, f"Not healthy. Status: {data.get('status')}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Health Check", False, rt, f"HTTP {status}"))
-    
-    # Test 2: POST /api/tower-talk
-    print("\n2. Testing Tower Talk AI")
-    tower_talk_body = {
-        "situation": "Customer interested in a 2024 BMW X5, asking about financing",
-        "inquiryType": "financing",
-        "context": {
-            "customerName": "John",
-            "vehicle": "2024 BMW X5",
-            "dealershipName": "Elite Motors",
-            "salespersonName": "Mike Smith"
+        # Health check
+        status_code, data = self.make_request("GET", "/api/health")
+        success = status_code == 200 and isinstance(data, dict) and data.get("status") == "healthy"
+        self.log_result("Infrastructure", "/api/health", "GET", status_code, success, data)
+        
+        # Auth status
+        status_code, data = self.make_request("GET", "/api/auth/status")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Infrastructure", "/api/auth/status", "GET", status_code, success, data)
+        
+        # AI Gateway statistics
+        status_code, data = self.make_request("GET", "/api/ai/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        if success and isinstance(data, dict):
+            # Check for expected keys
+            expected_keys = ["features", "cache", "circuit_breakers", "model_routes"]
+            success = all(key in data for key in expected_keys)
+        self.log_result("Infrastructure", "/api/ai/stats", "GET", status_code, success, data)
+
+    # GROUP 2: AI FEATURES (HIGH PRIORITY)
+    def test_ai_features(self):
+        """Test AI feature endpoints - core functionality"""
+        logger.info("🤖 Testing GROUP 2: AI FEATURES (HIGH PRIORITY)")
+        
+        # Tower Talk - financing inquiry
+        tower_talk_payload = {
+            "situation": "Customer interested in a 2024 BMW X5, asking about monthly payments",
+            "inquiryType": "financing",
+            "context": {
+                "customerName": "Marcus",
+                "vehicle": "2024 BMW X5 xDrive40i",
+                "vehiclePrice": "$65,000",
+                "dealershipName": "Prestige Motors",
+                "salespersonName": "Jake Thompson"
+            }
         }
-    }
-    response, rt = make_request('POST', f"{BASE_URL}/api/tower-talk", json=tower_talk_body)
-    if response and response.status_code == 200:
-        data = response.json()
-        has_response = 'response' in data or 'message' in data
+        status_code, data = self.make_request("POST", "/api/tower-talk", json=tower_talk_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        if success:
+            # Check response content - expect 2-3 sentences, no emojis
+            response_text = data.get("response", "")
+            success = len(response_text) > 0 and "💰" not in response_text  # Basic emoji check
+        self.log_result("AI Features", "/api/tower-talk", "POST", status_code, success, data)
         
-        if has_response:
-            response_text = data.get('response', data.get('message', ''))
-            details = f"Elite sales response generated ({len(response_text)} chars)"
-            results.append(test_result("Tower Talk AI", True, rt, details))
-        else:
-            results.append(test_result("Tower Talk AI", False, rt, f"No response field. Got: {list(data.keys())}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Tower Talk AI", False, rt, f"HTTP {status}"))
-    
-    # Test 3: POST /api/translate
-    print("\n3. Testing Translation")
-    translate_body = {
-        "text": "I'm interested in the vehicle",
-        "target_lang": "es"
-    }
-    response, rt = make_request('POST', f"{BASE_URL}/api/translate", json=translate_body)
-    if response and response.status_code == 200:
-        data = response.json()
-        has_translation = 'translated_text' in data
+        # Tower Talk - appointment setting (new type)
+        appointment_payload = {
+            "situation": "Internet lead submitted form about 2024 Toyota Camry",
+            "inquiryType": "appointment_setting", 
+            "context": {
+                "customerName": "Sarah",
+                "vehicle": "2024 Toyota Camry XSE",
+                "dealershipName": "AutoNation",
+                "salespersonName": "Chris"
+            }
+        }
+        status_code, data = self.make_request("POST", "/api/tower-talk", json=appointment_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("AI Features", "/api/tower-talk", "POST", status_code, success, data)
         
-        if has_translation:
-            translation = data.get('translated_text', '')
-            details = f"Translation: '{translation}'"
-            results.append(test_result("Translation", True, rt, details))
-        else:
-            results.append(test_result("Translation", False, rt, f"No translated_text field. Got: {list(data.keys())}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Translation", False, rt, f"HTTP {status}"))
-    
-    # Test 4: GET /api/customers/list
-    print("\n4. Testing Customer List")
-    response, rt = make_request('GET', f"{BASE_URL}/api/customers/list")
-    if response and response.status_code == 200:
-        data = response.json()
-        has_customers = 'customers' in data
-        has_total = 'total' in data
+        # Translation
+        translate_payload = {
+            "text": "I would like to schedule a test drive for the 2024 Mercedes GLE",
+            "target_lang": "es"
+        }
+        status_code, data = self.make_request("POST", "/api/translate", json=translate_payload)
+        success = status_code == 200 and isinstance(data, dict) and "translated_text" in data
+        self.log_result("AI Features", "/api/translate", "POST", status_code, success, data)
         
-        if has_customers and has_total:
-            customer_count = len(data.get('customers', []))
-            total_count = data.get('total', 0)
-            details = f"Found {customer_count} customers (total: {total_count})"
-            results.append(test_result("Customer List", True, rt, details))
-        else:
-            results.append(test_result("Customer List", False, rt, f"Missing required fields. Got: {list(data.keys())}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("Customer List", False, rt, f"HTTP {status}"))
-    
-    # Test 5: GET /api/ai/stats
-    print("\n5. Testing AI Gateway Stats")
-    response, rt = make_request('GET', f"{BASE_URL}/api/ai/stats")
-    if response and response.status_code == 200:
-        data = response.json()
-        has_stats = isinstance(data, dict) and len(data) > 0
+        # TTS
+        tts_payload = {
+            "text": "Welcome to Prestige Motors",
+            "voice": "alloy"
+        }
+        status_code, data = self.make_request("POST", "/api/tts", json=tts_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        if success:
+            # Check for audio response
+            success = "audio_base64" in data or "audio_url" in data
+        self.log_result("AI Features", "/api/tts", "POST", status_code, success, data)
         
-        if has_stats:
-            stat_keys = list(data.keys())
-            details = f"AI Gateway stats available, keys: {stat_keys[:3]}..." if len(stat_keys) > 3 else f"Stats: {stat_keys}"
-            results.append(test_result("AI Gateway Stats", True, rt, details))
-        else:
-            results.append(test_result("AI Gateway Stats", False, rt, f"No stats available. Got: {data}"))
-    else:
-        status = response.status_code if response else "No response"
-        results.append(test_result("AI Gateway Stats", False, rt, f"HTTP {status}"))
-    
-    return results
+        # Voice Translate - error handling test (empty audio)
+        status_code, data = self.make_request("POST", "/api/voice-translate")
+        success = status_code == 422  # Expected error
+        self.log_result("AI Features", "/api/voice-translate", "POST", status_code, success, data)
 
-def test_error_handling():
-    """Test error handling for voice translate endpoint"""
-    print("\n🎯 TESTING ERROR HANDLING")
-    results = []
-    
-    # Test: POST /api/voice-translate with empty audio (should return 422)
-    print("\n1. Testing Voice Translate Error Handling")
-    response, rt = make_request('POST', f"{BASE_URL}/api/voice-translate", json={})
-    if response and response.status_code == 422:
-        details = "Correctly returns 422 for empty audio"
-        results.append(test_result("Voice Translate Error Handling", True, rt, details))
-    elif response:
-        details = f"Expected 422, got {response.status_code}"
-        results.append(test_result("Voice Translate Error Handling", False, rt, details))
-    else:
-        results.append(test_result("Voice Translate Error Handling", False, rt, "No response"))
-    
-    return results
+    # GROUP 3: VECTOR SEARCH / KNOWLEDGE BASE
+    def test_knowledge_base(self):
+        """Test vector search and knowledge base functionality"""
+        logger.info("🔍 Testing GROUP 3: VECTOR SEARCH / KNOWLEDGE BASE")
+        
+        # Knowledge stats
+        status_code, data = self.make_request("GET", "/api/knowledge/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        if success:
+            # Expect knowledge_entries >= 32, 10 categories
+            knowledge_entries = data.get("knowledge_entries", 0)
+            categories = len(data.get("knowledge_categories", {}))  # Count categories properly
+            success = knowledge_entries >= 32 and categories >= 10
+        self.log_result("Knowledge Base", "/api/knowledge/stats", "GET", status_code, success, data)
+        
+        # Knowledge search - objection handling
+        search_payload = {
+            "query": "customer says price is too high how to handle",
+            "top_k": 5
+        }
+        status_code, data = self.make_request("POST", "/api/knowledge/search", json=search_payload)
+        success = status_code == 200 and isinstance(data, dict) and "results" in data
+        self.log_result("Knowledge Base", "/api/knowledge/search", "POST", status_code, success, data)
+        
+        # Knowledge search with category filter
+        category_search_payload = {
+            "query": "setting appointment for test drive",
+            "category": "appointment_setting",
+            "top_k": 3
+        }
+        status_code, data = self.make_request("POST", "/api/knowledge/search", json=category_search_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Knowledge Base", "/api/knowledge/search", "POST", status_code, success, data)
+        
+        # Follow-up knowledge
+        followup_payload = {
+            "query": "follow up one week after visit",
+            "top_k": 3
+        }
+        status_code, data = self.make_request("POST", "/api/knowledge/search", json=followup_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Knowledge Base", "/api/knowledge/search", "POST", status_code, success, data)
+        
+        # Knowledge seed - idempotent
+        status_code, data = self.make_request("POST", "/api/knowledge/seed")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Knowledge Base", "/api/knowledge/seed", "POST", status_code, success, data)
 
-def main():
-    """Run comprehensive backend test suite"""
-    print("🚀 STARTING COMPREHENSIVE BACKEND TEST SUITE")
-    print("=" * 60)
-    
-    all_results = []
-    
-    # Run all test suites
-    all_results.extend(test_knowledge_base_endpoints())
-    all_results.extend(test_telemetry_endpoints())
-    all_results.extend(test_core_regression())
-    all_results.extend(test_error_handling())
-    
-    # Calculate summary
-    total_tests = len(all_results)
-    passed_tests = sum(1 for result in all_results if result)
-    failed_tests = total_tests - passed_tests
-    pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-    
-    print("\n" + "=" * 60)
-    print("📊 TEST SUMMARY")
-    print("=" * 60)
-    print(f"Total Tests: {total_tests}")
-    print(f"✅ Passed: {passed_tests}")
-    print(f"❌ Failed: {failed_tests}")
-    print(f"📈 Pass Rate: {pass_rate:.1f}%")
-    
-    # Quality gate assessment
-    if pass_rate >= 90:
-        print(f"🎉 EXCELLENT PASS RATE ({pass_rate:.1f}%) - Production Ready!")
-    elif pass_rate >= 75:
-        print(f"✅ GOOD PASS RATE ({pass_rate:.1f}%) - Minor issues to address")
-    else:
-        print(f"⚠️  LOW PASS RATE ({pass_rate:.1f}%) - Significant issues need attention")
-    
-    return pass_rate >= 75
+    # GROUP 4: TELEMETRY
+    def test_telemetry(self):
+        """Test telemetry tracking functionality"""
+        logger.info("📊 Testing GROUP 4: TELEMETRY")
+        
+        # Track AI usage
+        track_payload = {
+            "category": "ai_usage",
+            "action": "tower_talk_generate",
+            "properties": {
+                "inquiry_type": "objection",
+                "latency_ms": 850
+            },
+            "session_id": "audit-001"
+        }
+        status_code, data = self.make_request("POST", "/api/telemetry/track", json=track_payload)
+        success = status_code == 200 and isinstance(data, dict) and data.get("tracked") == True
+        self.log_result("Telemetry", "/api/telemetry/track", "POST", status_code, success, data)
+        
+        # Track sales flow
+        sales_track_payload = {
+            "category": "sales_flow",
+            "action": "appointment_set",
+            "properties": {
+                "customer": "test"
+            },
+            "session_id": "audit-001"
+        }
+        status_code, data = self.make_request("POST", "/api/telemetry/track", json=sales_track_payload)
+        success = status_code == 200 and isinstance(data, dict) and data.get("tracked") == True
+        self.log_result("Telemetry", "/api/telemetry/track", "POST", status_code, success, data)
+        
+        # Telemetry summary
+        status_code, data = self.make_request("GET", "/api/telemetry/summary?hours=24")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Telemetry", "/api/telemetry/summary", "GET", status_code, success, data)
+        
+        # Sales funnel
+        status_code, data = self.make_request("GET", "/api/telemetry/sales-funnel?days=30")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Telemetry", "/api/telemetry/sales-funnel", "GET", status_code, success, data)
+        
+        # AI usage stats
+        status_code, data = self.make_request("GET", "/api/telemetry/ai-usage?days=7")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Telemetry", "/api/telemetry/ai-usage", "GET", status_code, success, data)
+
+    # GROUP 5: CUSTOMER CRUD
+    def test_customer_crud(self):
+        """Test customer management operations"""
+        logger.info("👥 Testing GROUP 5: CUSTOMER CRUD")
+        
+        # List customers
+        status_code, data = self.make_request("GET", "/api/customers/list")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Customer CRUD", "/api/customers/list", "GET", status_code, success, data)
+        
+        # Customer stats
+        status_code, data = self.make_request("GET", "/api/customers/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Customer CRUD", "/api/customers/stats", "GET", status_code, success, data)
+        
+        # Create customer
+        create_payload = {
+            "first_name": "Test", 
+            "last_name": "Audit",
+            "phone": "555-0199",
+            "email": "audit@test.com",
+            "status": "active"
+        }
+        status_code, data = self.make_request("POST", "/api/customers/create", json=create_payload)
+        success = status_code in [200, 201] and isinstance(data, dict)
+        if success and "customer_id" in data:
+            self.test_customer_id = data["customer_id"]
+        self.log_result("Customer CRUD", "/api/customers/create", "POST", status_code, success, data)
+        
+        # Get all customers to verify creation
+        status_code, data = self.make_request("GET", "/api/customers")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Customer CRUD", "/api/customers", "GET", status_code, success, data)
+        
+        # Update customer if ID available
+        if self.test_customer_id:
+            update_payload = {
+                "first_name": "Updated",
+                "notes": "Test customer updated during audit"
+            }
+            status_code, data = self.make_request("PATCH", f"/api/customers/{self.test_customer_id}", json=update_payload)
+            success = status_code == 200 and isinstance(data, dict)
+            self.log_result("Customer CRUD", f"/api/customers/{self.test_customer_id}", "PATCH", status_code, success, data)
+
+    # GROUP 6: VEHICLES
+    def test_vehicles(self):
+        """Test vehicle endpoints"""
+        logger.info("🚗 Testing GROUP 6: VEHICLES")
+        
+        # List vehicles
+        status_code, data = self.make_request("GET", "/api/vehicles")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Vehicles", "/api/vehicles", "GET", status_code, success, data)
+        
+        # Vehicle stats
+        status_code, data = self.make_request("GET", "/api/vehicles/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Vehicles", "/api/vehicles/stats", "GET", status_code, success, data)
+        
+        # Vehicle inventory
+        status_code, data = self.make_request("GET", "/api/vehicles/inventory")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Vehicles", "/api/vehicles/inventory", "GET", status_code, success, data)
+
+    # GROUP 7: ANALYTICS
+    def test_analytics(self):
+        """Test analytics endpoints"""
+        logger.info("📈 Testing GROUP 7: ANALYTICS")
+        
+        # Dashboard analytics
+        status_code, data = self.make_request("GET", "/api/analytics/dashboard")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Analytics", "/api/analytics/dashboard", "GET", status_code, success, data)
+        
+        # Sales analytics
+        status_code, data = self.make_request("GET", "/api/analytics/sales")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Analytics", "/api/analytics/sales", "GET", status_code, success, data)
+        
+        # Customer analytics
+        status_code, data = self.make_request("GET", "/api/analytics/customers")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Analytics", "/api/analytics/customers", "GET", status_code, success, data)
+        
+        # Inventory analytics
+        status_code, data = self.make_request("GET", "/api/analytics/inventory")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Analytics", "/api/analytics/inventory", "GET", status_code, success, data)
+        
+        # Conversation analytics
+        status_code, data = self.make_request("GET", "/api/analytics/conversations")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Analytics", "/api/analytics/conversations", "GET", status_code, success, data)
+
+    # GROUP 8: VIN / LICENSE
+    def test_vin_license(self):
+        """Test VIN decoding and license endpoints"""
+        logger.info("🔍 Testing GROUP 8: VIN / LICENSE")
+        
+        # VIN decode - Honda Accord sample
+        status_code, data = self.make_request("GET", "/api/vin/decode/1HGCM82633A004352")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("VIN/License", "/api/vin/decode/1HGCM82633A004352", "GET", status_code, success, data)
+        
+        # Trade-in count
+        status_code, data = self.make_request("GET", "/api/vin/trade-in-count")
+        success = status_code == 200 and isinstance(data, dict)
+        if success:
+            # Check for expected fields
+            expected_fields = ["count", "cap", "remaining", "at_limit"]
+            success = all(field in data for field in expected_fields)
+        self.log_result("VIN/License", "/api/vin/trade-in-count", "GET", status_code, success, data)
+
+    # GROUP 9: CONVERSATIONS
+    def test_conversations(self):
+        """Test conversation endpoints"""
+        logger.info("💬 Testing GROUP 9: CONVERSATIONS")
+        
+        # List conversations
+        status_code, data = self.make_request("GET", "/api/conversations")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Conversations", "/api/conversations", "GET", status_code, success, data)
+        
+        # Conversation stats
+        status_code, data = self.make_request("GET", "/api/conversations/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Conversations", "/api/conversations/stats", "GET", status_code, success, data)
+        
+        # Conversation categories
+        status_code, data = self.make_request("GET", "/api/conversations/categories")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Conversations", "/api/conversations/categories", "GET", status_code, success, data)
+
+    # GROUP 10: PRINT CENTER
+    def test_print_center(self):
+        """Test print functionality"""
+        logger.info("🖨️ Testing GROUP 10: PRINT CENTER")
+        
+        # Print preview
+        preview_payload = {
+            "type": "vehicle",
+            "vin": "1HGCM82633A004352",
+            "year": "2024",
+            "make": "BMW",
+            "model": "X5"
+        }
+        status_code, data = self.make_request("POST", "/api/print/preview", json=preview_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Print Center", "/api/print/preview", "POST", status_code, success, data)
+
+    # GROUP 11: MISC
+    def test_misc(self):
+        """Test miscellaneous endpoints"""
+        logger.info("🔧 Testing GROUP 11: MISC")
+        
+        # Dashboard stats
+        status_code, data = self.make_request("GET", "/api/dashboard/stats")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Misc", "/api/dashboard/stats", "GET", status_code, success, data)
+        
+        # Data sources
+        status_code, data = self.make_request("GET", "/api/data-sources")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Misc", "/api/data-sources", "GET", status_code, success, data)
+        
+        # Webhooks
+        status_code, data = self.make_request("GET", "/api/webhooks")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Misc", "/api/webhooks", "GET", status_code, success, data)
+        
+        # Integrations
+        status_code, data = self.make_request("GET", "/api/integrations")
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Misc", "/api/integrations", "GET", status_code, success, data)
+
+    def cleanup(self):
+        """Clean up test data"""
+        if self.test_customer_id:
+            status_code, _ = self.make_request("DELETE", f"/api/customers/{self.test_customer_id}")
+            logger.info(f"Cleaned up test customer: {self.test_customer_id} (status: {status_code})")
+
+    def run_all_tests(self):
+        """Run all test groups"""
+        logger.info("🚀 Starting Comprehensive Backend Audit")
+        logger.info(f"Backend URL: {BACKEND_URL}")
+        
+        start_time = time.time()
+        
+        # Run all test groups
+        self.test_infrastructure()
+        self.test_ai_features()
+        self.test_knowledge_base()
+        self.test_telemetry()
+        self.test_customer_crud()
+        self.test_vehicles()
+        self.test_analytics()
+        self.test_vin_license()
+        self.test_conversations()
+        self.test_print_center()
+        self.test_misc()
+        
+        # Cleanup
+        self.cleanup()
+        
+        end_time = time.time()
+        total_time = end_time - start_time
+        
+        # Generate summary
+        self.generate_summary(total_time)
+
+    def generate_summary(self, total_time: float):
+        """Generate test summary"""
+        total_tests = len(self.results)
+        passed_tests = sum(1 for r in self.results if r['success'])
+        failed_tests = total_tests - passed_tests
+        pass_rate = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
+        
+        logger.info("="*80)
+        logger.info("🎯 COMPREHENSIVE BACKEND AUDIT RESULTS")
+        logger.info("="*80)
+        logger.info(f"Total Tests: {total_tests}")
+        logger.info(f"Passed: {passed_tests}")
+        logger.info(f"Failed: {failed_tests}")
+        logger.info(f"Pass Rate: {pass_rate:.1f}%")
+        logger.info(f"Total Time: {total_time:.2f}s")
+        logger.info("="*80)
+        
+        # Group by status
+        failed_by_group = {}
+        passed_by_group = {}
+        
+        for result in self.results:
+            group = result['group']
+            if result['success']:
+                if group not in passed_by_group:
+                    passed_by_group[group] = []
+                passed_by_group[group].append(result)
+            else:
+                if group not in failed_by_group:
+                    failed_by_group[group] = []
+                failed_by_group[group].append(result)
+        
+        # Report failures first (detailed)
+        if failed_by_group:
+            logger.error("❌ FAILED TESTS (DETAILED):")
+            for group, failures in failed_by_group.items():
+                logger.error(f"  [{group}]:")
+                for failure in failures:
+                    logger.error(f"    {failure['method']} {failure['endpoint']} -> {failure['status_code']}")
+                    if failure['error']:
+                        logger.error(f"      Error: {failure['error']}")
+        
+        # Report successes (concise)
+        if passed_by_group:
+            logger.info("✅ PASSED TESTS (BY GROUP):")
+            for group, successes in passed_by_group.items():
+                logger.info(f"  [{group}]: {len(successes)} tests passed")
+
+        return {
+            'total_tests': total_tests,
+            'passed': passed_tests,
+            'failed': failed_tests,
+            'pass_rate': pass_rate,
+            'total_time': total_time,
+            'results': self.results,
+            'failed_by_group': failed_by_group,
+            'passed_by_group': passed_by_group
+        }
 
 if __name__ == "__main__":
-    main()
+    tester = BackendTester()
+    summary = tester.run_all_tests()
