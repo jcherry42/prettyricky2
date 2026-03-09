@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timedelta, timezone
+import os
 import uuid
 import secrets
 import logging
@@ -55,6 +56,10 @@ class ChangePinRequest(BaseModel):
 class ResetPinRequest(BaseModel):
     reset_code: str = Field(..., min_length=6, max_length=20,
                             description="The one-time Master Reset Code shown at PIN setup")
+
+class EmergencyResetRequest(BaseModel):
+    override_code: str = Field(..., min_length=8, max_length=32,
+                               description="The server-side Emergency Override Code from the backend .env")
 
 
 # --- Helpers ---
@@ -232,6 +237,44 @@ async def reset_pin(request: ResetPinRequest):
     return {
         "success": True,
         "message": "PIN has been reset. Please set up a new PIN.",
+        "needs_setup": True,
+    }
+
+
+@router.post("/auth/emergency-reset")
+async def emergency_reset(request: EmergencyResetRequest):
+    """
+    Last-resort PIN wipe using the server-side Emergency Override Code.
+    Use this ONLY when both the PIN and the Master Reset Code are lost.
+
+    The override code lives in the backend .env as EMERGENCY_OVERRIDE_CODE.
+    It never rotates and can always be retrieved by someone with server access
+    or by contacting Supercharg'd support.
+    """
+    override_code = os.environ.get("EMERGENCY_OVERRIDE_CODE", "").strip()
+    if not override_code:
+        raise HTTPException(
+            status_code=503,
+            detail="Emergency override not configured on this server. Contact your administrator.",
+        )
+
+    submitted = request.override_code.upper().strip()
+
+    # Use secrets.compare_digest to prevent timing attacks
+    if not secrets.compare_digest(submitted, override_code.upper()):
+        logger.warning("Failed emergency PIN override attempt")
+        raise HTTPException(status_code=401, detail="Invalid emergency override code.")
+
+    record = await _get_pin_record()
+    if record:
+        await _db.auth.delete_one({"type": "pin"})
+        logger.warning(f"PIN emergency-wiped for user {record.get('user_id')} via override code")
+    else:
+        logger.info("Emergency reset called but no PIN was set — no-op")
+
+    return {
+        "success": True,
+        "message": "PIN has been emergency-reset. Please set up a new PIN.",
         "needs_setup": True,
     }
 

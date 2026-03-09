@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../lib/api';
 
 const { width: SW } = Dimensions.get('window');
 const PIN_LENGTH = 5;
@@ -53,10 +54,14 @@ export function PinScreen() {
   const [lockSecondsLeft, setLockSecondsLeft] = useState(0);
 
   // Forgot PIN modal state
-  const [showForgot, setShowForgot]     = useState(false);
-  const [resetCode, setResetCode]       = useState('');
-  const [resetBusy, setResetBusy]       = useState(false);
-  const [resetError, setResetError]     = useState('');
+  const [showForgot, setShowForgot]         = useState(false);
+  const [resetCode, setResetCode]           = useState('');
+  const [resetBusy, setResetBusy]           = useState(false);
+  const [resetError, setResetError]         = useState('');
+  const [showEmergency, setShowEmergency]   = useState(false);
+  const [overrideCode, setOverrideCode]     = useState('');
+  const [overrideBusy, setOverrideBusy]     = useState(false);
+  const [overrideError, setOverrideError]   = useState('');
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const dotAnims  = useRef(Array.from({ length: PIN_LENGTH }, () => new Animated.Value(0))).current;
@@ -176,6 +181,31 @@ export function PinScreen() {
       setResetError('Invalid reset code. Check the code you saved and try again.');
     }
   }, [resetCode, resetPin]);
+
+
+  // Emergency override (lost both PIN and reset code)
+  const handleEmergencyReset = useCallback(async () => {
+    if (!overrideCode.trim()) { setOverrideError('Enter the emergency override code.'); return; }
+    setOverrideBusy(true);
+    setOverrideError('');
+    try {
+      const data = await apiFetch('/api/auth/emergency-reset', {
+        method: 'POST',
+        body: JSON.stringify({ override_code: overrideCode.toUpperCase().trim() }),
+        _skipAuth: true,
+      });
+      if (data?.success) {
+        setShowEmergency(false);
+        setShowForgot(false);
+        setOverrideCode('');
+      }
+    } catch (e: any) {
+      const msg = (e?.message || '').replace(/^.*?:\s*/, '');
+      setOverrideError(msg || 'Invalid override code.');
+    }
+    setOverrideBusy(false);
+  }, [overrideCode]);
+
 
   // ── Derive status / error display ─────────────────────
   const displayError = isLocked
@@ -315,6 +345,78 @@ export function PinScreen() {
                 </Text>
               </Pressable>
             </View>
+
+            {/* Lost reset code — tertiary escape hatch */}
+            <Pressable
+              onPress={() => { setShowEmergency(true); setOverrideError(''); setOverrideCode(''); }}
+              style={({ pressed }) => [styles.lostCodeBtn, pressed && { opacity: 0.7 }]}
+            >
+              <Text style={styles.lostCodeText}>Lost your reset code?</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ── Emergency Override modal (last resort) ── */}
+      <Modal
+        visible={showEmergency}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEmergency(false)}
+      >
+        <Pressable style={styles.overlay} onPress={() => setShowEmergency(false)}>
+          <Pressable style={[styles.forgotCard, { borderColor: 'rgba(255,75,75,0.25)' }]} onPress={() => {}}>
+            <View style={styles.forgotHeader}>
+              <Ionicons name="nuclear-outline" size={26} color="#FF4B4B" />
+              <Text style={[styles.forgotTitle, { color: '#FF4B4B' }]}>Emergency Override</Text>
+            </View>
+
+            <Text style={styles.forgotDesc}>
+              This is the last resort. The Emergency Override Code is stored in your server&apos;s{' '}
+              <Text style={{ color: colors.gold, fontWeight: '800' }}>.env</Text> file as{' '}
+              <Text style={{ color: colors.gold, fontWeight: '800' }}>EMERGENCY_OVERRIDE_CODE</Text>.
+              {'\n\n'}
+              Retrieve it by logging into your server, or contact{' '}
+              <Text style={{ color: colors.gold }}>Supercharg&apos;d support</Text> if you need help accessing it.
+            </Text>
+
+            <TextInput
+              value={overrideCode}
+              onChangeText={(t) => { setOverrideCode(t.toUpperCase()); setOverrideError(''); }}
+              placeholder="16-char override code"
+              placeholderTextColor={colors.textMute}
+              style={[styles.resetInput, { borderColor: 'rgba(255,75,75,0.30)', letterSpacing: 3 }]}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={20}
+              returnKeyType="done"
+              onSubmitEditing={handleEmergencyReset}
+            />
+
+            {overrideError ? <Text style={styles.resetError}>{overrideError}</Text> : null}
+
+            <View style={styles.resetBtnRow}>
+              <Pressable
+                onPress={() => setShowEmergency(false)}
+                style={({ pressed }) => [styles.resetBtn, styles.resetBtnCancel, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={styles.resetBtnCancelText}>BACK</Text>
+              </Pressable>
+              <Pressable
+                onPress={handleEmergencyReset}
+                disabled={overrideBusy || !overrideCode.trim()}
+                style={({ pressed }) => [
+                  styles.resetBtn,
+                  { borderColor: '#FF4B4B', backgroundColor: 'rgba(255,75,75,0.12)' },
+                  (overrideBusy || !overrideCode.trim()) && { opacity: 0.5 },
+                  pressed && { opacity: 0.8 },
+                ]}
+              >
+                <Text style={styles.resetBtnConfirmText}>
+                  {overrideBusy ? 'VERIFYING...' : 'OVERRIDE & RESET'}
+                </Text>
+              </Pressable>
+            </View>
           </Pressable>
         </Pressable>
       </Modal>
@@ -443,6 +545,14 @@ const styles = StyleSheet.create({
   resetBtnCancelText:  { color: colors.textMute, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
   resetBtnConfirm:     { borderColor: '#FF4B4B', backgroundColor: 'rgba(255,75,75,0.12)' },
   resetBtnConfirmText: { color: '#FF4B4B', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
+
+  lostCodeBtn: { alignSelf: 'center', marginTop: 18 },
+  lostCodeText: {
+    fontSize: 12,
+    color: 'rgba(255,75,75,0.55)',
+    textDecorationLine: 'underline',
+    textDecorationColor: 'rgba(255,75,75,0.3)',
+  },
 
   // ── Reset code reveal card ──
   resetCodeCard: {
