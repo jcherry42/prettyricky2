@@ -241,42 +241,32 @@ async def reset_pin(request: ResetPinRequest):
     }
 
 
-@router.post("/auth/emergency-reset")
-async def emergency_reset(request: EmergencyResetRequest):
+@router.post("/auth/factory-reset")
+async def factory_reset():
     """
-    Last-resort PIN wipe using the server-side Emergency Override Code.
-    Use this ONLY when both the PIN and the Master Reset Code are lost.
-
-    The override code lives in the backend .env as EMERGENCY_OVERRIDE_CODE.
-    It never rotates and can always be retrieved by someone with server access
-    or by contacting Supercharg'd support.
+    Tier-3 recovery: wipe the PIN record entirely.
+    No credentials required — possession of the device is the implicit auth.
+    The frontend enforces a typed confirmation before calling this.
+    Customers, vehicles, and all business data are preserved.
     """
-    override_code = os.environ.get("EMERGENCY_OVERRIDE_CODE", "").strip()
-    if not override_code:
-        raise HTTPException(
-            status_code=503,
-            detail="Emergency override not configured on this server. Contact your administrator.",
-        )
-
-    submitted = request.override_code.upper().strip()
-
-    # Use secrets.compare_digest to prevent timing attacks
-    if not secrets.compare_digest(submitted, override_code.upper()):
-        logger.warning("Failed emergency PIN override attempt")
-        raise HTTPException(status_code=401, detail="Invalid emergency override code.")
-
     record = await _get_pin_record()
     if record:
         await _db.auth.delete_one({"type": "pin"})
-        logger.warning(f"PIN emergency-wiped for user {record.get('user_id')} via override code")
-    else:
-        logger.info("Emergency reset called but no PIN was set — no-op")
-
+        logger.warning(f"Factory reset — PIN wiped for user {record.get('user_id')}. All business data preserved.")
     return {
         "success": True,
-        "message": "PIN has been emergency-reset. Please set up a new PIN.",
+        "message": "App has been reset. Please set up a new PIN.",
         "needs_setup": True,
     }
+
+
+@router.post("/auth/emergency-reset")
+async def emergency_reset(request: EmergencyResetRequest):
+    """Deprecated — replaced by /auth/factory-reset. Kept for backwards compatibility."""
+    raise HTTPException(
+        status_code=410,
+        detail="Emergency override removed. Use /auth/factory-reset instead.",
+    )
 
 
 @router.post("/auth/refresh")

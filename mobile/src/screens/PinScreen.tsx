@@ -54,14 +54,15 @@ export function PinScreen() {
   const [lockSecondsLeft, setLockSecondsLeft] = useState(0);
 
   // Forgot PIN modal state
-  const [showForgot, setShowForgot]         = useState(false);
-  const [resetCode, setResetCode]           = useState('');
-  const [resetBusy, setResetBusy]           = useState(false);
-  const [resetError, setResetError]         = useState('');
-  const [showEmergency, setShowEmergency]   = useState(false);
-  const [overrideCode, setOverrideCode]     = useState('');
-  const [overrideBusy, setOverrideBusy]     = useState(false);
-  const [overrideError, setOverrideError]   = useState('');
+  const [showForgot, setShowForgot]       = useState(false);
+  const [resetCode, setResetCode]         = useState('');
+  const [resetBusy, setResetBusy]         = useState(false);
+  const [resetError, setResetError]       = useState('');
+  // Factory wipe state
+  const [showWipe, setShowWipe]           = useState(false);
+  const [wipeConfirmText, setWipeConfirmText] = useState('');
+  const [wipeBusy, setWipeBusy]           = useState(false);
+  const [wipeError, setWipeError]         = useState('');
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const dotAnims  = useRef(Array.from({ length: PIN_LENGTH }, () => new Animated.Value(0))).current;
@@ -183,28 +184,37 @@ export function PinScreen() {
   }, [resetCode, resetPin]);
 
 
-  // Emergency override (lost both PIN and reset code)
-  const handleEmergencyReset = useCallback(async () => {
-    if (!overrideCode.trim()) { setOverrideError('Enter the emergency override code.'); return; }
-    setOverrideBusy(true);
-    setOverrideError('');
-    try {
-      const data = await apiFetch('/api/auth/emergency-reset', {
-        method: 'POST',
-        body: JSON.stringify({ override_code: overrideCode.toUpperCase().trim() }),
-        _skipAuth: true,
-      });
-      if (data?.success) {
-        setShowEmergency(false);
-        setShowForgot(false);
-        setOverrideCode('');
-      }
-    } catch (e: any) {
-      const msg = (e?.message || '').replace(/^.*?:\s*/, '');
-      setOverrideError(msg || 'Invalid override code.');
+  // Factory wipe — clears PIN from server + all local app state
+  const handleWipe = useCallback(async () => {
+    if (wipeConfirmText.trim().toUpperCase() !== 'RESET') {
+      setWipeError("Type RESET (all caps) to confirm.");
+      return;
     }
-    setOverrideBusy(false);
-  }, [overrideCode]);
+    setWipeBusy(true);
+    setWipeError('');
+    try {
+      // 1. Wipe PIN record on backend
+      await apiFetch('/api/auth/factory-reset', { method: 'POST', _skipAuth: true });
+    } catch {
+      // Even if the server call fails, proceed with local wipe
+    }
+    try {
+      // 2. Clear all local storage (tokens, backend URL override, cached settings)
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      await AsyncStorage.clear();
+    } catch { /* ignore */ }
+    try {
+      // 3. Clear secure store (auth tokens)
+      const SecureStore = require('expo-secure-store');
+      await SecureStore.deleteItemAsync('sc_access_token').catch(() => {});
+      await SecureStore.deleteItemAsync('sc_refresh_token').catch(() => {});
+    } catch { /* ignore */ }
+    // 4. Reset auth context state — triggers fresh setup screen
+    await resetPin('__wipe__').catch(() => {});
+    setWipeBusy(false);
+    setShowWipe(false);
+    setShowForgot(false);
+  }, [wipeConfirmText, resetPin]);
 
 
   // ── Derive status / error display ─────────────────────
@@ -348,7 +358,7 @@ export function PinScreen() {
 
             {/* Lost reset code — tertiary escape hatch */}
             <Pressable
-              onPress={() => { setShowEmergency(true); setOverrideError(''); setOverrideCode(''); }}
+              onPress={() => { setShowWipe(true); setWipeError(''); setWipeConfirmText(''); }}
               style={({ pressed }) => [styles.lostCodeBtn, pressed && { opacity: 0.7 }]}
             >
               <Text style={styles.lostCodeText}>Lost your reset code?</Text>
@@ -357,63 +367,66 @@ export function PinScreen() {
         </Pressable>
       </Modal>
 
-      {/* ── Emergency Override modal (last resort) ── */}
+      {/* ── Factory Wipe modal ── */}
       <Modal
-        visible={showEmergency}
+        visible={showWipe}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowEmergency(false)}
+        onRequestClose={() => setShowWipe(false)}
       >
-        <Pressable style={styles.overlay} onPress={() => setShowEmergency(false)}>
-          <Pressable style={[styles.forgotCard, { borderColor: 'rgba(255,75,75,0.25)' }]} onPress={() => {}}>
+        <Pressable style={styles.overlay} onPress={() => setShowWipe(false)}>
+          <Pressable style={[styles.forgotCard, { borderColor: 'rgba(255,75,75,0.30)' }]} onPress={() => {}}>
+
             <View style={styles.forgotHeader}>
-              <Ionicons name="nuclear-outline" size={26} color="#FF4B4B" />
-              <Text style={[styles.forgotTitle, { color: '#FF4B4B' }]}>Emergency Override</Text>
+              <Ionicons name="warning" size={26} color="#FF4B4B" />
+              <Text style={[styles.forgotTitle, { color: '#FF4B4B' }]}>Wipe &amp; Start Over</Text>
             </View>
 
             <Text style={styles.forgotDesc}>
-              This is the last resort. The Emergency Override Code is stored in your server&apos;s{' '}
-              <Text style={{ color: colors.gold, fontWeight: '800' }}>.env</Text> file as{' '}
-              <Text style={{ color: colors.gold, fontWeight: '800' }}>EMERGENCY_OVERRIDE_CODE</Text>.
+              This will reset the app as if it were freshly installed.{'\n\n'}
+              <Text style={{ color: colors.text, fontWeight: '700' }}>What gets cleared:{'\n'}</Text>
+              <Text style={{ color: '#FF4B4B' }}>✕  Your PIN{'\n'}✕  Saved backend URL{'\n'}✕  All local app settings</Text>
               {'\n\n'}
-              Retrieve it by logging into your server, or contact{' '}
-              <Text style={{ color: colors.gold }}>Supercharg&apos;d support</Text> if you need help accessing it.
+              <Text style={{ color: colors.text, fontWeight: '700' }}>What is kept:{'\n'}</Text>
+              <Text style={{ color: colors.green }}>✓  All customers{'\n'}✓  All vehicles &amp; inventory{'\n'}✓  All Tower Talk history</Text>
+              {'\n\n'}Type <Text style={{ color: '#FF4B4B', fontWeight: '900' }}>RESET</Text> below to confirm.
             </Text>
 
             <TextInput
-              value={overrideCode}
-              onChangeText={(t) => { setOverrideCode(t.toUpperCase()); setOverrideError(''); }}
-              placeholder="16-char override code"
+              value={wipeConfirmText}
+              onChangeText={(t) => { setWipeConfirmText(t.toUpperCase()); setWipeError(''); }}
+              placeholder="Type RESET to confirm"
               placeholderTextColor={colors.textMute}
-              style={[styles.resetInput, { borderColor: 'rgba(255,75,75,0.30)', letterSpacing: 3 }]}
+              style={[styles.resetInput, { borderColor: 'rgba(255,75,75,0.35)', letterSpacing: 4 }]}
               autoCapitalize="characters"
               autoCorrect={false}
-              maxLength={20}
+              maxLength={5}
               returnKeyType="done"
-              onSubmitEditing={handleEmergencyReset}
+              onSubmitEditing={handleWipe}
             />
 
-            {overrideError ? <Text style={styles.resetError}>{overrideError}</Text> : null}
+            {wipeError ? <Text style={styles.resetError}>{wipeError}</Text> : null}
 
             <View style={styles.resetBtnRow}>
               <Pressable
-                onPress={() => setShowEmergency(false)}
+                onPress={() => setShowWipe(false)}
                 style={({ pressed }) => [styles.resetBtn, styles.resetBtnCancel, pressed && { opacity: 0.8 }]}
               >
-                <Text style={styles.resetBtnCancelText}>BACK</Text>
+                <Text style={styles.resetBtnCancelText}>CANCEL</Text>
               </Pressable>
               <Pressable
-                onPress={handleEmergencyReset}
-                disabled={overrideBusy || !overrideCode.trim()}
+                onPress={handleWipe}
+                disabled={wipeBusy || wipeConfirmText.trim() !== 'RESET'}
                 style={({ pressed }) => [
                   styles.resetBtn,
-                  { borderColor: '#FF4B4B', backgroundColor: 'rgba(255,75,75,0.12)' },
-                  (overrideBusy || !overrideCode.trim()) && { opacity: 0.5 },
+                  { borderColor: '#FF4B4B', backgroundColor: 'rgba(255,75,75,0.15)' },
+                  (wipeBusy || wipeConfirmText.trim() !== 'RESET') && { opacity: 0.4 },
                   pressed && { opacity: 0.8 },
                 ]}
               >
+                <Ionicons name="trash" size={14} color="#FF4B4B" />
                 <Text style={styles.resetBtnConfirmText}>
-                  {overrideBusy ? 'VERIFYING...' : 'OVERRIDE & RESET'}
+                  {wipeBusy ? 'WIPING...' : 'WIPE APP'}
                 </Text>
               </Pressable>
             </View>
