@@ -199,9 +199,13 @@ export function PinScreen() {
       // Even if the server call fails, proceed with local wipe
     }
     try {
-      // 2. Clear all local storage (tokens, backend URL override, cached settings)
+      // 2. Clear all local storage EXCEPT the backend URL override (preserve connectivity)
       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const BACKEND_URL_KEY = 'sc_v1_backend_url_override';
+      const savedUrl = await AsyncStorage.getItem(BACKEND_URL_KEY);
       await AsyncStorage.clear();
+      // Restore backend URL immediately after clear
+      if (savedUrl) await AsyncStorage.setItem(BACKEND_URL_KEY, savedUrl);
     } catch { /* ignore */ }
     try {
       // 3. Clear secure store (auth tokens)

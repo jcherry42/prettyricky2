@@ -153,7 +153,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
                   style={styles.input}
                   value={firstName}
                   onChangeText={setFirstName}
-                  placeholder="John"
+                  placeholder="First name"
                   placeholderTextColor={colors.textMute}
                   editable={!saving}
                   autoCapitalize="words"
@@ -171,7 +171,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
                   style={styles.input}
                   value={lastName}
                   onChangeText={setLastName}
-                  placeholder="Doe"
+                  placeholder="Last name"
                   placeholderTextColor={colors.textMute}
                   editable={!saving}
                   autoCapitalize="words"
@@ -190,7 +190,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
               style={styles.input}
               value={phone}
               onChangeText={setPhone}
-              placeholder="(555) 123-4567"
+              placeholder="Phone number"
               placeholderTextColor={colors.textMute}
               keyboardType="phone-pad"
               textContentType="telephoneNumber"
@@ -206,7 +206,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
               style={styles.input}
               value={email}
               onChangeText={setEmail}
-              placeholder="john.doe@example.com"
+              placeholder="Email address"
               placeholderTextColor={colors.textMute}
               keyboardType="email-address"
               textContentType="emailAddress"
@@ -224,7 +224,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
               style={styles.input}
               value={address}
               onChangeText={setAddress}
-              placeholder="123 Main St, City, State ZIP"
+              placeholder="Street address"
               placeholderTextColor={colors.textMute}
               autoCapitalize="words"
               textContentType="fullStreetAddress"
@@ -241,7 +241,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
               style={styles.input}
               value={vehicleInterest}
               onChangeText={setVehicleInterest}
-              placeholder="2024 Honda Accord"
+              placeholder="Vehicle of interest"
               placeholderTextColor={colors.textMute}
               autoCapitalize="words"
               returnKeyType="done"
@@ -284,7 +284,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
               style={[styles.input, styles.textArea]}
               value={notes}
               onChangeText={setNotes}
-              placeholder="Additional notes about this customer..."
+              placeholder="Notes"
               placeholderTextColor={colors.textMute}
               multiline
               numberOfLines={4}
