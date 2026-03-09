@@ -345,15 +345,15 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                     <View style={{ height: 12 }} />
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.blue }]} />
-                      <Text style={styles.statusText}>New: {stats.customers?.new || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>New: {stats.customers?.new || 0}</Text>
                     </View>
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.gold }]} />
-                      <Text style={styles.statusText}>Contacted: {stats.customers?.contacted || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>Contacted: {stats.customers?.contacted || 0}</Text>
                     </View>
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.green }]} />
-                      <Text style={styles.statusText}>Appointment: {stats.customers?.appointment || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>Appointment: {stats.customers?.appointment || 0}</Text>
                     </View>
                   </GlassCard>
                 </>
@@ -1294,6 +1294,12 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  leadStatusText: {
+    color: '#FF8C00',
+    textShadowColor: 'rgba(255,140,0,0.75)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   // Dashboard styles
   centerContent: {
