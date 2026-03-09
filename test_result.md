@@ -2091,20 +2091,17 @@ backend:
 
 test_plan:
   current_focus:
-    - "Native mobile optimization pass — VIN/DL scanner reliability fixes"
-    - "ML Kit safe import (graceful fallback when unavailable in Expo Go)"
-    - "barcodeScannerEnabled prop added explicitly to CameraView"
-    - "Barcode types reduced to most reliable for VINs: code39, code128, datamatrix, qr"
-    - "Re-scan button added when scanner pauses after detection"
-    - "app.json plugins added for expo-camera, expo-image-picker, expo-av"
-    - "BETA_TESTING_GUIDE.md updated with dev build requirements for scanner"
+    - "Full backend regression test before Expo Go manual testing session"
+    - "Verify all endpoints that Expo Go app calls: health, customers, translate, tts, tower-talk, voice-translate, vin/decode, vin/save-to-inventory, vehicles/inventory, license/scan-direct, dashboard"
+    - "Confirm ML Kit safe import does not break static analysis"
+    - "Native mobile optimization pass complete (VIN scanner reliability)"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
-# LATEST TESTING RESULTS APPEND
-## Agent Communication Update (Native Mobile Optimization - July 2025):
+
+agent_communication:
   - agent: "main"
-    message: "NATIVE MOBILE OPTIMIZATION - VIN SCANNER RELIABILITY PASS: 1) Fixed ML Kit import in VinScanScreen.tsx and DlScanScreen.tsx — changed from top-level static import (crashes Expo Go) to safe require() with try-catch. ML Kit gracefully unavailable in Expo Go; app falls back to cloud AI automatically. 2) Added barcodeScannerEnabled={scanMode === SCAN_MODE.BARCODE} prop to CameraView — explicitly enables/disables scanner to prevent accidental firing in AI Vision mode. 3) Reduced barcode types from 6 to 4 most reliable for VINs: code39, code128, datamatrix, qr (removed code93 and itf14 which can cause issues on some devices). 4) Added 'TAP TO SCAN AGAIN' re-scan button that appears in barcode mode when scanning is paused — users no longer need to close/reopen the scanner to scan a second VIN. 5) Added expo-camera, expo-image-picker, expo-av plugins to app.json for proper native module configuration in EAS/prebuild. 6) Updated BETA_TESTING_GUIDE.md with critical note about dev build requirement for full scanner functionality. All changes are backward-compatible — Expo Go users get cloud AI fallback for OCR."
+    message: "USER IS ABOUT TO DO MANUAL EXPO GO TESTING. Run a full backend regression test covering ALL endpoints the mobile app calls. This is a React Native/Expo mobile app so no browser testing is possible — focus entirely on backend API validation. Test the following endpoint groups in order: 1) CORE: GET /api/health, 2) CUSTOMERS: GET /api/customers/list, POST /api/customers/create, GET /api/customers/{id}, PATCH /api/customers/{id}, DELETE /api/customers/{id}, 3) AI FEATURES: POST /api/translate (EN→ES), POST /api/tts, POST /api/tower-talk, POST /api/voice-translate (expect 422 for invalid), 4) VIN: POST /api/vin/decode with a real VIN like 1HGCM82633A004352, POST /api/vin/save-to-inventory, GET /api/vehicles/inventory, GET /api/vin/trade-in-count, 5) LICENSE: POST /api/license/scan-direct (with test image), POST /api/license/parse-pdf417, 6) KNOWLEDGE BASE: GET /api/knowledge/search?q=price+objection, 7) DASHBOARD: GET /api/dashboard/stats. Target 90%+ pass rate. Clean up any test data created. Report clearly which endpoints pass/fail so user knows what works in Expo Go."
   - agent: "testing"
     message: "🎯 DRIVER'S LICENSE SCANNING BACKEND PIPELINE END-TO-END TEST COMPLETED - PERFECT 100% SUCCESS RATE: Conducted comprehensive testing of the complete Driver's License scanning backend pipeline as requested in review. Tested all 5 endpoints in sequence exactly as specified: 1) Health check (GET /api/health) → 'healthy' status ✓, 2) Single file upload (POST /api/license/upload) with field name 'image' → 11,893-byte test JPEG uploaded successfully, image_url returned ✓, 3) AI OCR scan (POST /api/license/scan-from-url) → OpenAI Vision API extracted complete license data with 100% confidence: first_name: John, middle_name: Quincy, last_name: Doe, license_number: D12345678, expiration: 01/15/2028, date_of_birth: 01/15/2000, address: 123 Main St, city: Anytown, state: CA, zip_code: 90210 ✓, 4) PDF417 barcode parse (POST /api/license/parse-pdf417) → AAMVA version 9 barcode processed with 100% confidence, same extracted data plus sex: M, country: USA ✓, 5) Create customer (POST /api/customers/create) → TestDL Scanner customer created successfully with all fields, lead_status: new, notes: License #: D12345678 ✓. Automated cleanup removed test customer from test_database MongoDB. All endpoints responding perfectly with excellent OCR accuracy, proper error handling, and seamless data integration. Backend license scanning pipeline is PRODUCTION-READY for enterprise deployment."
   - agent: "testing"
