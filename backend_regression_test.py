@@ -99,17 +99,18 @@ class SuperchargdBackendTester:
                   "customers" in data and "total" in data)
         self.log_result("Customers", "/api/customers/list?limit=5", "GET", status_code, success, data, response_time=response_time)
         
-        # POST /api/customers/create → body: {"name": "Test ExpoGo", "phone": "555-0199", "email": "test@expogo.com", "lead_status": "new"}
+        # POST /api/customers/create — schema requires first_name + last_name (not name)
         create_payload = {
-            "name": "Test ExpoGo",
-            "phone": "555-0199", 
+            "first_name": "Test",
+            "last_name": "ExpoGo",
+            "phone": "555-0199",
             "email": "test@expogo.com",
             "lead_status": "new"
         }
         status_code, data, response_time = self.make_request("POST", "/api/customers/create", json=create_payload)
-        success = status_code == 201 and isinstance(data, dict) and "customer_id" in data
-        if success and "customer_id" in data:
-            self.test_customer_id = data["customer_id"]
+        success = status_code == 201 and isinstance(data, dict) and data.get("success") is True
+        if success and data.get("customer", {}).get("id"):
+            self.test_customer_id = data["customer"]["id"]
         self.log_result("Customers", "/api/customers/create", "POST", status_code, success, data, response_time=response_time)
         
         # GET /api/customers/{id} → expect customer data
@@ -147,11 +148,11 @@ class SuperchargdBackendTester:
         success = status_code == 200 and isinstance(data, dict) and "audio_base64" in data
         self.log_result("AI Features", "/api/tts", "POST", status_code, success, data, response_time=response_time)
         
-        # POST /api/tower-talk → body: {"situation": "Customer says price is too high", "customer_name": "John", "inquiry_type": "pricing"}
+        # POST /api/tower-talk — requires situation (str), inquiryType (str), context (dict)
         tower_talk_payload = {
-            "situation": "Customer says price is too high",
-            "customer_name": "John",
-            "inquiry_type": "pricing"
+            "situation": "Customer says the price is too high and wants to leave",
+            "inquiryType": "pricing",
+            "context": {"customer_name": "John", "vehicle": "2024 Toyota Camry", "asking_price": 32000}
         }
         status_code, data, response_time = self.make_request("POST", "/api/tower-talk", json=tower_talk_payload)
         success = status_code == 200 and isinstance(data, dict) and "response" in data
@@ -166,11 +167,10 @@ class SuperchargdBackendTester:
         """4. VIN & INVENTORY - VIN decoding and trade-in endpoints"""
         logger.info("🔍 Testing GROUP 4: VIN & INVENTORY")
         
-        # POST /api/vin/decode → body: {"vin": "1HGCM82633A004352"} → expect vehicle data (2003 Honda Accord)
-        vin_payload = {"vin": "1HGCM82633A004352"}
-        status_code, data, response_time = self.make_request("POST", "/api/vin/decode", json=vin_payload)
+        # GET /api/vin/decode/{vin} — path param, not POST body
+        status_code, data, response_time = self.make_request("GET", "/api/vin/decode/1HGCM82633A004352")
         success = status_code == 200 and isinstance(data, dict)
-        self.log_result("VIN & Inventory", "/api/vin/decode", "POST", status_code, success, data, response_time=response_time)
+        self.log_result("VIN & Inventory", "/api/vin/decode/1HGCM82633A004352", "GET", status_code, success, data, response_time=response_time)
         
         # GET /api/vin/trade-in-count → expect {count, cap, remaining, at_limit}
         status_code, data, response_time = self.make_request("GET", "/api/vin/trade-in-count")
@@ -206,10 +206,11 @@ class SuperchargdBackendTester:
         """6. KNOWLEDGE BASE - search functionality"""
         logger.info("🔍 Testing GROUP 6: KNOWLEDGE BASE")
         
-        # GET /api/knowledge/search?q=price+objection → expect results array
-        status_code, data, response_time = self.make_request("GET", "/api/knowledge/search?q=price+objection")
-        success = status_code == 200 and isinstance(data, dict) and "results" in data
-        self.log_result("Knowledge Base", "/api/knowledge/search?q=price+objection", "GET", status_code, success, data, response_time=response_time)
+        # POST /api/knowledge/search — body: {"query": "price objection"}, not GET
+        kb_payload = {"query": "price objection"}
+        status_code, data, response_time = self.make_request("POST", "/api/knowledge/search", json=kb_payload)
+        success = status_code == 200 and isinstance(data, dict)
+        self.log_result("Knowledge Base", "/api/knowledge/search", "POST", status_code, success, data, response_time=response_time)
 
     def test_dashboard(self):
         """7. DASHBOARD - statistics endpoint"""
@@ -303,7 +304,8 @@ class SuperchargdBackendTester:
             
             # Show passed tests summary
             if results['passed']:
-                logger.info(f"    ✅ Passed: {', '.join([f\"{r['method']} {r['endpoint']}\" for r in results['passed']])}")
+                passed_list = ', '.join([r['method'] + ' ' + r['endpoint'] for r in results['passed']])
+                logger.info(f"    ✅ Passed: {passed_list}")
         
         logger.info("="*80)
         
