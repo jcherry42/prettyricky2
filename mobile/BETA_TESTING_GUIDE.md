@@ -63,7 +63,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://scanner-debug-test.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://native-build-test.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -159,7 +159,7 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://scanner-debug-test.preview.emergentagent.com` |
+| Default Backend | `https://native-build-test.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |
 
