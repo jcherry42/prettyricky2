@@ -11,7 +11,7 @@
  *   - Apple AirPrint: Minimal UI, instant action affordance
  */
 
-import React, { memo, useCallback, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   View,
@@ -135,15 +135,29 @@ export const PrintCenterModal = memo(function PrintCenterModal({
   const { customers } = useCustomers();
   const { vehicles } = useInventory();
 
-  const [tab, setTab] = useState<TabKey>(
-    preSelectedVin || preSelectedVehicle ? 'vehicle'
-    : preSelectedLicenseImage ? 'license'
-    : 'customer'
-  );
-  const [selectedCustomerId, setSelectedCustomerId] = useState(preSelectedCustomerId || '');
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(preSelectedVehicle || null);
+  const [tab, setTab] = useState<TabKey>('customer');
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [printing, setPrinting] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
+
+  // Reset all local state whenever the modal opens (or preSelected props change).
+  // This prevents stale selections carrying over from a previous session.
+  useEffect(() => {
+    if (!visible) return;
+    setLastResult(null);
+    setPrinting(false);
+    setSelectedCustomerId(preSelectedCustomerId || '');
+    setSelectedVehicle(preSelectedVehicle || null);
+    // Derive the correct starting tab from whatever was pre-selected
+    if (preSelectedVin || preSelectedVehicle) {
+      setTab('vehicle');
+    } else if (preSelectedLicenseImage) {
+      setTab('license');
+    } else {
+      setTab('customer');
+    }
+  }, [visible, preSelectedCustomerId, preSelectedVehicle, preSelectedVin, preSelectedLicenseImage]);
 
   const printerIp = activePrinter?.ip || '';
   const hasPrinter = !!printerIp;
@@ -231,12 +245,14 @@ export const PrintCenterModal = memo(function PrintCenterModal({
 
   // ── Render ──
 
-  const renderCustomerTab = useMemo(() => (
+  // ── Tab renders — proper components, not useMemo JSX (avoids stale FlatList data) ──
+
+  const CustomerTab = () => (
     <View style={{ flex: 1 }}>
       <Text style={styles.tabDesc}>Select a customer to generate a branded profile PDF.</Text>
       <FlatList
         data={customers}
-        keyExtractor={(c: any) => c.id || c.customer_id || String(Math.random())}
+        keyExtractor={(c: any) => c.id || c.customer_id || c.email || c.phone || 'unknown'}
         renderItem={({ item }) => (
           <CustomerItem
             item={item}
@@ -261,9 +277,9 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         loading={printing && tab === 'customer'}
       />
     </View>
-  ), [customers, selectedCustomerId, printing, tab, hasPrinter, handlePrintCustomer]);
+  );
 
-  const renderLicenseTab = useMemo(() => (
+  const LicenseTab = () => (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 }}>
       {preSelectedLicenseImage ? (
         <>
@@ -286,14 +302,14 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         </View>
       )}
     </View>
-  ), [preSelectedLicenseImage, printing, tab, hasPrinter, handlePrintLicense]);
+  );
 
-  const renderVehicleTab = useMemo(() => (
+  const VehicleTab = () => (
     <View style={{ flex: 1 }}>
       <Text style={styles.tabDesc}>Select a vehicle to generate a branded spec sheet PDF.</Text>
       <FlatList
         data={vehicles}
-        keyExtractor={(v: any) => v.vehicle_id || v.vin || String(Math.random())}
+        keyExtractor={(v: any) => v.vehicle_id || v.id || v.vin || String(v.year) + String(v.make)}
         renderItem={({ item }) => (
           <VehicleItem
             item={item}
@@ -319,7 +335,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         loading={printing && tab === 'vehicle'}
       />
     </View>
-  ), [vehicles, selectedVehicle, printing, tab, hasPrinter, handlePrintVehicle]);
+  );
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -340,7 +356,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
               </Text>
             </View>
           </View>
-          <Pressable onPress={onClose} hitSlop={12} style={styles.closeBtn}>
+          <Pressable onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={styles.closeBtn}>
             <Ionicons name="close" size={22} color={colors.text} />
           </Pressable>
         </LinearGradient>
@@ -361,9 +377,9 @@ export const PrintCenterModal = memo(function PrintCenterModal({
 
         {/* ── Content ── */}
         <View style={styles.content}>
-          {tab === 'customer' && renderCustomerTab}
-          {tab === 'license' && renderLicenseTab}
-          {tab === 'vehicle' && renderVehicleTab}
+          {tab === 'customer' && <CustomerTab />}
+          {tab === 'license' && <LicenseTab />}
+          {tab === 'vehicle' && <VehicleTab />}
         </View>
 
         {/* ── Status bar ── */}

@@ -16,6 +16,7 @@ Endpoints:
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import io
 import logging
@@ -26,6 +27,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+from reportlab.lib.utils import simpleSplit  # imported once at module level
 
 router = APIRouter()
 logger = logging.getLogger("printer_v3")
@@ -49,7 +51,7 @@ class PrintJobRequest(BaseModel):
 
 class CustomerPrintRequest(BaseModel):
     customer_id: str = Field(..., description="Customer ID to print")
-    printer_ip: str = Field(..., description="Printer IP address")
+    printer_ip: Optional[str] = Field("", description="Printer IP address (optional — omit to generate PDF only)")
 
 class VehiclePrintRequest(BaseModel):
     vin: str
@@ -115,7 +117,7 @@ def _draw_header(c, page_width, page_height, title, dealership_name="", dealersh
         c.setFont("Helvetica-Bold", 10)
         c.drawRightString(page_width - 0.75*inch, page_height - 0.42*inch, dealership_name)
     if dealership_address:
-        c.setFillColorRGB(brand["white"][0]/255, brand["white"][1]/255, brand["white"][2]/255, 0.7)
+        c.setFillColorRGB(0.75, 0.75, 0.75)  # dimmed white — ReportLab ignores alpha in setFillColorRGB
         c.setFont("Helvetica", 8)
         c.drawRightString(page_width - 0.75*inch, page_height - 0.58*inch, dealership_address)
     if sales_rep:
@@ -176,6 +178,24 @@ def _draw_field(c, y, label, value, page_width, bold_value=False):
     return y - 0.28*inch
 
 
+def _check_page_overflow(c, y, page_width, page_height, margin=1.0):
+    """
+    If y has gone below the bottom margin, save the current page and start a new one.
+    Returns the new y cursor positioned at the top of the fresh page.
+    ReportLab does not do this automatically — omitting this causes content to render off-page.
+    """
+    from reportlab.lib.units import inch
+    if y < margin * inch:
+        c.showPage()
+        # Re-draw the footer's gold bar on every page
+        from reportlab.lib.units import inch as _inch
+        brand = _brand_colors()
+        c.setFillColorRGB(brand["gold"][0]/255, brand["gold"][1]/255, brand["gold"][2]/255)
+        c.rect(0, 0, page_width, 0.04*_inch, fill=1, stroke=0)
+        return page_height - 0.75 * inch  # reset y to top of new page
+    return y
+
+
 async def _get_dealership_settings():
     """Retrieve dealership personalize settings from DB or return defaults."""
     if _db is None:
@@ -230,6 +250,7 @@ async def _build_customer_pdf(customer: dict) -> bytes:
 
     # Contact section
     y = _draw_section(c, y, page_width, "Contact Information")
+    y = _check_page_overflow(c, y, page_width, page_height)
     y = _draw_field(c, y, "Email", customer.get("email"), page_width)
     y = _draw_field(c, y, "Phone", customer.get("phone"), page_width)
     y = _draw_field(c, y, "Address", customer.get("address"), page_width)
@@ -237,9 +258,11 @@ async def _build_customer_pdf(customer: dict) -> bytes:
     # Vehicle Interest
     vehicle_interest = customer.get("vehicle_of_interest") or customer.get("vehicleInterest")
     if vehicle_interest:
+        y = _check_page_overflow(c, y, page_width, page_height)
         y = _draw_section(c, y, page_width, "Vehicle Interest")
         if isinstance(vehicle_interest, dict):
             for k, v in vehicle_interest.items():
+                y = _check_page_overflow(c, y, page_width, page_height)
                 y = _draw_field(c, y, k.replace("_", " ").title(), v, page_width)
         else:
             y = _draw_field(c, y, "Vehicle", str(vehicle_interest), page_width)
@@ -247,19 +270,21 @@ async def _build_customer_pdf(customer: dict) -> bytes:
     # Notes
     notes = customer.get("notes")
     if notes:
+        y = _check_page_overflow(c, y, page_width, page_height)
         y = _draw_section(c, y, page_width, "Notes")
         c.setFillColorRGB(brand["text"][0]/255, brand["text"][1]/255, brand["text"][2]/255)
         c.setFont("Helvetica", 10)
         # Wrap notes text
-        from reportlab.lib.utils import simpleSplit
         lines = simpleSplit(str(notes), "Helvetica", 10, page_width - 1.5*inch)
         for line in lines[:12]:
+            y = _check_page_overflow(c, y, page_width, page_height)
             c.drawString(0.85*inch, y, line)
             y -= 0.18*inch
 
     # Interactions summary
     interactions = customer.get("interactions") or []
     if interactions:
+        y = _check_page_overflow(c, y, page_width, page_height)
         y = _draw_section(c, y, page_width, f"Recent Interactions ({len(interactions)})")
         for ix in interactions[:5]:
             ts = ix.get("timestamp", "")
@@ -272,9 +297,9 @@ async def _build_customer_pdf(customer: dict) -> bytes:
             line = f"{ts}  —  {msg}" if ts else str(msg)
             c.setFont("Helvetica", 9)
             c.setFillColorRGB(brand["text_dim"][0]/255, brand["text_dim"][1]/255, brand["text_dim"][2]/255)
-            from reportlab.lib.utils import simpleSplit
             wrapped = simpleSplit(line, "Helvetica", 9, page_width - 1.5*inch)
             for wl in wrapped[:2]:
+                y = _check_page_overflow(c, y, page_width, page_height)
                 c.drawString(0.85*inch, y, wl)
                 y -= 0.16*inch
             y -= 0.06*inch
@@ -284,8 +309,17 @@ async def _build_customer_pdf(customer: dict) -> bytes:
     return pdf_buffer.getvalue()
 
 
-def _build_license_pdf(image_data: str) -> bytes:
-    """Build a professional driver's license scan PDF."""
+async def _build_license_pdf(image_data: str) -> bytes:
+    """Build a professional driver's license scan PDF.
+    Runs the CPU-intensive PIL + ReportLab work in a thread pool
+    so it doesn't block the async event loop.
+    """
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _build_license_pdf_sync, image_data)
+
+
+def _build_license_pdf_sync(image_data: str) -> bytes:
+    """Synchronous inner implementation — called from thread executor."""
     from PIL import Image
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import letter
@@ -550,8 +584,8 @@ async def print_customer_profile(req: CustomerPrintRequest):
 async def print_license_image(req: PrintJobRequest):
     """Print branded driver's license scan PDF."""
     try:
-        pdf_bytes = _build_license_pdf(req.image_data)
-        ipp_result = await _submit_to_printer(pdf_bytes, req.printer_ip, "Driver's License Scan")
+        pdf_bytes = await _build_license_pdf(req.image_data)
+        ipp_result = await _submit_to_printer(pdf_bytes, req.printer_ip or "", "Driver's License Scan")
 
         return {
             "success": True,
@@ -600,7 +634,7 @@ async def print_preview(req: PreviewRequest):
         elif req.type == "license":
             if not req.image_data:
                 raise HTTPException(status_code=400, detail="image_data required")
-            pdf_bytes = _build_license_pdf(req.image_data)
+            pdf_bytes = await _build_license_pdf(req.image_data)
 
         elif req.type == "vehicle":
             if not req.vin:
