@@ -1,6 +1,6 @@
 /**
  * Emergency Inquiry Modal
- * 8 inquiry types with 3 pre-written responses each.
+ * 10 inquiry types with 3 pre-written responses each.
  * Responses aligned with Tower Talk's confident, assertive sales temperament.
  */
 
@@ -116,6 +116,17 @@ const INQUIRY_TYPES = [
       "You've done the research, you've driven the car, and the numbers work. So here's the deal — the only thing standing between you and driving this home tonight is your signature. Let me get the paperwork started.",
       "Let me make sure I have everything right — you love the way it drives, the color is perfect, and the payment fits your budget. The only thing left is making it official. Shall we?",
       "Everything you wanted is right here — the features, the price, the trade value. I don't want you looking back next week wishing you'd pulled the trigger. Let's wrap this up and get you behind the wheel.",
+    ],
+  },
+  {
+    id: 'adding_value',
+    icon: 'trending-up-outline',
+    label: 'ADDING VALUE',
+    color: '#30D158',
+    responses: [
+      "Let me show you what you're actually getting here. This isn't just a vehicle — it's the advanced safety suite, the connected tech package, a certified warranty covering every mile, and a resale value that outperforms the entire segment. Buyers who focus only on the sticker miss the full picture. You're not purchasing a car — you're locking in years of certainty, protection, and performance. That's what the number reflects.",
+      "Let me put two scenarios side by side for you. The cheaper alternative means higher insurance premiums, heavier maintenance costs, a warranty that expires in 12 months, and a trade-in value that craters in year three. When you run the real 5-year math, this vehicle costs less — not more. I can pull that comparison up right now and show you the difference in black and white.",
+      "Here's what ownership with us actually looks like: you get my direct line, priority service scheduling, a complimentary annual inspection, and when you're ready to upgrade — I'll give you the same insider trade pricing I reserve for my best clients. You're not just buying the vehicle. You're buying a relationship that continues paying for itself long after you drive off the lot. That's value no sticker price captures.",
     ],
   },
 ];
