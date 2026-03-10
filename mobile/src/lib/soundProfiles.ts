@@ -10,9 +10,11 @@
  * Same file is used for both activate and deactivate (as requested).
  *
  * Audio files live at mobile/assets/sounds/ and are bundled with the app.
+ *
+ * Migrated from expo-av → expo-audio (Expo SDK 54+).
  */
 
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -130,21 +132,21 @@ export const SOUND_PROFILES = {
 
 export const PROFILE_KEYS = Object.keys(SOUND_PROFILES);
 
-// ── Active sound ref — stop previous before playing new ─────────────────────
-let _activeSound = null;
+// ── Active player ref — stop previous before playing new ────────────────────
+let _activePlayer: AudioPlayer | null = null;
 
 /**
  * Stop any currently playing sound, then release it.
  */
-async function stopActiveSound() {
-  if (_activeSound) {
+function stopActivePlayer() {
+  if (_activePlayer) {
     try {
-      await _activeSound.stopAsync();
-      await _activeSound.unloadAsync();
+      _activePlayer.pause();
+      _activePlayer.remove();
     } catch {
-      // ignore — sound may have already finished
+      // ignore — player may have already finished
     }
-    _activeSound = null;
+    _activePlayer = null;
   }
 }
 
@@ -155,93 +157,85 @@ async function stopActiveSound() {
  */
 async function configureAudioSession() {
   try {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,      // Override silent switch — SPORT mode is intentional
-      shouldDuckAndroid: false,         // Don't lower other app volume
-      playThroughEarpieceAndroid: false, // Use speaker, not earpiece
-      staysActiveInBackground: false,
+    await setAudioModeAsync({
+      allowsRecording: false,
+      playsInSilentMode: true,
+      interruptionMode: 'doNotMix',
+      shouldPlayInBackground: false,
+      shouldRouteThroughEarpiece: false,
     });
-  } catch (e) {
+  } catch (e: any) {
     // Non-fatal — audio will still play on most devices without this
     console.warn('[SoundProfile] Audio session config failed:', e?.message);
   }
 }
 
 /**
- * Core playback: load the asset fresh each time and play immediately.
- * Fresh-load avoids any stale Sound object state that can cause silence or distortion.
- * Returns the Sound object so callers can control it (e.g. fade out).
+ * Core playback: create a player, load the asset, and play immediately.
+ * Fresh player avoids any stale state that can cause silence or distortion.
+ * Returns the AudioPlayer object so callers can control it (e.g. fade out).
  */
-async function playAsset(asset) {
+async function playAsset(asset: number): Promise<AudioPlayer | null> {
   // Stop anything currently playing (hard stop — only used for activation)
-  await stopActiveSound();
+  stopActivePlayer();
 
   // Configure audio session right before playback
   await configureAudioSession();
 
   try {
-    const { sound } = await Audio.Sound.createAsync(
-      asset,
-      {
-        shouldPlay: true,
-        volume: 1.0,
-        isLooping: false,
-        progressUpdateIntervalMillis: 100,
-      }
-    );
+    const player = createAudioPlayer(asset, { updateInterval: 100 });
+    player.volume = 1.0;
+    player.loop = false;
 
-    _activeSound = sound;
+    _activePlayer = player;
 
     // Auto-release when playback finishes naturally
-    sound.setOnPlaybackStatusUpdate((status: any) => {
+    player.addListener('playbackStatusUpdate', (status) => {
       if (status.didJustFinish) {
-        sound.unloadAsync().catch(() => {});
-        if (_activeSound === sound) _activeSound = null;
-      }
-      if (status.error) {
-        console.warn('[SoundProfile] Playback error:', status.error);
-        sound.unloadAsync().catch(() => {});
-        if (_activeSound === sound) _activeSound = null;
+        player.remove();
+        if (_activePlayer === player) _activePlayer = null;
       }
     });
 
-    return sound;
-  } catch (e) {
+    player.play();
+    return player;
+  } catch (e: any) {
     console.warn('[SoundProfile] Failed to load/play asset:', e?.message);
-    _activeSound = null;
+    _activePlayer = null;
     return null;
   }
 }
 
 /**
- * Fade the currently active sound from its current volume down to 0,
- * then stop and unload it. Smooth 1.5-second fade.
+ * Fade the currently active player from its current volume down to 0,
+ * then stop and release it. Smooth 1.5-second fade.
  */
-async function fadeOutActiveSound(durationMs = 1500) {
-  const sound = _activeSound;
-  if (!sound) return;
+async function fadeOutActivePlayer(durationMs = 1500) {
+  const player = _activePlayer;
+  if (!player) return;
 
   const STEPS = 30;
   const stepMs = durationMs / STEPS;
 
   try {
     for (let i = STEPS - 1; i >= 0; i--) {
-      // If another sound started while we were fading, bail out
-      if (_activeSound !== sound) return;
+      // If another player started while we were fading, bail out
+      if (_activePlayer !== player) return;
       const vol = parseFloat((i / STEPS).toFixed(3));
-      await sound.setVolumeAsync(vol).catch(() => {});
+      try { player.volume = vol; } catch { /* ignore */ }
       await delay(stepMs);
     }
     // Fully silent — now stop and release
-    if (_activeSound === sound) {
-      await sound.stopAsync().catch(() => {});
-      await sound.unloadAsync().catch(() => {});
-      _activeSound = null;
+    if (_activePlayer === player) {
+      try {
+        player.pause();
+        player.remove();
+      } catch { /* ignore */ }
+      _activePlayer = null;
     }
   } catch {
-    // Sound may have already unloaded naturally — no-op
-    if (_activeSound === sound) _activeSound = null;
+    // Player may have already been removed naturally — no-op
+    if (_activePlayer === player) _activePlayer = null;
   }
 }
 
@@ -257,13 +251,13 @@ export async function playActivationSound(profileId = 'merica') {
   const hapticFn = HAPTICS[id]?.activate;
   const asset = AUDIO_ASSETS[id]?.activate;
 
-  const promises = [];
+  const promises: Promise<any>[] = [];
   if (asset) {
     promises.push(
-      playAsset(asset).then((sound) => {
-        if (!sound) return;
+      playAsset(asset).then((player) => {
+        if (!player) return;
         // Let the impactful part play for 2 s, then fade to silence over 1.5 s
-        return delay(2000).then(() => fadeOutActiveSound(1500));
+        return delay(2000).then(() => fadeOutActivePlayer(1500));
       })
     );
   }
@@ -281,13 +275,13 @@ export async function playDeactivationSound(profileId = 'merica') {
   const hapticFn = HAPTICS[id]?.deactivate;
 
   // Kill any lingering activation audio instantly — user expects silence
-  await stopActiveSound();
+  stopActivePlayer();
 
   // Haptics only
   if (hapticFn) await hapticFn().catch(() => {});
 }
 
 // ── Internal helpers ─────────────────────────────────────────────────────────
-function delay(ms) {
+function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

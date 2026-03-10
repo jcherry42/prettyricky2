@@ -18,6 +18,15 @@ Production-ready native mobile application for the automotive industry featuring
 
 ## What's Been Implemented
 
+### expo-av to expo-audio Migration (Mar 2026)
+- **Fully replaced** `expo-av` with `expo-audio` across all 4 source files, app config, and tests
+- **Migrated files**: `audioPlayback.ts`, `soundProfiles.ts`, `PttContext.tsx`, `TowerTalkOverlay.tsx`
+- **Config updates**: `app.json` plugin changed from `expo-av` to `expo-audio`, `package.json` removed `expo-av`
+- **Test updates**: `jest.setup.js` and `SoundProfiles.test.js` mocks migrated to `expo-audio` API
+- **Key API changes**: `Audio.Sound.createAsync` → `createAudioPlayer`, `Audio.Recording.createAsync` → `useAudioRecorder` hook, `Audio.setAudioModeAsync` → `setAudioModeAsync` (renamed props: `playsInSilentModeIOS` → `playsInSilentMode`, `allowsRecordingIOS` → `allowsRecording`), `sound.unloadAsync()` → `player.remove()`, `recording.stopAndUnloadAsync()` → `recorder.stop()`
+- **TypeScript**: Zero errors, all types properly imported
+- **Tests**: 6/6 SoundProfiles tests pass, 0 regressions
+
 ### Deployment Hardening v2.1.0 (Mar 2026)
 - **ORJSONResponse**: Default response class for 3-5x faster JSON serialization
 - **Readiness Probe**: `GET /api/ready` — checks `app.state.ready` + DB ping, returns 503 until fully initialized
@@ -81,7 +90,6 @@ Production-ready native mobile application for the automotive industry featuring
 ### P2 (Medium)
 - Team management features
 - Real CRM integration
-- Replace `expo-av` with `expo-audio`/`expo-video` before Expo SDK 54
 
 ## Test Coverage
 - **32 tests passing** (19 performance + 13 deployment hardening)

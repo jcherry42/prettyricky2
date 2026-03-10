@@ -1,5 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Audio } from 'expo-av';
+import {
+  createAudioPlayer,
+  setAudioModeAsync,
+  requestRecordingPermissionsAsync,
+  useAudioRecorder,
+  RecordingPresets,
+} from 'expo-audio';
 import { Platform } from 'react-native';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
@@ -9,31 +15,15 @@ const PttContext = createContext(null);
 
 const MAX_RECORDING_MS = 15000; // 15-second hard cap
 
-// Recording options for Whisper-compatible m4a output.
-//
-// The previous version used outputFormat: 'aac' (string) which is wrong.
-// iOS CoreAudio FourCC for MPEG-4 AAC is 'aac ' (4 chars, trailing space).
-// Passing the wrong string causes NSOSStatusErrorDomain Code=1718449215
-// ("fmt?") = kAudioFormatUnsupportedDataFormatError.
-//
-// Fix: use expo-av's RecordingOptionsPresets.HIGH_QUALITY which resolves
-// the correct IOSOutputFormat.MPEG4AAC constant internally, then override
-// numberOfChannels to 1 (mono) to keep file sizes small for Whisper.
+// Recording options for Whisper-compatible m4a output (mono, 44.1kHz).
+// Uses expo-audio RecordingPresets.HIGH_QUALITY as base, overriding to mono
+// for optimal speech recognition file sizes.
 const RECORDING_OPTIONS = {
-  ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+  ...RecordingPresets.HIGH_QUALITY,
   isMeteringEnabled: true,
-  ios: {
-    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.ios,
-    numberOfChannels: 1,   // mono is optimal for speech recognition
-    sampleRate: 44100,
-    bitRate: 128000,
-  },
-  android: {
-    ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
-    numberOfChannels: 1,
-    sampleRate: 44100,
-    bitRate: 128000,
-  },
+  numberOfChannels: 1,
+  sampleRate: 44100,
+  bitRate: 128000,
 };
 
 // Determine the correct MIME type and file extension per platform
@@ -56,7 +46,9 @@ export function PttProvider({ children }) {
   const [result, setResult] = useState({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
   const [elapsedMs, setElapsedMs] = useState(0);
 
-  const recordingRef = useRef(null);
+  // expo-audio recorder hook — reusable across multiple recordings
+  const recorder = useAudioRecorder(RECORDING_OPTIONS);
+
   const playbackRef = useRef(null);
   const timeoutRef = useRef(null);
   const timerRef = useRef(null);
@@ -88,11 +80,11 @@ export function PttProvider({ children }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recordingRef.current) {
-        recordingRef.current.stopAndUnloadAsync().catch(() => {});
+      if (recorder.isRecording) {
+        recorder.stop().catch(() => {});
       }
       if (playbackRef.current) {
-        playbackRef.current.unloadAsync().catch(() => {});
+        try { playbackRef.current.remove(); } catch {}
       }
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (timerRef.current) clearInterval(timerRef.current);
@@ -110,34 +102,36 @@ export function PttProvider({ children }) {
 
     try {
       // --- Request microphone permission ---
-      const perm = await Audio.requestPermissionsAsync();
+      const perm = await requestRecordingPermissionsAsync();
       if (!perm.granted) {
         setStatus('error');
-        setError('Microphone permission denied. Go to Settings → Supercharg\'d → Microphone to enable it.');
+        setError('Microphone permission denied. Go to Settings \u2192 Supercharg\'d \u2192 Microphone to enable it.');
         return;
       }
 
       // Set audio mode for recording
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: true,
+        playsInSilentMode: true,
       });
 
-      // Create recording with explicit Whisper-compatible options
-      const { recording } = await Audio.Recording.createAsync(RECORDING_OPTIONS);
+      // Prepare and start recording
+      await recorder.prepareToRecordAsync();
 
       // --- RACE CONDITION FIX ---
       // If the user tapped "stop" while we were requesting permission or
       // initializing the recorder, abort cleanly instead of starting.
       if (pendingStopRef.current) {
-        await recording.stopAndUnloadAsync().catch(() => {});
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
+        await recorder.stop().catch(() => {});
+        await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
         setStatus('idle');
         return;
       }
 
+      // Start recording
+      recorder.record();
+
       // Recording is live — update state and start elapsed timer
-      recordingRef.current = recording;
       setStatus('recording');
       startTimer();
 
@@ -146,7 +140,7 @@ export function PttProvider({ children }) {
         stopFnRef.current?.();
       }, MAX_RECORDING_MS);
 
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message || String(e);
       console.warn('[PTT] startRecording error:', msg);
       setStatus('error');
@@ -158,7 +152,7 @@ export function PttProvider({ children }) {
         setError(`Could not start recording: ${msg}`);
       }
     }
-  }, [status, targetLang, startTimer]);
+  }, [status, targetLang, startTimer, recorder]);
 
   const stopRecording = useCallback(async () => {
     pendingStopRef.current = true;
@@ -169,23 +163,21 @@ export function PttProvider({ children }) {
     }
     stopTimer();
 
-    const rec = recordingRef.current;
-    if (!rec) {
-      // Recording object not yet created (still in 'requesting' state).
+    if (!recorder.isRecording) {
+      // Recording not yet started (still in 'requesting' state).
       // pendingStopRef is set; startRecording will detect it and abort.
       return;
     }
-    recordingRef.current = null;
 
     try {
       setStatus('uploading');
-      await rec.stopAndUnloadAsync();
-      const uri = rec.getURI();
+      await recorder.stop();
+      const uri = recorder.uri;
 
       // Release microphone immediately
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: true,
+      await setAudioModeAsync({
+        allowsRecording: false,
+        playsInSilentMode: true,
       }).catch(() => {});
 
       if (!uri) throw new Error('Recording produced no audio file');
@@ -206,12 +198,12 @@ export function PttProvider({ children }) {
 
       setResult(out);
       setStatus('done');
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message || String(e);
       console.warn('[PTT] stopRecording error:', msg);
       setStatus('error');
       if (msg.includes('Backend URL')) {
-        setError('Backend not connected. Check your server URL in Command Center → Settings.');
+        setError('Backend not connected. Check your server URL in Command Center \u2192 Settings.');
       } else if (msg.includes('timed out') || msg.includes('Timeout') || msg.includes('TIMEOUT')) {
         setError('Translation timed out. Please try again with a shorter phrase.');
       } else if (msg.includes('Network request failed') || msg.includes('fetch')) {
@@ -220,7 +212,7 @@ export function PttProvider({ children }) {
         setError(msg);
       }
     }
-  }, [direction, targetLang, stopTimer]);
+  }, [direction, targetLang, stopTimer, recorder]);
 
   // Keep stopFnRef current on every render (no deps needed for this)
   stopFnRef.current = stopRecording;
@@ -245,18 +237,19 @@ export function PttProvider({ children }) {
       const uri = `data:${mime};base64,${b64}`;
 
       if (playbackRef.current) {
-        await playbackRef.current.unloadAsync();
+        try { playbackRef.current.remove(); } catch {}
         playbackRef.current = null;
       }
 
-      const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: true });
-      playbackRef.current = sound;
-      sound.setOnPlaybackStatusUpdate((st) => {
-        if (st.isLoaded && st.didJustFinish) {
+      const player = createAudioPlayer({ uri });
+      playbackRef.current = player;
+      player.addListener('playbackStatusUpdate', (st) => {
+        if (st.didJustFinish) {
           setStatus('done');
         }
       });
-    } catch (e) {
+      player.play();
+    } catch (e: any) {
       setStatus('error');
       setError(String(e?.message || e));
     }

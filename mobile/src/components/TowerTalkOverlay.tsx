@@ -6,7 +6,14 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
-import { Audio } from 'expo-av';
+import {
+  setAudioModeAsync,
+  requestRecordingPermissionsAsync,
+  useAudioRecorder,
+  RecordingPresets,
+  IOSOutputFormat,
+  AudioQuality,
+} from 'expo-audio';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
@@ -163,8 +170,29 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   // Voice dictation state
   const [isDictating, setIsDictating] = useState(false);
   const [dictationStatus, setDictationStatus] = useState('idle'); // idle | requesting | recording | processing
-  const recordingRef = useRef(null);
   const dictationTimeoutRef = useRef(null);
+
+  // expo-audio recorder hook for voice dictation (reusable)
+  const dictationRecorder = useAudioRecorder(
+    Platform.OS === 'web'
+      ? RecordingPresets.HIGH_QUALITY
+      : {
+          extension: '.m4a',
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          bitRate: 128000,
+          isMeteringEnabled: true,
+          android: { outputFormat: 'mpeg4', audioEncoder: 'aac' },
+          ios: {
+            outputFormat: IOSOutputFormat.MPEG4AAC,
+            audioQuality: AudioQuality.MAX,
+            linearPCMBitDepth: 16,
+            linearPCMIsBigEndian: false,
+            linearPCMIsFloat: false,
+          },
+          web: { mimeType: 'audio/webm', bitsPerSecond: 128000 },
+        }
+  );
 
   // Refs for keyboard focus chaining
   const vehicleRef = useRef(null);
@@ -198,27 +226,18 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       setDictationStatus('requesting');
       setIsDictating(true);
 
-      const perm = await Audio.requestPermissionsAsync();
+      const perm = await requestRecordingPermissionsAsync();
       if (!perm.granted) {
         setDictationStatus('idle');
         setIsDictating(false);
-        Alert.alert('Microphone Required', "Enable microphone access in Settings → Supercharg'd → Microphone");
+        Alert.alert('Microphone Required', "Enable microphone access in Settings \u2192 Supercharg'd \u2192 Microphone");
         return;
       }
 
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Platform.OS === 'web'
-          ? Audio.RecordingOptionsPresets.HIGH_QUALITY
-          : {
-              isMeteringEnabled: true,
-              android: { extension: '.m4a', outputFormat: 2, audioEncoder: 3, sampleRate: 44100, numberOfChannels: 1, bitRate: 128000 },
-              ios: { extension: '.m4a', outputFormat: 'aac', audioQuality: 127, sampleRate: 44100, numberOfChannels: 1, bitRate: 128000, linearPCMBitDepth: 16, linearPCMIsBigEndian: false, linearPCMIsFloat: false },
-              web: { mimeType: 'audio/webm', bitsPerSecond: 128000 },
-            }
-      );
-      recordingRef.current = recording;
+      await dictationRecorder.prepareToRecordAsync();
+      dictationRecorder.record();
       setDictationStatus('recording');
 
       // Auto-stop after 12 seconds
@@ -227,26 +246,24 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       setDictationStatus('idle');
       setIsDictating(false);
     }
-  }, []);
+  }, [dictationRecorder]);
 
   const stopDictation = useCallback(async () => {
     if (dictationTimeoutRef.current) {
       clearTimeout(dictationTimeoutRef.current);
       dictationTimeoutRef.current = null;
     }
-    const rec = recordingRef.current;
-    if (!rec) {
+    if (!dictationRecorder.isRecording) {
       setDictationStatus('idle');
       setIsDictating(false);
       return;
     }
-    recordingRef.current = null;
 
     try {
       setDictationStatus('processing');
-      await rec.stopAndUnloadAsync();
-      const uri = rec.getURI();
-      await Audio.setAudioModeAsync({ allowsRecordingIOS: false, playsInSilentModeIOS: true }).catch(() => {});
+      await dictationRecorder.stop();
+      const uri = dictationRecorder.uri;
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true }).catch(() => {});
 
       if (!uri) throw new Error('No audio recorded');
 
@@ -267,7 +284,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       setDictationStatus('idle');
       setIsDictating(false);
     }
-  }, []);
+  }, [dictationRecorder]);
 
   const runTowerTalk = useCallback(async () => {
     try {

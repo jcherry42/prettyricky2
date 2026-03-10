@@ -20,11 +20,30 @@ jest.mock('expo-linear-gradient', () => {
   return { LinearGradient: View };
 });
 
-jest.mock('expo-av', () => ({
-  Audio: {
-    Sound: { createAsync: jest.fn() },
-    setAudioModeAsync: jest.fn(),
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(),
+  setAudioModeAsync: jest.fn(),
+  requestRecordingPermissionsAsync: jest.fn(),
+  useAudioRecorder: jest.fn(() => ({
+    isRecording: false,
+    uri: null,
+    prepareToRecordAsync: jest.fn(),
+    record: jest.fn(),
+    stop: jest.fn(),
+  })),
+  RecordingPresets: {
+    HIGH_QUALITY: {
+      extension: '.m4a',
+      sampleRate: 44100,
+      numberOfChannels: 2,
+      bitRate: 128000,
+      android: { outputFormat: 'mpeg4', audioEncoder: 'aac' },
+      ios: { outputFormat: 'aac ', audioQuality: 127, linearPCMBitDepth: 16, linearPCMIsBigEndian: false, linearPCMIsFloat: false },
+      web: { mimeType: 'audio/webm', bitsPerSecond: 128000 },
+    },
   },
+  IOSOutputFormat: { MPEG4AAC: 'aac ' },
+  AudioQuality: { MAX: 127 },
 }));
 
 jest.mock('@expo/vector-icons', () => {
