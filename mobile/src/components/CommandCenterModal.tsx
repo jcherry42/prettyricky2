@@ -25,21 +25,33 @@ function TabButton({ label, icon, active, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
       {/* Glass base */}
-      <View style={[StyleSheet.absoluteFill, { borderRadius: 16, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
-      {/* Gradient tint */}
+      <View style={[StyleSheet.absoluteFill, { borderRadius: 16, backgroundColor: active ? 'rgba(18,14,6,0.88)' : 'rgba(20,24,32,0.80)' }]} />
+      {/* Gradient tint — richer gold when active */}
       <LinearGradient
         colors={active
-          ? ['rgba(214,178,94,0.25)', 'rgba(214,178,94,0.06)', 'rgba(0,0,0,0.18)']
+          ? ['rgba(214,178,94,0.52)', 'rgba(214,178,94,0.18)', 'rgba(120,90,30,0.10)']
           : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
         }
-        locations={[0, 0.45, 1]}
+        locations={[0, 0.5, 1]}
         style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
       />
-      {/* Specular highlight */}
-      <View style={{ position: 'absolute', top: 3, left: '22%', right: '22%', height: 6, borderRadius: 3, backgroundColor: active ? 'rgba(214,178,94,0.18)' : 'rgba(255,255,255,0.14)' }} />
-      <Ionicons name={icon} size={14} color={active ? colors.gold : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.60)', textShadowRadius: 10, textShadowOffset: { width: 0, height: 0 } } : undefined} />
+      {/* Second gold wash layer for depth */}
+      {active && (
+        <LinearGradient
+          colors={['rgba(214,178,94,0.12)', 'transparent', 'rgba(214,178,94,0.08)']}
+          locations={[0, 0.5, 1]}
+          style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+        />
+      )}
+      {/* Bright specular highlight */}
+      <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 7, borderRadius: 4, backgroundColor: active ? 'rgba(255,220,140,0.32)' : 'rgba(255,255,255,0.14)' }} />
+      {/* Secondary bottom reflection */}
+      {active && <View style={{ position: 'absolute', bottom: 4, left: '25%', right: '25%', height: 4, borderRadius: 2, backgroundColor: 'rgba(214,178,94,0.12)' }} />}
+      <Ionicons name={icon} size={14} color={active ? '#F0D87A' : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
       <Text style={[styles.tabText, active && styles.tabTextActive]} numberOfLines={1} ellipsizeMode="tail">
         {label}
       </Text>
@@ -999,10 +1011,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   tabBtnActive: {
-    borderColor: 'rgba(214,178,94,0.55)',
-    shadowColor: 'rgba(214,178,94,0.40)',
-    shadowOpacity: 0.80,
-    shadowRadius: 14,
+    borderColor: 'rgba(214,178,94,0.70)',
+    shadowColor: 'rgba(214,178,94,0.55)',
+    shadowOpacity: 0.90,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 0 },
   },
   tabText: {
