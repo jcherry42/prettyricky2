@@ -14,8 +14,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Paths exempt from rate limiting (k8s probes, CORS preflight)
-_EXEMPT_PATHS = frozenset({"/api/health", "/api/ready"})
+# Paths exempt from rate limiting (k8s probes, CORS preflight, ops tools)
+_EXEMPT_PATHS = frozenset({"/api/health", "/api/ready", "/api/diagnostics"})
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):

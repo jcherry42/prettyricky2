@@ -285,6 +285,7 @@ from routes.pin_auth import router as pin_auth_router, init_pin_auth_routes
 from routes.license import router as license_router, init_license_routes
 from routes.knowledge import router as knowledge_router
 from routes.telemetry import router as telemetry_router
+from routes.diagnostics import router as diagnostics_router, init_diagnostics_routes
 
 init_printer_routes_v2(db)
 init_vehicle_routes_v2(db, vehicle_repo)
@@ -301,6 +302,7 @@ init_pin_auth_routes(db)
 UPLOADS_DIR = Path(__file__).parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 init_license_routes(db, ai_gateway, UPLOADS_DIR)
+init_diagnostics_routes(db, ai_gateway, UPLOADS_DIR)
 
 api_router.include_router(printer_router_v2)
 api_router.include_router(vehicles_router_v2)
@@ -315,6 +317,7 @@ api_router.include_router(pin_auth_router)
 api_router.include_router(license_router)
 api_router.include_router(knowledge_router)
 api_router.include_router(telemetry_router)
+api_router.include_router(diagnostics_router)
 
 
 # ============== HEALTH & STATUS ==============

@@ -22,9 +22,10 @@ Production-ready native mobile application for the automotive industry featuring
 - **ORJSONResponse**: Default response class for 3-5x faster JSON serialization
 - **Readiness Probe**: `GET /api/ready` — checks `app.state.ready` + DB ping, returns 503 until fully initialized
 - **Metrics Endpoint**: `GET /api/metrics` — uptime, process memory/CPU/threads, database stats, AI gateway stats
+- **Diagnostics Endpoint**: `GET /api/diagnostics` — full self-test: DB ping, DB CRUD cycle, index verification, AI gateway health, NHTSA connectivity, filesystem write, memory check — all probes run in parallel with 10s timeout each
 - **Security Headers Enhanced**: HSTS with `preload`, `Cache-Control: no-store`, `Pragma: no-cache`, `X-Response-Time` header
 - **CORS Regex Fixed**: Double-escaped backslashes corrected for proper regex matching
-- **Rate Limiter**: Health/ready probes and OPTIONS preflight exempt from rate limiting
+- **Rate Limiter**: Health/ready/diagnostics probes and OPTIONS preflight exempt from rate limiting
 - **JWT Security**: Auto-generates random key with warning if `JWT_SECRET_KEY` not set (no insecure default)
 - **Database Indexes**: Compound indexes on vehicles (vin, category+created_at), customers (name, lead_status+created_at, id unique), auth (type unique)
 - **MongoDB**: Enabled `retryWrites`, `retryReads`, `compressors` (zstd, snappy, zlib)
@@ -59,6 +60,7 @@ Production-ready native mobile application for the automotive industry featuring
 - `GET /api/health` — Health check (cached 5s, version included)
 - `GET /api/ready` — Readiness probe (DB ping) **NEW**
 - `GET /api/metrics` — Operational metrics **NEW**
+- `GET /api/diagnostics` — Full system self-test (7 parallel probes) **NEW**
 - `POST /api/vin/decode-batch` — Batch decode up to 50 VINs
 - `POST /api/vin/extract-from-image` — AI Vision VIN OCR
 - `GET /api/vin/decode/{vin}` — Single VIN decode (cached)
