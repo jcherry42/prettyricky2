@@ -3,6 +3,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  ImageBackground,
   Modal,
   Pressable,
   StyleSheet,
@@ -227,10 +228,16 @@ export function PinScreen() {
     : (authError && !shaking ? authError : null);
 
   return (
-    <LinearGradient
-      colors={['#040608', '#0A0E14', '#0D1117']}
-      style={[styles.container, { paddingTop: insets.top + 40 }]}
+    <ImageBackground
+      source={require('../../assets/images/pin_bg.png')}
+      style={styles.bgImage}
+      resizeMode="cover"
     >
+      {/* Dark overlay so PIN UI stays readable over the photo */}
+      <LinearGradient
+        colors={['rgba(4,6,8,0.82)', 'rgba(10,14,20,0.78)', 'rgba(13,17,23,0.85)']}
+        style={[styles.container, { paddingTop: insets.top + 40 }]}
+      >
       {/* ── Branding ── */}
       <View style={styles.header}>
         <Text style={styles.brandName}>SUPERCHARG'D</Text>
@@ -487,10 +494,12 @@ export function PinScreen() {
         </View>
       </Modal>
     </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  bgImage:   { flex: 1, width: '100%', height: '100%' },
   container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   header:    { alignItems: 'center', marginBottom: 40 },
