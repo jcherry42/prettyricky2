@@ -525,6 +525,7 @@ const styles = StyleSheet.create({
   keyDisabled:  { borderColor: 'transparent' },
   keyText:      { fontSize: 28, fontWeight: '400', color: colors.text },
 
+  hintText:   { marginTop: 32, fontSize: 13, color: 'rgba(214,178,94,0.55)', textAlign: 'center' as const },
   forgotBtn:  { marginTop: 32 },
   forgotText: { fontSize: 13, color: 'rgba(214,178,94,0.6)', textDecorationLine: 'underline', textDecorationColor: 'rgba(214,178,94,0.3)' },
 

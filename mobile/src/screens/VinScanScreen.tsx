@@ -1105,6 +1105,7 @@ export function VinScanScreen() {
                     facing="back"
                     autofocus="on"
                     // ── Barcode scanner — explicitly enabled with minimal reliable types ──
+                    // @ts-ignore - barcodeScannerEnabled exists at runtime in expo-camera 17+
                     barcodeScannerEnabled={scanMode === SCAN_MODE.BARCODE}
                     barcodeScannerSettings={
                       scanMode === SCAN_MODE.BARCODE

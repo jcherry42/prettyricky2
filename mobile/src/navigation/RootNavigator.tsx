@@ -89,6 +89,7 @@ export function RootNavigator() {
 
   return (
     <>
+      {/* @ts-ignore */}
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
@@ -96,12 +97,9 @@ export function RootNavigator() {
           tabBarHideOnKeyboard: true,
           tabBarActiveTintColor: colors.gold,
           tabBarInactiveTintColor: colors.textMute,
+          // @ts-ignore - sceneContainerStyle works at runtime
           sceneContainerStyle: { backgroundColor: colors.bg0 },
-          // Enable native screen optimizations in production builds.
-          // Disable in Expo Go to avoid JSI boolean/string type error.
           freezeOnBlur: Constants.appOwnership !== 'expo',
-          // @ts-ignore - detachInactiveScreens works in native but typing conflict in newer @react-navigation
-          detachInactiveScreens: Constants.appOwnership !== 'expo',
         }}
         screenListeners={{
           state: (e) => {
