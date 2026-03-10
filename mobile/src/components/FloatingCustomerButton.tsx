@@ -1,10 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../theme/colors';
 import { impactHeavy } from '../lib/haptics';
 import { scaleSize } from '../theme/layout';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
@@ -29,13 +27,10 @@ export function FloatingCustomerButton({ onPress, disabled }: { onPress?: () => 
           disabled && { opacity: 0.5 },
         ]}
       >
-        {/* Deep frosted glass base */}
-        <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFill} />
+        {/* Glass base */}
+        <View style={[StyleSheet.absoluteFill, styles.glassBase]} />
 
-        {/* Inner dark glass depth layer */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
-
-        {/* Gradient tint over the blur */}
+        {/* Gradient tint */}
         <LinearGradient
           colors={['rgba(56,189,248,0.35)', 'rgba(14,165,233,0.10)', 'rgba(0,0,0,0.20)']}
           locations={[0, 0.45, 1]}
@@ -44,15 +39,14 @@ export function FloatingCustomerButton({ onPress, disabled }: { onPress?: () => 
           end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Bright specular highlight */}
+        {/* Specular highlights */}
         <View style={styles.specularBright} />
-        {/* Soft specular */}
         <View style={styles.specularSoft} />
 
-        {/* Inner rim highlight */}
+        {/* Inner rim */}
         <View style={styles.innerRim} />
 
-        {/* Perfectly centered icon with glow */}
+        {/* Centered icon with glow */}
         <Ionicons
           name="bluetooth"
           size={22}
@@ -101,6 +95,10 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 14,
+  },
+  glassBase: {
+    borderRadius: SIZE / 2,
+    backgroundColor: 'rgba(20,24,32,0.85)',
   },
   specularBright: {
     position: 'absolute',

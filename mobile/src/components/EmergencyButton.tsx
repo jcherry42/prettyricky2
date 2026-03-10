@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Animated, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -37,11 +36,8 @@ export function EmergencyButton({ onPress }) {
         accessibilityLabel="Emergency responses"
         accessibilityRole="button"
       >
-        {/* Deep frosted glass base */}
-        <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFill} />
-
-        {/* Inner dark glass depth layer */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
+        {/* Glass base */}
+        <View style={[StyleSheet.absoluteFill, styles.glassBase]} />
 
         {/* Red gradient tint */}
         <LinearGradient
@@ -52,15 +48,14 @@ export function EmergencyButton({ onPress }) {
           end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Bright specular highlight */}
+        {/* Specular highlights */}
         <View style={styles.specularBright} />
-        {/* Soft specular */}
         <View style={styles.specularSoft} />
 
-        {/* Inner rim highlight */}
+        {/* Inner rim */}
         <View style={styles.innerRim} />
 
-        {/* Perfectly centered icon with glow */}
+        {/* Centered icon with glow */}
         <Animated.View style={{ opacity: pulseAnim.interpolate({ inputRange: [0.5, 1], outputRange: [0.75, 1] }) }}>
           <Ionicons
             name="alert-circle"
@@ -112,6 +107,10 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 6 },
     elevation: 14,
+  },
+  glassBase: {
+    borderRadius: SIZE / 2,
+    backgroundColor: 'rgba(20,24,32,0.85)',
   },
   specularBright: {
     position: 'absolute',

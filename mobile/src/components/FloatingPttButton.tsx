@@ -1,6 +1,5 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,16 +35,14 @@ export function FloatingPttButton({ onPress, recording, disabled, flagLabel, bad
         onPress={() => { impactHeavy(); onPress?.(); }}
         style={({ pressed }) => [
           styles.btn,
+          { shadowColor: glowColor },
           recording && styles.btnRecording,
           disabled && { opacity: 0.5 },
           pressed && !recording && { transform: [{ scale: 0.955 }], opacity: 0.92 },
         ]}
       >
-        {/* Deep frosted glass base */}
-        <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFill} />
-
-        {/* Inner dark glass depth layer */}
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
+        {/* Glass base */}
+        <View style={[StyleSheet.absoluteFill, styles.glassBase]} />
 
         {/* Gradient tint */}
         <LinearGradient
@@ -60,15 +57,14 @@ export function FloatingPttButton({ onPress, recording, disabled, flagLabel, bad
           end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Bright specular highlight */}
+        {/* Specular highlights */}
         <View style={[styles.specularBright, recording && styles.specularRecording]} />
-        {/* Soft specular */}
         <View style={[styles.specularSoft, recording && styles.specularSoftRecording]} />
 
-        {/* Inner rim highlight */}
+        {/* Inner rim */}
         <View style={[styles.innerRim, { borderColor: recording ? 'rgba(255,45,45,0.12)' : 'rgba(147,51,234,0.12)' }]} />
 
-        {/* Properly centered Ionicon */}
+        {/* Centered Ionicon */}
         <Ionicons
           name={recording ? 'stop' : 'mic'}
           size={24}
@@ -105,7 +101,6 @@ const styles = StyleSheet.create({
   },
   badgeText:  { color: colors.text, fontSize: 12, fontWeight: '900' },
   badgeArrow: { color: 'rgba(255,159,67,0.75)', fontSize: 12, fontWeight: '900' },
-
   halo: {
     position: 'absolute',
     alignSelf: 'center',
@@ -118,7 +113,6 @@ const styles = StyleSheet.create({
     shadowRadius: 22,
     shadowOffset: { width: 0, height: 0 },
   },
-
   btn: {
     width: SIZE,
     height: SIZE,
@@ -129,7 +123,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(109,40,217,0.10)',
-    shadowColor: '#9333EA',
     shadowOpacity: 0.70,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
@@ -138,7 +131,10 @@ const styles = StyleSheet.create({
   btnRecording: {
     borderColor: 'rgba(255,45,45,0.55)',
     backgroundColor: 'rgba(255,45,45,0.10)',
-    shadowColor: '#FF2D2D',
+  },
+  glassBase: {
+    borderRadius: SIZE / 2,
+    backgroundColor: 'rgba(20,24,32,0.85)',
   },
   specularBright: {
     position: 'absolute',

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,21 +23,19 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
       onPress={() => { impactMedium(); onPress?.(); }}
       style={({ pressed }) => [
         styles.btn,
+        { shadowColor: glowColor },
         pressed && { transform: [{ scale: 0.94 }], opacity: 0.90 },
       ]}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
-      {/* Outer glow halo — behind, not clipped */}
+      {/* Outer glow halo */}
       <View style={[styles.halo, { shadowColor: glowColor }]} />
 
-      {/* Deep frosted glass base */}
-      <BlurView intensity={80} tint="dark" style={[StyleSheet.absoluteFill, { borderRadius: SIZE / 2 }]} />
+      {/* Glass base: dark semi-transparent background */}
+      <View style={[StyleSheet.absoluteFill, styles.glassBase]} />
 
-      {/* Inner dark glass layer for depth */}
-      <View style={[StyleSheet.absoluteFill, { borderRadius: SIZE / 2, backgroundColor: 'rgba(0,0,0,0.35)' }]} />
-
-      {/* Colored gradient tint over blur */}
+      {/* Colored gradient tint */}
       <LinearGradient
         colors={tintColors}
         locations={[0, 0.45, 1]}
@@ -52,8 +49,8 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
       {/* Secondary softer specular */}
       <View style={styles.specularSoft} />
 
-      {/* Inner rim highlight — edge light catch */}
-      <View style={[styles.innerRim, { borderColor: `${glowColor}22` }]} />
+      {/* Inner rim highlight */}
+      <View style={[styles.innerRim, { borderColor: `${glowColor}18` }]} />
 
       {/* Icon with glow */}
       <Ionicons
@@ -77,7 +74,6 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
   return (
     <View style={[styles.cluster, { bottom: bottomOffset }]} pointerEvents="box-none">
       <View style={styles.pillBar}>
-
         {/* Command Center — green */}
         <GlassButton
           icon="settings-outline"
@@ -87,7 +83,6 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           onPress={onCheck}
           accessibilityLabel="Command Center"
         />
-
         {/* Print Center — orange */}
         <GlassButton
           icon="push-outline"
@@ -97,7 +92,6 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           onPress={onEject}
           accessibilityLabel="Print Center"
         />
-
         {/* Tower Talk — red */}
         <GlassButton
           icon="radio-outline"
@@ -107,7 +101,6 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
           onPress={onTowerTalk}
           accessibilityLabel="Tower Talk AI Assistant"
         />
-
       </View>
     </View>
   );
@@ -121,7 +114,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 90,
   },
-
   pillBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -137,7 +129,6 @@ const styles = StyleSheet.create({
     shadowRadius: 32,
     shadowOffset: { width: 0, height: 14 },
   },
-
   btn: {
     width: SIZE,
     height: SIZE,
@@ -148,13 +139,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOpacity: 0.60,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 12,
   },
-
+  glassBase: {
+    borderRadius: SIZE / 2,
+    backgroundColor: 'rgba(20,24,32,0.85)',
+  },
   halo: {
     position: 'absolute',
     width: SIZE + 16,
@@ -165,8 +158,6 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 0 },
   },
-
-  // Bright sharp specular arc at top
   specularBright: {
     position: 'absolute',
     top: 4,
@@ -176,8 +167,6 @@ const styles = StyleSheet.create({
     borderRadius: SIZE * 0.09,
     backgroundColor: 'rgba(255,255,255,0.22)',
   },
-
-  // Wider softer specular underneath
   specularSoft: {
     position: 'absolute',
     top: 3,
@@ -187,8 +176,6 @@ const styles = StyleSheet.create({
     borderRadius: SIZE * 0.14,
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
-
-  // Inner rim highlight
   innerRim: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: SIZE / 2,
