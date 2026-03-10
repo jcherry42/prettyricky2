@@ -7,76 +7,101 @@ Production-ready native mobile application for the automotive industry featuring
 - Secure PIN recovery system
 - Premium "glass" aesthetic UI
 - Native build & deployment pipeline
-- Deployment hardening & optimization
+- Deployment hardening, modernization & future-proofing
 
 ## Architecture
-- **Backend**: FastAPI + MongoDB (deployed on Emergent) — v2.1.0
-- **Frontend**: React Native / Expo (built locally by user)
+- **Backend**: FastAPI 0.135.1 + MongoDB (deployed on Emergent) — v2.1.0
+- **Frontend**: React Native / Expo SDK 54 (built locally by user)
 - **AI**: GPT-4o Vision via AI Gateway (Emergent LLM key)
 - **OCR**: ML Kit on-device + GPT-4o cloud fallback
 - **Serialization**: ORJSONResponse (3-5x faster than stdlib json)
+- **API Versioning**: `/api/v2/*` rewrite middleware (backward compatible)
+- **File Structure**: `services/`, `models/`, `routes/`, `security/`, `middleware/`
 
 ## What's Been Implemented
 
-### expo-av to expo-audio Migration (Mar 2026)
-- **Fully replaced** `expo-av` with `expo-audio` across all 4 source files, app config, and tests
-- **Migrated files**: `audioPlayback.ts`, `soundProfiles.ts`, `PttContext.tsx`, `TowerTalkOverlay.tsx`
-- **Config updates**: `app.json` plugin changed from `expo-av` to `expo-audio`, `package.json` removed `expo-av`
-- **Test updates**: `jest.setup.js` and `SoundProfiles.test.js` mocks migrated to `expo-audio` API
-- **Key API changes**: `Audio.Sound.createAsync` → `createAudioPlayer`, `Audio.Recording.createAsync` → `useAudioRecorder` hook, `Audio.setAudioModeAsync` → `setAudioModeAsync` (renamed props: `playsInSilentModeIOS` → `playsInSilentMode`, `allowsRecordingIOS` → `allowsRecording`), `sound.unloadAsync()` → `player.remove()`, `recording.stopAndUnloadAsync()` → `recorder.stop()`
-- **TypeScript**: Zero errors, all types properly imported
-- **Tests**: 6/6 SoundProfiles tests pass, 0 regressions
+### Modernization & Future-Proofing (Mar 2026 — Latest)
+
+**1. Stale Upload Cleanup**
+- Background task on startup removes license images older than 72 hours
+- Stale chunk upload sessions (>1hr) are pruned automatically
+- Logs freed disk space (MB) and removed file/chunk counts
+
+**2. Test Suite Fixed — 178/179 passing (was 15 failures)**
+- Fixed `/api/license/scan` → `/api/license/scan-direct` across all test files
+- Fixed `/api/integrations/schema/` → `/api/integrations/schemas/`
+- Fixed case sensitivity assertions to match `normalize_name()` behavior
+- Fixed tests using simple upload vs OCR endpoint for image URLs
+- Fixed hardcoded external URLs → `localhost:8001` for reliable testing
+- Increased timeout from 15s → 30s for NHTSA-dependent tests
+- Single remaining failure is a flaky NHTSA timeout (external dependency)
+
+**3. Environment Validation**
+- Server raises `RuntimeError` on startup if `MONGO_URL` or `DB_NAME` missing
+- Logs warnings for recommended but optional vars (`EMERGENT_LLM_KEY`, `JWT_SECRET_KEY`)
+- Fail-fast prevents cryptic runtime errors
+
+**4. FastAPI Upgrade — 0.110.1 → 0.135.1**
+- Better Pydantic v2 integration, security patches, async improvements
+- Starlette upgraded to 0.52.1
+
+**5. Backend File Reorganization**
+- Created `services/` package with 10 service modules
+- Created `models/` package with response models
+- Backward-compatible shims at old paths (legacy imports still work)
+- New code should import from `services.ai_gateway`, `models.responses`, etc.
+
+**6. Pydantic Response Models**
+- `models/responses.py`: `HealthResponse`, `ReadyResponse`, `RootResponse`, `MetricsResponse`, `DiagnosticsResponse`, `CustomerListResponse`, `VinDecodeResponse`, `TradeInCountResponse`, `BatchVinDecodeResponse`, `AuthStatusResponse`
+- Breaking contract changes caught at compile time, not in production
+
+**7. API Versioning**
+- `/api/v2/*` middleware rewrites to `/api/*` (both paths valid)
+- Mobile app can gradually migrate to versioned endpoints
+- Future `/api/v3` can be a separate router without breaking v2 clients
+
+**8. MongoDB TTL Indexes**
+- `ai_gateway_logs`: auto-expire after 30 days
+- `telemetry_events`: auto-expire after 90 days
+- `_diagnostics`: auto-expire after 1 hour (safety net for temp docs)
+
+**10. Offline Queue for Mobile**
+- `offlineQueue.ts`: queues POST/PUT/DELETE/PATCH when offline, auto-replays on reconnect
+- Persists to AsyncStorage (survives app restarts)
+- Max 3 retries per request before dropping
+- `useOfflineQueue.ts` React hook: `pendingCount`, `isOnline`, `flush()`, `clear()`
+
+### expo-av → expo-audio Migration (Mar 2026)
+- Replaced `expo-av` with `expo-audio` in all 4 source files + config + tests
+- Key API changes: `Audio.Sound.createAsync` → `createAudioPlayer`, `Audio.Recording.createAsync` → `useAudioRecorder` hook
+- TypeScript: zero errors, 10/10 mobile tests pass
 
 ### Deployment Hardening v2.1.0 (Mar 2026)
-- **ORJSONResponse**: Default response class for 3-5x faster JSON serialization
-- **Readiness Probe**: `GET /api/ready` — checks `app.state.ready` + DB ping, returns 503 until fully initialized
-- **Metrics Endpoint**: `GET /api/metrics` — uptime, process memory/CPU/threads, database stats, AI gateway stats
-- **Diagnostics Endpoint**: `GET /api/diagnostics` — full self-test: DB ping, DB CRUD cycle, index verification, AI gateway health, NHTSA connectivity, filesystem write, memory check — all probes run in parallel with 10s timeout each
-- **Security Headers Enhanced**: HSTS with `preload`, `Cache-Control: no-store`, `Pragma: no-cache`, `X-Response-Time` header
-- **CORS Regex Fixed**: Double-escaped backslashes corrected for proper regex matching
-- **Rate Limiter**: Health/ready/diagnostics probes and OPTIONS preflight exempt from rate limiting
-- **JWT Security**: Auto-generates random key with warning if `JWT_SECRET_KEY` not set (no insecure default)
-- **Database Indexes**: Compound indexes on vehicles (vin, category+created_at), customers (name, lead_status+created_at, id unique), auth (type unique)
-- **MongoDB**: Enabled `retryWrites`, `retryReads`, `compressors` (zstd, snappy, zlib)
-- **Upload Cleanup**: Background task prunes stale chunk upload sessions (>1hr) on startup
-- **Structured Logging**: Consistent format, health probes excluded from request logs
-- **Startup Time Tracking**: Boot time logged in ms (currently ~211ms)
-- **Swagger/ReDoc/OpenAPI Disabled**: Docs endpoints disabled for production security
-- **Correlation Middleware**: X-Correlation-ID + X-Response-Time on all responses
-- **Version**: Bumped to 2.1.0
+- ORJSONResponse, readiness probe, metrics endpoint, diagnostics (7 parallel probes)
+- Security headers: HSTS preload, Cache-Control no-store, X-Response-Time
+- Rate limiter: health/ready/diagnostics/loopback exempt
+- JWT auto-key, MongoDB compression (zstd/snappy/zlib), retryWrites/retryReads
+- Swagger/ReDoc/OpenAPI disabled for production security
 
-### Batch VIN Decode (Feb 2026)
-- `POST /api/vin/decode-batch` — decode up to 50 VINs in a single call
-- Parallel NHTSA lookups via `asyncio.gather` + shared connection pool
-- Cached VINs resolve instantly; uncached hit NHTSA concurrently
-
-### Performance Optimization Pass (Feb 2026)
+### Performance Optimization (Feb 2026)
 - NHTSA VIN Decode Cache: 24x speedup (413ms → 17ms)
-- Shared httpx Client with connection pooling
-- Rate Limiter rewritten with deque sliding window O(1)
-- Health Check 5-second cache
-
-### VIN Scanner Overhaul (Feb 2026)
-- `POST /api/vin/extract-from-image` — AI Vision VIN OCR (95%+ accuracy)
-
-### Driver's License Scanner (Completed Previously)
-- 95%+ accuracy with triple-pass OCR prompt
-
-### UI Glass Effect (Completed Previously)
-- Pure React Native CSS glassmorphism
+- Shared httpx client, rate limiter O(1) deque, health check 5s cache
 
 ## Key API Endpoints
-- `GET /api/health` — Health check (cached 5s, version included)
-- `GET /api/ready` — Readiness probe (DB ping) **NEW**
-- `GET /api/metrics` — Operational metrics **NEW**
-- `GET /api/diagnostics` — Full system self-test (7 parallel probes) **NEW**
+- `GET /api/health` — Health check (cached 5s)
+- `GET /api/ready` — Readiness probe (DB ping)
+- `GET /api/metrics` — Operational metrics
+- `GET /api/diagnostics` — Full system self-test (7 probes)
+- `GET /api/v2/*` — Versioned API (rewrites to `/api/*`)
 - `POST /api/vin/decode-batch` — Batch decode up to 50 VINs
 - `POST /api/vin/extract-from-image` — AI Vision VIN OCR
-- `GET /api/vin/decode/{vin}` — Single VIN decode (cached)
-- `POST /api/vin/save` / `POST /api/vin/save-to-inventory`
 - `POST /api/license/scan-direct` — DL scan OCR
 - `DELETE /api/customers/{customer_id}` — Delete customer
-- `GET /api/ai/stats` — AI gateway observability
+
+## Test Coverage
+- **Backend**: 178/179 passing + 30 modernization tests (testing agent verified)
+- **Mobile**: 10/10 tests passing, TypeScript 0 errors
+- Test files: `tests/test_performance_optimizations.py`, `tests/test_deployment_hardening.py`, `tests/test_iteration6_features.py`
 
 ## Prioritized Backlog
 
@@ -90,8 +115,4 @@ Production-ready native mobile application for the automotive industry featuring
 ### P2 (Medium)
 - Team management features
 - Real CRM integration
-
-## Test Coverage
-- **32 tests passing** (19 performance + 13 deployment hardening)
-- Backend fully tested via testing agent — 100% pass rate
-- Test files: `tests/test_performance_optimizations.py`, `tests/test_deployment_hardening.py`
+- Lock screen audio controls (expo-audio `setActiveForLockScreen`)
