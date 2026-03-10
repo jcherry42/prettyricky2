@@ -277,20 +277,23 @@ async def _nhtsa_decode_with_retry(vin: str, max_retries: int = 3) -> dict:
     raise last_error
 
 
-@router.get("/vin/decode/{vin}")
-async def decode_vin(vin: str):
-    """Decode VIN using multiple sources for cross-reference accuracy."""
-    vin = vin.upper().strip()
+_VALID_VIN_CHARS = set("ABCDEFGHJKLMNPRSTUVWXYZ0123456789")
 
+
+def _validate_vin_format(vin: str) -> Optional[str]:
+    """Return error string if VIN format is invalid, else None."""
     if len(vin) != 17:
-        raise HTTPException(status_code=400, detail="VIN must be exactly 17 characters")
+        return "VIN must be exactly 17 characters"
+    if any(c in vin for c in "IOQ"):
+        return "VIN contains invalid characters (I, O, Q are not allowed)"
+    if not all(c in _VALID_VIN_CHARS for c in vin):
+        return "VIN contains invalid characters"
+    return None
 
-    if any(c in vin for c in ["I", "O", "Q"]):
-        raise HTTPException(status_code=400, detail="VIN contains invalid characters (I, O, Q are not allowed)")
 
-    valid_chars = set("ABCDEFGHJKLMNPRSTUVWXYZ0123456789")
-    if not all(c in valid_chars for c in vin):
-        raise HTTPException(status_code=400, detail="VIN contains invalid characters")
+async def _decode_single_vin(vin: str) -> Dict[str, Any]:
+    """Core decode logic — returns vehicle dict. Raises on hard failure."""
+    vin = vin.upper().strip()
 
     validation_results = {
         "checksum_valid": validate_vin_checksum(vin),
@@ -298,166 +301,254 @@ async def decode_vin(vin: str):
         "sources_checked": ["NHTSA vPIC", "WMI Database", "ISO 3779 Checksum"],
     }
 
+    data = await _nhtsa_decode_with_retry(vin)
+
+    results = data.get("Results", [])
+    if not results:
+        return {"vin": vin, "error": "No vehicle data found"}
+
+    raw_data: Dict[str, str] = {}
+    for item in results:
+        var_name = item.get("Variable", "")
+        value = item.get("Value")
+        if value and str(value).strip() and str(value).strip().lower() not in ["not applicable", "n/a", "-"]:
+            raw_data[var_name] = str(value).strip()
+
+    vehicle: Dict[str, Any] = {
+        "vin": vin,
+        "year": raw_data.get("Model Year"),
+        "make": raw_data.get("Make"),
+        "model": raw_data.get("Model"),
+        "trim": raw_data.get("Trim") or raw_data.get("Series"),
+        "manufacturer": raw_data.get("Manufacturer Name"),
+        "plant_country": raw_data.get("Plant Country"),
+        "plant_city": raw_data.get("Plant City"),
+        "plant_state": raw_data.get("Plant State"),
+        "vehicle_type": raw_data.get("Vehicle Type"),
+        "body_class": raw_data.get("Body Class"),
+        "doors": raw_data.get("Doors"),
+        "drive_type": raw_data.get("Drive Type"),
+        "steering": raw_data.get("Steering Location"),
+        "fuel_type": raw_data.get("Fuel Type - Primary"),
+        "electrification": raw_data.get("Electrification Level"),
+        "cylinders": raw_data.get("Engine Number of Cylinders"),
+        "displacement": raw_data.get("Displacement (L)"),
+        "engine_model": raw_data.get("Engine Model"),
+        "engine_config": raw_data.get("Engine Configuration"),
+        "horsepower": raw_data.get("Engine Brake (hp) From"),
+        "other_engine_info": raw_data.get("Other Engine Info"),
+        "transmission": raw_data.get("Transmission Style"),
+        "transmission_speeds": raw_data.get("Transmission Speeds"),
+        "airbags_front": raw_data.get("Front Air Bag Locations"),
+        "airbags_side": raw_data.get("Side Air Bag Locations"),
+        "airbags_knee": raw_data.get("Knee Air Bag Locations"),
+        "airbags_curtain": raw_data.get("Curtain Air Bag Locations"),
+        "seat_belts": raw_data.get("Seat Belt Type"),
+        "abs": raw_data.get("Anti-lock Braking System (ABS)"),
+        "esc": raw_data.get("Electronic Stability Control (ESC)"),
+        "traction_control": raw_data.get("Traction Control"),
+        "tpms": raw_data.get("Tire Pressure Monitoring System (TPMS) Type"),
+        "backup_camera": raw_data.get("Backup Camera"),
+        "blind_spot": raw_data.get("Blind Spot Warning (BSW)"),
+        "lane_departure": raw_data.get("Lane Departure Warning (LDW)"),
+        "forward_collision": raw_data.get("Forward Collision Warning (FCW)"),
+        "auto_emergency_braking": raw_data.get("Automatic Emergency Braking (AEB)"),
+        "gvwr": raw_data.get("Gross Vehicle Weight Rating From"),
+        "curb_weight": raw_data.get("Curb Weight (lb)"),
+        "wheelbase": raw_data.get("Wheelbase (inches)"),
+        "bed_length": raw_data.get("Bed Length (inches)"),
+        "bed_type": raw_data.get("Bed Type"),
+        "series": raw_data.get("Series"),
+        "series2": raw_data.get("Series2"),
+        "base_price": raw_data.get("Base Price ($)"),
+    }
+
+    vehicle = {k: v for k, v in vehicle.items() if v is not None}
+
+    wmi_info = validation_results["wmi_data"]
+    if wmi_info.get("manufacturer") != "Unknown":
+        nhtsa_make = vehicle.get("make", "").upper()
+        wmi_make = wmi_info.get("manufacturer", "").upper()
+        if wmi_make in nhtsa_make or nhtsa_make in wmi_make:
+            validation_results["manufacturer_verified"] = True
+        else:
+            validation_results["manufacturer_verified"] = False
+            validation_results["wmi_manufacturer"] = wmi_info["manufacturer"]
+
+    engine_parts = []
+    if vehicle.get("displacement"):
+        engine_parts.append(f"{vehicle['displacement']}L")
+    if vehicle.get("cylinders"):
+        cyl = int(vehicle["cylinders"])
+        if cyl >= 6:
+            engine_parts.append(f"V{cyl}")
+        elif cyl == 4:
+            engine_parts.append("4-Cylinder")
+        else:
+            engine_parts.append(f"{cyl}-Cylinder")
+    if vehicle.get("engine_config") and "engine_config" not in str(engine_parts):
+        engine_parts.append(vehicle["engine_config"])
+    if engine_parts:
+        vehicle["engine_display"] = " ".join(engine_parts)
+    elif vehicle.get("other_engine_info"):
+        vehicle["engine_display"] = vehicle["other_engine_info"]
+    elif vehicle.get("electrification"):
+        vehicle["engine_display"] = vehicle["electrification"]
+
+    loc_parts = []
+    if vehicle.get("plant_city"):
+        loc_parts.append(vehicle["plant_city"])
+    if vehicle.get("plant_state"):
+        loc_parts.append(vehicle["plant_state"])
+    if vehicle.get("plant_country"):
+        country = vehicle["plant_country"]
+        if "UNITED STATES" in country.upper():
+            country = "USA"
+        elif "(" in country:
+            country = country.split("(")[1].replace(")", "").strip()
+        loc_parts.append(country)
+    if loc_parts:
+        vehicle["assembly_location"] = ", ".join(loc_parts)
+
+    safety_features = []
+    if vehicle.get("airbags_front"):
+        safety_features.append("Front Airbags")
+    if vehicle.get("airbags_side"):
+        safety_features.append("Side Airbags")
+    if vehicle.get("airbags_knee"):
+        safety_features.append("Knee Airbags")
+    if vehicle.get("airbags_curtain"):
+        safety_features.append("Curtain Airbags")
+    if vehicle.get("abs"):
+        safety_features.append("ABS")
+    if vehicle.get("esc"):
+        safety_features.append("ESC")
+    if vehicle.get("backup_camera"):
+        safety_features.append("Backup Camera")
+    if vehicle.get("blind_spot"):
+        safety_features.append("Blind Spot Warning")
+    if vehicle.get("lane_departure"):
+        safety_features.append("Lane Departure Warning")
+    if vehicle.get("forward_collision"):
+        safety_features.append("Forward Collision Warning")
+    if vehicle.get("auto_emergency_braking"):
+        safety_features.append("Auto Emergency Braking")
+    if safety_features:
+        vehicle["safety_features"] = safety_features
+
+    confidence = 0
+    if validation_results["checksum_valid"]:
+        confidence += 40
+    if vehicle.get("make") and vehicle.get("model"):
+        confidence += 30
+    if vehicle.get("year"):
+        confidence += 15
+    if validation_results.get("manufacturer_verified", True):
+        confidence += 15
+
+    vehicle["validation"] = {
+        "confidence_score": confidence,
+        "checksum_valid": validation_results["checksum_valid"],
+        "sources_checked": validation_results["sources_checked"],
+        "manufacturer_verified": validation_results.get("manufacturer_verified", True),
+    }
+
+    return vehicle
+
+
+@router.get("/vin/decode/{vin}")
+async def decode_vin(vin: str):
+    """Decode VIN using multiple sources for cross-reference accuracy."""
+    vin = vin.upper().strip()
+
+    err = _validate_vin_format(vin)
+    if err:
+        raise HTTPException(status_code=400, detail=err)
+
     try:
-        data = await _nhtsa_decode_with_retry(vin)
-
-        results = data.get("Results", [])
-        if not results:
-            raise HTTPException(status_code=404, detail="No vehicle data found for this VIN")
-
-        raw_data: Dict[str, str] = {}
-        for item in results:
-            var_name = item.get("Variable", "")
-            value = item.get("Value")
-            if value and str(value).strip() and str(value).strip().lower() not in ["not applicable", "n/a", "-"]:
-                raw_data[var_name] = str(value).strip()
-
-        vehicle: Dict[str, Any] = {
-            "vin": vin,
-            "year": raw_data.get("Model Year"),
-            "make": raw_data.get("Make"),
-            "model": raw_data.get("Model"),
-            "trim": raw_data.get("Trim") or raw_data.get("Series"),
-            "manufacturer": raw_data.get("Manufacturer Name"),
-            "plant_country": raw_data.get("Plant Country"),
-            "plant_city": raw_data.get("Plant City"),
-            "plant_state": raw_data.get("Plant State"),
-            "vehicle_type": raw_data.get("Vehicle Type"),
-            "body_class": raw_data.get("Body Class"),
-            "doors": raw_data.get("Doors"),
-            "drive_type": raw_data.get("Drive Type"),
-            "steering": raw_data.get("Steering Location"),
-            "fuel_type": raw_data.get("Fuel Type - Primary"),
-            "electrification": raw_data.get("Electrification Level"),
-            "cylinders": raw_data.get("Engine Number of Cylinders"),
-            "displacement": raw_data.get("Displacement (L)"),
-            "engine_model": raw_data.get("Engine Model"),
-            "engine_config": raw_data.get("Engine Configuration"),
-            "horsepower": raw_data.get("Engine Brake (hp) From"),
-            "other_engine_info": raw_data.get("Other Engine Info"),
-            "transmission": raw_data.get("Transmission Style"),
-            "transmission_speeds": raw_data.get("Transmission Speeds"),
-            "airbags_front": raw_data.get("Front Air Bag Locations"),
-            "airbags_side": raw_data.get("Side Air Bag Locations"),
-            "airbags_knee": raw_data.get("Knee Air Bag Locations"),
-            "airbags_curtain": raw_data.get("Curtain Air Bag Locations"),
-            "seat_belts": raw_data.get("Seat Belt Type"),
-            "abs": raw_data.get("Anti-lock Braking System (ABS)"),
-            "esc": raw_data.get("Electronic Stability Control (ESC)"),
-            "traction_control": raw_data.get("Traction Control"),
-            "tpms": raw_data.get("Tire Pressure Monitoring System (TPMS) Type"),
-            "backup_camera": raw_data.get("Backup Camera"),
-            "blind_spot": raw_data.get("Blind Spot Warning (BSW)"),
-            "lane_departure": raw_data.get("Lane Departure Warning (LDW)"),
-            "forward_collision": raw_data.get("Forward Collision Warning (FCW)"),
-            "auto_emergency_braking": raw_data.get("Automatic Emergency Braking (AEB)"),
-            "gvwr": raw_data.get("Gross Vehicle Weight Rating From"),
-            "curb_weight": raw_data.get("Curb Weight (lb)"),
-            "wheelbase": raw_data.get("Wheelbase (inches)"),
-            "bed_length": raw_data.get("Bed Length (inches)"),
-            "bed_type": raw_data.get("Bed Type"),
-            "series": raw_data.get("Series"),
-            "series2": raw_data.get("Series2"),
-            "base_price": raw_data.get("Base Price ($)"),
-        }
-
-        vehicle = {k: v for k, v in vehicle.items() if v is not None}
-
-        wmi_info = validation_results["wmi_data"]
-        if wmi_info.get("manufacturer") != "Unknown":
-            nhtsa_make = vehicle.get("make", "").upper()
-            wmi_make = wmi_info.get("manufacturer", "").upper()
-            if wmi_make in nhtsa_make or nhtsa_make in wmi_make:
-                validation_results["manufacturer_verified"] = True
-            else:
-                validation_results["manufacturer_verified"] = False
-                validation_results["wmi_manufacturer"] = wmi_info["manufacturer"]
-
-        engine_parts = []
-        if vehicle.get("displacement"):
-            engine_parts.append(f"{vehicle['displacement']}L")
-        if vehicle.get("cylinders"):
-            cyl = int(vehicle["cylinders"])
-            if cyl >= 6:
-                engine_parts.append(f"V{cyl}")
-            elif cyl == 4:
-                engine_parts.append("4-Cylinder")
-            else:
-                engine_parts.append(f"{cyl}-Cylinder")
-        if vehicle.get("engine_config") and "engine_config" not in str(engine_parts):
-            engine_parts.append(vehicle["engine_config"])
-        if engine_parts:
-            vehicle["engine_display"] = " ".join(engine_parts)
-        elif vehicle.get("other_engine_info"):
-            vehicle["engine_display"] = vehicle["other_engine_info"]
-        elif vehicle.get("electrification"):
-            vehicle["engine_display"] = vehicle["electrification"]
-
-        loc_parts = []
-        if vehicle.get("plant_city"):
-            loc_parts.append(vehicle["plant_city"])
-        if vehicle.get("plant_state"):
-            loc_parts.append(vehicle["plant_state"])
-        if vehicle.get("plant_country"):
-            country = vehicle["plant_country"]
-            if "UNITED STATES" in country.upper():
-                country = "USA"
-            elif "(" in country:
-                country = country.split("(")[1].replace(")", "").strip()
-            loc_parts.append(country)
-        if loc_parts:
-            vehicle["assembly_location"] = ", ".join(loc_parts)
-
-        safety_features = []
-        if vehicle.get("airbags_front"):
-            safety_features.append("Front Airbags")
-        if vehicle.get("airbags_side"):
-            safety_features.append("Side Airbags")
-        if vehicle.get("airbags_knee"):
-            safety_features.append("Knee Airbags")
-        if vehicle.get("airbags_curtain"):
-            safety_features.append("Curtain Airbags")
-        if vehicle.get("abs"):
-            safety_features.append("ABS")
-        if vehicle.get("esc"):
-            safety_features.append("ESC")
-        if vehicle.get("backup_camera"):
-            safety_features.append("Backup Camera")
-        if vehicle.get("blind_spot"):
-            safety_features.append("Blind Spot Warning")
-        if vehicle.get("lane_departure"):
-            safety_features.append("Lane Departure Warning")
-        if vehicle.get("forward_collision"):
-            safety_features.append("Forward Collision Warning")
-        if vehicle.get("auto_emergency_braking"):
-            safety_features.append("Auto Emergency Braking")
-        if safety_features:
-            vehicle["safety_features"] = safety_features
-
-        confidence = 0
-        if validation_results["checksum_valid"]:
-            confidence += 40
-        if vehicle.get("make") and vehicle.get("model"):
-            confidence += 30
-        if vehicle.get("year"):
-            confidence += 15
-        if validation_results.get("manufacturer_verified", True):
-            confidence += 15
-
-        vehicle["validation"] = {
-            "confidence_score": confidence,
-            "checksum_valid": validation_results["checksum_valid"],
-            "sources_checked": validation_results["sources_checked"],
-            "manufacturer_verified": validation_results.get("manufacturer_verified", True),
-        }
-
+        vehicle = await _decode_single_vin(vin)
+        if "error" in vehicle:
+            raise HTTPException(status_code=404, detail=vehicle["error"])
         if not vehicle.get("make") or not vehicle.get("model"):
             raise HTTPException(status_code=404, detail="Could not decode vehicle make/model from VIN")
-
         return vehicle
 
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail="Failed to connect to VIN decoder service") from e
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Batch VIN Decode — parallel NHTSA lookups with cache
+# ═══════════════════════════════════════════════════════════════════════
+
+_BATCH_MAX = 50
+
+
+class VinBatchRequest(BaseModel):
+    vins: List[str]
+
+
+class VinBatchResultItem(BaseModel):
+    vin: str
+    success: bool
+    vehicle: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    cached: bool = False
+
+
+class VinBatchResponse(BaseModel):
+    total: int
+    decoded: int
+    failed: int
+    results: List[VinBatchResultItem]
+
+
+@router.post("/vin/decode-batch", response_model=VinBatchResponse)
+async def decode_vin_batch(request: VinBatchRequest):
+    """
+    Decode up to 50 VINs in a single call.
+
+    All VINs are resolved in parallel. Cached VINs return instantly;
+    uncached VINs hit NHTSA concurrently via the shared connection pool.
+    """
+    if not request.vins:
+        raise HTTPException(status_code=400, detail="vins list cannot be empty")
+    if len(request.vins) > _BATCH_MAX:
+        raise HTTPException(status_code=400, detail=f"Maximum {_BATCH_MAX} VINs per batch")
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_vins = []
+    for v in request.vins:
+        cleaned = v.upper().strip()
+        if cleaned not in seen:
+            seen.add(cleaned)
+            unique_vins.append(cleaned)
+
+    async def _resolve(vin: str) -> VinBatchResultItem:
+        err = _validate_vin_format(vin)
+        if err:
+            return VinBatchResultItem(vin=vin, success=False, error=err)
+        was_cached = _nhtsa_cache_get(vin) is not None
+        try:
+            vehicle = await _decode_single_vin(vin)
+            if "error" in vehicle:
+                return VinBatchResultItem(vin=vin, success=False, error=vehicle["error"])
+            if not vehicle.get("make") or not vehicle.get("model"):
+                return VinBatchResultItem(vin=vin, success=False, error="Could not decode make/model")
+            return VinBatchResultItem(vin=vin, success=True, vehicle=vehicle, cached=was_cached)
+        except Exception as e:
+            return VinBatchResultItem(vin=vin, success=False, error=str(e))
+
+    results = await asyncio.gather(*[_resolve(v) for v in unique_vins])
+
+    decoded_count = sum(1 for r in results if r.success)
+    return VinBatchResponse(
+        total=len(results),
+        decoded=decoded_count,
+        failed=len(results) - decoded_count,
+        results=list(results),
+    )
 
 
 @router.post("/vin/save")
