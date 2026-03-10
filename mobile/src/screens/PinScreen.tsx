@@ -277,6 +277,8 @@ export function PinScreen() {
             onPress={() => handleKey(key)}
             disabled={key === '' || processing || isLocked}
           >
+            {/* Glass specular */}
+            {key !== '' && <View style={{ position: 'absolute', top: 3, left: '24%', right: '24%', height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.10)' }} />}
             {key === '⌫' ? (
               <Ionicons name="backspace-outline" size={26} color={isLocked ? colors.textMute : colors.text} />
             ) : (
@@ -502,13 +504,13 @@ const styles = StyleSheet.create({
   dotsRow: { flexDirection: 'row', gap: 18, marginBottom: 50 },
   dot: {
     width: 18, height: 18, borderRadius: 9,
-    borderWidth: 1.5, borderColor: 'rgba(214,178,94,0.50)',
-    backgroundColor: 'transparent',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(20,24,32,0.60)',
     shadowColor: 'rgba(214,178,94,0.30)', shadowOpacity: 0.5, shadowRadius: 4, shadowOffset: { width: 0, height: 0 },
   },
   dotFilled: {
     backgroundColor: colors.gold, borderColor: colors.gold,
-    shadowColor: colors.gold, shadowOpacity: 0.8, shadowRadius: 8,
+    shadowColor: colors.gold, shadowOpacity: 0.8, shadowRadius: 10,
   },
 
   keypad:       { flexDirection: 'row', flexWrap: 'wrap', width: Math.min(SW * 0.75, 300), justifyContent: 'center' },
@@ -516,12 +518,13 @@ const styles = StyleSheet.create({
   key: {
     width: Math.min(SW * 0.75, 300) / 3 - 12, height: 64, margin: 6,
     borderRadius: 32,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'rgba(214,178,94,0.06)',
+    backgroundColor: 'rgba(20,24,32,0.75)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)',
     justifyContent: 'center', alignItems: 'center',
-    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+    overflow: 'hidden',
+    shadowColor: '#000', shadowOpacity: 0.45, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
   },
-  keyInvisible: { backgroundColor: 'transparent', borderColor: 'transparent' },
-  keyPressed:   { backgroundColor: 'rgba(214,178,94,0.12)', borderColor: 'rgba(214,178,94,0.25)' },
+  keyInvisible: { backgroundColor: 'transparent', borderColor: 'transparent', shadowOpacity: 0 },
+  keyPressed:   { backgroundColor: 'rgba(214,178,94,0.18)', borderColor: 'rgba(214,178,94,0.35)' },
   keyDisabled:  { borderColor: 'transparent' },
   keyText:      { fontSize: 28, fontWeight: '400', color: colors.text },
 

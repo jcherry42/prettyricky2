@@ -517,23 +517,29 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                           style={({ pressed }) => [
                             styles.inquiryPill,
                             active && styles.inquiryPillActive,
-                            pressed && { opacity: 0.9 },
+                            pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
                           ]}
                         >
-                          {active && (
-                            <LinearGradient
-                              colors={['rgba(214,178,94,0.22)', 'rgba(17,24,39,0.98)']}
-                              locations={[0, 1]}
-                              style={StyleSheet.absoluteFill}
-                              start={{ x: 0, y: 0 }}
-                              end={{ x: 1, y: 1 }}
-                            />
-                          )}
+                          {/* Glass base */}
+                          <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
+                          <LinearGradient
+                            colors={active
+                              ? ['rgba(214,178,94,0.28)', 'rgba(214,178,94,0.06)', 'rgba(0,0,0,0.18)']
+                              : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
+                            }
+                            locations={[0, 0.45, 1]}
+                            style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                            start={{ x: 0.1, y: 0 }}
+                            end={{ x: 0.9, y: 1 }}
+                          />
+                          {/* Specular */}
+                          <View style={{ position: 'absolute', top: 3, left: '22%', right: '22%', height: 4, borderRadius: 2, backgroundColor: active ? 'rgba(214,178,94,0.16)' : 'rgba(255,255,255,0.12)' }} />
                           <View style={styles.inquiryInner}>
                             <Ionicons
                               name={it.icon as any}
                               size={15}
                               color={active ? colors.gold : colors.textMute}
+                              style={active ? { textShadowColor: 'rgba(214,178,94,0.60)', textShadowRadius: 10, textShadowOffset: { width: 0, height: 0 } } : undefined}
                             />
                             <Text style={[styles.inquiryText, active && { color: colors.gold }]}>
                               {it.label}
@@ -1005,19 +1011,18 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
-    backgroundColor: 'rgba(8,10,14,0.95)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   inquiryPillActive: {
-    borderColor: 'rgba(214,178,94,0.80)',
-    backgroundColor: 'rgba(214,178,94,0.06)',
-    shadowColor: 'rgba(214,178,94,0.60)',
+    borderColor: 'rgba(214,178,94,0.70)',
+    shadowColor: 'rgba(214,178,94,0.50)',
     shadowOpacity: 0.8,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 0 },

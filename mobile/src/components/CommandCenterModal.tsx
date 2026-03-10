@@ -23,8 +23,23 @@ const TABS = [
 
 function TabButton({ label, icon, active, onPress }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9 }]}>
-      <Ionicons name={icon} size={14} color={active ? colors.gold : colors.textMute} />
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
+      {/* Glass base */}
+      <View style={[StyleSheet.absoluteFill, { borderRadius: 16, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
+      {/* Gradient tint */}
+      <LinearGradient
+        colors={active
+          ? ['rgba(214,178,94,0.25)', 'rgba(214,178,94,0.06)', 'rgba(0,0,0,0.18)']
+          : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
+        }
+        locations={[0, 0.45, 1]}
+        style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
+      />
+      {/* Specular highlight */}
+      <View style={{ position: 'absolute', top: 3, left: '22%', right: '22%', height: 6, borderRadius: 3, backgroundColor: active ? 'rgba(214,178,94,0.18)' : 'rgba(255,255,255,0.14)' }} />
+      <Ionicons name={icon} size={14} color={active ? colors.gold : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.60)', textShadowRadius: 10, textShadowOffset: { width: 0, height: 0 } } : undefined} />
       <Text style={[styles.tabText, active && styles.tabTextActive]} numberOfLines={1} ellipsizeMode="tail">
         {label}
       </Text>
@@ -972,15 +987,23 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.50,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   tabBtnActive: {
-    borderColor: 'rgba(214,178,94,0.60)',
-    backgroundColor: 'rgba(214,178,94,0.10)',
+    borderColor: 'rgba(214,178,94,0.55)',
+    shadowColor: 'rgba(214,178,94,0.40)',
+    shadowOpacity: 0.80,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 0 },
   },
   tabText: {
     color: colors.textMute,

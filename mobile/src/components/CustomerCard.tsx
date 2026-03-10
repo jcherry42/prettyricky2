@@ -113,11 +113,16 @@ export const CustomerCard = memo(function CustomerCard({ customer, onPress }: Cu
         accessibilityLabel={`Customer ${name}`}
       >
         <LinearGradient
-          colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.03)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.10)']}
+          locations={[0, 0.45, 1]}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
           style={styles.gradient}
         >
+          {/* Glass base layer */}
+          <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: 'rgba(20,24,32,0.82)' }]} />
+          {/* Top specular highlight */}
+          <View style={{ position: 'absolute', top: 3, left: '15%', right: '15%', height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.10)' }} />
           {/* Quilted leather pattern */}
           <QuiltPattern />
 
@@ -172,24 +177,22 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     borderRadius: 14,
     overflow: 'hidden',
-    // Layered shadow system
     shadowColor: '#000',
-    shadowOpacity: 0.55,
-    shadowRadius: 20,
+    shadowOpacity: 0.60,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+    elevation: 12,
   },
   gradient: {
     paddingVertical: 14,
     paddingRight: 14,
     paddingLeft: 4,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
+    borderColor: 'rgba(255,255,255,0.10)',
     borderRadius: 14,
     position: 'relative',
     overflow: 'hidden',
-    // Warm micro-tint background
-    backgroundColor: 'rgba(214,178,94,0.015)',
+    backgroundColor: 'rgba(10,14,20,0.70)',
   },
   quiltedPattern: {
     position: 'absolute',

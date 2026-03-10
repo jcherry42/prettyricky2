@@ -70,18 +70,19 @@ export function RootNavigator() {
 
   // Safe-area-aware tab bar: height = content + bottom inset
   // This ensures the tab bar never intrudes into the home indicator zone on iPhone X+
+  // Safe-area-aware tab bar with glass effect
   const tabBarStyle = useMemo(
     () => ({
-      backgroundColor: 'rgba(4,6,8,0.95)',
-      borderTopColor: 'rgba(214,178,94,0.10)',
+      backgroundColor: 'rgba(4,6,10,0.88)',
+      borderTopColor: 'rgba(214,178,94,0.12)',
       borderTopWidth: 0.5,
       height: TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4),
       paddingTop: 8,
       paddingBottom: Math.max(insets.bottom, 4) + 2,
       shadowColor: '#000',
-      shadowOpacity: 0.75,
-      shadowRadius: 30,
-      shadowOffset: { width: 0, height: -8 },
+      shadowOpacity: 0.85,
+      shadowRadius: 32,
+      shadowOffset: { width: 0, height: -10 },
       elevation: 28,
     }),
     [insets.bottom]

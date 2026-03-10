@@ -212,11 +212,25 @@ export function EmergencyInquiryModal({ visible, onClose }) {
                   onPress={() => handleSelectType(inq)}
                   style={({ pressed }) => [
                     styles.typeCard,
-                    active && { borderColor: `${inq.color}80`, backgroundColor: `${inq.color}12` },
-                    pressed && { opacity: 0.85 },
+                    active && { borderColor: `${inq.color}60` },
+                    pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
                   ]}
                 >
-                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} />
+                  {/* Glass base */}
+                  <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
+                  <LinearGradient
+                    colors={active
+                      ? [`${inq.color}30`, `${inq.color}08`, 'rgba(0,0,0,0.18)']
+                      : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
+                    }
+                    locations={[0, 0.45, 1]}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                    start={{ x: 0.1, y: 0 }}
+                    end={{ x: 0.9, y: 1 }}
+                  />
+                  {/* Specular highlight */}
+                  <View style={{ position: 'absolute', top: 3, left: '20%', right: '20%', height: 5, borderRadius: 3, backgroundColor: active ? `${inq.color}22` : 'rgba(255,255,255,0.12)' }} />
+                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} style={active ? { textShadowColor: inq.color, textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } } : undefined} />
                   <Text style={[styles.typeLabel, active && { color: inq.color }]}>{inq.label}</Text>
                 </Pressable>
               );
@@ -334,14 +348,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     gap: 6,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.50,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
   },
   typeLabel: {
     color: colors.textMute,

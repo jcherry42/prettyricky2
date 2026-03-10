@@ -111,15 +111,29 @@ export function SportModeButton() {
       <Animated.View style={[styles.btnWrap, pressStyle]}>
         <Pressable onPress={handlePress} style={({ pressed }) => pressed && styles.pressed}>
           <View style={[styles.btn, active && styles.btnActive]}>
+            {/* Glass base layer */}
+            <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: active ? 'rgba(20,6,0,0.85)' : 'rgba(20,24,32,0.80)' }]} />
             {active && (
               <LinearGradient
-                colors={['rgba(255,70,0,0.20)', 'rgba(140,15,0,0.55)', 'rgba(60,0,0,0.80)']}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
+                colors={['rgba(255,70,0,0.32)', 'rgba(140,15,0,0.16)', 'rgba(0,0,0,0.22)']}
+                locations={[0, 0.45, 1]}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.9, y: 1 }}
                 style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
               />
             )}
-            <Ionicons name="flame" size={active ? 26 : 22} color={active ? '#FF9030' : colors.textMute} />
+            {!active && (
+              <LinearGradient
+                colors={['rgba(255,255,255,0.07)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.10)']}
+                locations={[0, 0.45, 1]}
+                style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.9, y: 1 }}
+              />
+            )}
+            {/* Specular */}
+            <View style={{ position: 'absolute', top: 3, left: '20%', right: '20%', height: 5, borderRadius: 3, backgroundColor: active ? 'rgba(255,160,60,0.18)' : 'rgba(255,255,255,0.12)' }} />
+            <Ionicons name="flame" size={active ? 26 : 22} color={active ? '#FF9030' : colors.textMute} style={active ? { textShadowColor: '#FF5500', textShadowRadius: 14, textShadowOffset: { width: 0, height: 0 } } : undefined} />
             {!active && <Text style={styles.label}>SPORT</Text>}
             {active && (
               <View style={styles.flagBadge}>
@@ -166,8 +180,8 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
-    backgroundColor: 'rgba(8,8,10,0.97)',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -181,7 +195,6 @@ const styles = StyleSheet.create({
     shadowColor: '#FF5500',
     shadowOpacity: 0.90,
     shadowRadius: 28,
-    backgroundColor: 'rgba(30,4,0,0.98)',
   },
   pressed: { opacity: 0.88 },
   label: {
