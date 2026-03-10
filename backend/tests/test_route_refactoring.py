@@ -17,7 +17,7 @@ import asyncio
 import websockets
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://native-build-test.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://automotive-vin-ocr.preview.emergentagent.com').rstrip('/')
 
 
 class TestHealthAndStatus:
