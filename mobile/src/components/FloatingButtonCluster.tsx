@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { impactMedium } from '../lib/haptics';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
-const SIZE = 54;
+const SIZE = 44;
 
 interface GlassButtonProps {
   icon: string;
@@ -55,7 +55,7 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
       {/* Icon with glow */}
       <Ionicons
         name={icon as any}
-        size={22}
+        size={19}
         color={iconColor}
         style={{
           textShadowColor: glowColor,
@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
   pillBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 44,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
