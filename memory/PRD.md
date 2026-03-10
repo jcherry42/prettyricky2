@@ -65,11 +65,11 @@ Production-ready native mobile application for the automotive industry featuring
 - `telemetry_events`: auto-expire after 90 days
 - `_diagnostics`: auto-expire after 1 hour (safety net for temp docs)
 
-**10. Offline Queue for Mobile**
-- `offlineQueue.ts`: queues POST/PUT/DELETE/PATCH when offline, auto-replays on reconnect
-- Persists to AsyncStorage (survives app restarts)
-- Max 3 retries per request before dropping
-- `useOfflineQueue.ts` React hook: `pendingCount`, `isOnline`, `flush()`, `clear()`
+**10. Offline Indicator & Sync UI**
+- Enhanced `OfflineBanner.tsx` — 4 visual states: offline (red pulse), syncing (blue progress bar), done (green flash), pending (gold with SYNC button)
+- `NetworkStatusDot` added to Intake screen header (was already on Home screen)
+- Tap banner or dot to manually trigger sync when items are queued
+- All components have `data-testid` attributes for testing
 
 ### expo-av → expo-audio Migration (Mar 2026)
 - Replaced `expo-av` with `expo-audio` in all 4 source files + config + tests

@@ -36,6 +36,7 @@ import { ScreenHeader } from '../components/ScreenHeader';
 import { useInventory } from '../context/InventoryContext';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { impactLight, notificationSuccess } from '../lib/haptics';
+import { NetworkStatusDot } from '../components/NetworkStatusDot';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
 import { VinScanScreen } from './VinScanScreen';
 import { DlScanScreen } from './DlScanScreen';
@@ -234,7 +235,12 @@ function IntakeHub({ navigation }) {
       <Screen>
         <ScreenHeader
           title="Intake"
-          right={<Text style={styles.countBadge}>{stats.total}</Text>}
+          right={
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <NetworkStatusDot />
+              <Text style={styles.countBadge}>{stats.total}</Text>
+            </View>
+          }
         />
 
         <View style={{ height: 14 }} />
