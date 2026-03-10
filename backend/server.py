@@ -71,6 +71,26 @@ import_processor = ImportProcessor()
 from ab_testing_service import ab_testing_service, Experiment, DEFAULT_EXPERIMENTS
 
 
+# ── Performance indexes (created once at startup) ──────────────────────
+async def _ensure_perf_indexes():
+    """Create indexes that aren't managed by any repository."""
+    await asyncio.gather(
+        # AI Gateway logs — feature + timestamp for analytics queries
+        db.ai_gateway_logs.create_index([("feature", 1), ("timestamp", -1)]),
+        db.ai_gateway_logs.create_index([("success", 1)]),
+        # Vehicles — category for trade-in count queries
+        db.vehicles.create_index([("category", 1)]),
+    )
+    logger.info("✅ Performance indexes ensured")
+
+
+# ── Health check cache (avoids DB hit on every k8s probe) ──────────────
+import time as _time
+
+_health_cache: dict = {"ts": 0.0, "data": None}
+_HEALTH_CACHE_TTL = 5.0  # seconds
+
+
 # ============== LIFESPAN ==============
 
 @asynccontextmanager
@@ -82,21 +102,19 @@ async def lifespan(app: FastAPI):
     # Initialize FEDERAL SECURITY
     global audit_logger
     audit_logger = AuditLogger(db)
-    await audit_logger.create_indexes()
-    logger.info("✅ Audit logging initialized")
-    
-    # Initialize auth router with database
-    # PIN auth replaces email/password auth
-    # from auth_endpoints import init_auth_router
-    # init_auth_router(db, audit_logger)
-    logger.info("✅ Auth router initialized")
-    
-    # Initialize repositories
-    await customer_repo.create_indexes()
-    await vehicle_repo.create_indexes()
-    await source_repo.create_indexes()
-    
-    # Initialize integration layer
+
+    # ── Phase 1: Parallel index creation (all independent) ──────────
+    await asyncio.gather(
+        audit_logger.create_indexes(),
+        customer_repo.create_indexes(),
+        vehicle_repo.create_indexes(),
+        source_repo.create_indexes(),
+        ensure_tts_indexes(),
+        _ensure_perf_indexes(),
+    )
+    logger.info("✅ All indexes created (parallel)")
+
+    # ── Phase 2: Integration layer (depends on db, parallel where possible) ──
     from integrations import IntegrationManager
     from integrations.webhooks import FortifiedWebhookReceiver
     from integrations.profiles import ProfileManager
@@ -105,41 +123,31 @@ async def lifespan(app: FastAPI):
     webhook_recv = FortifiedWebhookReceiver(db)
     profile_mgr = ProfileManager(db)
     
-    await integration_mgr.create_indexes()
-    await webhook_recv.create_indexes()
-    await profile_mgr.create_indexes()
+    await asyncio.gather(
+        integration_mgr.create_indexes(),
+        webhook_recv.create_indexes(),
+        profile_mgr.create_indexes(),
+    )
     await profile_mgr.ensure_builtin_profiles()
-    
-    # Initialize A/B Testing
+    logger.info("✅ Integration layer initialized")
+
+    # ── Phase 3: Services (some depend on each other) ──
     await ab_testing_service.initialize(db)
     for exp in DEFAULT_EXPERIMENTS:
         await ab_testing_service.create_experiment(Experiment(**exp))
-    logger.info("A/B Testing service initialized with default experiments")
     
-    # Initialize conversation history indexes (once at startup, not per-request)
     from conversation_history import ConversationHistoryService
     _conv_svc = ConversationHistoryService(db)
     await _conv_svc.initialize()
     app.state.conversation_service = _conv_svc
-    logger.info("✅ Conversation history service initialized")
     
-    # Initialize analytics service singleton
     from analytics_service import AnalyticsService
     app.state.analytics_service = AnalyticsService(db)
-    logger.info("✅ Analytics service initialized")
     
-    logger.info("Integration layer initialized")
-    
-    # Initialize TTS cache indexes (MongoDB-backed, 24h TTL)
-    await ensure_tts_indexes()
-    logger.info("✅ TTS cache indexes ensured")
-    
-    # Initialize scheduler
     await init_scheduler(db)
 
     # Initialize AI Gateway with DB for telemetry
     ai_gateway.init(db=db)
-    logger.info("✅ AI Gateway initialised")
 
     # Initialize Vector Search + Sales Knowledge Base
     from vector_search import VectorSearchService
@@ -147,7 +155,6 @@ async def lifespan(app: FastAPI):
     vector_svc = VectorSearchService(db)
     await vector_svc.ensure_indexes()
     app.state.vector_search = vector_svc
-    logger.info("✅ Vector Search service initialized")
 
     # Seed knowledge base in background (idempotent — skips duplicates)
     async def _seed_kb():
@@ -164,12 +171,10 @@ async def lifespan(app: FastAPI):
     await telemetry_svc.ensure_indexes()
     telemetry_svc._init_posthog()
     app.state.telemetry = telemetry_svc
-    logger.info("✅ Telemetry service initialized")
 
     # Inject vector search + telemetry into Tower Talk routes
     from routes.tower_talk_v2 import init_tower_talk_routes as _reinit_tt
     _reinit_tt(vector_search=vector_svc, telemetry=telemetry_svc)
-    logger.info("✅ Tower Talk enriched with vector search + telemetry")
 
     logger.info("Server startup complete")
     
@@ -178,6 +183,10 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down...")
     shutdown_scheduler()
+    # Close shared httpx client in VIN routes
+    from routes.vin_v2 import _http_client as vin_http_client
+    if vin_http_client and not vin_http_client.is_closed:
+        await vin_http_client.aclose()
     client.close()
     logger.info("Shutdown complete")
 
@@ -259,18 +268,24 @@ async def root():
 
 @api_router.get("/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint — cached for 5s to avoid DB load from k8s probes."""
+    now = _time.monotonic()
+    if _health_cache["data"] is not None and (now - _health_cache["ts"]) < _HEALTH_CACHE_TTL:
+        return _health_cache["data"]
+
     scheduler = get_scheduler()
     scheduler_status = scheduler.get_status() if scheduler else {"isRunning": False}
-    
     source_health = await source_repo.get_health_summary()
-    
-    return {
+
+    result = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "scheduler": scheduler_status,
-        "dataSources": source_health
+        "dataSources": source_health,
     }
+    _health_cache["ts"] = now
+    _health_cache["data"] = result
+    return result
 
 
 # ============== ROUTER & MIDDLEWARE ==============

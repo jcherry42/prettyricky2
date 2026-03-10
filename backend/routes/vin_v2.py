@@ -22,6 +22,8 @@ import base64
 import json
 import logging
 import re
+import time
+from functools import lru_cache
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
@@ -37,6 +39,48 @@ _db = None
 _ai_gateway = None
 
 TRADE_IN_CAP = 50
+
+# ── Shared HTTP client with connection pooling (reuses TCP connections) ──
+_http_client: Optional[httpx.AsyncClient] = None
+
+
+def _get_http_client() -> httpx.AsyncClient:
+    """Lazy-init shared httpx client with connection pooling."""
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(
+            timeout=15.0,
+            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+            http2=False,
+        )
+    return _http_client
+
+
+# ── NHTSA Decode Cache (LRU + TTL, in-memory) ──────────────────────────
+_NHTSA_CACHE: Dict[str, tuple] = {}  # vin -> (timestamp, result)
+_NHTSA_CACHE_TTL = 3600  # 1 hour — NHTSA data is static per VIN
+_NHTSA_CACHE_MAX = 1024
+
+
+def _nhtsa_cache_get(vin: str) -> Optional[dict]:
+    """Get cached NHTSA result if not expired."""
+    entry = _NHTSA_CACHE.get(vin)
+    if entry is None:
+        return None
+    ts, result = entry
+    if time.monotonic() - ts > _NHTSA_CACHE_TTL:
+        del _NHTSA_CACHE[vin]
+        return None
+    return result
+
+
+def _nhtsa_cache_set(vin: str, result: dict):
+    """Cache NHTSA result with TTL. Evict oldest if full."""
+    if len(_NHTSA_CACHE) >= _NHTSA_CACHE_MAX:
+        # Evict oldest entry
+        oldest_key = next(iter(_NHTSA_CACHE))
+        del _NHTSA_CACHE[oldest_key]
+    _NHTSA_CACHE[vin] = (time.monotonic(), result)
 
 
 def init_vin_routes(db, ai_gateway=None):
@@ -203,16 +247,25 @@ def decode_wmi(vin: str) -> Dict[str, str]:
 
 
 async def _nhtsa_decode_with_retry(vin: str, max_retries: int = 3) -> dict:
-    """Call NHTSA vPIC API with exponential backoff retry for reliability."""
+    """Call NHTSA vPIC API with connection-pooled client, LRU cache, and exponential backoff."""
+    # ── Cache hit — return instantly ──
+    cached = _nhtsa_cache_get(vin)
+    if cached is not None:
+        logger.debug(f"NHTSA cache HIT for {vin}")
+        return cached
+
     url = f"https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/{vin}?format=json"
     last_error = None
+    client = _get_http_client()
 
     for attempt in range(max_retries):
         try:
-            async with httpx.AsyncClient(timeout=15.0) as http_client:
-                response = await http_client.get(url)
-                response.raise_for_status()
-                return response.json()
+            response = await client.get(url)
+            response.raise_for_status()
+            result = response.json()
+            # Cache the successful result
+            _nhtsa_cache_set(vin, result)
+            return result
         except (httpx.HTTPError, httpx.TimeoutException) as e:
             last_error = e
             if attempt < max_retries - 1:

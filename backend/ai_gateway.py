@@ -306,22 +306,9 @@ class _CostTracker:
             t["fallbacks"] += 1
         t["total_latency_ms"] += rec.latency_ms
 
-        # Persist to MongoDB (fire-and-forget)
+        # Persist to MongoDB (fire-and-forget — don't block the AI response path)
         if self._db is not None:
-            try:
-                await self._db.ai_gateway_logs.insert_one({
-                    "feature": rec.feature,
-                    "model": rec.model,
-                    "provider": rec.provider,
-                    "latency_ms": rec.latency_ms,
-                    "success": rec.success,
-                    "cached": rec.cached,
-                    "fallback_used": rec.fallback_used,
-                    "error": rec.error,
-                    "timestamp": rec.timestamp,
-                })
-            except Exception as e:
-                logger.debug(f"Failed to persist AI gateway log: {e}")
+            asyncio.create_task(self._persist_log(rec))
 
     def stats(self) -> Dict[str, Any]:
         result = {}
@@ -336,6 +323,23 @@ class _CostTracker:
                 "error_rate": round(t["errors"] / t["calls"], 3) if t["calls"] > 0 else 0,
             }
         return result
+
+    async def _persist_log(self, rec: _CallRecord):
+        """Fire-and-forget MongoDB persistence — errors silently logged."""
+        try:
+            await self._db.ai_gateway_logs.insert_one({
+                "feature": rec.feature,
+                "model": rec.model,
+                "provider": rec.provider,
+                "latency_ms": rec.latency_ms,
+                "success": rec.success,
+                "cached": rec.cached,
+                "fallback_used": rec.fallback_used,
+                "error": rec.error,
+                "timestamp": rec.timestamp,
+            })
+        except Exception as e:
+            logger.debug(f"Failed to persist AI gateway log: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════
