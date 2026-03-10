@@ -5,6 +5,7 @@ Sales automation tool with CRM-agnostic data integration
 
 from fastapi import FastAPI, APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import ORJSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -40,14 +41,15 @@ from ai_gateway import gateway as ai_gateway
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configure structured logging for production
+LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
-# MongoDB connection with tuned pool
+# Startup timing
+_BOOT_START = __import__('time').monotonic()
+
+# MongoDB connection with tuned pool — production-grade settings
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(
     mongo_url,
@@ -56,6 +58,9 @@ client = AsyncIOMotorClient(
     maxIdleTimeMS=30000,
     connectTimeoutMS=5000,
     serverSelectionTimeoutMS=5000,
+    retryWrites=True,
+    retryReads=True,
+    compressors='zstd,snappy,zlib',
 )
 db = client[os.environ['DB_NAME']]
 
@@ -80,8 +85,20 @@ async def _ensure_perf_indexes():
         db.ai_gateway_logs.create_index([("success", 1)]),
         # Vehicles — category for trade-in count queries
         db.vehicles.create_index([("category", 1)]),
+        # Vehicles — VIN lookup (sparse to match existing index)
+        db.vehicles.create_index([("vin", 1)], sparse=True),
+        # Vehicles — compound: category + created_at for sorted inventory queries
+        db.vehicles.create_index([("category", 1), ("created_at", -1)]),
+        # Customers — text search on name fields
+        db.customers.create_index([("first_name", 1), ("last_name", 1)]),
+        # Customers — lead_status for filtered queries
+        db.customers.create_index([("lead_status", 1), ("created_at", -1)]),
+        # Customers — unique id field (used as primary key in app logic)
+        db.customers.create_index([("id", 1)], unique=True, sparse=True),
+        # Auth — type lookup (PIN auth)
+        db.auth.create_index([("type", 1)], unique=True),
     )
-    logger.info("✅ Performance indexes ensured")
+    logger.info("Performance indexes ensured")
 
 
 # ── Health check cache (avoids DB hit on every k8s probe) ──────────────
@@ -89,6 +106,39 @@ import time as _time
 
 _health_cache: dict = {"ts": 0.0, "data": None}
 _HEALTH_CACHE_TTL = 5.0  # seconds
+
+# ── Stale upload cleanup ──────────────────────────────────────────────
+_UPLOAD_MAX_AGE_HOURS = 72  # Delete uploaded files older than 3 days
+
+async def _cleanup_stale_uploads():
+    """Remove old upload files and expired chunk sessions."""
+    uploads_dir = ROOT_DIR / "uploads"
+    chunks_dir = uploads_dir / "chunks"
+    now = _time.time()
+    max_age = _UPLOAD_MAX_AGE_HOURS * 3600
+    removed = 0
+
+    # Clean stale chunk directories
+    if chunks_dir.exists():
+        import shutil
+        for d in chunks_dir.iterdir():
+            if d.is_dir():
+                meta = d / "meta.json"
+                if meta.exists():
+                    try:
+                        age = now - meta.stat().st_mtime
+                        if age > 3600:  # 1 hour for incomplete chunks
+                            shutil.rmtree(d, ignore_errors=True)
+                            removed += 1
+                    except OSError:
+                        pass
+                else:
+                    # No metadata = orphaned directory
+                    shutil.rmtree(d, ignore_errors=True)
+                    removed += 1
+
+    if removed > 0:
+        logger.info(f"Cleaned up {removed} stale upload/chunk entries")
 
 
 # ============== LIFESPAN ==============
@@ -112,7 +162,7 @@ async def lifespan(app: FastAPI):
         ensure_tts_indexes(),
         _ensure_perf_indexes(),
     )
-    logger.info("✅ All indexes created (parallel)")
+    logger.info("All indexes created (parallel)")
 
     # ── Phase 2: Integration layer (depends on db, parallel where possible) ──
     from integrations import IntegrationManager
@@ -129,7 +179,7 @@ async def lifespan(app: FastAPI):
         profile_mgr.create_indexes(),
     )
     await profile_mgr.ensure_builtin_profiles()
-    logger.info("✅ Integration layer initialized")
+    logger.info("Integration layer initialized")
 
     # ── Phase 3: Services (some depend on each other) ──
     await ab_testing_service.initialize(db)
@@ -160,7 +210,7 @@ async def lifespan(app: FastAPI):
     async def _seed_kb():
         try:
             count = await seed_knowledge_base(vector_svc)
-            logger.info(f"✅ Sales knowledge base seeded ({count} entries)")
+            logger.info(f"Sales knowledge base seeded ({count} entries)")
         except Exception as e:
             logger.warning(f"Knowledge base seed failed (non-fatal): {e}")
     asyncio.create_task(_seed_kb())
@@ -176,12 +226,19 @@ async def lifespan(app: FastAPI):
     from routes.tower_talk_v2 import init_tower_talk_routes as _reinit_tt
     _reinit_tt(vector_search=vector_svc, telemetry=telemetry_svc)
 
-    logger.info("Server startup complete")
+    # Clean up stale uploads from previous runs
+    asyncio.create_task(_cleanup_stale_uploads())
+
+    # Mark app as ready
+    app.state.ready = True
+    boot_ms = (_time.monotonic() - _BOOT_START) * 1000
+    logger.info(f"Server startup complete in {boot_ms:.0f}ms")
     
     yield
     
     # Shutdown
     logger.info("Shutting down...")
+    app.state.ready = False
     shutdown_scheduler()
     # Close shared httpx client in VIN routes
     from routes.vin_v2 import _http_client as vin_http_client
@@ -191,8 +248,14 @@ async def lifespan(app: FastAPI):
     logger.info("Shutdown complete")
 
 
-# Create app with lifespan
-app = FastAPI(lifespan=lifespan)
+# Create app with lifespan — ORJSONResponse for 3-5x faster serialization
+app = FastAPI(
+    lifespan=lifespan,
+    default_response_class=ORJSONResponse,
+    docs_url=None,       # Disable Swagger UI in production
+    redoc_url=None,      # Disable ReDoc in production
+    openapi_url=None,    # Disable OpenAPI schema in production
+)
 
 # GZip compression for all responses > 500 bytes
 app.add_middleware(GZipMiddleware, minimum_size=500)
@@ -264,7 +327,7 @@ async def ai_gateway_stats():
 
 @api_router.get("/")
 async def root():
-    return {"message": "Closr API", "version": "2.0.0"}
+    return {"message": "Closr API", "version": "2.1.0"}
 
 @api_router.get("/health")
 async def health_check():
@@ -280,12 +343,60 @@ async def health_check():
     result = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
+        "version": "2.1.0",
         "scheduler": scheduler_status,
         "dataSources": source_health,
     }
     _health_cache["ts"] = now
     _health_cache["data"] = result
     return result
+
+
+@api_router.get("/ready")
+async def readiness_check(request: Request):
+    """Readiness probe — returns 503 until app is fully initialized."""
+    if not getattr(request.app.state, 'ready', False):
+        raise HTTPException(status_code=503, detail="Service not ready")
+    # Quick DB ping to verify connectivity
+    try:
+        await db.command("ping")
+    except Exception:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    return {"ready": True}
+
+
+@api_router.get("/metrics")
+async def metrics():
+    """Operational metrics for monitoring dashboards."""
+    import psutil
+    process = psutil.Process()
+
+    mem = process.memory_info()
+    cpu_pct = process.cpu_percent(interval=0)
+
+    # DB stats
+    try:
+        db_stats = await db.command("dbStats")
+        db_size_mb = round(db_stats.get("dataSize", 0) / (1024 * 1024), 2)
+        db_collections = db_stats.get("collections", 0)
+    except Exception:
+        db_size_mb = -1
+        db_collections = -1
+
+    return {
+        "uptime_seconds": round(_time.monotonic() - _BOOT_START, 1),
+        "process": {
+            "memory_rss_mb": round(mem.rss / (1024 * 1024), 1),
+            "memory_vms_mb": round(mem.vms / (1024 * 1024), 1),
+            "cpu_percent": cpu_pct,
+            "threads": process.num_threads(),
+        },
+        "database": {
+            "size_mb": db_size_mb,
+            "collections": db_collections,
+        },
+        "ai_gateway": ai_gateway.stats(),
+    }
 
 
 # ============== ROUTER & MIDDLEWARE ==============
@@ -304,14 +415,14 @@ app.include_router(api_router)
 
 # 1. Rate Limiting (DDoS Protection)
 app.add_middleware(RateLimitMiddleware, requests_per_minute=100, burst_size=150)
-logger.info("✅ Rate limiting enabled: 100 req/min, 150 burst")
+logger.info("Rate limiting enabled: 100 req/min, 150 burst")
 
 # 2. Security Headers
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     # HSTS - Force HTTPS
-    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     # Prevent clickjacking
     response.headers["X-Frame-Options"] = "DENY"
     # Prevent MIME sniffing
@@ -327,16 +438,20 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: https:; "
         "font-src 'self' data:; "
-        "connect-src 'self' https://*.emergentagent.com https://*.emergent.run https://*.emergent.com https://automotive-vin-ocr.preview.emergentagent.com"
+        "connect-src 'self' https://*.emergentagent.com https://*.emergent.run https://*.emergent.com"
     )
     # Permissions Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    # Cache-Control for API responses
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
     return response
 
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://automotive-vin-ocr.preview.emergentagent.com",
+    "https://car-data-hub-9.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings
@@ -346,10 +461,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=ALLOWED_ORIGINS,  # FEDERAL-LEVEL: NO WILDCARDS
-    allow_origin_regex=r"^(https?:\\/\\/(localhost(:\\d+)?|.*\\.emergentagent\\.com|.*\\.emergent\\.run|.*\\.emergent\\.com)|null)$",
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_origin_regex=r"^(https?://(localhost(:\d+)?|.*\.emergentagent\.com|.*\.emergent\.run|.*\.emergent\.com)|null)$",
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Correlation-ID"],
 )
 
-logger.info(f"✅ CORS configured for: {ALLOWED_ORIGINS}")
-logger.info("✅ Security headers enabled")
+logger.info(f"CORS configured for: {ALLOWED_ORIGINS}")
+logger.info("Security headers enabled")

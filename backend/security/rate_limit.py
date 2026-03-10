@@ -7,12 +7,15 @@ Cleanup: stale clients pruned every 200 requests (amortised O(1)).
 
 import time
 from collections import deque, defaultdict
-from typing import Dict, Tuple
+from typing import Dict
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Paths exempt from rate limiting (k8s probes, CORS preflight)
+_EXEMPT_PATHS = frozenset({"/api/health", "/api/ready"})
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -31,6 +34,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._req_count = 0
 
     async def dispatch(self, request: Request, call_next):
+        # Exempt health probes and preflight requests
+        if request.url.path in _EXEMPT_PATHS or request.method == "OPTIONS":
+            return await call_next(request)
+
         client_ip = request.client.host
         ua_hash = hash(request.headers.get('user-agent', ''))
         client_id = f"{client_ip}:{ua_hash}"

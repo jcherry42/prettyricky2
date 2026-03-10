@@ -10,8 +10,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Security configuration
-SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'CHANGE_ME_IN_PRODUCTION_USE_256_BIT_KEY')
+# Security configuration — fail fast if JWT secret is not set
+SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+if not SECRET_KEY:
+    # Generate a random key for development — MUST be set explicitly in production
+    import secrets as _secrets
+    SECRET_KEY = _secrets.token_hex(32)
+    logger.warning("JWT_SECRET_KEY not set — using auto-generated key (sessions will not survive restarts)")
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

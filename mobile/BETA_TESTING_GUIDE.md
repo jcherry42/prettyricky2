@@ -63,7 +63,7 @@ yarn install
 `mobile/.env` is already in the repo with the default backend URL:
 
 ```env
-EXPO_PUBLIC_BACKEND_URL=https://automotive-vin-ocr.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://car-data-hub-9.preview.emergentagent.com
 ```
 
 This URL is also configurable **in-app** without rebuilding: Command Center → Settings → Backend.
@@ -159,7 +159,7 @@ eas submit --platform ios
 | Setting | Value |
 |---------|-------|
 | Bundle ID | `com.superchargd.mobile` |
-| Default Backend | `https://automotive-vin-ocr.preview.emergentagent.com` |
+| Default Backend | `https://car-data-hub-9.preview.emergentagent.com` |
 | Orientation | Portrait locked |
 | Min iOS | 16.0 |
 

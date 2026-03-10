@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://automotive-vin-ocr.preview.emergentagent.com',
+        'Backend URL must start with https://car-data-hub-9.preview.emergentagent.com',
       );
       return;
     }

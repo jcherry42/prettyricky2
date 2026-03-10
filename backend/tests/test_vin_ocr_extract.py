@@ -18,7 +18,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 # Use public URL for testing
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://automotive-vin-ocr.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com')
 
 
 # ========================= HELPERS =========================
