@@ -27,6 +27,7 @@ class LeadSource(str, Enum):
     SOCIAL = "social"
     CRM_IMPORT = "crm_import"
     FILE_IMPORT = "file_import"
+    LICENSE_SCAN = "license_scan"
     MANUAL = "manual"
 
 
@@ -61,7 +62,7 @@ class CustomerInteraction(BaseModel):
 class CustomerCreate(BaseModel):
     first_name: str
     last_name: str
-    phone: str
+    phone: str = ""
     email: Optional[str] = None
     address: Optional[str] = None
     lead_source: LeadSource = LeadSource.MANUAL
@@ -69,6 +70,14 @@ class CustomerCreate(BaseModel):
     notes: Optional[str] = None
     vehicle_interests: List[str] = Field(default_factory=list, max_length=2)  # Max 2 vehicles
     trade_in_vehicle_id: Optional[str] = None
+    # License scan fields
+    license_image_url: Optional[str] = None
+    license_number: Optional[str] = None
+    license_dob: Optional[str] = None
+    license_expiration: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
 
 
 class CustomerUpdate(BaseModel):
@@ -82,6 +91,13 @@ class CustomerUpdate(BaseModel):
     notes: Optional[str] = None
     vehicle_interests: Optional[List[str]] = None
     trade_in_vehicle_id: Optional[str] = None
+    license_image_url: Optional[str] = None
+    license_number: Optional[str] = None
+    license_dob: Optional[str] = None
+    license_expiration: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
 
 
 class Customer(BaseModel):

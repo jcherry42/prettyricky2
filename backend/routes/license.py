@@ -200,44 +200,50 @@ async def scan_license_direct(
         optimized_data = resize_image_for_ocr_jpeg(image_data)
         base64_image = base64.b64encode(optimized_data).decode('utf-8')
 
-        extraction_prompt = """You are an expert OCR system specialized in reading US Driver's Licenses from all 50 states.
+        extraction_prompt = """You are a LEGAL-GRADE OCR system for US Driver's Licenses. Accuracy is critical — extracted data may be used in legal and financial documents.
 
-Analyze this driver's license image carefully and extract information EXACTLY as printed.
+INSTRUCTIONS:
+1. FIRST PASS: Read every character on the license methodically, field by field.
+2. SECOND PASS: Re-read each field and compare against your first reading. Fix any discrepancies.
+3. THIRD PASS: Cross-validate — does the state abbreviation match the state name on the card? Does the ZIP code match the city/state? Does the license format match the issuing state's known pattern?
 
-Return ONLY a JSON object (no markdown, no explanation):
+Return ONLY a JSON object (no markdown, no explanation, no code fences):
 {
-  "first_name": "First/Given name (Title Case)",
-  "middle_name": "Middle name or null if not visible",
-  "last_name": "Last/Family name (Title Case)",
-  "license_number": "DL/ID number exactly as printed",
+  "first_name": "First/Given name exactly as printed, Title Case",
+  "middle_name": "Middle name or initial, or null if not present",
+  "last_name": "Last/Family/Surname exactly as printed, Title Case",
+  "license_number": "DL/ID number with ALL characters exactly as printed",
   "expiration": "Expiration date as MM/DD/YYYY",
   "date_of_birth": "Date of birth as MM/DD/YYYY",
-  "address": "Street address (number and street only)",
-  "city": "City name (Title Case)",
-  "state": "2-letter state abbreviation (e.g. CA, TX, NY)",
-  "zip_code": "5-digit or 5+4 ZIP code"
+  "address": "Street address ONLY (number, street name, apt/unit). Do NOT include city/state/zip here",
+  "city": "City name, Title Case",
+  "state": "2-letter state code (e.g., CA, TX, FL, NY)",
+  "zip_code": "5-digit ZIP (or ZIP+4 if clearly printed)"
 }
 
-CRITICAL RULES:
-1. NAME may be "LAST, FIRST MIDDLE" or "FIRST MIDDLE LAST" — split correctly
-2. Look for labels: DL, LIC, ID #, CUSTOMER ID, DOB, EXP, ISS, CLASS
-3. State is ALWAYS a 2-letter abbreviation
-4. Convert dates to MM/DD/YYYY regardless of source format
-5. Use Title Case for names and city (not ALL CAPS)
-6. If a field is unreadable, use null
-7. License number: include ALL characters exactly as shown (letters + digits)
-8. ZIP: prefer 5-digit, include +4 if clearly visible
-9. Address: street only — do NOT include city/state/zip in address field
-10. Return ONLY the JSON — no explanations, no markdown fences"""
+CRITICAL RULES FOR LEGAL ACCURACY:
+- NAME PARSING: US licenses show name as "LAST, FIRST MIDDLE" or "LN: / FN: / MN:" or "1: LAST 2: FIRST". Parse accordingly. Never reverse first/last.
+- DATES: Convert ANY format to MM/DD/YYYY. Common formats: MM/DD/YYYY, MM-DD-YYYY, MMDDYYYY, YYYY-MM-DD.
+- LICENSE NUMBER: Copy character-by-character. Include ALL letters, numbers, spaces, and dashes exactly as shown. Common confusions: O vs 0, I vs 1, S vs 5, B vs 8.
+- STATE: Must be exactly 2 uppercase letters. If the license shows a full state name, convert to abbreviation.
+- ZIP CODE: Must be 5 digits (or 5+4). If you read fewer than 5 digits, the reading is likely wrong — re-examine.
+- ADDRESS: Street portion only. Look for labels like "ADD", "ADDR", "ADDRESS", or simply the first line after the name.
+- If ANY field is not clearly readable, set it to null rather than guessing. Null is safer than wrong."""
 
         if ml_text_hint and len(ml_text_hint.strip()) > 10:
-            extraction_prompt += f"\n\nON-DEVICE OCR PRE-EXTRACTION (use as reference to improve accuracy):\n{ml_text_hint.strip()}"
+            extraction_prompt += f"""
+
+ON-DEVICE OCR PRE-EXTRACTION (high confidence — use to cross-validate your reading):
+---
+{ml_text_hint.strip()}
+---
+Use this pre-extracted text to verify your own reading. Where your reading differs from the OCR text, examine the image more carefully. The OCR text may contain noise but the actual text fragments are usually correct."""
             logger.info(f"scan-direct: ML Kit hint provided ({len(ml_text_hint)} chars)")
 
         response = await _ai_gateway.chat(
             feature='license_ocr',
             prompt=extraction_prompt,
-            system_message="You are an expert document OCR system specializing in US driver's licenses from all 50 states. Be precise.",
+            system_message="You are a legal-grade document OCR system. Your extractions may be used in financial and legal transactions. Accuracy is paramount — return null for any field you cannot read with high confidence rather than guessing. Perform multiple verification passes before returning results.",
             images=[base64_image],
         )
         logger.info(f"scan-direct Vision API response ({len(response)} chars)")
@@ -276,7 +282,58 @@ CRITICAL RULES:
         if extracted_data.get('date_of_birth'):
             extracted_data['date_of_birth'] = normalize_date_mmddyyyy(str(extracted_data['date_of_birth']))
 
+        # ── Post-extraction validation (legal-grade accuracy) ──
+        validation_notes = []
+
+        # Validate state is exactly 2 uppercase letters
+        st = extracted_data.get('state')
+        if st and (len(st) != 2 or not st.isalpha() or not st.isupper()):
+            extracted_data['state'] = normalize_state(st)
+            if len(extracted_data['state']) != 2:
+                extracted_data['state'] = None
+                validation_notes.append("State could not be verified — please check")
+
+        # Validate ZIP is 5+ digits
+        zc = extracted_data.get('zip_code')
+        if zc:
+            digits_only = re.sub(r'[^0-9]', '', zc)
+            if len(digits_only) < 5:
+                extracted_data['zip_code'] = None
+                validation_notes.append("ZIP code appears incomplete — please verify")
+            elif len(digits_only) == 5:
+                extracted_data['zip_code'] = digits_only
+            elif len(digits_only) == 9:
+                extracted_data['zip_code'] = f"{digits_only[:5]}-{digits_only[5:]}"
+
+        # Validate dates are plausible
+        for date_field in ('expiration', 'date_of_birth'):
+            dv = extracted_data.get(date_field)
+            if dv:
+                dm = re.match(r'^(\d{2})/(\d{2})/(\d{4})$', dv)
+                if dm:
+                    mm, dd, yyyy = int(dm.group(1)), int(dm.group(2)), int(dm.group(3))
+                    if not (1 <= mm <= 12 and 1 <= dd <= 31):
+                        extracted_data[date_field] = None
+                        validation_notes.append(f"{date_field.replace('_',' ').title()} appears invalid — please verify")
+                    elif date_field == 'date_of_birth' and (yyyy < 1920 or yyyy > 2010):
+                        validation_notes.append(f"Date of birth year ({yyyy}) may be incorrect — please verify")
+                    elif date_field == 'expiration' and yyyy < 2020:
+                        validation_notes.append(f"License may be expired (exp year {yyyy})")
+
+        # Validate license number has reasonable length
+        ln = extracted_data.get('license_number')
+        if ln and len(ln) < 4:
+            extracted_data['license_number'] = None
+            validation_notes.append("License number appears incomplete — please verify")
+
+        # Validate name doesn't contain digits (common OCR error)
+        for name_field in ('first_name', 'last_name'):
+            nv = extracted_data.get(name_field)
+            if nv and re.search(r'\d', nv):
+                validation_notes.append(f"{name_field.replace('_',' ').title()} contains digits — please verify")
+
         confidence, notes = calculate_license_confidence(extracted_data)
+        all_notes = validation_notes + (notes or [])
         has_name = extracted_data.get('first_name') or extracted_data.get('last_name')
 
         if not has_name:
@@ -291,7 +348,7 @@ CRITICAL RULES:
         return LicenseScanResponse(
             success=True, image_url=image_url,
             extracted_data=extracted_data, confidence=confidence,
-            extraction_notes=notes if notes else None,
+            extraction_notes=all_notes if all_notes else None,
         )
 
     except json.JSONDecodeError as e:

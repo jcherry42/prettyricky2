@@ -433,9 +433,9 @@ export function DlScanScreen() {
 
     try {
       const photo = await ocrCamRef.current.takePictureAsync({
-        quality: 0.65,
+        quality: 0.92,
         base64: false,
-        skipProcessing: true,
+        skipProcessing: false,
       });
 
       setOcrCamOpen(false);
@@ -456,7 +456,7 @@ export function DlScanScreen() {
   const handleGallery = useCallback(async () => {
     impactMedium();
     const result = await ImagePicker.launchImageLibraryAsync({
-      quality: 0.7,
+      quality: 0.92,
       allowsEditing: false,
       base64: false,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -486,22 +486,49 @@ export function DlScanScreen() {
         Alert.alert('Incomplete Data', 'First name and last name are required');
         return;
       }
-      const customerData = {
+
+      // Build full address
+      const addressParts = [item.address, item.city, item.state, item.zip_code].filter(Boolean);
+      const fullAddress = addressParts.join(', ');
+
+      // Build structured notes with all license fields
+      const noteLines = [];
+      if (item.license_number) noteLines.push(`License #: ${item.license_number}`);
+      if (item.date_of_birth) noteLines.push(`DOB: ${item.date_of_birth}`);
+      if (item.expiration) noteLines.push(`Expiration: ${item.expiration}`);
+      if (item.state) noteLines.push(`State: ${item.state}`);
+
+      const customerData: any = {
         first_name: item.first_name,
         last_name: item.last_name,
         phone: '',
         email: '',
-        address: [item.address, item.city, item.state, item.zip_code].filter(Boolean).join(', '),
+        address: fullAddress,
         lead_status: 'new',
-        notes: `License #: ${item.license_number || 'N/A'}\nDOB: ${item.date_of_birth || 'N/A'}\nExpiration: ${item.expiration || 'N/A'}`,
+        lead_source: 'license_scan',
+        notes: noteLines.join('\n') || null,
       };
+
+      // Attach the scanned license image URL to the customer profile
+      if (item.imageUrl) {
+        customerData.license_image_url = item.imageUrl;
+      }
+
+      // Attach raw license fields for structured access
+      if (item.license_number) customerData.license_number = item.license_number;
+      if (item.date_of_birth) customerData.license_dob = item.date_of_birth;
+      if (item.expiration) customerData.license_expiration = item.expiration;
+      if (item.city) customerData.city = item.city;
+      if (item.state) customerData.state = item.state;
+      if (item.zip_code) customerData.zip_code = item.zip_code;
+
       await createCustomer(customerData);
       await updateHistoryItem(item.id, { savedToCustomerAt: new Date().toISOString() });
       if (selectedItem?.id === item.id) {
         setSelectedItem({ ...item, savedToCustomerAt: new Date().toISOString() });
       }
       notificationSuccess();
-      Alert.alert('Success', 'Customer profile created successfully');
+      Alert.alert('Success', `Customer profile created for ${item.first_name} ${item.last_name}.\nLicense image saved to profile.`);
     } catch (err) {
       notificationError();
       Alert.alert('Save Failed', err.message || 'Unable to save customer');

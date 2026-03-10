@@ -258,8 +258,8 @@ async def create_customer(customer: CustomerCreate):
     try:
         customer_data = customer.model_dump()
         customer_data["id"] = str(uuid.uuid4())
-        customer_data["created_at"] = datetime.now(timezone.utc)
-        customer_data["updated_at"] = datetime.now(timezone.utc)
+        customer_data["created_at"] = datetime.now(timezone.utc).isoformat()
+        customer_data["updated_at"] = datetime.now(timezone.utc).isoformat()
         customer_data["interactions"] = []
 
         await _db.customers.insert_one(customer_data)
