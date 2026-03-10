@@ -37,24 +37,41 @@ export function EmergencyButton({ onPress }) {
         accessibilityLabel="Emergency responses"
         accessibilityRole="button"
       >
-        {/* Frosted glass base */}
-        <BlurView intensity={55} tint="dark" style={StyleSheet.absoluteFill} />
+        {/* Deep frosted glass base */}
+        <BlurView intensity={70} tint="dark" style={StyleSheet.absoluteFill} />
+
+        {/* Inner dark glass depth layer */}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
 
         {/* Red gradient tint */}
         <LinearGradient
-          colors={['rgba(255,50,50,0.42)', 'rgba(180,20,20,0.22)', 'rgba(0,0,0,0.18)']}
-          locations={[0, 0.55, 1]}
+          colors={['rgba(255,50,50,0.48)', 'rgba(180,20,20,0.22)', 'rgba(0,0,0,0.22)']}
+          locations={[0, 0.45, 1]}
           style={StyleSheet.absoluteFill}
-          start={{ x: 0.2, y: 0 }}
-          end={{ x: 0.8, y: 1 }}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Top specular highlight */}
-        <View style={styles.specular} />
+        {/* Bright specular highlight */}
+        <View style={styles.specularBright} />
+        {/* Soft specular */}
+        <View style={styles.specularSoft} />
 
-        {/* Perfectly centered icon */}
+        {/* Inner rim highlight */}
+        <View style={styles.innerRim} />
+
+        {/* Perfectly centered icon with glow */}
         <Animated.View style={{ opacity: pulseAnim.interpolate({ inputRange: [0.5, 1], outputRange: [0.75, 1] }) }}>
-          <Ionicons name="alert-circle" size={26} color="#FFFFFF" />
+          <Ionicons
+            name="alert-circle"
+            size={26}
+            color="#FFFFFF"
+            style={{
+              textShadowColor: '#FF2D2D',
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 14,
+            }}
+          />
         </Animated.View>
       </Pressable>
     </View>
@@ -76,8 +93,8 @@ const styles = StyleSheet.create({
     borderRadius: (SIZE + 20) / 2,
     backgroundColor: 'rgba(255,45,45,0.22)',
     shadowColor: '#FF2D2D',
-    shadowOpacity: 0.8,
-    shadowRadius: 18,
+    shadowOpacity: 0.85,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 0 },
   },
   button: {
@@ -85,25 +102,40 @@ const styles = StyleSheet.create({
     height: SIZE,
     borderRadius: SIZE / 2,
     borderWidth: 1,
-    borderColor: 'rgba(255,80,80,0.45)',
+    borderColor: 'rgba(255,80,80,0.50)',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(200,20,20,0.12)',
     shadowColor: '#FF2D2D',
-    shadowOpacity: 0.75,
-    shadowRadius: 18,
+    shadowOpacity: 0.80,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 6 },
     elevation: 14,
   },
-  specular: {
+  specularBright: {
     position: 'absolute',
     top: 4,
-    left: SIZE * 0.22,
-    right: SIZE * 0.22,
-    height: SIZE * 0.26,
-    borderRadius: SIZE * 0.13,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    left: SIZE * 0.24,
+    right: SIZE * 0.24,
+    height: SIZE * 0.18,
+    borderRadius: SIZE * 0.09,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  specularSoft: {
+    position: 'absolute',
+    top: 3,
+    left: SIZE * 0.15,
+    right: SIZE * 0.15,
+    height: SIZE * 0.28,
+    borderRadius: SIZE * 0.14,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  innerRim: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: SIZE / 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,80,80,0.12)',
   },
   pressed: {
     opacity: 0.82,

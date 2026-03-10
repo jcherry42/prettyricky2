@@ -29,23 +29,40 @@ export function FloatingCustomerButton({ onPress, disabled }: { onPress?: () => 
           disabled && { opacity: 0.5 },
         ]}
       >
-        {/* Frosted glass base */}
-        <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        {/* Deep frosted glass base */}
+        <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFill} />
+
+        {/* Inner dark glass depth layer */}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
 
         {/* Gradient tint over the blur */}
         <LinearGradient
-          colors={['rgba(56,189,248,0.28)', 'rgba(14,165,233,0.08)', 'rgba(0,0,0,0.15)']}
-          locations={[0, 0.55, 1]}
+          colors={['rgba(56,189,248,0.35)', 'rgba(14,165,233,0.10)', 'rgba(0,0,0,0.20)']}
+          locations={[0, 0.45, 1]}
           style={StyleSheet.absoluteFill}
-          start={{ x: 0.15, y: 0 }}
-          end={{ x: 0.85, y: 1 }}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Top specular highlight */}
-        <View style={styles.specular} />
+        {/* Bright specular highlight */}
+        <View style={styles.specularBright} />
+        {/* Soft specular */}
+        <View style={styles.specularSoft} />
 
-        {/* Perfectly centered icon — no nested containers that shift it */}
-        <Ionicons name="bluetooth" size={22} color="#7DD3FC" />
+        {/* Inner rim highlight */}
+        <View style={styles.innerRim} />
+
+        {/* Perfectly centered icon with glow */}
+        <Ionicons
+          name="bluetooth"
+          size={22}
+          color="#7DD3FC"
+          style={{
+            textShadowColor: '#38BDF8',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 14,
+          }}
+        />
       </Pressable>
     </View>
   );
@@ -65,8 +82,8 @@ const styles = StyleSheet.create({
     borderRadius: (SIZE + 18) / 2,
     backgroundColor: 'transparent',
     shadowColor: '#38BDF8',
-    shadowOpacity: 0.55,
-    shadowRadius: 20,
+    shadowOpacity: 0.60,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 0 },
   },
   btn: {
@@ -74,24 +91,39 @@ const styles = StyleSheet.create({
     height: SIZE,
     borderRadius: SIZE / 2,
     borderWidth: 1,
-    borderColor: 'rgba(56,189,248,0.40)',
+    borderColor: 'rgba(56,189,248,0.45)',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(14,165,233,0.10)',
     shadowColor: '#38BDF8',
-    shadowOpacity: 0.65,
-    shadowRadius: 18,
+    shadowOpacity: 0.70,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 14,
   },
-  specular: {
+  specularBright: {
     position: 'absolute',
     top: 4,
-    left: SIZE * 0.2,
-    right: SIZE * 0.2,
+    left: SIZE * 0.24,
+    right: SIZE * 0.24,
+    height: SIZE * 0.18,
+    borderRadius: SIZE * 0.09,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  specularSoft: {
+    position: 'absolute',
+    top: 3,
+    left: SIZE * 0.15,
+    right: SIZE * 0.15,
     height: SIZE * 0.28,
     borderRadius: SIZE * 0.14,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  innerRim: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: SIZE / 2,
+    borderWidth: 1,
+    borderColor: 'rgba(56,189,248,0.12)',
   },
 });

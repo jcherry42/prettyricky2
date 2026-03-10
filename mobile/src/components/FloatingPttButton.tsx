@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactHeavy } from '../lib/haptics';
@@ -10,9 +11,12 @@ import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 const SIZE = scaleSize(58);
 
-export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '→' }) {
+export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '\u2192' }) {
   const insets = useSafeAreaInsets();
   const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + scaleSize(76);
+
+  const glowColor = recording ? '#FF2D2D' : '#9333EA';
+  const iconColor = recording ? '#FF6B6B' : '#C084FC';
 
   return (
     <View style={[styles.wrap, { bottom: bottomOffset }]} pointerEvents="box-none">
@@ -25,7 +29,7 @@ export function FloatingPttButton({ onPress, recording, disabled, flagLabel, bad
       ) : null}
 
       {/* Outer glow halo */}
-      <View style={[styles.halo, recording && styles.haloRecording]} />
+      <View style={[styles.halo, { shadowColor: glowColor }]} />
 
       <Pressable
         disabled={disabled}
@@ -37,27 +41,44 @@ export function FloatingPttButton({ onPress, recording, disabled, flagLabel, bad
           pressed && !recording && { transform: [{ scale: 0.955 }], opacity: 0.92 },
         ]}
       >
-        {/* Frosted glass base */}
-        <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        {/* Deep frosted glass base */}
+        <BlurView intensity={75} tint="dark" style={StyleSheet.absoluteFill} />
+
+        {/* Inner dark glass depth layer */}
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.30)' }]} />
 
         {/* Gradient tint */}
         <LinearGradient
           colors={
             recording
-              ? ['rgba(255,45,45,0.42)', 'rgba(180,0,0,0.18)', 'rgba(0,0,0,0.15)']
-              : ['rgba(147,51,234,0.32)', 'rgba(109,40,217,0.12)', 'rgba(0,0,0,0.15)']
+              ? ['rgba(255,45,45,0.45)', 'rgba(180,0,0,0.18)', 'rgba(0,0,0,0.20)']
+              : ['rgba(147,51,234,0.38)', 'rgba(109,40,217,0.12)', 'rgba(0,0,0,0.20)']
           }
-          locations={[0, 0.55, 1]}
+          locations={[0, 0.45, 1]}
           style={StyleSheet.absoluteFill}
-          start={{ x: 0.15, y: 0 }}
-          end={{ x: 0.85, y: 1 }}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.9, y: 1 }}
         />
 
-        {/* Top specular highlight */}
-        <View style={[styles.specular, recording && styles.specularRecording]} />
+        {/* Bright specular highlight */}
+        <View style={[styles.specularBright, recording && styles.specularRecording]} />
+        {/* Soft specular */}
+        <View style={[styles.specularSoft, recording && styles.specularSoftRecording]} />
 
-        {/* Perfectly centered icon */}
-        <Text style={styles.icon}>{recording ? '■' : '🎙'}</Text>
+        {/* Inner rim highlight */}
+        <View style={[styles.innerRim, { borderColor: recording ? 'rgba(255,45,45,0.12)' : 'rgba(147,51,234,0.12)' }]} />
+
+        {/* Properly centered Ionicon */}
+        <Ionicons
+          name={recording ? 'stop' : 'mic'}
+          size={24}
+          color={iconColor}
+          style={{
+            textShadowColor: glowColor,
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 14,
+          }}
+        />
       </Pressable>
     </View>
   );
@@ -93,14 +114,9 @@ const styles = StyleSheet.create({
     height: SIZE + 18,
     borderRadius: (SIZE + 18) / 2,
     backgroundColor: 'transparent',
-    shadowColor: '#9333EA',
-    shadowOpacity: 0.55,
-    shadowRadius: 20,
+    shadowOpacity: 0.65,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 0 },
-  },
-  haloRecording: {
-    shadowColor: '#FF2D2D',
-    shadowOpacity: 0.7,
   },
 
   btn: {
@@ -108,38 +124,49 @@ const styles = StyleSheet.create({
     height: SIZE,
     borderRadius: SIZE / 2,
     borderWidth: 1,
-    borderColor: 'rgba(147,51,234,0.42)',
+    borderColor: 'rgba(147,51,234,0.45)',
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(109,40,217,0.10)',
     shadowColor: '#9333EA',
-    shadowOpacity: 0.65,
-    shadowRadius: 18,
+    shadowOpacity: 0.70,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 8 },
     elevation: 14,
   },
   btnRecording: {
-    borderColor: 'rgba(255,45,45,0.50)',
+    borderColor: 'rgba(255,45,45,0.55)',
     backgroundColor: 'rgba(255,45,45,0.10)',
     shadowColor: '#FF2D2D',
   },
-  specular: {
+  specularBright: {
     position: 'absolute',
     top: 4,
-    left: SIZE * 0.2,
-    right: SIZE * 0.2,
+    left: SIZE * 0.24,
+    right: SIZE * 0.24,
+    height: SIZE * 0.18,
+    borderRadius: SIZE * 0.09,
+    backgroundColor: 'rgba(255,255,255,0.20)',
+  },
+  specularSoft: {
+    position: 'absolute',
+    top: 3,
+    left: SIZE * 0.15,
+    right: SIZE * 0.15,
     height: SIZE * 0.28,
     borderRadius: SIZE * 0.14,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   specularRecording: {
-    backgroundColor: 'rgba(255,150,150,0.10)',
+    backgroundColor: 'rgba(255,180,180,0.15)',
   },
-  icon: {
-    fontSize: 20,
-    lineHeight: 24,        // explicit lineHeight prevents emoji baseline shifts
-    textAlignVertical: 'center',
-    includeFontPadding: false,  // Android: removes hidden top padding that shifts icons down
+  specularSoftRecording: {
+    backgroundColor: 'rgba(255,150,150,0.05)',
+  },
+  innerRim: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: SIZE / 2,
+    borderWidth: 1,
   },
 });
