@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('VITE_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com')
+BASE_URL = os.environ.get('VITE_BACKEND_URL', 'http://localhost:8001')
 
 
 class TestHealthAndStatus:

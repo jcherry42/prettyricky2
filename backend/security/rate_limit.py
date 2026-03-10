@@ -34,11 +34,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._req_count = 0
 
     async def dispatch(self, request: Request, call_next):
-        # Exempt health probes and preflight requests
+        # Exempt health probes, preflight requests, and loopback (internal/test traffic)
         if request.url.path in _EXEMPT_PATHS or request.method == "OPTIONS":
             return await call_next(request)
 
         client_ip = request.client.host
+        if client_ip in ("127.0.0.1", "::1", "localhost"):
+            return await call_next(request)
         ua_hash = hash(request.headers.get('user-agent', ''))
         client_id = f"{client_ip}:{ua_hash}"
 

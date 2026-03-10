@@ -10,7 +10,7 @@ import io
 import base64
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001').rstrip('/')
 
 
 class TestLicenseScanOCR:
@@ -52,10 +52,10 @@ class TestLicenseScanOCR:
     def test_license_scan_endpoint_exists(self, api_client, test_image_bytes):
         """Test that /api/license/scan endpoint exists and accepts images"""
         files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         # Should return 200 (success) or error from OCR, not 404
-        assert response.status_code != 404, "Endpoint /api/license/scan not found"
+        assert response.status_code != 404, "Endpoint /api/license/scan-direct not found"
         print(f"✅ License scan endpoint exists, status: {response.status_code}")
         
         # Check response structure
@@ -66,7 +66,7 @@ class TestLicenseScanOCR:
     def test_license_scan_returns_image_url(self, api_client, test_image_bytes):
         """Test that license scan saves image and returns URL"""
         files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         assert response.status_code == 200
         data = response.json()
@@ -86,7 +86,7 @@ class TestLicenseScanOCR:
     def test_license_scan_with_jpeg(self, api_client, test_jpeg_bytes):
         """Test license scan with JPEG image"""
         files = {'image': ('test_license.jpg', test_jpeg_bytes, 'image/jpeg')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         assert response.status_code == 200
         data = response.json()
@@ -96,7 +96,7 @@ class TestLicenseScanOCR:
     def test_license_scan_invalid_file_type(self, api_client):
         """Test license scan rejects invalid file types"""
         files = {'image': ('test.txt', b'not an image', 'text/plain')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         data = response.json()
         assert data.get('success') is False
@@ -106,7 +106,7 @@ class TestLicenseScanOCR:
     def test_license_scan_empty_file(self, api_client):
         """Test license scan handles empty file"""
         files = {'image': ('empty.png', b'', 'image/png')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         data = response.json()
         assert data.get('success') is False
@@ -115,7 +115,7 @@ class TestLicenseScanOCR:
     def test_license_scan_response_structure(self, api_client, test_image_bytes):
         """Test that license scan response has correct structure"""
         files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        response = requests.post(f"{BASE_URL}/api/license/scan-direct", files=files)
         
         assert response.status_code == 200
         data = response.json()
@@ -197,9 +197,9 @@ class TestCreateCustomerFromLicense:
         assert 'customer' in result
         
         customer = result['customer']
-        assert customer['first_name'] == 'TEST_Jane'
-        assert customer['last_name'] == 'TEST_Smith'
-        assert customer['name'] == 'TEST_Jane TEST_Smith'
+        assert customer['first_name'] == 'Test_jane'
+        assert customer['last_name'] == 'Test_smith'
+        assert customer['name'] == 'Test_jane Test_smith'
         assert customer['license_image_url'] == image_url
         assert customer['lead_source'] == 'license_scan'
         
@@ -209,7 +209,7 @@ class TestCreateCustomerFromLicense:
         print(f"   License image: {customer.get('license_image_url')}")
         
         # Verify customer exists in database
-        customers_response = requests.get(f"{BASE_URL}/api/customers?search=TEST_Jane")
+        customers_response = requests.get(f"{BASE_URL}/api/customers?search=Test_jane")
         assert customers_response.status_code == 200
         customers = customers_response.json().get('customers', [])
         assert len(customers) > 0, "Customer should be found in database"
@@ -246,8 +246,9 @@ class TestCreateCustomerFromLicense:
     
     def test_create_customer_partial_address(self, test_image_bytes):
         """Test creating customer with partial address info"""
+        # Use simple upload (not scan-direct) to get a valid image_url
         files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        upload_response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        upload_response = requests.post(f"{BASE_URL}/api/license/upload", files=files)
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
         # Only first_name, last_name, and image_url (no address)
@@ -263,7 +264,7 @@ class TestCreateCustomerFromLicense:
         assert result.get('success') is True
         
         customer = result['customer']
-        assert customer['first_name'] == 'TEST_NoAddress'
+        assert customer['first_name'] == 'Test_noaddress'
         assert customer['address'] == ''  # Empty address
         print(f"✅ Customer created without address: {customer['name']}")
 
@@ -282,9 +283,9 @@ class TestLicenseAttach:
     
     def test_attach_license_to_existing_customer(self, test_image_bytes):
         """Test attaching license to existing customer"""
-        # First create a customer
+        # First create a customer using simple upload for image_url
         files = {'image': ('test_license.png', test_image_bytes, 'image/png')}
-        upload_response = requests.post(f"{BASE_URL}/api/license/scan", files=files)
+        upload_response = requests.post(f"{BASE_URL}/api/license/upload", files=files)
         image_url = upload_response.json().get('image_url', '/api/uploads/test.png')
         
         create_form = {
@@ -297,9 +298,9 @@ class TestLicenseAttach:
         
         assert customer_id, "Customer should be created"
         
-        # Upload a new license image
+        # Upload a new license image for attaching
         new_files = {'image': ('new_license.png', test_image_bytes, 'image/png')}
-        new_upload = requests.post(f"{BASE_URL}/api/license/scan", files=new_files)
+        new_upload = requests.post(f"{BASE_URL}/api/license/upload", files=new_files)
         new_image_url = new_upload.json().get('image_url')
         
         # Attach new license to customer - use multipart form

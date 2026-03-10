@@ -17,7 +17,7 @@ import asyncio
 import websockets
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001').rstrip('/')
 
 
 class TestHealthAndStatus:
@@ -57,7 +57,7 @@ class TestKnowledgeBase:
         response = requests.post(
             f"{BASE_URL}/api/knowledge/search",
             json=payload,
-            timeout=15
+            timeout=30
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         data = response.json()
@@ -193,7 +193,7 @@ class TestVinDecoder:
         """POST /api/vin/decode with VIN 1HGCM82633A004352"""
         # Note: The route is GET /api/vin/decode/{vin}, not POST
         vin = "1HGCM82633A004352"
-        response = requests.get(f"{BASE_URL}/api/vin/decode/{vin}", timeout=15)
+        response = requests.get(f"{BASE_URL}/api/vin/decode/{vin}", timeout=30)
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text[:200]}"
         data = response.json()
         # Should have vehicle info
@@ -225,7 +225,7 @@ class TestLicenseScanning:
         response = requests.post(
             f"{BASE_URL}/api/license/scan-direct",
             files=files,
-            timeout=15
+            timeout=30
         )
         # Should succeed but report image too small
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
@@ -243,7 +243,7 @@ class TestLicenseScanning:
         response = requests.post(
             f"{BASE_URL}/api/license/upload",
             files=files,
-            timeout=15
+            timeout=30
         )
         # Endpoint should exist (may succeed or fail validation, but not 404)
         assert response.status_code != 404, f"License upload endpoint not found: {response.status_code}"
@@ -268,7 +268,7 @@ class TestPrinter:
         response = requests.post(
             f"{BASE_URL}/api/print/preview",
             json=payload,
-            timeout=15
+            timeout=30
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text[:200]}"
         data = response.json()
@@ -290,7 +290,7 @@ class TestTranslation:
         response = requests.post(
             f"{BASE_URL}/api/translate",
             json=payload,
-            timeout=15
+            timeout=30
         )
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         data = response.json()

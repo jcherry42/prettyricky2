@@ -11,7 +11,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL') or os.environ.get('VITE_BACKEND_URL') or 'https://car-data-hub-9.preview.emergentagent.com'
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL') or os.environ.get('VITE_BACKEND_URL') or 'http://localhost:8001'
 BASE_URL = BASE_URL.rstrip('/')
 
 class TestHealthEndpoints:
@@ -206,13 +206,14 @@ class TestIntegrationEndpoints:
         print(f"Integration adapters: {len(data['adapters'])} available")
     
     def test_integrations_schema_customers_returns_200(self):
-        """Test /api/integrations/schema/customers returns schema"""
-        response = requests.get(f"{BASE_URL}/api/integrations/schema/customers")
+        """Test /api/integrations/schemas/customers returns schema"""
+        response = requests.get(f"{BASE_URL}/api/integrations/schemas/customers")
         assert response.status_code == 200
         
         data = response.json()
         assert "schema" in data
-        assert "required" in data
+        assert "data_type" in data
+        assert data["data_type"] == "customers"
         print(f"Customer schema: {len(data['schema'])} fields")
 
 

@@ -17,6 +17,12 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 
+# Response models for contract stability
+from models.responses import (
+    HealthResponse, ReadyResponse, RootResponse,
+    MetricsResponse, ProcessMetrics, DatabaseMetrics,
+)
+
 # FEDERAL SECURITY IMPORTS
 from security.rate_limit import RateLimitMiddleware
 from security.audit import AuditLogger
@@ -48,6 +54,18 @@ logger = logging.getLogger(__name__)
 
 # Startup timing
 _BOOT_START = __import__('time').monotonic()
+
+# ── Environment validation — fail fast on missing critical config ─────
+_REQUIRED_ENV = ['MONGO_URL', 'DB_NAME']
+_RECOMMENDED_ENV = ['EMERGENT_LLM_KEY', 'JWT_SECRET_KEY']
+
+for var in _REQUIRED_ENV:
+    if not os.environ.get(var):
+        raise RuntimeError(f"FATAL: Required environment variable '{var}' is not set. Server cannot start.")
+
+for var in _RECOMMENDED_ENV:
+    if not os.environ.get(var):
+        logger.warning(f"Recommended env var '{var}' not set — some features may be limited")
 
 # MongoDB connection with tuned pool — production-grade settings
 mongo_url = os.environ['MONGO_URL']
@@ -101,6 +119,32 @@ async def _ensure_perf_indexes():
     logger.info("Performance indexes ensured")
 
 
+# ── TTL indexes (auto-expire old data) ────────────────────────────────
+async def _ensure_ttl_indexes():
+    """Create TTL indexes for automatic data expiration."""
+    await asyncio.gather(
+        # AI gateway logs — expire after 30 days
+        db.ai_gateway_logs.create_index(
+            [("timestamp", 1)],
+            expireAfterSeconds=30 * 24 * 3600,
+            name="ttl_ai_logs_30d",
+        ),
+        # Telemetry events — expire after 90 days
+        db.telemetry_events.create_index(
+            [("timestamp", 1)],
+            expireAfterSeconds=90 * 24 * 3600,
+            name="ttl_telemetry_90d",
+        ),
+        # Diagnostics temp collection — expire after 1 hour (safety net)
+        db["_diagnostics"].create_index(
+            [("ts", 1)],
+            expireAfterSeconds=3600,
+            name="ttl_diagnostics_1h",
+        ),
+    )
+    logger.info("TTL indexes ensured (30d logs, 90d telemetry, 1h diagnostics)")
+
+
 # ── Health check cache (avoids DB hit on every k8s probe) ──────────────
 import time as _time
 
@@ -116,7 +160,23 @@ async def _cleanup_stale_uploads():
     chunks_dir = uploads_dir / "chunks"
     now = _time.time()
     max_age = _UPLOAD_MAX_AGE_HOURS * 3600
-    removed = 0
+    removed_files = 0
+    removed_chunks = 0
+    freed_bytes = 0
+
+    # Clean stale uploaded license images
+    if uploads_dir.exists():
+        for f in uploads_dir.iterdir():
+            if f.is_file() and f.suffix in ('.png', '.jpg', '.jpeg', '.tmp'):
+                try:
+                    age = now - f.stat().st_mtime
+                    if age > max_age:
+                        size = f.stat().st_size
+                        f.unlink()
+                        removed_files += 1
+                        freed_bytes += size
+                except OSError:
+                    pass
 
     # Clean stale chunk directories
     if chunks_dir.exists():
@@ -129,16 +189,17 @@ async def _cleanup_stale_uploads():
                         age = now - meta.stat().st_mtime
                         if age > 3600:  # 1 hour for incomplete chunks
                             shutil.rmtree(d, ignore_errors=True)
-                            removed += 1
+                            removed_chunks += 1
                     except OSError:
                         pass
                 else:
                     # No metadata = orphaned directory
                     shutil.rmtree(d, ignore_errors=True)
-                    removed += 1
+                    removed_chunks += 1
 
-    if removed > 0:
-        logger.info(f"Cleaned up {removed} stale upload/chunk entries")
+    if removed_files > 0 or removed_chunks > 0:
+        freed_mb = round(freed_bytes / (1024 * 1024), 1)
+        logger.info(f"Cleanup: removed {removed_files} stale files ({freed_mb}MB), {removed_chunks} chunk sessions")
 
 
 # ============== LIFESPAN ==============
@@ -161,6 +222,7 @@ async def lifespan(app: FastAPI):
         source_repo.create_indexes(),
         ensure_tts_indexes(),
         _ensure_perf_indexes(),
+        _ensure_ttl_indexes(),
     )
     logger.info("All indexes created (parallel)")
 
@@ -328,11 +390,11 @@ async def ai_gateway_stats():
     return ai_gateway.stats()
 
 
-@api_router.get("/")
+@api_router.get("/", response_model=RootResponse)
 async def root():
     return {"message": "Closr API", "version": "2.1.0"}
 
-@api_router.get("/health")
+@api_router.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint — cached for 5s to avoid DB load from k8s probes."""
     now = _time.monotonic()
@@ -355,7 +417,7 @@ async def health_check():
     return result
 
 
-@api_router.get("/ready")
+@api_router.get("/ready", response_model=ReadyResponse)
 async def readiness_check(request: Request):
     """Readiness probe — returns 503 until app is fully initialized."""
     if not getattr(request.app.state, 'ready', False):
@@ -368,7 +430,7 @@ async def readiness_check(request: Request):
     return {"ready": True}
 
 
-@api_router.get("/metrics")
+@api_router.get("/metrics", response_model=MetricsResponse)
 async def metrics():
     """Operational metrics for monitoring dashboards."""
     import psutil
@@ -412,7 +474,20 @@ register_websocket_route(app)
 import builtins
 builtins.ws_manager = ws_manager
 
+# Mount the API router at /api (primary) AND /api/v2 (versioned).
+# The router already has prefix="/api", so /api/v2 needs a redirect approach.
 app.include_router(api_router)
+
+# API versioning: /api/v2/* rewrites to /api/* via middleware
+@app.middleware("http")
+async def api_version_rewrite(request: Request, call_next):
+    """Rewrite /api/v2/* to /api/* so both paths are valid."""
+    path = request.scope.get("path", "")
+    if path.startswith("/api/v2/"):
+        request.scope["path"] = "/api/" + path[8:]  # strip "/api/v2/"
+    elif path == "/api/v2":
+        request.scope["path"] = "/api/"
+    return await call_next(request)
 
 # FEDERAL-LEVEL SECURITY MIDDLEWARE
 

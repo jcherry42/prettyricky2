@@ -8,7 +8,7 @@ import os
 import json
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
 
 class TestHealthEndpoint:
     """Health check endpoint tests"""
@@ -276,7 +276,7 @@ class TestIntegrations:
     
     def test_get_schema(self):
         """Test /api/integrations/schema/{data_type} endpoint"""
-        response = requests.get(f"{BASE_URL}/api/integrations/schema/customers")
+        response = requests.get(f"{BASE_URL}/api/integrations/schemas/customers")
         assert response.status_code == 200
         data = response.json()
         assert 'schema' in data

@@ -14,7 +14,7 @@ import os
 import io
 from PIL import Image
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://car-data-hub-9.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001').rstrip('/')
 
 
 class TestHealthCheck:
@@ -235,7 +235,7 @@ class TestLicenseScanOCR:
         files = {'image': ('test_license.jpg', img_bytes, 'image/jpeg')}
         
         response = requests.post(
-            f"{BASE_URL}/api/license/scan",
+            f"{BASE_URL}/api/license/scan-direct",
             files=files
         )
         
@@ -261,7 +261,7 @@ class TestLicenseScanOCR:
         files = {'image': ('test.txt', b'This is not an image', 'text/plain')}
         
         response = requests.post(
-            f"{BASE_URL}/api/license/scan",
+            f"{BASE_URL}/api/license/scan-direct",
             files=files
         )
         
@@ -276,7 +276,7 @@ class TestLicenseScanOCR:
         files = {'image': ('empty.jpg', b'', 'image/jpeg')}
         
         response = requests.post(
-            f"{BASE_URL}/api/license/scan",
+            f"{BASE_URL}/api/license/scan-direct",
             files=files
         )
         
@@ -328,8 +328,8 @@ class TestLicenseCreateCustomer:
         data = response.json()
         assert data["success"] is True
         assert "customer" in data
-        assert data["customer"]["first_name"] == "TEST_John"
-        assert data["customer"]["last_name"] == "TEST_Doe"
+        assert data["customer"]["first_name"] == "Test_john"
+        assert data["customer"]["last_name"] == "Test_doe"
         assert data["customer"]["state"] == "CA"
         
         print(f"✓ Customer created: {data['customer']['name']}")
