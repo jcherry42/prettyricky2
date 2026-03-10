@@ -520,28 +520,41 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                             pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
                           ]}
                         >
-                          {/* Glass base */}
-                          <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
+                          {/* Glass base — warm when active */}
+                          <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: active ? 'rgba(18,14,6,0.88)' : 'rgba(20,24,32,0.80)' }]} />
+                          {/* Primary gold gradient */}
                           <LinearGradient
                             colors={active
-                              ? ['rgba(214,178,94,0.28)', 'rgba(214,178,94,0.06)', 'rgba(0,0,0,0.18)']
+                              ? ['rgba(214,178,94,0.52)', 'rgba(214,178,94,0.18)', 'rgba(120,90,30,0.10)']
                               : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
                             }
-                            locations={[0, 0.45, 1]}
+                            locations={[0, 0.5, 1]}
                             style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
-                            start={{ x: 0.1, y: 0 }}
-                            end={{ x: 0.9, y: 1 }}
+                            start={{ x: 0.2, y: 0 }}
+                            end={{ x: 0.8, y: 1 }}
                           />
-                          {/* Specular */}
-                          <View style={{ position: 'absolute', top: 3, left: '22%', right: '22%', height: 4, borderRadius: 2, backgroundColor: active ? 'rgba(214,178,94,0.16)' : 'rgba(255,255,255,0.12)' }} />
+                          {/* Second gold wash for depth */}
+                          {active && (
+                            <LinearGradient
+                              colors={['rgba(214,178,94,0.12)', 'transparent', 'rgba(214,178,94,0.08)']}
+                              locations={[0, 0.5, 1]}
+                              style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                              start={{ x: 0, y: 0.5 }}
+                              end={{ x: 1, y: 0.5 }}
+                            />
+                          )}
+                          {/* Bright specular */}
+                          <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 5, borderRadius: 3, backgroundColor: active ? 'rgba(255,220,140,0.32)' : 'rgba(255,255,255,0.12)' }} />
+                          {/* Bottom reflection */}
+                          {active && <View style={{ position: 'absolute', bottom: 3, left: '25%', right: '25%', height: 3, borderRadius: 2, backgroundColor: 'rgba(214,178,94,0.12)' }} />}
                           <View style={styles.inquiryInner}>
                             <Ionicons
                               name={it.icon as any}
                               size={15}
-                              color={active ? colors.gold : colors.textMute}
-                              style={active ? { textShadowColor: 'rgba(214,178,94,0.60)', textShadowRadius: 10, textShadowOffset: { width: 0, height: 0 } } : undefined}
+                              color={active ? '#F0D87A' : colors.textMute}
+                              style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined}
                             />
-                            <Text style={[styles.inquiryText, active && { color: colors.gold }]}>
+                            <Text style={[styles.inquiryText, active && { color: '#F0D87A' }]}>
                               {it.label}
                             </Text>
                           </View>
@@ -1022,9 +1035,9 @@ const styles = StyleSheet.create({
   },
   inquiryPillActive: {
     borderColor: 'rgba(214,178,94,0.70)',
-    shadowColor: 'rgba(214,178,94,0.50)',
-    shadowOpacity: 0.8,
-    shadowRadius: 14,
+    shadowColor: 'rgba(214,178,94,0.55)',
+    shadowOpacity: 0.90,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },

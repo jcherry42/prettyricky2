@@ -212,26 +212,39 @@ export function EmergencyInquiryModal({ visible, onClose }) {
                   onPress={() => handleSelectType(inq)}
                   style={({ pressed }) => [
                     styles.typeCard,
-                    active && { borderColor: `${inq.color}60` },
+                    active && { borderColor: `${inq.color}90`, shadowColor: inq.color, shadowOpacity: 0.90, shadowRadius: 18 },
                     pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
                   ]}
                 >
-                  {/* Glass base */}
-                  <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: 'rgba(20,24,32,0.80)' }]} />
+                  {/* Glass base — warm tinted when active */}
+                  <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: active ? `${inq.color}12` : 'rgba(20,24,32,0.80)' }]} />
+                  {/* Primary color gradient */}
                   <LinearGradient
                     colors={active
-                      ? [`${inq.color}30`, `${inq.color}08`, 'rgba(0,0,0,0.18)']
+                      ? [`${inq.color}80`, `${inq.color}28`, `${inq.color}08`]
                       : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
                     }
-                    locations={[0, 0.45, 1]}
+                    locations={[0, 0.5, 1]}
                     style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
-                    start={{ x: 0.1, y: 0 }}
-                    end={{ x: 0.9, y: 1 }}
+                    start={{ x: 0.2, y: 0 }}
+                    end={{ x: 0.8, y: 1 }}
                   />
-                  {/* Specular highlight */}
-                  <View style={{ position: 'absolute', top: 3, left: '20%', right: '20%', height: 5, borderRadius: 3, backgroundColor: active ? `${inq.color}22` : 'rgba(255,255,255,0.12)' }} />
-                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} style={active ? { textShadowColor: inq.color, textShadowRadius: 12, textShadowOffset: { width: 0, height: 0 } } : undefined} />
-                  <Text style={[styles.typeLabel, active && { color: inq.color }]}>{inq.label}</Text>
+                  {/* Second color wash for depth */}
+                  {active && (
+                    <LinearGradient
+                      colors={[`${inq.color}18`, 'transparent', `${inq.color}10`]}
+                      locations={[0, 0.5, 1]}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                      start={{ x: 0, y: 0.5 }}
+                      end={{ x: 1, y: 0.5 }}
+                    />
+                  )}
+                  {/* Bright specular highlight */}
+                  <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 6, borderRadius: 3, backgroundColor: active ? `${inq.color}40` : 'rgba(255,255,255,0.12)' }} />
+                  {/* Bottom reflection */}
+                  {active && <View style={{ position: 'absolute', bottom: 4, left: '25%', right: '25%', height: 3, borderRadius: 2, backgroundColor: `${inq.color}18` }} />}
+                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} style={active ? { textShadowColor: inq.color, textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
+                  <Text style={[styles.typeLabel, active && { color: inq.color, textShadowColor: `${inq.color}50`, textShadowRadius: 8 }]}>{inq.label}</Text>
                 </Pressable>
               );
             })}
