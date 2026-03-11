@@ -212,39 +212,98 @@ export function EmergencyInquiryModal({ visible, onClose }) {
                   onPress={() => handleSelectType(inq)}
                   style={({ pressed }) => [
                     styles.typeCard,
-                    active && { borderColor: `${inq.color}90`, shadowColor: inq.color, shadowOpacity: 0.90, shadowRadius: 18 },
-                    pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+                    {
+                      borderColor: active ? `${inq.color}70` : `${inq.color}18`,
+                      shadowColor: active ? inq.color : '#000',
+                      shadowOpacity: active ? 0.85 : 0.45,
+                      shadowRadius: active ? 20 : 10,
+                    },
+                    pressed && { opacity: 0.82, transform: [{ scale: 0.94 }] },
                   ]}
                 >
-                  {/* Glass base — warm tinted when active */}
-                  <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: active ? `${inq.color}12` : 'rgba(20,24,32,0.80)' }]} />
-                  {/* Primary color gradient */}
+                  {/* Glass base — warm tint even when inactive */}
+                  <View style={[StyleSheet.absoluteFill, {
+                    borderRadius: 16,
+                    backgroundColor: active ? `${inq.color}14` : 'rgba(20,24,32,0.88)',
+                  }]} />
+
+                  {/* Primary color gradient — visible even when inactive */}
                   <LinearGradient
                     colors={active
                       ? [`${inq.color}80`, `${inq.color}28`, `${inq.color}08`]
-                      : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
+                      : [`${inq.color}14`, `${inq.color}06`, 'rgba(0,0,0,0.18)']
                     }
                     locations={[0, 0.5, 1]}
-                    style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
                     start={{ x: 0.2, y: 0 }}
                     end={{ x: 0.8, y: 1 }}
                   />
+
                   {/* Second color wash for depth */}
                   {active && (
                     <LinearGradient
                       colors={[`${inq.color}18`, 'transparent', `${inq.color}10`]}
                       locations={[0, 0.5, 1]}
-                      style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
                       start={{ x: 0, y: 0.5 }}
                       end={{ x: 1, y: 0.5 }}
                     />
                   )}
-                  {/* Bright specular highlight */}
-                  <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 6, borderRadius: 3, backgroundColor: active ? `${inq.color}40` : 'rgba(255,255,255,0.12)' }} />
+
+                  {/* Inner rim */}
+                  <View style={[StyleSheet.absoluteFill, {
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: active ? `${inq.color}22` : 'rgba(255,255,255,0.04)',
+                  }]} />
+
+                  {/* Specular highlight — top edge shine */}
+                  <View style={{
+                    position: 'absolute', top: 3,
+                    left: '15%', right: '15%',
+                    height: 6, borderRadius: 3,
+                    backgroundColor: active ? `${inq.color}45` : `${inq.color}15`,
+                  }} />
+
                   {/* Bottom reflection */}
-                  {active && <View style={{ position: 'absolute', bottom: 4, left: '25%', right: '25%', height: 3, borderRadius: 2, backgroundColor: `${inq.color}18` }} />}
-                  <Ionicons name={inq.icon as any} size={20} color={active ? inq.color : colors.textMute} style={active ? { textShadowColor: inq.color, textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
-                  <Text style={[styles.typeLabel, active && { color: inq.color, textShadowColor: `${inq.color}50`, textShadowRadius: 8 }]}>{inq.label}</Text>
+                  {active && (
+                    <View style={{
+                      position: 'absolute', bottom: 4,
+                      left: '22%', right: '22%',
+                      height: 3, borderRadius: 2,
+                      backgroundColor: `${inq.color}1A`,
+                    }} />
+                  )}
+
+                  {/* Icon with glow */}
+                  <View style={styles.typeIconWrap}>
+                    <Ionicons
+                      name={inq.icon as any}
+                      size={22}
+                      color={active ? inq.color : `${inq.color}88`}
+                      style={active ? {
+                        textShadowColor: inq.color,
+                        textShadowRadius: 18,
+                        textShadowOffset: { width: 0, height: 0 },
+                      } : {
+                        textShadowColor: `${inq.color}40`,
+                        textShadowRadius: 8,
+                        textShadowOffset: { width: 0, height: 0 },
+                      }}
+                    />
+                  </View>
+
+                  {/* Label */}
+                  <Text style={[
+                    styles.typeLabel,
+                    {
+                      color: active ? inq.color : `${inq.color}99`,
+                      textShadowColor: active ? `${inq.color}60` : 'transparent',
+                      textShadowRadius: active ? 10 : 0,
+                    },
+                  ]}>
+                    {inq.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -353,29 +412,33 @@ const styles = StyleSheet.create({
   typeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   typeCard: {
     width: '47%',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     gap: 6,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.50,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
+  },
+  typeIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   typeLabel: {
-    color: colors.textMute,
     fontSize: 9,
     fontWeight: '900',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     textAlign: 'center',
   },
   responsesSection: {
