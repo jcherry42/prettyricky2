@@ -4,7 +4,7 @@
  * Responses aligned with Tower Talk's confident, assertive sales temperament.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +16,8 @@ import { sendSms } from '../lib/sms';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { flagFor, langName } from '../utils/language';
 import { apiFetch } from '../lib/api';
+import { ttsSpeak } from '../lib/tts';
+import { playBase64Audio } from '../lib/audioPlayback';
 import * as Clipboard from 'expo-clipboard';
 
 const INQUIRY_TYPES = [
@@ -141,12 +143,66 @@ export function EmergencyInquiryModal({ visible, onClose }) {
   const [selectedType, setSelectedType] = useState(null);
   const [translatingIdx, setTranslatingIdx] = useState(-1);
   const [translatedResponses, setTranslatedResponses] = useState({});
+  const [speakingIdx, setSpeakingIdx] = useState(-1);
+  const playerRef = useRef(null);
 
   const handleSelectType = (inquiry) => {
     impactLight();
+    stopPlayback();
     setSelectedType(selectedType?.id === inquiry.id ? null : inquiry);
     setTranslatedResponses({});
   };
+
+  const stopPlayback = useCallback(() => {
+    if (playerRef.current) {
+      try {
+        playerRef.current.pause();
+        playerRef.current.remove();
+      } catch {}
+      playerRef.current = null;
+    }
+    setSpeakingIdx(-1);
+  }, []);
+
+  const handleSpeak = useCallback(async (text: string, idx: number) => {
+    // Toggle off if already speaking this response
+    if (speakingIdx === idx) {
+      stopPlayback();
+      return;
+    }
+
+    // Stop any current playback first
+    stopPlayback();
+
+    try {
+      impactLight();
+      setSpeakingIdx(idx);
+
+      // Determine language: if translated text, use target lang; otherwise English
+      const isTranslated = translatedResponses[idx] && text === translatedResponses[idx];
+      const ttsLang = isTranslated ? lang : 'en';
+
+      const res = await ttsSpeak({ text, language: ttsLang, voice: 'auto' });
+      const b64 = res?.audio_base64;
+      const format = res?.format || 'mp3';
+
+      if (!b64) throw new Error('No audio returned');
+
+      const player = await playBase64Audio({ base64: b64, format });
+      playerRef.current = player;
+
+      // Auto-reset when playback finishes
+      player.addListener('playbackStatusUpdate', (status) => {
+        if (status.didJustFinish) {
+          playerRef.current = null;
+          setSpeakingIdx(-1);
+        }
+      });
+    } catch (e: any) {
+      setSpeakingIdx(-1);
+      Alert.alert('TTS Failed', e?.message || 'Could not play audio.');
+    }
+  }, [speakingIdx, translatedResponses, lang, stopPlayback]);
 
   const handleCopy = async (text) => {
     impactLight();
@@ -179,6 +235,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
   }, [lang]);
 
   const handleClose = () => {
+    stopPlayback();
     setSelectedType(null);
     setTranslatedResponses({});
     onClose();
@@ -337,6 +394,22 @@ export function EmergencyInquiryModal({ visible, onClose }) {
 
                     {/* Action buttons */}
                     <View style={styles.responseActions}>
+                      {/* TTS Speaker — reads the response (or translation) aloud */}
+                      <Pressable
+                        onPress={() => handleSpeak(translated || response, idx)}
+                        style={[
+                          styles.responseActionBtn,
+                          speakingIdx === idx && styles.responseActionBtnSpeaking,
+                        ]}
+                        accessibilityLabel={speakingIdx === idx ? 'Stop speaking' : 'Read aloud'}
+                      >
+                        <Ionicons
+                          name={speakingIdx === idx ? 'stop-circle' : 'volume-high-outline'}
+                          size={14}
+                          color={speakingIdx === idx ? '#FF4444' : colors.electricBlue}
+                        />
+                      </Pressable>
+
                       <Pressable onPress={() => handleCopy(translated || response)} style={styles.responseActionBtn} accessibilityLabel="Copy">
                         <Ionicons name="copy-outline" size={14} color={colors.textDim} />
                       </Pressable>
@@ -519,5 +592,9 @@ const styles = StyleSheet.create({
   responseActionBtnActive: {
     borderColor: 'rgba(214,178,94,0.40)',
     backgroundColor: 'rgba(214,178,94,0.10)',
+  },
+  responseActionBtnSpeaking: {
+    borderColor: 'rgba(0,204,255,0.50)',
+    backgroundColor: 'rgba(0,204,255,0.12)',
   },
 });
