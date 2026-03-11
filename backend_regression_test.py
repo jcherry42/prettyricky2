@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Test configuration - per user request, but we'll use the proper external URL
 # The user requested http://localhost:8001 but based on system configuration, 
 # we need to use the external URL that the mobile app will actually use
-BACKEND_URL = "https://car-data-hub-9.preview.emergentagent.com"
+BACKEND_URL = "https://vin-scanner-audit.preview.emergentagent.com"
 TIMEOUT = 30  # seconds
 
 class SuperchargdBackendTester:

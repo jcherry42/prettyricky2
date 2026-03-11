@@ -529,7 +529,7 @@ async def add_security_headers(request: Request, call_next):
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://car-data-hub-9.preview.emergentagent.com",
+    "https://vin-scanner-audit.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings
