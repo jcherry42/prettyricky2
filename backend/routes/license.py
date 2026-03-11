@@ -174,7 +174,14 @@ async def scan_license_direct(
     image: UploadFile = File(...),
     ml_text_hint: Optional[str] = Form(None),
 ):
-    """Single-step license scan: upload image + OCR in one request."""
+    """High-performance license scan: upload image + OCR in one request.
+
+    Target: <700ms full pipeline.
+    Optimizations: GPT-4o-mini, JPEG 80% quality, 1536px max, compact prompt.
+    """
+    import time as _time
+    t_start = _time.monotonic()
+
     try:
         image_data = await image.read()
         if not image_data or len(image_data) == 0:
@@ -191,44 +198,33 @@ async def scan_license_direct(
         ext = (image.filename or "").rsplit(".", 1)[-1].lower() if image.filename else "jpg"
         if ext not in ("jpg", "jpeg", "png", "webp", "heic"):
             ext = "jpg"
-        safe_name = f"license_{uuid.uuid4().hex[:12]}.{ext}"
-        filepath = _uploads_dir / safe_name
-        filepath.write_bytes(image_data)
-        image_url = f"/api/uploads/{safe_name}"
 
+        # Optimize image BEFORE disk save — smaller file, faster API call
         from utils.image_processing import resize_image_for_ocr_jpeg
         optimized_data = resize_image_for_ocr_jpeg(image_data)
         base64_image = base64.b64encode(optimized_data).decode('utf-8')
 
-        extraction_prompt = """You are a LEGAL-GRADE OCR system for US Driver's Licenses. Accuracy is critical — extracted data may be used in legal and financial documents.
+        # Save optimized image to disk (async-safe, smaller file)
+        safe_name = f"license_{uuid.uuid4().hex[:12]}.{ext}"
+        filepath = _uploads_dir / safe_name
+        filepath.write_bytes(optimized_data)
+        image_url = f"/api/uploads/{safe_name}"
 
-INSTRUCTIONS:
-1. FIRST PASS: Read every character on the license methodically, field by field.
-2. SECOND PASS: Re-read each field and compare against your first reading. Fix any discrepancies.
-3. THIRD PASS: Cross-validate — does the state abbreviation match the state name on the card? Does the ZIP code match the city/state? Does the license format match the issuing state's known pattern?
-
-Return ONLY a JSON object (no markdown, no explanation, no code fences):
+        extraction_prompt = """Extract all fields from this US Driver's License image. Return ONLY a JSON object:
 {
-  "first_name": "First/Given name exactly as printed, Title Case",
-  "middle_name": "Middle name or initial, or null if not present",
-  "last_name": "Last/Family/Surname exactly as printed, Title Case",
-  "license_number": "DL/ID number with ALL characters exactly as printed",
-  "expiration": "Expiration date as MM/DD/YYYY",
-  "date_of_birth": "Date of birth as MM/DD/YYYY",
-  "address": "Street address ONLY (number, street name, apt/unit). Do NOT include city/state/zip here",
-  "city": "City name, Title Case",
-  "state": "2-letter state code (e.g., CA, TX, FL, NY)",
-  "zip_code": "5-digit ZIP (or ZIP+4 if clearly printed)"
+  "first_name": "First name, Title Case",
+  "middle_name": "Middle name/initial or null",
+  "last_name": "Last name, Title Case",
+  "license_number": "DL number exactly as printed",
+  "expiration": "MM/DD/YYYY",
+  "date_of_birth": "MM/DD/YYYY",
+  "address": "Street address only (no city/state/zip)",
+  "city": "City, Title Case",
+  "state": "2-letter state code",
+  "zip_code": "5-digit ZIP"
 }
 
-CRITICAL RULES FOR LEGAL ACCURACY:
-- NAME PARSING: US licenses show name as "LAST, FIRST MIDDLE" or "LN: / FN: / MN:" or "1: LAST 2: FIRST". Parse accordingly. Never reverse first/last.
-- DATES: Convert ANY format to MM/DD/YYYY. Common formats: MM/DD/YYYY, MM-DD-YYYY, MMDDYYYY, YYYY-MM-DD.
-- LICENSE NUMBER: Copy character-by-character. Include ALL letters, numbers, spaces, and dashes exactly as shown. Common confusions: O vs 0, I vs 1, S vs 5, B vs 8.
-- STATE: Must be exactly 2 uppercase letters. If the license shows a full state name, convert to abbreviation.
-- ZIP CODE: Must be 5 digits (or 5+4). If you read fewer than 5 digits, the reading is likely wrong — re-examine.
-- ADDRESS: Street portion only. Look for labels like "ADD", "ADDR", "ADDRESS", or simply the first line after the name.
-- If ANY field is not clearly readable, set it to null rather than guessing. Null is safer than wrong."""
+Rules: Names shown as "LAST, FIRST MIDDLE" — parse correctly. Copy license number character-by-character (O vs 0, I vs 1). Convert any date format to MM/DD/YYYY. Set unreadable fields to null."""
 
         if ml_text_hint and len(ml_text_hint.strip()) > 10:
             extraction_prompt += f"""
@@ -243,7 +239,7 @@ Use this pre-extracted text to verify your own reading. Where your reading diffe
         response = await _ai_gateway.chat(
             feature='license_ocr',
             prompt=extraction_prompt,
-            system_message="You are a legal-grade document OCR system. Your extractions may be used in financial and legal transactions. Accuracy is paramount — return null for any field you cannot read with high confidence rather than guessing. Perform multiple verification passes before returning results.",
+            system_message="Legal-grade document OCR. Return null for any field you cannot read with high confidence.",
             images=[base64_image],
         )
         logger.info(f"scan-direct Vision API response ({len(response)} chars)")
@@ -345,6 +341,9 @@ Use this pre-extracted text to verify your own reading. Where your reading diffe
 
         logger.info(f"scan-direct extracted: {extracted_data.get('first_name')} {extracted_data.get('last_name')} (confidence: {confidence}%)")
 
+        total_ms = round((_time.monotonic() - t_start) * 1000, 1)
+        logger.info(f"License scan pipeline: {total_ms}ms")
+
         return LicenseScanResponse(
             success=True, image_url=image_url,
             extracted_data=extracted_data, confidence=confidence,
@@ -354,6 +353,8 @@ Use this pre-extracted text to verify your own reading. Where your reading diffe
     except json.JSONDecodeError as e:
         logger.error(f"JSON parse error in scan-direct: {e}")
         return LicenseScanResponse(success=False, confidence=0, error="Could not read license data. Please try again with a clearer photo.")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"scan-direct error: {e}", exc_info=True)
         return LicenseScanResponse(success=False, confidence=0, error=f"Scan failed: {str(e)}")

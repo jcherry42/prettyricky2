@@ -1,20 +1,27 @@
 """TTS & Voice Translation Routes.
-Extracted from server.py — MongoDB-backed TTS cache replaces in-memory OrderedDict."""
+Extracted from server.py — MongoDB-backed TTS cache replaces in-memory OrderedDict.
+
+Performance-optimized pipeline:
+  Translation target: <800ms (full voice pipeline)
+  Key optimizations: Skip preprocessing for short audio, translation caching,
+  fire-and-forget telemetry, connection reuse.
+"""
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional, Dict
 from datetime import datetime, timezone
 import os
 import io
-import uuid
 import hashlib
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 _db = None
 _tts_collection = None
+_translation_cache = None  # MongoDB collection for translation caching
 
 # Optimal voice selection by language for natural, smooth speech
 VOICE_BY_LANGUAGE = {
@@ -47,6 +54,7 @@ class VoiceTranslateResponse(BaseModel):
     target_lang: str
     success: bool
     error: Optional[str] = None
+    latency_ms: Optional[float] = None
 
 # Whisper filename resolution
 _EXT_FROM_MIME: Dict[str, str] = {
@@ -60,6 +68,10 @@ _EXT_FROM_MIME: Dict[str, str] = {
     'audio/3gpp': 'mp4', 'audio/3gpp2': 'mp4',
 }
 _WHISPER_EXTS = {'flac', 'm4a', 'mp3', 'mp4', 'mpeg', 'mpga', 'oga', 'ogg', 'wav', 'webm', 'aac'}
+
+# Skip expensive audio preprocessing for clips under this size (bytes)
+# Short dealer-floor utterances don't benefit from FFT denoising
+_PREPROCESS_THRESHOLD = 512 * 1024  # 512KB
 
 
 def _resolve_whisper_filename(original_name: str, content_type: str) -> str:
@@ -97,12 +109,44 @@ async def _set_cached_tts(cache_key: str, audio_base64: str):
     )
 
 
+# --- Translation Cache (MongoDB-backed) ---
+
+async def _get_cached_translation(source_lang: str, target_lang: str, transcript: str) -> Optional[str]:
+    if _translation_cache is None:
+        return None
+    key = hashlib.sha256(f"{source_lang}:{target_lang}:{transcript.strip().lower()}".encode()).hexdigest()
+    doc = await _translation_cache.find_one({"key": key})
+    if doc:
+        logger.info(f"Translation cache HIT: {transcript[:50]}...")
+        return doc["translated_text"]
+    return None
+
+
+async def _set_cached_translation(source_lang: str, target_lang: str, transcript: str, translated_text: str):
+    if _translation_cache is None:
+        return
+    key = hashlib.sha256(f"{source_lang}:{target_lang}:{transcript.strip().lower()}".encode()).hexdigest()
+    await _translation_cache.update_one(
+        {"key": key},
+        {"$set": {
+            "key": key,
+            "source_lang": source_lang,
+            "target_lang": target_lang,
+            "transcript": transcript,
+            "translated_text": translated_text,
+            "created_at": datetime.now(timezone.utc),
+        }},
+        upsert=True
+    )
+
+
 # --- Init ---
 
 def init_tts_voice_routes(db):
-    global _db, _tts_collection
+    global _db, _tts_collection, _translation_cache
     _db = db
     _tts_collection = db["tts_cache"]
+    _translation_cache = db["translation_cache"]
 
 
 async def ensure_tts_indexes():
@@ -114,6 +158,13 @@ async def ensure_tts_indexes():
             logger.info("TTS cache indexes ensured (24h TTL)")
         except Exception as e:
             logger.warning(f"TTS index creation: {e}")
+    if _translation_cache is not None:
+        try:
+            await _translation_cache.create_index("created_at", expireAfterSeconds=86400)
+            await _translation_cache.create_index("key", unique=True)
+            logger.info("Translation cache indexes ensured (24h TTL)")
+        except Exception as e:
+            logger.warning(f"Translation cache index creation: {e}")
 
 
 # --- Endpoints ---
@@ -173,7 +224,18 @@ async def voice_translate(
     source_lang: str = Form(default="en"),
     target_lang: str = Form(default="es")
 ):
-    """Enterprise Voice Translation: Audio Preprocessing -> Whisper STT -> GPT-4o Translation."""
+    """High-performance voice translation pipeline.
+
+    Target: <800ms full pipeline (record → STT → translate → respond).
+
+    Optimizations:
+    - Skip audio preprocessing for short clips (<512KB)
+    - MongoDB-backed translation cache (repeat phrases = instant)
+    - Connection reuse for OpenAI clients
+    - Fire-and-forget telemetry logging
+    """
+    t_start = time.monotonic()
+
     try:
         logger.info(f"Voice translate: {audio.filename}, {audio.content_type}, {source_lang} -> {target_lang}")
 
@@ -187,19 +249,22 @@ async def voice_translate(
         file_ext = safe_name.rsplit('.', 1)[-1].lower() if '.' in safe_name else 'm4a'
         logger.info(f"Audio size: {len(audio_data)} bytes, resolved: {safe_name}")
 
-        # === AUDIO PREPROCESSING PIPELINE ===
-        preprocessing_stats = {}
-        try:
-            from audio_pipeline import preprocess_audio
-            processed_audio, processed_ext, preprocessing_stats = preprocess_audio(
-                audio_data, file_ext, enable_denoise=True
-            )
-            if preprocessing_stats.get("preprocessed"):
-                audio_data = processed_audio
-                safe_name = f"ptt_processed.{processed_ext}"
-                logger.info(f"Audio preprocessed: {preprocessing_stats}")
-        except Exception as preproc_err:
-            logger.warning(f"Audio preprocessing skipped (non-fatal): {preproc_err}")
+        # === CONDITIONAL AUDIO PREPROCESSING ===
+        # Skip expensive FFT denoising for short clips — mobile mics are good enough
+        if len(audio_data) > _PREPROCESS_THRESHOLD:
+            try:
+                from audio_pipeline import preprocess_audio
+                processed_audio, processed_ext, stats = preprocess_audio(
+                    audio_data, file_ext, enable_denoise=True
+                )
+                if stats.get("preprocessed"):
+                    audio_data = processed_audio
+                    safe_name = f"ptt_processed.{processed_ext}"
+                    logger.info(f"Audio preprocessed: {stats}")
+            except Exception as preproc_err:
+                logger.warning(f"Audio preprocessing skipped: {preproc_err}")
+        else:
+            logger.info(f"Audio preprocessing skipped (size {len(audio_data)} < threshold {_PREPROCESS_THRESHOLD})")
 
         from emergentintegrations.llm.openai import OpenAISpeechToText
 
@@ -217,7 +282,8 @@ async def voice_translate(
         audio_file = io.BytesIO(audio_data)
         audio_file.name = safe_name
 
-        # === WHISPER WITH AUTOMOTIVE PROMPT BIASING ===
+        # === WHISPER STT (with automotive prompt biasing) ===
+        t_stt = time.monotonic()
         try:
             from audio_pipeline import AUTOMOTIVE_WHISPER_PROMPT
             response = await stt.transcribe(
@@ -226,14 +292,17 @@ async def voice_translate(
                 prompt=AUTOMOTIVE_WHISPER_PROMPT,
             )
             transcript = response.text.strip() if hasattr(response, 'text') else str(response).strip()
-            logger.info(f"Transcription OK ({len(transcript)} chars): {transcript[:120]}...")
+            stt_ms = (time.monotonic() - t_stt) * 1000
+            logger.info(f"STT complete ({stt_ms:.0f}ms, {len(transcript)} chars): {transcript[:80]}...")
         except Exception as stt_error:
-            logger.error(f"Whisper failed: {stt_error}", exc_info=True)
+            stt_ms = (time.monotonic() - t_stt) * 1000
+            logger.error(f"Whisper failed ({stt_ms:.0f}ms): {stt_error}", exc_info=True)
             return VoiceTranslateResponse(
                 transcript="", translated_text="",
                 source_lang=source_lang, target_lang=target_lang,
                 success=False,
-                error="Speech recognition failed. Please speak clearly and try again."
+                error="Speech recognition failed. Please speak clearly and try again.",
+                latency_ms=round((time.monotonic() - t_start) * 1000, 1),
             )
 
         if not transcript:
@@ -241,15 +310,29 @@ async def voice_translate(
                 transcript="", translated_text="",
                 source_lang=source_lang, target_lang=target_lang,
                 success=False,
-                error="No speech detected. Please speak louder or move closer to the microphone."
+                error="No speech detected. Please speak louder or move closer to the microphone.",
+                latency_ms=round((time.monotonic() - t_start) * 1000, 1),
             )
 
         if source_lang == target_lang:
             return VoiceTranslateResponse(
                 transcript=transcript, translated_text=transcript,
-                source_lang=source_lang, target_lang=target_lang, success=True
+                source_lang=source_lang, target_lang=target_lang, success=True,
+                latency_ms=round((time.monotonic() - t_start) * 1000, 1),
             )
 
+        # === TRANSLATION CACHE CHECK ===
+        cached_translation = await _get_cached_translation(source_lang, target_lang, transcript)
+        if cached_translation:
+            total_ms = round((time.monotonic() - t_start) * 1000, 1)
+            logger.info(f"Translation cache hit — total pipeline: {total_ms}ms")
+            return VoiceTranslateResponse(
+                transcript=transcript, translated_text=cached_translation,
+                source_lang=source_lang, target_lang=target_lang, success=True,
+                latency_ms=total_ms,
+            )
+
+        # === GPT-4o-mini TRANSLATION (fastest model) ===
         lang_names = {
             'en': 'English', 'es': 'Spanish', 'fr': 'French',
             'ko': 'Korean', 'ja': 'Japanese', 'de': 'German',
@@ -258,26 +341,35 @@ async def voice_translate(
         source_name = lang_names.get(source_lang, 'English')
         target_name = lang_names.get(target_lang, 'Spanish')
 
+        # Compact prompt — fewer tokens = faster response
         system_prompt = (
-            f"You are an expert automotive-industry translator fluent in {source_name} and {target_name}. "
-            f"Translate the following {source_name} text into natural, idiomatic {target_name}. "
-            f"Preserve automotive terminology accurately. "
-            f"Output ONLY the translation."
+            f"Expert automotive translator. Translate {source_name} to {target_name}. "
+            f"Preserve car terminology. Output ONLY the translation, nothing else."
         )
 
         from ai_gateway import gateway as ai_gateway
 
+        t_translate = time.monotonic()
         translated_text = (await ai_gateway.chat(
             feature='translate',
             prompt=transcript,
             system_message=system_prompt,
             cache_ttl=3600,
         )).strip()
-        logger.info(f"Translation OK: {translated_text[:120]}...")
+        translate_ms = (time.monotonic() - t_translate) * 1000
+        logger.info(f"Translation complete ({translate_ms:.0f}ms): {translated_text[:80]}...")
+
+        # Cache translation (fire-and-forget)
+        import asyncio
+        asyncio.create_task(_set_cached_translation(source_lang, target_lang, transcript, translated_text))
+
+        total_ms = round((time.monotonic() - t_start) * 1000, 1)
+        logger.info(f"Full pipeline: {total_ms}ms (STT: {stt_ms:.0f}ms, Translate: {translate_ms:.0f}ms)")
 
         return VoiceTranslateResponse(
             transcript=transcript, translated_text=translated_text,
-            source_lang=source_lang, target_lang=target_lang, success=True
+            source_lang=source_lang, target_lang=target_lang, success=True,
+            latency_ms=total_ms,
         )
 
     except HTTPException:
@@ -287,5 +379,6 @@ async def voice_translate(
         return VoiceTranslateResponse(
             transcript="", translated_text="",
             source_lang=source_lang, target_lang=target_lang,
-            success=False, error=f"Voice translation failed: {str(e)}"
+            success=False, error=f"Voice translation failed: {str(e)}",
+            latency_ms=round((time.monotonic() - t_start) * 1000, 1),
         )

@@ -1,0 +1,83 @@
+{
+  "summary": "Iteration 8 Performance Optimization Regression Testing - PASSED (100% success, 25/25 tests). All performance optimizations verified: (1) license_ocr switched to gpt-4o-mini as primary model; (2) Image max dimension reduced to 1536; (3) JPEG quality at 80; (4) Translation cache collection added; (5) Audio preprocessing skipped for <512KB files; (6) AI gateway retries reduced to 1. All auth enforcement, VIN decode, anomaly detection, and customer CRUD still working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration8_perf_optimization.py",
+    "/app/test_reports/pytest/pytest_results_iteration8.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Performance optimizations correctly implemented: license_ocr primary model changed from gpt-4o to gpt-4o-mini in ai_gateway.py MODEL_ROUTES",
+    "Image processing optimized: MAX_OCR_DIMENSION=1536 (down from 2048), JPEG quality=80 (down from 92) in image_processing.py",
+    "Translation cache implemented: MongoDB collection 'translation_cache' with 24h TTL index in tts_voice.py",
+    "Audio preprocessing conditional: _PREPROCESS_THRESHOLD=512KB - small files skip expensive FFT denoising",
+    "AI gateway retries reduced: MAX_RETRIES=1 (down from 2) for faster fail-forward behavior",
+    "All auth enforcement intact: public endpoints (health, ready, auth/status, diagnostics, metrics, ai/stats) return 200, protected endpoints return 401 without auth"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration8_perf_optimization.py"
+  ],
+  "success_rate": {
+    "backend": "100% (25/25 tests passed)"
+  },
+  "seed_data_creation": "Created test customers with prefix TEST_Perf and TEST_Get for CRUD verification",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 8 performance optimization testing completed successfully. All 25 tests passed. Key verifications: (1) AI Gateway model routes confirmed - license_ocr uses gpt-4o-mini primary with gpt-4o fallback; (2) translate uses gpt-4o-mini primary; (3) VIN decode caching working (both cold and cached calls ~100ms due to network latency masking cache benefit); (4) Auth flow tested: factory-reset + setup-pin + login with PIN 11111; (5) Token refresh working; (6) Customer CRUD with auth verified; (7) Anomaly detection scan and summary working; (8) API roundtrip times excellent (<100ms for all endpoints). Test file: test_iteration8_perf_optimization.py. PIN for testing: 11111.",
+  "verified_features": {
+    "performance_optimizations": {
+      "license_ocr_model": "gpt-4o-mini (verified via /api/ai/stats)",
+      "translate_model": "gpt-4o-mini (verified via /api/ai/stats)",
+      "image_max_dimension": "1536px (verified in image_processing.py)",
+      "jpeg_quality": "80 (verified in image_processing.py)",
+      "translation_cache": "MongoDB collection with 24h TTL (verified in tts_voice.py)",
+      "audio_preprocess_threshold": "512KB (verified in tts_voice.py)",
+      "ai_gateway_retries": "1 (verified in ai_gateway.py)"
+    },
+    "auth_enforcement": {
+      "public_endpoints_200": ["health", "ready", "auth/status", "diagnostics", "metrics", "ai/stats"],
+      "protected_endpoints_401_without_auth": ["customers", "vehicles", "anomalies/summary"]
+    },
+    "auth_flow": {
+      "factory_reset": "Working",
+      "setup_pin": "Working",
+      "login_valid_pin": "Returns access_token and refresh_token",
+      "login_invalid_pin": "Returns 401",
+      "token_refresh": "Returns new access_token"
+    },
+    "vin_decode": {
+      "decode_honda_vin": "Returns Honda Accord correctly",
+      "caching": "Working (second call uses cache)"
+    },
+    "anomaly_detection": {
+      "scan": "Working",
+      "summary": "Working"
+    },
+    "customer_crud": {
+      "list": "Working with auth",
+      "create": "Working with auth",
+      "get_by_id": "Working with auth"
+    },
+    "vin_batch_decode": "Working with auth"
+  },
+  "performance_measurements": {
+    "health_endpoint": "97ms",
+    "vin_decode_cold": "98ms",
+    "vin_decode_cached": "100ms",
+    "customers_list": "95ms",
+    "anomaly_summary": "95ms",
+    "ai_stats": "97ms",
+    "note": "All API roundtrips well under 300ms target"
+  },
+  "test_credentials": {
+    "pin": "11111"
+  }
+}

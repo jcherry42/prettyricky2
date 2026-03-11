@@ -46,7 +46,7 @@ class ModelRoute:
 
 # Feature → model chain.  Add a row here to register a new AI feature.
 MODEL_ROUTES: Dict[str, ModelRoute] = {
-    "license_ocr":    ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
+    "license_ocr":    ModelRoute(provider="openai", primary="gpt-4o-mini", fallback="gpt-4o"),
     "vin_ocr":        ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "tower_talk":     ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "translate":      ModelRoute(provider="openai", primary="gpt-4o-mini", fallback="gpt-4o-mini"),
@@ -355,8 +355,8 @@ class AIGateway:
         audio    = await gateway.tts('tts', text, voice='nova')
     """
 
-    MAX_RETRIES      = 2
-    RETRY_BACKOFF_S  = 1.5
+    MAX_RETRIES      = 1           # Fast fail — 1 retry max (speed > resilience)
+    RETRY_BACKOFF_S  = 0.5         # Short backoff for fast recovery
 
     def __init__(self):
         self._rate_limiter   = _RateLimiter()
