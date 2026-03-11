@@ -520,6 +520,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                   <View style={styles.inquiryGrid}>
                     {INQUIRY_TYPES.map((it) => {
                       const active = selectedInquiry === it.id;
+                      const c = colors.gold; // accent color
                       return (
                         <Pressable
                           key={it.id}
@@ -533,45 +534,93 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                           }}
                           style={({ pressed }) => [
                             styles.inquiryPill,
-                            active && styles.inquiryPillActive,
-                            pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] },
+                            {
+                              borderColor: active ? `${c}70` : `${c}18`,
+                              shadowColor: active ? c : '#000',
+                              shadowOpacity: active ? 0.85 : 0.45,
+                              shadowRadius: active ? 20 : 10,
+                            },
+                            pressed && { opacity: 0.82, transform: [{ scale: 0.94 }] },
                           ]}
                         >
-                          {/* Glass base — warm when active */}
-                          <View style={[StyleSheet.absoluteFill, { borderRadius: 14, backgroundColor: active ? 'rgba(18,14,6,0.88)' : 'rgba(20,24,32,0.80)' }]} />
-                          {/* Primary gold gradient */}
+                          {/* Glass base — gold tint even when inactive */}
+                          <View style={[StyleSheet.absoluteFill, {
+                            borderRadius: 16,
+                            backgroundColor: active ? `${c}14` : 'rgba(20,24,32,0.88)',
+                          }]} />
+
+                          {/* Primary color gradient */}
                           <LinearGradient
                             colors={active
-                              ? ['rgba(214,178,94,0.52)', 'rgba(214,178,94,0.18)', 'rgba(120,90,30,0.10)']
-                              : ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'rgba(0,0,0,0.12)']
+                              ? [`${c}80`, `${c}28`, `${c}08`]
+                              : [`${c}14`, `${c}06`, 'rgba(0,0,0,0.18)']
                             }
                             locations={[0, 0.5, 1]}
-                            style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                            style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
                             start={{ x: 0.2, y: 0 }}
                             end={{ x: 0.8, y: 1 }}
                           />
-                          {/* Second gold wash for depth */}
+
+                          {/* Second wash for depth */}
                           {active && (
                             <LinearGradient
-                              colors={['rgba(214,178,94,0.12)', 'transparent', 'rgba(214,178,94,0.08)']}
+                              colors={[`${c}18`, 'transparent', `${c}10`]}
                               locations={[0, 0.5, 1]}
-                              style={[StyleSheet.absoluteFill, { borderRadius: 14 }]}
+                              style={[StyleSheet.absoluteFill, { borderRadius: 16 }]}
                               start={{ x: 0, y: 0.5 }}
                               end={{ x: 1, y: 0.5 }}
                             />
                           )}
-                          {/* Bright specular */}
-                          <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 5, borderRadius: 3, backgroundColor: active ? 'rgba(255,220,140,0.32)' : 'rgba(255,255,255,0.12)' }} />
+
+                          {/* Inner rim */}
+                          <View style={[StyleSheet.absoluteFill, {
+                            borderRadius: 16,
+                            borderWidth: 1,
+                            borderColor: active ? `${c}22` : 'rgba(255,255,255,0.04)',
+                          }]} />
+
+                          {/* Specular highlight — top edge */}
+                          <View style={{
+                            position: 'absolute', top: 3,
+                            left: '15%', right: '15%',
+                            height: 5, borderRadius: 3,
+                            backgroundColor: active ? `${c}45` : `${c}15`,
+                          }} />
+
                           {/* Bottom reflection */}
-                          {active && <View style={{ position: 'absolute', bottom: 3, left: '25%', right: '25%', height: 3, borderRadius: 2, backgroundColor: 'rgba(214,178,94,0.12)' }} />}
+                          {active && (
+                            <View style={{
+                              position: 'absolute', bottom: 3,
+                              left: '22%', right: '22%',
+                              height: 3, borderRadius: 2,
+                              backgroundColor: `${c}1A`,
+                            }} />
+                          )}
+
+                          {/* Icon + label */}
                           <View style={styles.inquiryInner}>
                             <Ionicons
                               name={it.icon as any}
-                              size={15}
-                              color={active ? '#F0D87A' : colors.textMute}
-                              style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined}
+                              size={17}
+                              color={active ? '#F0D87A' : `${c}88`}
+                              style={active ? {
+                                textShadowColor: c,
+                                textShadowRadius: 18,
+                                textShadowOffset: { width: 0, height: 0 },
+                              } : {
+                                textShadowColor: `${c}40`,
+                                textShadowRadius: 8,
+                                textShadowOffset: { width: 0, height: 0 },
+                              }}
                             />
-                            <Text style={[styles.inquiryText, active && { color: '#F0D87A' }]}>
+                            <Text style={[
+                              styles.inquiryText,
+                              {
+                                color: active ? '#F0D87A' : `${c}99`,
+                                textShadowColor: active ? `${c}60` : 'transparent',
+                                textShadowRadius: active ? 10 : 0,
+                              },
+                            ]}>
                               {it.label}
                             </Text>
                           </View>
@@ -1031,44 +1080,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    rowGap: 7,
+    rowGap: 8,
     columnGap: 0,
     marginTop: 8,
   },
   inquiryPill: {
     width: '31.5%',
-    height: 52,
-    borderRadius: 14,
+    height: 56,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(10,14,20,0.70)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  inquiryPillActive: {
-    borderColor: 'rgba(214,178,94,0.70)',
-    shadowColor: 'rgba(214,178,94,0.55)',
-    shadowOpacity: 0.90,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
   inquiryInner: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
+    gap: 4,
   },
   inquiryText: {
-    color: colors.textMute,
     fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.3,
+    fontWeight: '900',
+    letterSpacing: 0.8,
   },
 
   // Preset chips — full-width rows
