@@ -144,7 +144,7 @@ class AnomalyDetectionService:
     async def _check_vin_reuse(self) -> List[Dict]:
         """Detect same VIN associated with multiple different customers."""
         pipeline = [
-            {"$match": {"vin": {"$exists": True, "$ne": None, "$ne": ""}}},
+            {"$match": {"vin": {"$exists": True, "$nin": [None, ""]}}},
             {"$group": {
                 "_id": "$vin",
                 "customer_ids": {"$addToSet": "$customer_id"},

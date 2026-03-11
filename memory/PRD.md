@@ -10,98 +10,88 @@ Production-ready native mobile application for the automotive industry featuring
 - Deployment hardening, modernization & future-proofing
 
 ## Architecture
-- **Backend**: FastAPI 0.135.1 + MongoDB (deployed on Emergent) — v2.1.0
+- **Backend**: FastAPI 0.135.1 + MongoDB (deployed on Emergent) — v2.2.0
 - **Frontend**: React Native / Expo SDK 54 (built locally by user)
 - **AI**: GPT-4o Vision via AI Gateway (Emergent LLM key)
 - **OCR**: ML Kit on-device + GPT-4o cloud fallback
 - **Serialization**: ORJSONResponse (3-5x faster than stdlib json)
 - **API Versioning**: `/api/v2/*` rewrite middleware (backward compatible)
+- **Auth**: JWT Bearer tokens enforced on all protected endpoints
 - **File Structure**: `services/`, `models/`, `routes/`, `security/`, `middleware/`
 
 ## What's Been Implemented
 
-### Modernization & Future-Proofing (Mar 2026 — Latest)
+### Security Enforcement (Mar 2026 — Latest)
 
-**1. Stale Upload Cleanup**
-- Background task on startup removes license images older than 72 hours
-- Stale chunk upload sessions (>1hr) are pruned automatically
-- Logs freed disk space (MB) and removed file/chunk counts
+**1. JWT Authentication Enforcement (P0)**
+- All protected endpoints now require valid JWT Bearer token
+- Public endpoints: `/auth/*`, `/health`, `/ready`, `/diagnostics`, `/metrics`, `/ai/stats`, `/`
+- Protected endpoints: all customer, vehicle, VIN, license, TTS, tower-talk, integration, telemetry, knowledge, anomaly routes
+- API v2 versioned endpoints also enforce auth via middleware rewrite
+- `middleware/auth_deps.py` rewritten with proper `verify_token` integration
+- Mobile app already sends Bearer tokens via `apiFetch` in `api.ts`
 
-**2. Test Suite Fixed — 178/179 passing (was 15 failures)**
-- Fixed `/api/license/scan` → `/api/license/scan-direct` across all test files
-- Fixed `/api/integrations/schema/` → `/api/integrations/schemas/`
-- Fixed case sensitivity assertions to match `normalize_name()` behavior
-- Fixed tests using simple upload vs OCR endpoint for image URLs
-- Fixed hardcoded external URLs → `localhost:8001` for reliable testing
-- Increased timeout from 15s → 30s for NHTSA-dependent tests
-- Single remaining failure is a flaky NHTSA timeout (external dependency)
+**2. Error Response Standardization (P1)**
+- License upload input validation errors (empty file, too large, wrong format) now return proper HTTPException (400/413) instead of HTTP 200 + `{success: false}`
+- License scan-direct validation errors also converted to HTTPException
+- Operation-result errors (OCR couldn't read, no speech detected) kept as HTTP 200 + `{success: false}` for backwards compatibility
 
-**3. Environment Validation**
-- Server raises `RuntimeError` on startup if `MONGO_URL` or `DB_NAME` missing
-- Logs warnings for recommended but optional vars (`EMERGENT_LLM_KEY`, `JWT_SECRET_KEY`)
-- Fail-fast prevents cryptic runtime errors
+**3. Stale Closure Fix in CustomerContext (P1)**
+- Removed manual cache saves from `createCustomer` and `fetchCustomers`
+- Added `useEffect` that auto-persists to cache whenever `customers` state changes
+- Eliminated stale closure risk in rapid create scenarios
+- Fixed unreachable code (double return) in fetchCustomers error handler
 
-**4. FastAPI Upgrade — 0.110.1 → 0.135.1**
-- Better Pydantic v2 integration, security patches, async improvements
-- Starlette upgraded to 0.52.1
+**4. AI-Powered Anomaly Detection (P2)**
+- New service: `services/anomaly_detection.py`
+- 4 detection checks: VIN reuse, high-frequency scans, checksum failures, make/model mismatches
+- Endpoints: `POST /api/anomalies/scan`, `GET /api/anomalies`, `GET /api/anomalies/summary`, `POST /api/anomalies/{id}/resolve`
+- Auto-expire anomalies after 90 days (TTL index)
+- Dedup: same check+VIN won't create duplicate unresolved anomalies
+- Protected by auth enforcement
 
-**5. Backend File Reorganization**
-- Created `services/` package with 10 service modules
-- Created `models/` package with response models
-- Backward-compatible shims at old paths (legacy imports still work)
-- New code should import from `services.ai_gateway`, `models.responses`, etc.
+**5. TypeScript Migration Progress (P2)**
+- `noImplicitAny: true` enabled in tsconfig.json
+- Added types for AnomalyDetection, WebSocket, and related models
+- All 75 mobile source files are .ts/.tsx (migration from .js complete)
 
-**6. Pydantic Response Models**
-- `models/responses.py`: `HealthResponse`, `ReadyResponse`, `RootResponse`, `MetricsResponse`, `DiagnosticsResponse`, `CustomerListResponse`, `VinDecodeResponse`, `TradeInCountResponse`, `BatchVinDecodeResponse`, `AuthStatusResponse`
-- Breaking contract changes caught at compile time, not in production
+**6. Pandas Dependency Removed (P2)**
+- Removed pandas (100MB+) from requirements.txt
+- Data import uses built-in csv module + openpyxl for Excel
+- Numpy kept (required for audio pipeline FFT/signal processing)
 
-**7. API Versioning**
-- `/api/v2/*` middleware rewrites to `/api/*` (both paths valid)
-- Mobile app can gradually migrate to versioned endpoints
-- Future `/api/v3` can be a separate router without breaking v2 clients
+**7. WebSocket Auth Enhancement (P2)**
+- WebSocket endpoint now supports optional auth via `?token=<jwt>` query param
+- Connection manager tracks auth status per connection
+- Anonymous connections still allowed for backwards compatibility
 
-**8. MongoDB TTL Indexes**
-- `ai_gateway_logs`: auto-expire after 30 days
-- `telemetry_events`: auto-expire after 90 days
-- `_diagnostics`: auto-expire after 1 hour (safety net for temp docs)
-
-**10. Offline Indicator & Sync UI**
-- Enhanced `OfflineBanner.tsx` — 4 visual states: offline (red pulse), syncing (blue progress bar), done (green flash), pending (gold with SYNC button)
-- `NetworkStatusDot` added to Intake screen header (was already on Home screen)
-- Tap banner or dot to manually trigger sync when items are queued
-- All components have `data-testid` attributes for testing
-
-### expo-av → expo-audio Migration (Mar 2026)
-- Replaced `expo-av` with `expo-audio` in all 4 source files + config + tests
-- Key API changes: `Audio.Sound.createAsync` → `createAudioPlayer`, `Audio.Recording.createAsync` → `useAudioRecorder` hook
-- TypeScript: zero errors, 10/10 mobile tests pass
-
-### Deployment Hardening v2.1.0 (Mar 2026)
-- ORJSONResponse, readiness probe, metrics endpoint, diagnostics (7 parallel probes)
-- Security headers: HSTS preload, Cache-Control no-store, X-Response-Time
-- Rate limiter: health/ready/diagnostics/loopback exempt
-- JWT auto-key, MongoDB compression (zstd/snappy/zlib), retryWrites/retryReads
-- Swagger/ReDoc/OpenAPI disabled for production security
-
-### Performance Optimization (Feb 2026)
-- NHTSA VIN Decode Cache: 24x speedup (413ms → 17ms)
-- Shared httpx client, rate limiter O(1) deque, health check 5s cache
+### Previous Implementations (summarized)
+- Modernization & future-proofing (all 3 phases from audit)
+- Backend reorganization: server.py 3,604 → ~560 lines
+- MongoDB TTL indexes, TTS cache persistence, correlation tracing
+- expo-av → expo-audio migration
+- Offline queue + sync UI
+- VIN/License scanner camera lifecycle improvements
+- PIN recovery system with master reset codes
+- Premium glass UI aesthetic
 
 ## Key API Endpoints
-- `GET /api/health` — Health check (cached 5s)
-- `GET /api/ready` — Readiness probe (DB ping)
-- `GET /api/metrics` — Operational metrics
-- `GET /api/diagnostics` — Full system self-test (7 probes)
-- `GET /api/v2/*` — Versioned API (rewrites to `/api/*`)
-- `POST /api/vin/decode-batch` — Batch decode up to 50 VINs
-- `POST /api/vin/extract-from-image` — AI Vision VIN OCR
-- `POST /api/license/scan-direct` — DL scan OCR
-- `DELETE /api/customers/{customer_id}` — Delete customer
+- `GET /api/health` — Health check (cached 5s, public)
+- `GET /api/ready` — Readiness probe (public)
+- `GET /api/metrics` — Operational metrics (public)
+- `GET /api/diagnostics` — Full system self-test (public)
+- `POST /api/auth/login` — PIN login (public)
+- `POST /api/auth/setup-pin` — First-time PIN setup (public)
+- `POST /api/auth/refresh` — Token refresh (public)
+- `POST /api/anomalies/scan` — Run anomaly scan (auth required)
+- `GET /api/anomalies/summary` — Anomaly dashboard (auth required)
+- `GET /api/v2/*` — Versioned API (auth enforced)
+- All customer, vehicle, VIN, license, TTS, integration endpoints (auth required)
 
 ## Test Coverage
-- **Backend**: 178/179 passing + 30 modernization tests (testing agent verified)
-- **Mobile**: 10/10 tests passing, TypeScript 0 errors
-- Test files: `tests/test_performance_optimizations.py`, `tests/test_deployment_hardening.py`, `tests/test_iteration6_features.py`
+- **Backend**: 37/37 auth enforcement tests (iteration 7), 30/30 modernization tests (iteration 6)
+- **Mobile**: 10/10 tests passing, TypeScript 0 errors, 75/75 files .ts/.tsx
+- Test files: `tests/test_auth_enforcement.py`, `tests/test_iteration6_features.py`
 
 ## Prioritized Backlog
 
@@ -111,8 +101,12 @@ Production-ready native mobile application for the automotive industry featuring
 ### P1 (High)
 - Full frontend regression test on native device
 - PostHog telemetry integration (needs API key)
+- Enable `strict: true` in tsconfig.json (incremental)
 
 ### P2 (Medium)
 - Team management features
 - Real CRM integration
 - Lock screen audio controls (expo-audio `setActiveForLockScreen`)
+- Full strict TypeScript migration (fix all `any` types)
+- WebSocket real-time notifications for anomaly alerts
+- Structured logging with log aggregation service
