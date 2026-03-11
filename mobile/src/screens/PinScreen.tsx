@@ -229,7 +229,7 @@ export function PinScreen() {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/pin_bg.png')}
+      source={require('../../assets/images/pin_bg.jpg')}
       style={styles.bgImage}
       resizeMode="cover"
     >
