@@ -13,6 +13,7 @@ import { useAppSettings } from '../context/AppSettingsContext';
 import { on } from '../lib/events';
 import { useCustomers } from '../context/CustomerContext';
 import { useToast } from '../context/ToastContext';
+import { useSession } from '../context/SessionContext';
 import { SportModeButton } from '../components/SportModeButton';
 import { ChromeAccent } from '../components/DesignoTextures';
 import { NetworkStatusDot } from '../components/NetworkStatusDot';
@@ -90,17 +91,25 @@ export function HomeScreen() {
   const { settings } = useAppSettings();
   const { customers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const toast = useToast();
+  const session = useSession();
   const insets = useSafeAreaInsets();
 
   // Dynamic bottom padding: tab bar + safe area + floating cluster/buttons + breathing room
   const listBottomPadding = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 82 + 12;
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  // Restore search query and selected customer from session
+  const [searchQuery, setSearchQueryLocal] = useState(session.searchQuery || '');
+  const [selectedCustomer, setSelectedCustomer] = useState(session.activeCustomer || null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Sync search query to session
+  const setSearchQuery = useCallback((q: string) => {
+    setSearchQueryLocal(q);
+    session.setSearchQuery(q);
+  }, [session]);
   // Emergency modal state now lives in RootNavigator
 
   // Remove ambient lighting subscription from HomeScreen \u2014 AmbientLightingSystem
@@ -124,10 +133,11 @@ export function HomeScreen() {
     });
   }, [customers, searchQuery]);
 
-  const handleCustomerPress = useCallback((customer) => {
+  const handleCustomerPress = useCallback((customer: any) => {
     setSelectedCustomer(customer);
+    session.setActiveCustomer(customer);
     setShowDetailModal(true);
-  }, []);
+  }, [session]);
 
   const handleAddNew = useCallback(() => {
     setEditingCustomer(null);

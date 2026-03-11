@@ -21,6 +21,7 @@ import { ToastProvider } from './src/context/ToastContext';
 import { useFontsReady } from './src/hooks/useFontsReady';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { WebSocketProvider } from './src/context/WebSocketContext';
+import { SessionPersistenceProvider } from './src/context/SessionContext';
 import { PinScreen } from './src/screens/PinScreen';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -81,6 +82,7 @@ function MainApp() {
     ToastProvider,
     AppSettingsProvider,
     WebSocketProvider,
+    SessionPersistenceProvider,    // Session persistence — captures & restores all app state
     CustomerProvider,
     InventoryProvider,
     PttProvider,

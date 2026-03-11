@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Constants from 'expo-constants';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text, View } from 'react-native';
@@ -30,6 +30,7 @@ import { PttOverlayView } from '../components/PttOverlayView';
 import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
 import { CustomerListModal } from '../screens/CustomerListModal';
 import { flagFor } from '../utils/language';
+import { useSession } from '../context/SessionContext';
 
 const Tab = createBottomTabNavigator();
 
@@ -52,12 +53,15 @@ function TabLabel({ children, focused }) {
 export const TAB_BAR_CONTENT_HEIGHT = 52;
 
 export function RootNavigator() {
-  const [ccOpen, setCcOpen] = useState(false);
+  const session = useSession();
+
+  // Restore modal states from session, default to closed
+  const [ccOpen, setCcOpen] = useState(session.modalStates?.commandCenter || false);
   const [ccTab, setCcTab] = useState(null);
   const [ccSection, setCcSection] = useState(null);
   const [printOpen, setPrintOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
-  const [talkOpen, setTalkOpen] = useState(false);
+  const [talkOpen, setTalkOpen] = useState(session.modalStates?.towerTalk || false);
   const [customersOpen, setCustomersOpen] = useState(false);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [currentRoute, setCurrentRoute] = useState('Home');
@@ -65,6 +69,14 @@ export function RootNavigator() {
   const { settings } = useAppSettings();
   const ptt = usePtt();
   const insets = useSafeAreaInsets();
+
+  // Persist modal states to session (only meaningful modals that have context)
+  useEffect(() => {
+    session.setModalState('towerTalk', talkOpen);
+  }, [talkOpen]);
+  useEffect(() => {
+    session.setModalState('commandCenter', ccOpen);
+  }, [ccOpen]);
 
   const isHome = currentRoute === 'Home';
 

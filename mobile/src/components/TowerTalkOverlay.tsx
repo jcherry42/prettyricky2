@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { scaleSize, scaleFont } from '../theme/layout';
+import { useSession } from '../context/SessionContext';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
@@ -145,27 +146,39 @@ function VoiceWaveform() {
 
 export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
   const { settings } = useAppSettings();
+  const session = useSession();
   const lang = settings.defaultTargetLanguage;
   const sportOn = Boolean(settings.sportMode);
   const flag = flagFor(lang);
   const insets = useSafeAreaInsets();
 
-  const [situation, setSituation] = useState('');
-  const [customerName, setCustomerName] = useState('');
-  const [vehicle, setVehicle] = useState('');
+  // Restore Tower Talk state from session
+  const savedTT = session.formDrafts?.towerTalk;
+  const [situation, setSituation] = useState(savedTT?.situation || '');
+  const [customerName, setCustomerName] = useState(savedTT?.customerName || '');
+  const [vehicle, setVehicle] = useState(savedTT?.vehicle || '');
   const [tradeVin, setTradeVin] = useState('');
   const [tradeMileage, setTradeMileage] = useState('');
 
   const [state, setState] = useState({ status: 'idle', error: null });
-  const [reply, setReply] = useState('');
-  const [displayedReply, setDisplayedReply] = useState('');
+  const [reply, setReply] = useState(savedTT?.reply || '');
+  const [displayedReply, setDisplayedReply] = useState(savedTT?.reply || '');
   const autoTranslateRef = useRef(null);
   const [translated, setTranslated] = useState('');
   const [copied, setCopied] = useState(false);
   const [copiedTranslation, setCopiedTranslation] = useState(false);
 
-  const [selectedInquiry, setSelectedInquiry] = useState('new_lead');
+  const [selectedInquiry, setSelectedInquiry] = useState(savedTT?.selectedInquiry || 'new_lead');
   const [presetIndex, setPresetIndex] = useState(null);
+
+  // Auto-save Tower Talk form drafts to session
+  useEffect(() => {
+    if (visible && (situation || customerName || vehicle || reply)) {
+      session.setFormDraft('towerTalk', {
+        situation, customerName, vehicle, selectedInquiry, reply,
+      });
+    }
+  }, [situation, customerName, vehicle, selectedInquiry, reply, visible]);
 
   // Voice dictation state
   const [isDictating, setIsDictating] = useState(false);

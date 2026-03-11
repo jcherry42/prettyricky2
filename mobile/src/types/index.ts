@@ -272,3 +272,25 @@ export interface WsMessage {
 }
 
 export type WsAction = 'ping' | 'subscribe' | 'unsubscribe';
+
+// ============== SESSION PERSISTENCE ==============
+
+export interface SessionSnapshot {
+  navigation_state?: any;
+  active_customer_id?: string | null;
+  active_customer?: Customer | null;
+  form_drafts?: Record<string, any>;
+  tower_talk_history?: any[];
+  ptt_last_result?: {
+    transcript: string;
+    translated_text: string;
+    source_lang: string;
+    target_lang: string;
+  };
+  modal_states?: Record<string, boolean>;
+  search_query?: string;
+  scroll_positions?: Record<string, number>;
+  intake_state?: any;
+  version: number;
+  saved_at?: number;
+}

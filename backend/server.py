@@ -298,6 +298,9 @@ async def lifespan(app: FastAPI):
     await anomaly_svc.ensure_indexes()
     app.state.anomaly_detection = anomaly_svc
 
+    # Session persistence indexes
+    await ensure_session_indexes()
+
     # Clean up stale uploads from previous runs
     asyncio.create_task(_cleanup_stale_uploads())
 
@@ -359,6 +362,7 @@ from routes.knowledge import router as knowledge_router
 from routes.telemetry import router as telemetry_router
 from routes.diagnostics import router as diagnostics_router, init_diagnostics_routes
 from routes.anomaly_detection import router as anomaly_router, init_anomaly_routes
+from routes.sessions import router as sessions_router, init_session_routes, ensure_session_indexes
 
 # Initialize auth deps with DB
 init_auth_deps(db)
@@ -380,6 +384,7 @@ UPLOADS_DIR.mkdir(exist_ok=True)
 init_license_routes(db, ai_gateway, UPLOADS_DIR)
 init_diagnostics_routes(db, ai_gateway, UPLOADS_DIR)
 init_anomaly_routes(db)
+init_session_routes(db)
 
 # ── AUTH ENFORCEMENT ─────────────────────────────────────────────────
 # PUBLIC routers — no auth required (infrastructure + auth flow)
@@ -401,6 +406,7 @@ api_router.include_router(license_router, dependencies=_auth_dep)
 api_router.include_router(knowledge_router, dependencies=_auth_dep)
 api_router.include_router(telemetry_router, dependencies=_auth_dep)
 api_router.include_router(anomaly_router, dependencies=_auth_dep)
+api_router.include_router(sessions_router, dependencies=_auth_dep)
 logger.info("Auth enforcement enabled — all protected endpoints require valid JWT")
 
 
