@@ -11,26 +11,30 @@ logger = logging.getLogger(__name__)
 
 
 class ConnectionManager:
-    """Manages WebSocket connections with channel support."""
+    """Manages WebSocket connections with channel support and auth."""
 
     def __init__(self):
         self._connections: Set[WebSocket] = set()
         self._channels: dict[str, Set[WebSocket]] = {}
+        self._auth: dict[int, dict] = {}  # ws id -> user info
         self._lock = asyncio.Lock()
 
-    async def connect(self, ws: WebSocket, channels: list[str] | None = None):
+    async def connect(self, ws: WebSocket, channels: list[str] | None = None, user: dict | None = None):
         await ws.accept()
         async with self._lock:
             self._connections.add(ws)
+            if user:
+                self._auth[id(ws)] = user
             for ch in (channels or ["general"]):
                 if ch not in self._channels:
                     self._channels[ch] = set()
                 self._channels[ch].add(ws)
-        logger.info(f"[WS] Client connected. Total: {len(self._connections)}")
+        logger.info(f"[WS] Client connected (auth={user is not None}). Total: {len(self._connections)}")
 
     async def disconnect(self, ws: WebSocket):
         async with self._lock:
             self._connections.discard(ws)
+            self._auth.pop(id(ws), None)
             for ch_set in self._channels.values():
                 ch_set.discard(ws)
         logger.info(f"[WS] Client disconnected. Total: {len(self._connections)}")
@@ -68,10 +72,11 @@ def register_websocket_route(app):
 
     @app.websocket("/api/ws")
     async def websocket_endpoint(websocket: WebSocket):
-        """Main WebSocket endpoint.
+        """Main WebSocket endpoint with optional auth.
 
         Query params:
           ?channels=general,print_status,scans  (comma-separated channel list)
+          ?token=<jwt_token>  (optional auth token)
 
         Client messages:
           {"action": "ping"}                       -> responds with pong
@@ -81,7 +86,18 @@ def register_websocket_route(app):
         channels_param = websocket.query_params.get("channels", "general")
         channels = [c.strip() for c in channels_param.split(",") if c.strip()]
 
-        await ws_manager.connect(websocket, channels)
+        # Optional auth via query param (WebSockets can't use headers easily)
+        user = None
+        token = websocket.query_params.get("token")
+        if token:
+            try:
+                from security.auth import verify_token
+                payload = verify_token(token)
+                user = {"user_id": payload.get("sub"), "role": payload.get("role", "user")}
+            except Exception:
+                pass  # Allow anonymous connections but log auth status
+
+        await ws_manager.connect(websocket, channels, user=user)
         try:
             while True:
                 raw = await websocket.receive_text()

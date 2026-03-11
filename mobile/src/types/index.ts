@@ -229,3 +229,46 @@ export type AppEventMap = {
   licenseScanned: (data: LicenseData) => void;
   customerCreated: (customer: Customer) => void;
 };
+
+// ============== ANOMALY DETECTION ==============
+
+export type AnomalySeverity = 'critical' | 'high' | 'medium' | 'low';
+
+export interface Anomaly {
+  anomaly_id: string;
+  check: string;
+  severity: AnomalySeverity;
+  vin: string;
+  message: string;
+  details: Record<string, unknown>;
+  detected_at: string;
+  resolved: boolean;
+  resolution?: string;
+  resolved_at?: string;
+}
+
+export interface AnomalySummary {
+  total_anomalies: number;
+  unresolved: number;
+  by_severity: Partial<Record<AnomalySeverity, number>>;
+  last_24h: number;
+  health: 'clean' | 'warning' | 'alert';
+}
+
+export interface AnomalyScanResult {
+  scan_time: string;
+  checks_run: number;
+  anomalies_found: number;
+  by_severity: Record<AnomalySeverity, number>;
+  details: Anomaly[];
+}
+
+// ============== WEBSOCKET ==============
+
+export interface WsMessage {
+  event: string;
+  data: Record<string, unknown>;
+  ts: string;
+}
+
+export type WsAction = 'ping' | 'subscribe' | 'unsubscribe';

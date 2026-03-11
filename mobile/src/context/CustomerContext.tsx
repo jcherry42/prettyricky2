@@ -32,6 +32,15 @@ export function CustomerProvider({ children }) {
     })();
   }, []);
 
+  // Auto-persist to cache whenever customers change (fixes stale closure in rapid creates)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    if (customers.length > 0) {
+      saveJson(CACHE_KEY, { customers, timestamp: Date.now() });
+    }
+  }, [customers]);
+
   function normalizeCustomer(c) {
     if (!c || typeof c !== 'object') return c;
     // Backend uses `id` (UUID). Some UI code historically used `customer_id`.
@@ -66,13 +75,7 @@ export function CustomerProvider({ children }) {
 
       setLastFetch(Date.now());
 
-      // Cache first page for offline access
-      if (!append) {
-        await saveJson(CACHE_KEY, {
-          customers: list,
-          timestamp: Date.now(),
-        });
-      }
+      // Cache is auto-saved via useEffect when customers state changes
 
       return { customers: list, hasMore };
     } catch (e) {
@@ -83,7 +86,6 @@ export function CustomerProvider({ children }) {
         setCustomers(normalized);
         setError('Serving cached data (offline)');
         return { customers: normalized, hasMore: false };
-        return normalized;
       }
       setError(e.message || 'Failed to fetch customers');
       throw e;
@@ -116,12 +118,9 @@ export function CustomerProvider({ children }) {
 
       const newCustomer = normalizeCustomer(data?.customer);
       if (newCustomer) {
+        // Functional update — always uses latest state, no stale closure risk
         setCustomers((prev) => [newCustomer, ...prev]);
-        // Update cache using ref to avoid stale closure
-        await saveJson(CACHE_KEY, {
-          customers: [newCustomer, ...customersRef.current.map(normalizeCustomer)],
-          timestamp: Date.now(),
-        });
+        // Cache is auto-saved via useEffect on customers change
       }
 
       return newCustomer;

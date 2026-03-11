@@ -178,12 +178,12 @@ async def scan_license_direct(
     try:
         image_data = await image.read()
         if not image_data or len(image_data) == 0:
-            return LicenseScanResponse(success=False, error="Empty image file")
+            raise HTTPException(status_code=400, detail="Empty image file")
 
         if len(image_data) < 5 * 1024:
-            return LicenseScanResponse(
-                success=False, confidence=0,
-                error="Image appears too small for reliable OCR. Please take a clearer photo.",
+            raise HTTPException(
+                status_code=400,
+                detail="Image appears too small for reliable OCR. Please take a clearer photo.",
             )
 
         logger.info(f"scan-direct: received {len(image_data)} bytes")
@@ -559,13 +559,13 @@ async def upload_license_image(
         if content_type not in allowed_types:
             ext = (image.filename or '').split('.')[-1].lower()
             if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
-                return LicenseUploadResponse(success=False, error="Invalid image format. Please upload JPG, PNG, or WEBP.")
+                raise HTTPException(status_code=400, detail="Invalid image format. Please upload JPG, PNG, or WEBP.")
 
         image_data = await image.read()
         if len(image_data) == 0:
-            return LicenseUploadResponse(success=False, error="Empty image file received")
+            raise HTTPException(status_code=400, detail="Empty image file received")
         if len(image_data) > 10 * 1024 * 1024:
-            return LicenseUploadResponse(success=False, error="Image too large. Max 10MB.")
+            raise HTTPException(status_code=413, detail="Image too large. Max 10MB.")
 
         ext = (image.filename or 'image.jpg').split('.')[-1].lower()
         if ext not in ['jpg', 'jpeg', 'png', 'webp']:

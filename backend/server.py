@@ -27,6 +27,10 @@ from models.responses import (
 from security.rate_limit import RateLimitMiddleware
 from security.audit import AuditLogger
 
+# Authentication enforcement
+from fastapi import Depends
+from middleware.auth_deps import require_auth, init_auth_deps
+
 # LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
@@ -288,6 +292,12 @@ async def lifespan(app: FastAPI):
     from routes.tower_talk_v2 import init_tower_talk_routes as _reinit_tt
     _reinit_tt(vector_search=vector_svc, telemetry=telemetry_svc)
 
+    # Initialize Anomaly Detection Service
+    from services.anomaly_detection import AnomalyDetectionService
+    anomaly_svc = AnomalyDetectionService(db)
+    await anomaly_svc.ensure_indexes()
+    app.state.anomaly_detection = anomaly_svc
+
     # Clean up stale uploads from previous runs
     asyncio.create_task(_cleanup_stale_uploads())
 
@@ -348,6 +358,10 @@ from routes.license import router as license_router, init_license_routes
 from routes.knowledge import router as knowledge_router
 from routes.telemetry import router as telemetry_router
 from routes.diagnostics import router as diagnostics_router, init_diagnostics_routes
+from routes.anomaly_detection import router as anomaly_router, init_anomaly_routes
+
+# Initialize auth deps with DB
+init_auth_deps(db)
 
 init_printer_routes_v2(db)
 init_vehicle_routes_v2(db, vehicle_repo)
@@ -365,21 +379,29 @@ UPLOADS_DIR = Path(__file__).parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 init_license_routes(db, ai_gateway, UPLOADS_DIR)
 init_diagnostics_routes(db, ai_gateway, UPLOADS_DIR)
+init_anomaly_routes(db)
 
-api_router.include_router(printer_router_v2)
-api_router.include_router(vehicles_router_v2)
-api_router.include_router(tower_talk_router_v2)
-api_router.include_router(customers_router_v2)
-api_router.include_router(vin_router_v2)
-api_router.include_router(tts_voice_router)
-api_router.include_router(ai_features_router)
-api_router.include_router(data_mgmt_router)
-api_router.include_router(integrations_router)
-api_router.include_router(pin_auth_router)
-api_router.include_router(license_router)
-api_router.include_router(knowledge_router)
-api_router.include_router(telemetry_router)
-api_router.include_router(diagnostics_router)
+# ── AUTH ENFORCEMENT ─────────────────────────────────────────────────
+# PUBLIC routers — no auth required (infrastructure + auth flow)
+api_router.include_router(pin_auth_router)          # /auth/* — login, setup, refresh
+api_router.include_router(diagnostics_router)        # /diagnostics — self-test
+
+# PROTECTED routers — require valid JWT Bearer token
+_auth_dep = [Depends(require_auth)]
+api_router.include_router(printer_router_v2, dependencies=_auth_dep)
+api_router.include_router(vehicles_router_v2, dependencies=_auth_dep)
+api_router.include_router(tower_talk_router_v2, dependencies=_auth_dep)
+api_router.include_router(customers_router_v2, dependencies=_auth_dep)
+api_router.include_router(vin_router_v2, dependencies=_auth_dep)
+api_router.include_router(tts_voice_router, dependencies=_auth_dep)
+api_router.include_router(ai_features_router, dependencies=_auth_dep)
+api_router.include_router(data_mgmt_router, dependencies=_auth_dep)
+api_router.include_router(integrations_router, dependencies=_auth_dep)
+api_router.include_router(license_router, dependencies=_auth_dep)
+api_router.include_router(knowledge_router, dependencies=_auth_dep)
+api_router.include_router(telemetry_router, dependencies=_auth_dep)
+api_router.include_router(anomaly_router, dependencies=_auth_dep)
+logger.info("Auth enforcement enabled — all protected endpoints require valid JWT")
 
 
 # ============== HEALTH & STATUS ==============
