@@ -8,7 +8,7 @@ import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { getBackendUrlAsync, getBackendUrl } from '../config/backend';
 import { clearBackendUrlOverride, getBackendUrlOverride, setBackendUrlOverride } from '../config/backendOverride';
 
-function isValidHttpsUrl(value) {
+function isValidHttpsUrl(value: string) {
   try {
     const url = new URL(value);
     return url.protocol === 'https:';
@@ -18,7 +18,7 @@ function isValidHttpsUrl(value) {
 }
 
 /** Strip a trailing /api segment — the app adds /api itself to every path */
-function sanitize(url) {
+function sanitize(url: string) {
   return String(url || '').trim().replace(/\/$/, '').replace(/\/api$/, '');
 }
 

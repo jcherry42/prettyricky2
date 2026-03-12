@@ -3,7 +3,7 @@
  * Validates VIN using the check digit algorithm
  */
 
-const TRANSLITERATION = {
+const TRANSLITERATION: Record<string, number> = {
   A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8,
   J: 1, K: 2, L: 3, M: 4, N: 5, P: 7, R: 9,
   S: 2, T: 3, U: 4, V: 5, W: 6, X: 7, Y: 8, Z: 9,
@@ -13,10 +13,8 @@ const WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2];
 
 /**
  * Calculate VIN check digit
- * @param {string} vin - 17 character VIN
- * @returns {string|null} - Expected check digit or null if invalid
  */
-export function calculateCheckDigit(vin) {
+export function calculateCheckDigit(vin: string): string | null {
   if (!vin || vin.length !== 17) return null;
 
   const upper = vin.toUpperCase();
@@ -24,11 +22,11 @@ export function calculateCheckDigit(vin) {
 
   for (let i = 0; i < 17; i++) {
     const char = upper[i];
-    let value;
+    let value: number;
 
     if (/[0-9]/.test(char)) {
       value = parseInt(char, 10);
-    } else if (TRANSLITERATION[char]) {
+    } else if (TRANSLITERATION[char] !== undefined) {
       value = TRANSLITERATION[char];
     } else {
       return null; // Invalid character
@@ -43,10 +41,8 @@ export function calculateCheckDigit(vin) {
 
 /**
  * Validate VIN checksum
- * @param {string} vin - 17 character VIN
- * @returns {boolean} - True if valid
  */
-export function validateVinChecksum(vin) {
+export function validateVinChecksum(vin: string): boolean {
   if (!vin || vin.length !== 17) return false;
 
   const upper = vin.toUpperCase();
@@ -58,10 +54,8 @@ export function validateVinChecksum(vin) {
 
 /**
  * Validate VIN format
- * @param {string} vin - VIN to validate
- * @returns {object} - { valid: boolean, error?: string }
  */
-export function validateVinFormat(vin) {
+export function validateVinFormat(vin: string): { valid: boolean; error?: string } {
   if (!vin) {
     return { valid: false, error: 'VIN is required' };
   }
@@ -87,21 +81,19 @@ export function validateVinFormat(vin) {
 
 /**
  * Full VIN validation with advisory checksum.
- * Format is enforced (17 chars, no IOQ). Checksum is ADVISORY only —
- * many legitimate non-US-manufactured VINs do not follow the FMVSS 115
- * check-digit algorithm. Leading CRM platforms (vAuto, VinSolutions,
- * DealerSocket) treat the check digit as a confidence signal, not a gate.
- *
- * @param {string} vin - VIN to validate
- * @returns {object} - { valid: boolean, checksumValid: boolean, checksumWarning?: string, error?: string }
  */
-export function validateVin(vin) {
+export function validateVin(vin: string): {
+  valid: boolean;
+  checksumValid: boolean;
+  checksumWarning?: string | null;
+  error?: string;
+} {
   const formatCheck = validateVinFormat(vin);
   if (!formatCheck.valid) return { ...formatCheck, checksumValid: false };
 
   const checksumValid = validateVinChecksum(vin);
   return {
-    valid: true,        // Format is valid — VIN is accepted
+    valid: true,
     checksumValid,
     checksumWarning: checksumValid
       ? null

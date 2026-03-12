@@ -28,7 +28,7 @@ export async function isSmsAvailable() {
  * @param {string} options.message - Pre-filled message body
  * @returns {Promise<{success: boolean, error?: string}>}
  */
-export async function sendSms({ recipients, message }) {
+export async function sendSms({ recipients, message }: { recipients: string | string[]; message: string }) {
   try {
     const available = await SMS.isAvailableAsync();
 
@@ -64,10 +64,10 @@ export async function sendSms({ recipients, message }) {
       cancelled: result === 'cancelled',
       result,
     };
-  } catch (e) {
+  } catch (e: any) {
     return {
       success: false,
-      error: e.message || 'Failed to open SMS composer',
+      error: e?.message || 'Failed to open SMS composer',
     };
   }
 }
@@ -80,7 +80,7 @@ export async function sendSms({ recipients, message }) {
  * @param {string} message - Message body
  * @returns {Promise<{success: boolean}>}
  */
-export async function textCustomer(phone, message = '') {
+export async function textCustomer(phone: string, message: string = '') {
   if (!phone || phone === '—') {
     Alert.alert('No Phone Number', 'This customer does not have a phone number on file.');
     return { success: false, error: 'No phone number' };
@@ -103,7 +103,7 @@ export async function textCustomer(phone, message = '') {
  * @param {string} [customerPhone] - Optional customer phone to pre-fill recipient
  * @returns {Promise<{success: boolean}>}
  */
-export async function sendTowerTalkSms(text, customerPhone = '') {
+export async function sendTowerTalkSms(text: string, customerPhone: string = '') {
   if (!text || !text.trim()) {
     Alert.alert('Empty Message', 'There is no message to send.');
     return { success: false, error: 'Empty message' };

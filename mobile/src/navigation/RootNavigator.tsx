@@ -34,7 +34,7 @@ import { useSession } from '../context/SessionContext';
 
 const Tab = createBottomTabNavigator();
 
-function TabLabel({ children, focused }) {
+function TabLabel({ children, focused }: { children: React.ReactNode; focused: boolean }) {
   return (
     <Text
       style={{

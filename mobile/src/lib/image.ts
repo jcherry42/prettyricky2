@@ -1,7 +1,7 @@
 // Utilities for converting local image URIs to base64.
 // Used for print flows that require base64 payload.
 
-export async function uriToBase64(uri) {
+export async function uriToBase64(uri: string): Promise<string> {
   const res = await fetch(uri);
   const blob = await res.blob();
 

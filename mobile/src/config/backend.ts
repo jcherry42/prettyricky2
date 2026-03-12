@@ -18,7 +18,7 @@ const FALLBACK_BACKEND_URL = 'https://vin-scanner-audit.preview.emergentagent.co
  * - Strips a trailing /api path segment (common user mistake when entering
  *   the URL manually — the app always appends /api/... itself)
  */
-function sanitizeBase(url) {
+function sanitizeBase(url: string | undefined | null): string {
   if (!url || typeof url !== 'string') return '';
   let clean = url.trim().replace(/\/$/, '');
   clean = clean.replace(/\/api$/, '');
@@ -63,14 +63,14 @@ export async function getBackendUrlAsync() {
   return getBackendUrl();
 }
 
-export async function buildApiUrlAsync(path) {
+export async function buildApiUrlAsync(path: string): Promise<string> {
   const base = await getBackendUrlAsync();
   if (!base) return '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${cleanPath}`;
 }
 
-export function buildApiUrl(path) {
+export function buildApiUrl(path: string): string {
   const base = getBackendUrl();
   if (!base) return '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;

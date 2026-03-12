@@ -42,11 +42,11 @@ const QuiltPattern = memo(function QuiltPattern() {
 /**
  * Avatar — initials circle with status-keyed gradient.
  */
-function Avatar({ name, color }) {
+function Avatar({ name, color }: { name: string; color: string }) {
   const initials = (name || '')
     .split(' ')
     .filter(Boolean)
-    .map((w) => w[0])
+    .map((w: any) => w[0])
     .join('')
     .slice(0, 2)
     .toUpperCase();
@@ -72,7 +72,7 @@ interface CustomerCardProps {
 
 export const CustomerCard = memo(function CustomerCard({ customer, onPress }: CustomerCardProps) {
   const status = customer?.lead_status || 'new';
-  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const statusConfig = (STATUS_CONFIG as Record<string, any>)[status] || STATUS_CONFIG.new;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const name = `${customer?.first_name || ''} ${customer?.last_name || ''}`.trim() || 'Unknown Customer';

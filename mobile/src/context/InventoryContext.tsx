@@ -8,7 +8,7 @@ const MAX_INVENTORY = 150;
 
 const InventoryContext = createContext(null);
 
-export function InventoryProvider({ children }) {
+export function InventoryProvider({ children }: { children: React.ReactNode }) {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,7 +40,7 @@ export function InventoryProvider({ children }) {
       });
 
       return list;
-    } catch (e) {
+    } catch (e: any) {
       // If network error, serve from cache
       const cached = await loadJson(CACHE_KEY, null);
       if (cached?.vehicles) {
@@ -115,7 +115,7 @@ export function InventoryProvider({ children }) {
     }
   }, [vehicles]);
 
-  const updateVehicle = useCallback(async (id, updates) => {
+  const updateVehicle = useCallback(async (id: string, updates: Record<string, any>) => {
     try {
       await apiFetch(`/api/vehicles/${id}`, {
         method: 'PATCH',
@@ -128,7 +128,7 @@ export function InventoryProvider({ children }) {
       ));
 
       return { ...updates, id };
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation(`/api/vehicles/${id}`, {
@@ -145,14 +145,14 @@ export function InventoryProvider({ children }) {
     }
   }, []);
 
-  const deleteVehicle = useCallback(async (id) => {
+  const deleteVehicle = useCallback(async (id: string) => {
     try {
       await apiFetch(`/api/vehicles/${id}`, {
         method: 'DELETE',
       });
 
       setVehicles(prev => prev.filter(v => v.vehicle_id !== id && v.id !== id));
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation(`/api/vehicles/${id}`, { method: 'DELETE' });

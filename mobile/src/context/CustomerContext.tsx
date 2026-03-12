@@ -8,7 +8,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const CustomerContext = createContext(null);
 
-export function CustomerProvider({ children }) {
+export function CustomerProvider({ children }: { children: React.ReactNode }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,7 +41,7 @@ export function CustomerProvider({ children }) {
     }
   }, [customers]);
 
-  function normalizeCustomer(c) {
+  function normalizeCustomer(c: any) {
     if (!c || typeof c !== 'object') return c;
     // Backend uses `id` (UUID). Some UI code historically used `customer_id`.
     const id = c.customer_id || c.id;
@@ -65,8 +65,8 @@ export function CustomerProvider({ children }) {
       if (append) {
         setCustomers(prev => {
           // Deduplicate by id
-          const existing = new Set(prev.map(c => c.customer_id || c.id));
-          const fresh = list.filter(c => !existing.has(c.customer_id || c.id));
+          const existing = new Set(prev.map((c: any) => c.customer_id || c.id));
+          const fresh = list.filter((c: any) => !existing.has(c.customer_id || c.id));
           return [...prev, ...fresh];
         });
       } else {
@@ -78,7 +78,7 @@ export function CustomerProvider({ children }) {
       // Cache is auto-saved via useEffect when customers state changes
 
       return { customers: list, hasMore };
-    } catch (e) {
+    } catch (e: any) {
       // If network error, serve from cache
       const cached = await loadJson(CACHE_KEY, null);
       if (cached?.customers) {
@@ -94,12 +94,12 @@ export function CustomerProvider({ children }) {
     }
   }, []);
 
-  const getCustomer = useCallback(async (id) => {
+  const getCustomer = useCallback(async (id: string) => {
     try {
       const data = await apiFetch(`/api/customers/${id}`);
       // Backend returns the customer object directly (not wrapped).
       return normalizeCustomer(data) || null;
-    } catch (e) {
+    } catch (e: any) {
       // Try to find in cached list (use ref for latest data)
       const found = customersRef.current.find((c) => (c.customer_id || c.id) === id);
       if (found) return found;
@@ -108,7 +108,7 @@ export function CustomerProvider({ children }) {
     }
   }, []);
 
-  const createCustomer = useCallback(async (customerData) => {
+  const createCustomer = useCallback(async (customerData: Record<string, any>) => {
     setLoading(true);
     try {
       const data = await apiFetch('/api/customers/create', {
@@ -124,7 +124,7 @@ export function CustomerProvider({ children }) {
       }
 
       return newCustomer;
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline if network error
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation('/api/customers/create', {
@@ -144,7 +144,7 @@ export function CustomerProvider({ children }) {
     }
   }, []);
 
-  const updateCustomer = useCallback(async (id, updates) => {
+  const updateCustomer = useCallback(async (id: string, updates: Record<string, any>) => {
     const cid = id;
     try {
       const data = await apiFetch(`/api/customers/${cid}`, {
@@ -165,7 +165,7 @@ export function CustomerProvider({ children }) {
       // Fallback: try to merge locally
       setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? normalizeCustomer({ ...c, ...updates }) : c)));
       return null;
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation(`/api/customers/${cid}`, {
@@ -181,7 +181,7 @@ export function CustomerProvider({ children }) {
     }
   }, []);
 
-  const deleteCustomer = useCallback(async (id) => {
+  const deleteCustomer = useCallback(async (id: string) => {
     const cid = id;
     try {
       await apiFetch(`/api/customers/${cid}`, {
@@ -189,7 +189,7 @@ export function CustomerProvider({ children }) {
       });
 
       setCustomers((prev) => prev.filter((c) => (c.customer_id || c.id) !== cid));
-    } catch (e) {
+    } catch (e: any) {
       // Queue for offline
       if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
         await queueOperation(`/api/customers/${cid}`, { method: 'DELETE' });

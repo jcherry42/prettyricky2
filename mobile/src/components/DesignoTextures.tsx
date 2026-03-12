@@ -13,7 +13,7 @@ import { colors } from '../theme/colors';
  * Quilted Leather Overlay
  * Diamond pattern typical of Nappa leather seats.
  */
-export function QuiltedLeatherOverlay({ style, tint = 'dark' }) {
+export function QuiltedLeatherOverlay({ style, tint = 'dark' }: { style?: any; tint?: string }) {
   const base = tint === 'light'
     ? 'rgba(232,220,200,0.04)'
     : 'rgba(74,31,47,0.06)';
@@ -64,7 +64,7 @@ export function QuiltedLeatherOverlay({ style, tint = 'dark' }) {
  * Wood Bezel Frame
  * Burr walnut or Bird's-Eye Maple frame effect.
  */
-export function WoodBezelFrame({ children, style, variant = 'walnut' }) {
+export function WoodBezelFrame({ children, style, variant = 'walnut' }: { children?: React.ReactNode; style?: any; variant?: string }) {
   const woodColors = (variant === 'maple'
     ? [colors.woodBirdsEyeMaple, colors.woodBirdsEyeMapleLight, colors.woodBirdsEyeMaple]
     : [colors.woodBurrWalnut, colors.woodBurrWalnutLight, colors.woodBurrWalnut]) as [string, string, ...string[]];
@@ -104,7 +104,7 @@ export function WoodBezelFrame({ children, style, variant = 'walnut' }) {
  * Brushed Metal Surface
  * Fine horizontal brushing pattern for premium surfaces.
  */
-export function BrushedMetalSurface({ children, style }) {
+export function BrushedMetalSurface({ children, style }: { children?: React.ReactNode; style?: any }) {
   return (
     <View style={[styles.metalSurface, style]}>
       <LinearGradient
@@ -142,7 +142,7 @@ export function BrushedMetalSurface({ children, style }) {
  * Chrome Accent Line
  * High-polish chrome divider.
  */
-export function ChromeAccent({ style }) {
+export function ChromeAccent({ style }: { style?: any }) {
   return (
     <View style={[styles.chromeWrap, style]}>
       <LinearGradient
@@ -168,7 +168,7 @@ export function ChromeAccent({ style }) {
  * Contrast Stitching Line
  * Decorative gold stitch pattern.
  */
-export function ContrastStitching({ style, horizontal = true }) {
+export function ContrastStitching({ style, horizontal = true }: { style?: any; horizontal?: boolean }) {
   return (
     <View
       style={[

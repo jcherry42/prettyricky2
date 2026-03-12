@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { AmbientLightingSystem } from './AmbientLightingSystem';
 
-export function InfotainmentShell({ children }) {
+export function InfotainmentShell({ children }: { children: React.ReactNode }) {
   return (
     <View style={styles.root}>
       {/* Deep obsidian base gradient */}

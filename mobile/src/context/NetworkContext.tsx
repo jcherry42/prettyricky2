@@ -10,7 +10,7 @@ import { syncQueue, getQueue } from '../utils/offlineQueue';
 
 const NetworkContext = createContext(null);
 
-export function NetworkProvider({ children }) {
+export function NetworkProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(true);
   const [isInternetReachable, setIsInternetReachable] = useState(true);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | syncing | done | error

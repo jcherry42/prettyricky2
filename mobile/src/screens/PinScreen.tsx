@@ -123,7 +123,7 @@ export function PinScreen() {
   }, [shakeAnim]);
 
   // ── PIN submit ─────────────────────────────────────────
-  const submitPin = useCallback(async (pin) => {
+  const submitPin = useCallback(async (pin: string[]) => {
     setProcessing(true);
     if (isSetup) {
       if (!isConfirming) {
@@ -133,7 +133,7 @@ export function PinScreen() {
         setProcessing(false);
         return;
       }
-      if (confirmDigits.join('') !== pin.join('')) {
+      if ((confirmDigits || []).join('') !== pin.join('')) {
         setStatus("PINs don't match. Try again.");
         setConfirmDigits(null);
         triggerShake();
@@ -155,7 +155,7 @@ export function PinScreen() {
     setProcessing(false);
   }, [isSetup, isConfirming, confirmDigits, login, setupPin, triggerShake]);
 
-  const handleKey = useCallback((key) => {
+  const handleKey = useCallback((key: string) => {
     if (processing || isLocked) return;
     if (key === '⌫') { setDigits(prev => prev.slice(0, -1)); return; }
     if (key === '') return;

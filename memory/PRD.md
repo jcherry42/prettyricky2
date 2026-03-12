@@ -8,43 +8,32 @@ Production-ready native mobile application for the automotive industry featuring
 - Premium "glass" aesthetic UI
 - Session persistence for dealership resilience
 - Performance benchmarks: Translation <800ms, VIN <500ms, License <700ms, API <300ms
+- Strict TypeScript codebase
 
 ## Architecture
-- **Backend**: FastAPI 0.135.1 + MongoDB — v2.4.0
-- **Frontend**: React Native / Expo SDK 54
+- **Backend**: FastAPI 0.135.1 + MongoDB — v2.5.0
+- **Frontend**: React Native / Expo SDK 54 (built locally by user)
 - **AI**: GPT-4o Vision via AI Gateway (Emergent LLM key)
 - **OCR**: ML Kit on-device + GPT-4o-mini cloud fallback
 - **Auth**: JWT Bearer tokens enforced on all protected endpoints
-- **Session Persistence**: Auto-save (30s timer + app background) → local AsyncStorage + remote MongoDB backup
-- **File Structure**: `services/`, `models/`, `routes/`, `security/`, `middleware/`
+- **Session**: Auto-save (30s + app background) → AsyncStorage + MongoDB backup
+- **TypeScript**: `strict: true` enabled (strictNullChecks deferred)
 
 ## What's Been Implemented
 
-### Session Persistence (Mar 2026 — Latest)
+### Strict TypeScript Migration (Mar 2026 — Latest)
+- **357 type errors fixed** across 49 files (noImplicitAny, strictFunctionTypes, etc.)
+- `strict: true` enabled in tsconfig.json (with `strictNullChecks: false` — next phase)
+- All 75 .ts/.tsx files pass strict type checking with 0 errors
+- Typed: all component props, context providers, callback params, catch blocks, utility functions
+- Foundation laid for `strictNullChecks` (398 remaining null-safety errors identified)
 
-**Backend Session API:**
-- `POST /api/sessions/save` — Full session snapshot (app background/close)
-- `GET /api/sessions/restore` — Restore last session with age tracking
-- `POST /api/sessions/auto-save` — Lightweight delta merge (30s interval)
-- `DELETE /api/sessions` — Clear session data
-- MongoDB `sessions` collection with 7-day TTL, per-user unique index
-- All endpoints auth-protected
-
-**Mobile Session Integration:**
-- `useSessionPersistence` hook — Handles AppState changes, 30s auto-save timer, silent restore on mount
-- `SessionPersistenceProvider` context — Central state manager for all persisted data
-- Persists: active customer, search query, form drafts, Tower Talk conversation, modal states, navigation state, PTT results
-- Wired into: App.tsx (provider chain), RootNavigator (modal states), HomeScreen (search + customer), TowerTalkOverlay (form drafts)
-- Local-first with remote backup: AsyncStorage for instant restore, MongoDB for cross-device/reinstall
-
-### Previous Implementations
+### Previous Implementations (summarized)
+- Session persistence (save/restore/auto-save/delete endpoints + mobile hook)
 - JWT Authentication Enforcement (all endpoints)
 - AI-Powered Anomaly Detection (4-check fraud scanner)
-- Performance Optimization (GPT-4o-mini for OCR, translation cache, image compression)
+- Performance Optimization (GPT-4o-mini for OCR, translation cache)
 - Error Response Standardization
-- Stale Closure Fix (CustomerContext)
-- TypeScript Migration (75/75 files, noImplicitAny: true)
-- WebSocket Auth Enhancement
 - Backend Modernization (server.py 3,604 → ~570 lines)
 - expo-av → expo-audio migration
 - Offline queue + sync UI
@@ -52,23 +41,24 @@ Production-ready native mobile application for the automotive industry featuring
 - PIN recovery with master reset codes
 
 ## Test Coverage
-- iteration_9: 17/17 session persistence tests (100%)
-- iteration_8: 25/25 performance optimization tests (100%)
-- iteration_7: 37/37 auth enforcement tests (100%)
-- iteration_6: 30/30 modernization tests (100%)
+- iteration_9: 17/17 session persistence (100%)
+- iteration_8: 25/25 performance optimization (100%)
+- iteration_7: 37/37 auth enforcement (100%)
+- iteration_6: 30/30 modernization (100%)
+- TypeScript: 0 errors with strict: true (strictNullChecks deferred)
 
 ## Prioritized Backlog
 
 ### P0 — None remaining
 
 ### P1 (High)
+- Enable `strictNullChecks: true` (398 errors to fix — mostly null guards)
 - PostHog telemetry integration (needs API key)
-- Enable `strict: true` in tsconfig.json incrementally
-- Full native device regression test with real audio/image data
+- Full native device regression test
 
 ### P2 (Medium)
 - Team management features
 - Real CRM integration
 - Lock screen audio controls
 - WebSocket real-time anomaly alerts
-- Structured logging with log aggregation
+- Structured logging

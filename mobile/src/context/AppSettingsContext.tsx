@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS = {
 
 const AppSettingsContext = createContext(null);
 
-export function AppSettingsProvider({ children }) {
+export function AppSettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
@@ -44,25 +44,25 @@ export function AppSettingsProvider({ children }) {
   }, []);
 
   // persist is stable: setSettings from useState never changes
-  const persist = useCallback(async (next) => {
+  const persist = useCallback(async (next: any) => {
     setSettings(next);
     settingsRef.current = next;
     await saveJson(STORAGE_KEY, next);
   }, []);
 
-  const setDefaultTargetLanguage = useCallback(async (lang) => {
+  const setDefaultTargetLanguage = useCallback(async (lang: string) => {
     await persist({ ...settingsRef.current, defaultTargetLanguage: lang });
   }, [persist]);
 
-  const setSportMode = useCallback(async (sportMode) => {
+  const setSportMode = useCallback(async (sportMode: boolean) => {
     await persist({ ...settingsRef.current, sportMode: !!sportMode });
   }, [persist]);
 
-  const setEcoMode = useCallback(async (ecoMode) => {
+  const setEcoMode = useCallback(async (ecoMode: boolean) => {
     await persist({ ...settingsRef.current, ecoMode: !!ecoMode });
   }, [persist]);
 
-  const setPttDirection = useCallback(async (pttDirection) => {
+  const setPttDirection = useCallback(async (pttDirection: string) => {
     await persist({ ...settingsRef.current, pttDirection });
   }, [persist]);
 
@@ -70,7 +70,7 @@ export function AppSettingsProvider({ children }) {
     await persist({ ...settingsRef.current, sportMode: !settingsRef.current.sportMode });
   }, [persist]);
 
-  const upsertPrinter = useCallback(async ({ id, name, ip }) => {
+  const upsertPrinter = useCallback(async ({ id, name, ip }: { id?: string; name?: string; ip?: string }) => {
     const s = settingsRef.current;
     const clean = {
       id: id || `${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -78,9 +78,9 @@ export function AppSettingsProvider({ children }) {
       ip: String(ip || '').trim(),
     };
     const printers = s.printers || [];
-    const exists = printers.some((p) => p.id === clean.id);
+    const exists = printers.some((p: any) => p.id === clean.id);
     const nextPrinters = exists
-      ? printers.map((p) => (p.id === clean.id ? { ...p, ...clean } : p))
+      ? printers.map((p: any) => (p.id === clean.id ? { ...p, ...clean } : p))
       : [clean, ...printers];
     await persist({
       ...s,
@@ -90,22 +90,22 @@ export function AppSettingsProvider({ children }) {
     return clean.id;
   }, [persist]);
 
-  const removePrinter = useCallback(async (id) => {
+  const removePrinter = useCallback(async (id: string) => {
     const s = settingsRef.current;
-    const nextPrinters = (s.printers || []).filter((p) => p.id !== id);
+    const nextPrinters = (s.printers || []).filter((p: any) => p.id !== id);
     const nextActive = s.activePrinterId === id ? (nextPrinters[0]?.id || null) : s.activePrinterId;
     await persist({ ...s, printers: nextPrinters, activePrinterId: nextActive });
   }, [persist]);
 
-  const setActivePrinter = useCallback(async (id) => {
+  const setActivePrinter = useCallback(async (id: string) => {
     await persist({ ...settingsRef.current, activePrinterId: id });
   }, [persist]);
 
-  const setAmbientLightingEnabled = useCallback(async (enabled) => {
+  const setAmbientLightingEnabled = useCallback(async (enabled: boolean) => {
     await persist({ ...settingsRef.current, ambientLightingEnabled: !!enabled });
   }, [persist]);
 
-  const setAmbientLightingIntensity = useCallback(async (intensity) => {
+  const setAmbientLightingIntensity = useCallback(async (intensity: string) => {
     const valid = ['subtle', 'medium', 'vivid'];
     await persist({ ...settingsRef.current, ambientLightingIntensity: valid.includes(intensity) ? intensity : 'medium' });
   }, [persist]);

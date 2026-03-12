@@ -24,7 +24,7 @@ import { impactMedium } from '../lib/haptics';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ---------- Ambient light strip ---------- */
-function AmbientStrip({ active, color, ecoMode }) {
+function AmbientStrip({ active, color, ecoMode }: { active: boolean; color: string; ecoMode: boolean }) {
   const anim = useRef(new Animated.Value(0.12)).current;
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function HomeScreen() {
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers;
     const query = searchQuery.toLowerCase();
-    return customers.filter((c) => {
+    return customers.filter((c: any) => {
       const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
       const phone = String(c.phone || '');
       const email = String(c.email || '');
@@ -147,23 +147,23 @@ export function HomeScreen() {
   // Exposed to RootNavigator via event bus (replaces globalThis pattern)
   useEffect(() => on('openNewCustomer', handleAddNew), [handleAddNew]);
 
-  const handleEdit = (customer) => {
+  const handleEdit = (customer: any) => {
     setShowDetailModal(false);
     setEditingCustomer(customer);
     setShowFormModal(true);
   };
 
-  const handleDelete = async (customer) => {
+  const handleDelete = async (customer: any) => {
     try {
       await deleteCustomer(customer.customer_id || customer.id);
       setShowDetailModal(false);
       toast.showSuccess('Customer deleted');
-    } catch (e) {
+    } catch (e: any) {
       toast.showError(`Delete failed: ${e.message}`);
     }
   };
 
-  const handleSave = async (customerData, existingCustomer) => {
+  const handleSave = async (customerData: any, existingCustomer: any) => {
     try {
       if (existingCustomer) {
         await updateCustomer(existingCustomer.customer_id || existingCustomer.id, customerData);
@@ -172,7 +172,7 @@ export function HomeScreen() {
         await createCustomer(customerData);
         toast.showSuccess('Customer created');
       }
-    } catch (e) {
+    } catch (e: any) {
       if (e._queued) {
         toast.showOffline('Saved offline - will sync when connected');
       } else {
@@ -186,7 +186,7 @@ export function HomeScreen() {
     setRefreshing(true);
     try {
       await fetchCustomers();
-    } catch (e) {
+    } catch (e: any) {
       if (e.message?.includes('offline')) {
         toast.showOffline('Showing cached customers');
       }
@@ -195,7 +195,7 @@ export function HomeScreen() {
     }
   }, [fetchCustomers, toast]);
 
-  const renderCustomer = ({ item }) => (
+  const renderCustomer = ({ item }: { item: any }) => (
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   );
 
@@ -254,13 +254,13 @@ export function HomeScreen() {
 
   // CustomerCard: marginVertical 6 * 2 + padding 14 * 2 + content ~50px = ~94px total
   const CARD_HEIGHT = 94;
-  const getItemLayout = useCallback((_data, index) => ({
+  const getItemLayout = useCallback((_data: any, index: number) => ({
     length: CARD_HEIGHT,
     offset: CARD_HEIGHT * index,
     index,
   }), []);
 
-  const renderCustomerMemo = useCallback(({ item }) => (
+  const renderCustomerMemo = useCallback(({ item }: { item: any }) => (
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   ), [handleCustomerPress]);
 

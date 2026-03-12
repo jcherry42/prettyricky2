@@ -92,7 +92,7 @@ export function useSessionPersistence(
           }),
         }).catch(() => {}); // Silent — don't disrupt UX
       }
-    } catch (e) {
+    } catch (e: any) {
       console.debug('[Session] Save error:', e);
     }
   }, []);
@@ -124,7 +124,7 @@ export function useSessionPersistence(
         console.log('[Session] Restored session (age:', session.saved_at ? `${Math.round((Date.now() - session.saved_at) / 1000)}s` : 'unknown', ')');
         onRestoreRef.current(session);
       }
-    } catch (e) {
+    } catch (e: any) {
       console.debug('[Session] Restore error:', e);
     }
   }, []);

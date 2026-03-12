@@ -21,7 +21,7 @@ import { impactMedium, notificationSuccess } from '../lib/haptics';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 
-function buildDisplayEntry(item) {
+function buildDisplayEntry(item: any) {
   const name = item.fullName && item.fullName.trim().length > 0 ? item.fullName : 'Name: —';
   const address = item.address && item.address.trim().length > 0 ? item.address : 'Address: —';
   const dl = item.dlNumber && item.dlNumber.trim().length > 0 ? item.dlNumber : '—';
@@ -35,7 +35,7 @@ function buildDisplayEntry(item) {
   };
 }
 
-function CustomerRow({ item }) {
+function CustomerRow({ item }: { item: any }) {
   return (
     <View style={styles.row}>
       <Text style={styles.name}>{item.displayName}</Text>
@@ -45,7 +45,7 @@ function CustomerRow({ item }) {
   );
 }
 
-export function CustomerListModal({ visible, onClose }) {
+export function CustomerListModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const [entries, setEntries] = useState([]);
   const [search, setSearch] = useState('');
   const insets = useSafeAreaInsets();

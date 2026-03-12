@@ -11,29 +11,25 @@ const MAX_QUEUE_SIZE = 100;
 
 let syncInProgress = false;
 
-/**
- * Queue item structure:
- * {
- *   id: string,
- *   path: string,
- *   options: object,
- *   timestamp: number,
- *   retries: number,
- * }
- */
+interface QueueItem {
+  id: string;
+  path: string;
+  options: Record<string, unknown>;
+  timestamp: number;
+  retries: number;
+}
 
 /**
  * Add operation to offline queue
  */
-export async function queueOperation(path, options = {}) {
-  const queue = await loadJson(QUEUE_KEY, []);
+export async function queueOperation(path: string, options: Record<string, unknown> = {}): Promise<string> {
+  const queue = await loadJson<QueueItem[]>(QUEUE_KEY, []);
 
-  // Check queue size limit
   if (queue.length >= MAX_QUEUE_SIZE) {
     throw new Error('Offline queue is full');
   }
 
-  const item = {
+  const item: QueueItem = {
     id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     path,
     options,
@@ -50,22 +46,21 @@ export async function queueOperation(path, options = {}) {
 /**
  * Get current queue
  */
-export async function getQueue() {
-  return await loadJson(QUEUE_KEY, []);
+export async function getQueue(): Promise<QueueItem[]> {
+  return await loadJson<QueueItem[]>(QUEUE_KEY, []);
 }
 
 /**
  * Clear queue
  */
-export async function clearQueue() {
+export async function clearQueue(): Promise<void> {
   await saveJson(QUEUE_KEY, []);
 }
 
 /**
  * Process offline queue
- * Attempts to sync all queued operations
  */
-export async function syncQueue(onProgress) {
+export async function syncQueue(onProgress?: (current: number, total: number) => void) {
   if (syncInProgress) {
     return { success: false, error: 'Sync already in progress' };
   }
@@ -73,7 +68,7 @@ export async function syncQueue(onProgress) {
   syncInProgress = true;
 
   try {
-    const queue = await loadJson(QUEUE_KEY, []);
+    const queue = await loadJson<QueueItem[]>(QUEUE_KEY, []);
 
     if (queue.length === 0) {
       return { success: true, processed: 0, failed: 0 };
@@ -81,20 +76,19 @@ export async function syncQueue(onProgress) {
 
     let processed = 0;
     let failed = 0;
-    const remainingQueue = [];
+    const remainingQueue: QueueItem[] = [];
 
     for (let i = 0; i < queue.length; i++) {
       const item = queue[i];
 
       try {
-        await apiFetch(item.path, item.options);
+        await apiFetch(item.path, item.options as RequestInit);
         processed++;
 
         if (onProgress) {
           onProgress(i + 1, queue.length);
         }
-      } catch (error) {
-        // Retry logic
+      } catch (_error) {
         if (item.retries < 3) {
           remainingQueue.push({
             ...item,
@@ -105,12 +99,11 @@ export async function syncQueue(onProgress) {
       }
     }
 
-    // Save remaining queue
     await saveJson(QUEUE_KEY, remainingQueue);
 
     return { success: true, processed, failed, remaining: remainingQueue.length };
-  } catch (error) {
-    return { success: false, error: error.message };
+  } catch (error: any) {
+    return { success: false, error: (error as Error).message };
   } finally {
     syncInProgress = false;
   }
@@ -119,8 +112,8 @@ export async function syncQueue(onProgress) {
 /**
  * Remove item from queue
  */
-export async function removeFromQueue(itemId) {
-  const queue = await loadJson(QUEUE_KEY, []);
-  const filtered = queue.filter(item => item.id !== itemId);
+export async function removeFromQueue(itemId: string): Promise<void> {
+  const queue = await loadJson<QueueItem[]>(QUEUE_KEY, []);
+  const filtered = queue.filter((item: QueueItem) => item.id !== itemId);
   await saveJson(QUEUE_KEY, filtered);
 }

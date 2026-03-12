@@ -55,7 +55,7 @@ export function SportModeButton() {
   const active    = Boolean(settings.sportMode);
   const flag      = flagFor(settings.defaultTargetLanguage);
   const profileId = settings.soundProfile || 'merica';
-  const profile   = SOUND_PROFILES[profileId] || SOUND_PROFILES.merica;
+  const profile   = (SOUND_PROFILES as Record<string, any>)[profileId] || SOUND_PROFILES.merica;
 
   const [showActivation, setShowActivation] = useState(false);
 

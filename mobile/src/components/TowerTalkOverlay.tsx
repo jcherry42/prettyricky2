@@ -28,7 +28,7 @@ import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 
-function friendlyBackendError(e) {
+function friendlyBackendError(e: any) {
   if (e?.code === 'BACKEND_URL_MISSING') {
     return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
   }
@@ -114,7 +114,7 @@ function VoiceWaveform() {
   const bars = barsRef.current;
 
   useEffect(() => {
-    const animations = bars.map((anim, i) => {
+    const animations = bars.map((anim: any, i: number) => {
       const delay = i * 80;
       return Animated.loop(
         Animated.sequence([
@@ -125,13 +125,13 @@ function VoiceWaveform() {
         ])
       );
     });
-    animations.forEach(a => a.start());
-    return () => animations.forEach(a => a.stop());
+    animations.forEach((a: any) => a.start());
+    return () => animations.forEach((a: any) => a.stop());
   }, []);
 
   return (
     <View style={styles.waveformWrap}>
-      {bars.map((anim, i) => (
+      {bars.map((anim: any, i: number) => (
         <Animated.View
           key={i}
           style={[
@@ -144,7 +144,7 @@ function VoiceWaveform() {
   );
 }
 
-export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
+export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible: boolean; onClose: () => void; onOpenSettings: () => void }) {
   const { settings } = useAppSettings();
   const session = useSession();
   const lang = settings.defaultTargetLanguage;
@@ -255,7 +255,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
 
       // Auto-stop after 12 seconds
       dictationTimeoutRef.current = setTimeout(() => stopDictation(), 12000);
-    } catch (e) {
+    } catch (e: any) {
       setDictationStatus('idle');
       setIsDictating(false);
     }
@@ -285,13 +285,13 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       const out = await voiceTranslateUpload({ uri, sourceLang: 'en', targetLang: 'en', mimeType: mime, fileExtension: ext });
       const transcript = out?.transcript || out?.translated_text || '';
       if (transcript && transcript.trim()) {
-        setSituation(prev => {
+        setSituation((prev: string) => {
           const base = prev.trim();
           return base ? `${base} ${transcript.trim()}` : transcript.trim();
         });
         impactLight();
       }
-    } catch (e) {
+    } catch (e: any) {
       // silently fail — don't disrupt UX
     } finally {
       setDictationStatus('idle');
@@ -341,7 +341,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       if (sportOn && lang) {
         autoTranslateRef.current = responseText;
       }
-    } catch (e) {
+    } catch (e: any) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: errorMsg });
       notificationError();
@@ -388,7 +388,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       setTranslated(translatedText);
       setState({ status: 'done', error: null });
       notificationSuccess();
-    } catch (e) {
+    } catch (e: any) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `Translation error: ${errorMsg}` });
       notificationError();
@@ -421,12 +421,12 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       }
 
       setState({ status: 'done', error: null });
-    } catch (e) {
+    } catch (e: any) {
       setState({ status: 'error', error: `Translate & Speak error: ${friendlyBackendError(e)}` });
     }
   }, [reply, lang]);
 
-  const speak = useCallback(async (text, language) => {
+  const speak = useCallback(async (text: string, language: string) => {
     try {
       if (!text || !text.trim()) return;
       if (!language || typeof language !== 'string') return;
@@ -447,13 +447,13 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
       }
 
       setState({ status: 'done', error: null });
-    } catch (e) {
+    } catch (e: any) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `TTS error: ${errorMsg}` });
     }
   }, []);
 
-  const copyToClipboard = useCallback(async (text, type = 'reply') => {
+  const copyToClipboard = useCallback(async (text: string, type = 'reply') => {
     try {
       await Clipboard.setStringAsync(text);
       selectionTap();
@@ -464,12 +464,12 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
         setCopiedTranslation(true);
         setTimeout(() => setCopiedTranslation(false), 2000);
       }
-    } catch (e) {
+    } catch (e: any) {
       // silently fail
     }
   }, []);
 
-  const sendAsSms = useCallback(async (text) => {
+  const sendAsSms = useCallback(async (text: string) => {
     try {
       impactMedium();
       const result = await sendTowerTalkSms(text);
@@ -479,7 +479,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
         notificationError();
         Alert.alert('SMS Error', result.error);
       }
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       Alert.alert('SMS Error', 'Failed to open SMS composer');
     }
@@ -649,7 +649,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }) {
                 <View>
                   <Text style={styles.sectionLabel}>QUICK RESPONSES</Text>
                   <View style={{ height: 8 }} />
-                  {(PRESET_RESPONSES[selectedInquiry] || []).map((text, idx) => {
+                  {((PRESET_RESPONSES as Record<string, string[]>)[selectedInquiry] || []).map((text: string, idx: number) => {
                     const active = presetIndex === idx;
                     return (
                       <Pressable

@@ -34,7 +34,7 @@ function getAudioMeta() {
   return { ext: 'm4a', mime: 'audio/mp4' };
 }
 
-export function PttProvider({ children }) {
+export function PttProvider({ children }: { children: React.ReactNode }) {
   const { settings, setPttDirection } = useAppSettings();
 
   const targetLang = settings.defaultTargetLanguage;

@@ -1,6 +1,6 @@
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 
-export async function playBase64Audio({ base64, format = 'mp3' }) {
+export async function playBase64Audio({ base64, format = 'mp3' }: { base64: string; format?: string }) {
   if (!base64) throw new Error('Empty audio');
 
   const mime = format === 'mp3' ? 'audio/mpeg' : `audio/${format}`;

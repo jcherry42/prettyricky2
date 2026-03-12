@@ -141,7 +141,7 @@ export function QuickCompose() {
         notificationSuccess();
         toast.showSuccess('Translation complete');
       }
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       toast.showError(e.message || 'Translation failed');
     } finally {
@@ -184,7 +184,7 @@ export function QuickCompose() {
   }, [text, translatedText, selectedCustomer, toast, settings.salesRepName]);
 
   // Link customer
-  const linkCustomer = useCallback((c) => {
+  const linkCustomer = useCallback((c: any) => {
     impactLight();
     setSelectedCustomer(c);
     setShowCustomerPicker(false);
@@ -193,7 +193,7 @@ export function QuickCompose() {
   }, [toast]);
 
   // Link vehicle
-  const linkVehicle = useCallback((v) => {
+  const linkVehicle = useCallback((v: any) => {
     impactLight();
     setSelectedVehicle(v);
     setShowInventoryPicker(false);
@@ -205,7 +205,7 @@ export function QuickCompose() {
   }, [text, toast]);
 
   // Clear translation when text changes
-  const onChangeText = useCallback((val) => {
+  const onChangeText = useCallback((val: any) => {
     if (val.length <= MAX_CHARS) {
       setText(val);
       if (translatedText) setTranslatedText('');
@@ -399,7 +399,7 @@ export function QuickCompose() {
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
             >
-              {(customers || []).map((c) => (
+              {(customers || []).map((c: any) => (
                 <Pressable
                   key={c.customer_id || c.id}
                   onPress={() => linkCustomer(c)}
@@ -446,7 +446,7 @@ export function QuickCompose() {
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
             >
-              {(vehicles || []).map((v, i) => (
+              {(vehicles || []).map((v: any, i: number) => (
                 <Pressable
                   key={v.vehicle_id || v.id || `v-${i}`}
                   onPress={() => linkVehicle(v)}
@@ -488,7 +488,7 @@ export function QuickCompose() {
   );
 }
 
-function statusColor(status) {
+function statusColor(status: string) {
   switch (status) {
     case 'new':          return '#5EA7FF';
     case 'contacted':    return '#FFD700';

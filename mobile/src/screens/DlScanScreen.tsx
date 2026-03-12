@@ -80,7 +80,7 @@ const EXTRACTION_FIELDS = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function HistoryCard({ item, onPress, onSaveToCustomer }) {
+function HistoryCard({ item, onPress, onSaveToCustomer }: { item: any; onPress: (item: any) => void; onSaveToCustomer: (item: any) => void }) {
   const confidence = item.confidence || 0;
   const isSaved = Boolean(item.savedToCustomerAt);
   const methodLabel = item.scanMethod === 'ocr' ? 'OCR' : 'MANUAL';
@@ -154,7 +154,7 @@ function HistoryCard({ item, onPress, onSaveToCustomer }) {
   );
 }
 
-function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSaved }) {
+function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSaved }: { data: any; onEdit: (data: any) => void; onSaveToCustomer: (data: any) => void; isSaved: boolean }) {
   const [editing, setEditing] = useState(false);
   const [edited, setEdited] = useState(data);
 
@@ -282,7 +282,7 @@ export function DlScanScreen() {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
-  const saveToHistory = useCallback(async (entry) => {
+  const saveToHistory = useCallback(async (entry: any) => {
     setHistory((prev) => {
       const next = [entry, ...prev].slice(0, MAX_HISTORY);
       saveJson(STORAGE_KEY, next);
@@ -291,7 +291,7 @@ export function DlScanScreen() {
     return entry;
   }, []);
 
-  const updateHistoryItem = useCallback(async (id, updates) => {
+  const updateHistoryItem = useCallback(async (id: string, updates: any) => {
     setHistory((prev) => {
       const next = prev.map((item) => (item.id === id ? { ...item, ...updates } : item));
       saveJson(STORAGE_KEY, next);
@@ -467,19 +467,19 @@ export function DlScanScreen() {
   }, [scanDirect]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const handleItemPress = (item) => {
+  const handleItemPress = (item: any) => {
     setSelectedItem(item);
     setShowDetail(true);
   };
 
-  const handleEdit = (editedData) => {
+  const handleEdit = (editedData: any) => {
     if (selectedItem) {
       updateHistoryItem(selectedItem.id, editedData);
       setSelectedItem({ ...selectedItem, ...editedData });
     }
   };
 
-  const handleSaveToCustomer = async (item) => {
+  const handleSaveToCustomer = async (item: any) => {
     try {
       impactMedium();
       if (!item.first_name || !item.last_name) {
@@ -531,7 +531,7 @@ export function DlScanScreen() {
       Alert.alert('Success', `Customer profile created for ${item.first_name} ${item.last_name}.\nLicense image saved to profile.`);
     } catch (err) {
       notificationError();
-      Alert.alert('Save Failed', err.message || 'Unable to save customer');
+      Alert.alert('Save Failed', (err as any).message || 'Unable to save customer');
     }
   };
 

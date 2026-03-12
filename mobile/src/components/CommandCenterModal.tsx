@@ -21,7 +21,7 @@ const TABS = [
   { key: 'settings', label: 'SETTINGS', icon: 'settings' },
 ];
 
-function TabButton({ label, icon, active, onPress }) {
+function TabButton({ label, icon, active, onPress }: { label: string; icon: string; active: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
       {/* Glass base */}
@@ -51,7 +51,7 @@ function TabButton({ label, icon, active, onPress }) {
       <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 7, borderRadius: 4, backgroundColor: active ? 'rgba(255,220,140,0.32)' : 'rgba(255,255,255,0.14)' }} />
       {/* Secondary bottom reflection */}
       {active && <View style={{ position: 'absolute', bottom: 4, left: '25%', right: '25%', height: 4, borderRadius: 2, backgroundColor: 'rgba(214,178,94,0.12)' }} />}
-      <Ionicons name={icon} size={14} color={active ? '#F0D87A' : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
+      <Ionicons name={icon as any} size={14} color={active ? '#F0D87A' : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
       <Text style={[styles.tabText, active && styles.tabTextActive]} numberOfLines={1} ellipsizeMode="tail">
         {label}
       </Text>
@@ -59,12 +59,12 @@ function TabButton({ label, icon, active, onPress }) {
   );
 }
 
-function SectionTitle({ children }) {
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
 /* --- Liquid Glass Language Button --- */
-function LangGlass({ flag, name, active, onPress }) {
+function LangGlass({ flag, name, active, onPress }: { flag: string; name: string; active: boolean; onPress: () => void }) {
   return (
     <Pressable
       onPress={() => { impactLight(); onPress(); }}
@@ -107,7 +107,7 @@ const LANGS = [
   { code: 'ko', flag: '\ud83c\uddf0\ud83c\uddf7', name: '한국어' },
 ];
 
-function PrinterRow({ item, active, onSetActive, onRemove }) {
+function PrinterRow({ item, active, onSetActive, onRemove }: { item: any; active: boolean; onSetActive: (id: string) => void; onRemove: (id: string) => void }) {
   return (
     <View style={styles.printerRow}>
       <Pressable onPress={() => { impactLight(); onSetActive(item.id); }} style={({ pressed }) => [styles.radio, active && styles.radioActive, pressed && { opacity: 0.9 }]}>
@@ -124,7 +124,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }) {
   );
 }
 
-export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }) {
+export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: any; initialSection?: any }) {
   const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
   const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
@@ -152,7 +152,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
           if (backendSectionRef.current?.measureLayout && scrollRef.current) {
             backendSectionRef.current.measureLayout(
               scrollRef.current.getInnerViewNode(),
-              (_x, y) => {
+              (_x: number, y: number) => {
                 scrollRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true });
               },
               () => {}
@@ -196,7 +196,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     });
   }, [fullIp]);
 
-  const updateIpPart = useCallback((index, value) => {
+  const updateIpPart = useCallback((index: number, value: string) => {
     const cleaned = value.replace(/[^0-9]/g, '').slice(0, 3);
     setIpParts((prev) => {
       const next = [...prev];
@@ -225,7 +225,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
       } else {
         setPrinterTest({ state: 'error', message: res?.error || 'Failed' });
       }
-    } catch (e) {
+    } catch (e: any) {
       setPrinterTest({ state: 'error', message: String(e?.message || e) });
     }
   }, [activePrinter]);
@@ -236,7 +236,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     try {
       const data = await apiFetch('/api/dashboard/stats');
       setStats(data);
-    } catch (e) {
+    } catch (e: any) {
       Alert.alert('Error', 'Failed to load dashboard stats');
     } finally {
       setLoadingStats(false);
@@ -247,7 +247,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
     const query = customerSearch.toLowerCase();
-    return customers.filter((c) => {
+    return customers.filter((c: any) => {
       const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
       const phone = (c.phone || '').toLowerCase();
       const email = (c.email || '').toLowerCase();
@@ -259,7 +259,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const filteredVehicles = useMemo(() => {
     if (!inventorySearch.trim()) return vehicles;
     const query = inventorySearch.toLowerCase();
-    return vehicles.filter((v) => {
+    return vehicles.filter((v: any) => {
       const vin = (v.vin || '').toLowerCase();
       const year = (v.year || '').toString().toLowerCase();
       const make = (v.make || '').toLowerCase();
@@ -283,7 +283,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     }
   }, [visible, activeTab, fetchInventory]);
 
-  const handleDeleteVehicle = useCallback(async (vehicle) => {
+  const handleDeleteVehicle = useCallback(async (vehicle: any) => {
     Alert.alert(
       'Delete Vehicle',
       `Remove ${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''} from inventory?`,
@@ -297,7 +297,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               impactMedium();
               await deleteVehicle(vehicle.vehicle_id);
               notificationSuccess();
-            } catch (error) {
+            } catch (error: any) {
               Alert.alert('Error', 'Failed to delete vehicle');
             }
           },

@@ -12,7 +12,14 @@ import { onDeviceTranscribe, isOnDeviceSttAvailable } from './onDeviceStt';
  * @param {string} [opts.fileExtension='m4a'] - File extension
  * @param {boolean} [opts.preferOnDevice=false] - Force on-device STT (no translation)
  */
-export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en', mimeType, fileExtension, preferOnDevice = false }) {
+export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en', mimeType, fileExtension, preferOnDevice = false }: {
+  uri: string;
+  targetLang: string;
+  sourceLang?: string;
+  mimeType?: string;
+  fileExtension?: string;
+  preferOnDevice?: boolean;
+}) {
   if (!targetLang) throw new Error('Target language is required');
 
   // On-device STT mode (offline fallback)
@@ -74,9 +81,9 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     }
 
     return json;
-  } catch (e) {
+  } catch (e: any) {
     clearTimeout(timer);
-    if (e.name === 'AbortError') {
+    if (e?.name === 'AbortError') {
       // On timeout, attempt on-device STT as fallback
       try {
         const onDeviceAvailable = await isOnDeviceSttAvailable();
@@ -101,7 +108,7 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     }
 
     // On network errors, attempt on-device STT fallback
-    if (e.message?.includes('Network request failed') || e.message?.includes('fetch')) {
+    if (e?.message?.includes('Network request failed') || e?.message?.includes('fetch')) {
       try {
         const onDeviceAvailable = await isOnDeviceSttAvailable();
         if (onDeviceAvailable) {

@@ -57,10 +57,10 @@ function deriveDisplayStatus(v: any): string {
 }
 
 // ──────────── Vehicle Card ────────────
-function VehicleCard({ item, onEdit, onRemove }) {
+function VehicleCard({ item, onEdit, onRemove }: { item: any; onEdit: (item: any) => void; onRemove: (id: string) => void }) {
   const title      = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
   const displayStatus = deriveDisplayStatus(item);
-  const statusColor   = STATUS_COLORS[displayStatus] || colors.textMute;
+  const statusColor   = (STATUS_COLORS as Record<string, string>)[displayStatus] || colors.textMute;
   const stockNum   = item.stockNumber || item.stock_number;
   const dateStr    = item.addedAt || item.created_at;
   const source     = item._source === 'manual' ? 'MANUAL'
@@ -173,7 +173,7 @@ function VehicleCard({ item, onEdit, onRemove }) {
 }
 
 // ──────────── Intake Hub (main screen) ────────────
-function IntakeHub({ navigation }) {
+function IntakeHub({ navigation }: { navigation: any }) {
   const { vehicles, fetchInventory, deleteVehicle: ctxDeleteVehicle, updateVehicle: ctxUpdateVehicle } = useInventory();
   const [search, setSearch]       = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -198,7 +198,7 @@ function IntakeHub({ navigation }) {
   }, [fetchInventory]);
 
   const filtered = search.trim()
-    ? vehicles.filter((v) => {
+    ? vehicles.filter((v: any) => {
         const q    = search.toLowerCase();
         const text = [v.vin, v.year, v.make, v.model, v.trim, v.stockNumber, v.stock_number, deriveDisplayStatus(v)]
           .filter(Boolean).join(' ').toLowerCase();
@@ -208,9 +208,9 @@ function IntakeHub({ navigation }) {
 
   const stats = {
     total:   vehicles.length,
-    active:  vehicles.filter((v) => deriveDisplayStatus(v) === 'active').length,
-    trade:   vehicles.filter((v) => deriveDisplayStatus(v) === 'trade').length,
-    sold:    vehicles.filter((v) => deriveDisplayStatus(v) === 'sold').length,
+    active:  vehicles.filter((v: any) => deriveDisplayStatus(v) === 'active').length,
+    trade:   vehicles.filter((v: any) => deriveDisplayStatus(v) === 'trade').length,
+    sold:    vehicles.filter((v: any) => deriveDisplayStatus(v) === 'sold').length,
   };
 
   const handleSave = useCallback(async (nextVehicle: any) => {
@@ -341,7 +341,7 @@ function IntakeHub({ navigation }) {
               <VehicleCard
                 item={item}
                 onEdit={setEditing}
-                onRemove={async (vid) => {
+                onRemove={async (vid: string) => {
                   try {
                     await ctxDeleteVehicle(vid);
                     notificationSuccess();

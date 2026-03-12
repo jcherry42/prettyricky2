@@ -133,7 +133,7 @@ const INQUIRY_TYPES = [
   },
 ];
 
-export function EmergencyInquiryModal({ visible, onClose }) {
+export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { settings } = useAppSettings();
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
@@ -146,7 +146,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
   const [speakingIdx, setSpeakingIdx] = useState(-1);
   const playerRef = useRef(null);
 
-  const handleSelectType = (inquiry) => {
+  const handleSelectType = (inquiry: any) => {
     impactLight();
     stopPlayback();
     setSelectedType(selectedType?.id === inquiry.id ? null : inquiry);
@@ -179,7 +179,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
       setSpeakingIdx(idx);
 
       // Determine language: if translated text, use target lang; otherwise English
-      const isTranslated = translatedResponses[idx] && text === translatedResponses[idx];
+      const isTranslated = (translatedResponses as any)[idx] && text === (translatedResponses as any)[idx];
       const ttsLang = isTranslated ? lang : 'en';
 
       const res = await ttsSpeak({ text, language: ttsLang, voice: 'auto' });
@@ -204,18 +204,18 @@ export function EmergencyInquiryModal({ visible, onClose }) {
     }
   }, [speakingIdx, translatedResponses, lang, stopPlayback]);
 
-  const handleCopy = async (text) => {
+  const handleCopy = async (text: string) => {
     impactLight();
     await Clipboard.setStringAsync(text);
     notificationSuccess();
   };
 
-  const handleSms = async (text) => {
+  const handleSms = async (text: string) => {
     impactMedium();
     await sendSms({ recipients: [], message: text });
   };
 
-  const handleTranslate = useCallback(async (text, idx) => {
+  const handleTranslate = useCallback(async (text: string, idx: number) => {
     try {
       impactLight();
       setTranslatingIdx(idx);
@@ -227,7 +227,7 @@ export function EmergencyInquiryModal({ visible, onClose }) {
         setTranslatedResponses(prev => ({ ...prev, [idx]: res.translated_text }));
         notificationSuccess();
       }
-    } catch (e) {
+    } catch (e: any) {
       Alert.alert('Translation Failed', e.message || 'Could not translate.');
     } finally {
       setTranslatingIdx(-1);
@@ -376,8 +376,8 @@ export function EmergencyInquiryModal({ visible, onClose }) {
                 </Text>
               </View>
 
-              {selectedType.responses.map((response, idx) => {
-                const translated = translatedResponses[idx];
+              {selectedType.responses.map((response: any, idx: number) => {
+                const translated = (translatedResponses as any)[idx];
                 const isTranslating = translatingIdx === idx;
                 return (
                   <View key={idx} style={[styles.responseCard, { borderLeftColor: selectedType.color }]}>

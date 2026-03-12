@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAmbientLighting } from '../hooks/useAmbientLighting';
 import { useAppSettings } from '../context/AppSettingsContext';
 
-function hexOpacity(color, opacity) {
+function hexOpacity(color: string, opacity: number) {
   const clamped = Math.max(0, Math.min(1, opacity));
   const hex = Math.round(clamped * 255).toString(16).padStart(2, '0');
   return `${color}${hex}`;

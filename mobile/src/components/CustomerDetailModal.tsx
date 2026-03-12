@@ -21,7 +21,7 @@ const STATUS_CONFIG = {
 };
 
 // ---------- Translate helper (pure async, no hook dependency) ----------
-async function translateTextRequest(text, targetLang) {
+async function translateTextRequest(text: string, targetLang: string) {
   const res = await apiFetch('/api/translate', {
     method: 'POST',
     timeout: 15000,
@@ -35,7 +35,7 @@ async function translateTextRequest(text, targetLang) {
   return res.translated_text;
 }
 
-export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }) {
+export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }: { visible: boolean; customer: any; onClose: () => void; onEdit: (customer: any) => void; onDelete: (customer: any) => void }) {
   const { settings } = useAppSettings();
   const [translating, setTranslating] = useState(false);
   const [translatedSms, setTranslatedSms] = useState('');
@@ -49,7 +49,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
     : '';
   const status = customer?.lead_status || 'new';
-  const statusConfig = STATUS_CONFIG[status] || STATUS_CONFIG.new;
+  const statusConfig = (STATUS_CONFIG as Record<string, any>)[status] || STATUS_CONFIG.new;
   const hasPhone = customer?.phone && customer.phone !== '—';
   const hasEmail = customer?.email && customer.email !== '—';
 
@@ -77,7 +77,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
       const result = await translateTextRequest(smsGreeting, lang);
       setTranslatedSms(result);
       notificationSuccess();
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
     } finally {
@@ -105,7 +105,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
       const result = await translateTextRequest(emailBody, lang);
       setTranslatedEmail(result);
       notificationSuccess();
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
     } finally {
@@ -369,7 +369,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   );
 }
 
-function InfoRow({ icon, label, value }) {
+function InfoRow({ icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
       <Ionicons name={icon} size={16} color={colors.gold} />

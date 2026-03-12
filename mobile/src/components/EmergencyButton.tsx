@@ -9,7 +9,7 @@ import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 const SIZE = scaleSize(58);
 
-export function EmergencyButton({ onPress }) {
+export function EmergencyButton({ onPress }: { onPress: () => void }) {
   const pulseAnim = useRef(new Animated.Value(0.5)).current;
   const insets    = useSafeAreaInsets();
   const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + scaleSize(76);

@@ -246,10 +246,10 @@ async function fadeOutActivePlayer(durationMs = 1500) {
  * The sound plays at full volume for ~2 s then fades to silence over 1.5 s
  * so it never cuts off abruptly.
  */
-export async function playActivationSound(profileId = 'merica') {
-  const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
-  const hapticFn = HAPTICS[id]?.activate;
-  const asset = AUDIO_ASSETS[id]?.activate;
+export async function playActivationSound(profileId: string = 'merica') {
+  const id = (SOUND_PROFILES as Record<string, unknown>)[profileId] ? profileId : 'merica';
+  const hapticFn = (HAPTICS as Record<string, any>)[id]?.activate;
+  const asset = (AUDIO_ASSETS as Record<string, any>)[id]?.activate;
 
   const promises: Promise<any>[] = [];
   if (asset) {
@@ -270,9 +270,9 @@ export async function playActivationSound(profileId = 'merica') {
  * SPORT MODE OFF — haptics only, no audio.
  * Any still-playing activation sound is killed immediately (hard stop).
  */
-export async function playDeactivationSound(profileId = 'merica') {
-  const id = SOUND_PROFILES[profileId] ? profileId : 'merica';
-  const hapticFn = HAPTICS[id]?.deactivate;
+export async function playDeactivationSound(profileId: string = 'merica') {
+  const id = (SOUND_PROFILES as Record<string, unknown>)[profileId] ? profileId : 'merica';
+  const hapticFn = (HAPTICS as Record<string, any>)[id]?.deactivate;
 
   // Kill any lingering activation audio instantly — user expects silence
   stopActivePlayer();

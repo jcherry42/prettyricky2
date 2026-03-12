@@ -16,7 +16,7 @@ const STATUS_OPTIONS = [
   { value: 'lost', label: 'Lost', color: colors.red },
 ];
 
-export function CustomerFormModal({ visible, customer, onClose, onSave }) {
+export function CustomerFormModal({ visible, customer, onClose, onSave }: { visible: boolean; customer: any; onClose: () => void; onSave: (data: any, existingCustomer?: any) => Promise<any> }) {
   const isEditing = Boolean(customer);
   const insets = useSafeAreaInsets();
 
@@ -97,7 +97,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }) {
       await onSave(customerData, customer);
       notificationSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       notificationError();
       setValidationError(`Save failed: ${error.message}`);
     } finally {

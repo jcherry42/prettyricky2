@@ -11,7 +11,7 @@ import { impactLight, impactMedium, impactHeavy, notificationSuccess, selectionT
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 
-function langName(lang) {
+function langName(lang: string) {
   if (lang === 'es') return 'Spanish';
   if (lang === 'fr') return 'French';
   if (lang === 'ko') return 'Korean';
@@ -19,7 +19,7 @@ function langName(lang) {
   return lang;
 }
 
-function formatElapsed(ms) {
+function formatElapsed(ms: number) {
   const totalSec = Math.floor(ms / 1000);
   const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
   const s = (totalSec % 60).toString().padStart(2, '0');
@@ -36,7 +36,7 @@ function AudioWaveform({ color = colors.red }) {
   const bars = barsRef.current;
 
   useEffect(() => {
-    const animations = bars.map((anim, i) => {
+    const animations = bars.map((anim: any, i: number) => {
       const delay = i * 60;
       return Animated.loop(
         Animated.sequence([
@@ -48,13 +48,13 @@ function AudioWaveform({ color = colors.red }) {
         ])
       );
     });
-    animations.forEach(a => a.start());
-    return () => animations.forEach(a => a.stop());
+    animations.forEach((a: any) => a.start());
+    return () => animations.forEach((a: any) => a.stop());
   }, []);
 
   return (
     <View style={waveStyles.wrap}>
-      {bars.map((anim, i) => (
+      {bars.map((anim: any, i: number) => (
         <Animated.View
           key={i}
           style={[waveStyles.bar, { backgroundColor: color, transform: [{ scaleY: anim }] }]}
@@ -83,7 +83,7 @@ const waveStyles = StyleSheet.create({
 // NOTE: Animated.multiply() is broken in RN 0.81 new-arch (JSI boundary
 // type mismatch). We use a separate Animated.Value driven by the outer
 // ring animation instead.
-function RecordingButton({ onStop }) {
+function RecordingButton({ onStop }: { onStop: () => void }) {
   const ringAnim = useRef(new Animated.Value(1)).current;
   const innerAnim = useRef(new Animated.Value(0.9)).current;
 
@@ -122,7 +122,7 @@ function RecordingButton({ onStop }) {
   );
 }
 
-export function PttOverlayView({ visible, onClose }) {
+export function PttOverlayView({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const ptt = usePtt();
   const insets = useSafeAreaInsets();
 

@@ -67,7 +67,7 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
   );
 }
 
-export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }) {
+export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }: { onCheck: () => void; onEject: () => void; onTowerTalk: () => void }) {
   const insets = useSafeAreaInsets();
   const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + 10;
 

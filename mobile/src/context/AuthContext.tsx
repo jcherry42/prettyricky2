@@ -17,7 +17,7 @@ const AuthContext = createContext(null);
  *   4. All API calls via apiFetch include Bearer token
  *   5. On 401 → attempt refresh → if fail → lock screen
  */
-export function AuthProvider({ children }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
@@ -28,13 +28,13 @@ export function AuthProvider({ children }) {
   const refreshTokenRef = useRef(null);
 
   // Store tokens securely
-  const _storeTokens = useCallback(async (access, refresh) => {
+  const _storeTokens = useCallback(async (access: string, refresh: string) => {
     accessTokenRef.current = access;
     refreshTokenRef.current = refresh;
     try {
       await SecureStore.setItemAsync(ACCESS_KEY, access);
       if (refresh) await SecureStore.setItemAsync(REFRESH_KEY, refresh);
-    } catch (e) {
+    } catch (e: any) {
       // SecureStore might fail on some devices — fallback to memory-only
       console.warn('[Auth] SecureStore write failed:', e.message);
     }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
     try {
       await SecureStore.deleteItemAsync(ACCESS_KEY);
       await SecureStore.deleteItemAsync(REFRESH_KEY);
-    } catch (e) {
+    } catch (e: any) {
       console.warn('[Auth] SecureStore clear failed:', e.message);
     }
   }, []);
@@ -86,8 +86,8 @@ export function AuthProvider({ children }) {
         }
 
         // 2. Try to restore tokens from SecureStore
-        const storedAccess = await SecureStore.getItemAsync(ACCESS_KEY).catch(() => null);
-        const storedRefresh = await SecureStore.getItemAsync(REFRESH_KEY).catch(() => null);
+        const storedAccess = await SecureStore.getItemAsync(ACCESS_KEY).catch((): string | null => null);
+        const storedRefresh = await SecureStore.getItemAsync(REFRESH_KEY).catch((): string | null => null);
 
         if (storedAccess && storedRefresh) {
           accessTokenRef.current = storedAccess;
@@ -119,7 +119,7 @@ export function AuthProvider({ children }) {
 
         // No valid tokens — need PIN entry
         await _clearTokens();
-      } catch (e) {
+      } catch (e: any) {
         console.warn('[Auth] Boot check failed:', e.message);
       }
       setIsLoading(false);
@@ -127,7 +127,7 @@ export function AuthProvider({ children }) {
   }, [refreshAccessToken, _clearTokens]);
 
   // Login with PIN — reads lockout details from 429 / 401 responses
-  const login = useCallback(async (pin) => {
+  const login = useCallback(async (pin: string) => {
     setError(null);
     try {
       const data = await apiFetch('/api/auth/login', {
@@ -144,7 +144,7 @@ export function AuthProvider({ children }) {
       }
       setError('Invalid PIN');
       return false;
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message || '';
       // Parse lockout duration from 429 detail
       const lockMatch = msg.match(/(\d+)\s*second/);
@@ -162,7 +162,7 @@ export function AuthProvider({ children }) {
   }, [_storeTokens]);
 
   // Setup new PIN — returns reset_code that must be shown to user once
-  const setupPin = useCallback(async (pin) => {
+  const setupPin = useCallback(async (pin: string) => {
     setError(null);
     try {
       const data = await apiFetch('/api/auth/setup-pin', {
@@ -180,7 +180,7 @@ export function AuthProvider({ children }) {
       }
       setError('Setup failed. Try again.');
       return false;
-    } catch (e) {
+    } catch (e: any) {
       setError(e?.message || 'Setup failed');
       return false;
     }
@@ -203,7 +203,7 @@ export function AuthProvider({ children }) {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message || 'Invalid reset code';
       setError(msg.replace(/^.*?:\s*/, ''));
       return false;

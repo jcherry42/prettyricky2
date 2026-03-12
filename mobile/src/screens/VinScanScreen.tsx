@@ -64,7 +64,7 @@ const CATEGORY = {
   TRADEIN: 'trade_in',
 };
 
-function cleanVin(s) {
+function cleanVin(s: string) {
   return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 17);
 }
 
@@ -86,7 +86,7 @@ const categoryMeta = {
 };
 
 // ── History Item ─────────────────────────────────────────────────────────
-function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) {
+function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }: { item: any; onPress: (item: any) => void; onSaveToInventory: (item: any) => void; isAtLimit: boolean; category: string }) {
   const decoded = item.decoded?.vehicle || item.decoded;
   const label = decoded
     ? `${decoded.year || ''} ${decoded.make || ''} ${decoded.model || ''}`.trim()
@@ -170,7 +170,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }) 
 // ── Vehicle Detail Modal — shows full NHTSA decoded data ──────────────
 // ═══════════════════════════════════════════════════════════════════════
 
-function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
+function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item: any; onClose: () => void; onSaveToInventory: (item: any) => void; insets: any }) {
   const d = item.decoded?.vehicle || item.decoded || {};
   const validation = item.decoded?.validation || {};
   const isSaved = Boolean(item.savedToInventoryAt);
@@ -257,7 +257,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
           <VDSection title="SAFETY SYSTEMS" icon="shield-checkmark">
             {safetyFeatures.length > 0 && (
               <View style={vdStyles.tagCloud}>
-                {safetyFeatures.map((f) => (
+                {safetyFeatures.map((f: any) => (
                   <View key={f} style={vdStyles.safetyTag}>
                     <Ionicons name="checkmark-circle" size={12} color={colors.green} />
                     <Text style={vdStyles.safetyTagText}>{f}</Text>
@@ -286,7 +286,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
         {/* ── Validation ── */}
         {validation.sources_checked?.length > 0 && (
           <VDSection title="DATA SOURCES" icon="library">
-            {validation.sources_checked.map((s) => (
+            {validation.sources_checked.map((s: any) => (
               <View key={s} style={vdStyles.sourceRow}>
                 <Ionicons name="checkmark-circle" size={14} color={colors.green} />
                 <Text style={vdStyles.sourceText}>{s}</Text>
@@ -325,7 +325,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }) {
 }
 
 // ── Vehicle Detail sub-components ──
-function VDSection({ title, icon, children }) {
+function VDSection({ title, icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
     <View style={vdStyles.section}>
       <View style={vdStyles.sectionHdr}>
@@ -630,14 +630,14 @@ export function VinScanScreen() {
     }
   }, []);
 
-  const persistHistory = useCallback(async (category, list) => {
+  const persistHistory = useCallback(async (category: string, list: any[]) => {
     const key = category === CATEGORY.TRADEIN ? STORAGE_KEY_TRADEIN : STORAGE_KEY_INVENTORY;
     await saveJson(key, list);
   }, []);
 
   // ── Core VIN save (local) ────────────────────────────────────────────
 
-  const saveVinLocal = useCallback(async (vin, source, category) => {
+  const saveVinLocal = useCallback(async (vin: string, source: string, category: string) => {
     const v = cleanVin(vin);
     if (v.length !== 17) return null;
 
@@ -686,7 +686,7 @@ export function VinScanScreen() {
 
   // ── Decode ───────────────────────────────────────────────────────────
 
-  const decodeAndSave = useCallback(async (item) => {
+  const decodeAndSave = useCallback(async (item: any) => {
     try {
       setDecoding(item.id);
       const decoded = await decodeVinWithBackend(item.vin);
@@ -702,7 +702,7 @@ export function VinScanScreen() {
       await persistHistory(item.category, next);
       setLastScan({ vin: item.vin, decoded });
       notificationSuccess();
-    } catch (e) {
+    } catch (e: any) {
       const entry = { ...item, decodeError: String(e?.message || e), decodedAt: new Date().toISOString() };
       const isTrade = item.category === CATEGORY.TRADEIN;
       const currentList = isTrade ? tradeInHistory : dealerHistory;
@@ -720,7 +720,7 @@ export function VinScanScreen() {
 
   // ── Save to backend inventory ────────────────────────────────────────
 
-  const saveToInventory = useCallback(async (item) => {
+  const saveToInventory = useCallback(async (item: any) => {
     if (!item.decoded) {
       Alert.alert('Decode First', 'Please decode this VIN before adding to inventory');
       return;
@@ -745,7 +745,7 @@ export function VinScanScreen() {
       await persistHistory(item.category, next);
       notificationSuccess();
       Alert.alert('Success', `Vehicle added to ${isTrade ? 'Trade-In' : 'Dealer Inventory'}`);
-    } catch (e) {
+    } catch (e: any) {
       notificationError();
       Alert.alert('Save Failed', String(e?.message || e));
     }
@@ -755,7 +755,7 @@ export function VinScanScreen() {
 
   // ── Open scanner helper ──────────────────────────────────────────────
 
-  const openScanner = useCallback(async (mode) => {
+  const openScanner = useCallback(async (mode: string) => {
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
@@ -789,7 +789,7 @@ export function VinScanScreen() {
 
   // ── Barcode handler ──────────────────────────────────────────────────
 
-  const onBarcodeScanned = useCallback(async ({ data }) => {
+  const onBarcodeScanned = useCallback(async ({ data }: { data: any }) => {
     if (!scanning) return;
 
     const now = Date.now();
@@ -950,14 +950,14 @@ export function VinScanScreen() {
   }, [ocrProcessing, cameraReady, captureFlash, abortableTimeout]);
 
   // When user taps a detected VIN from OCR results
-  const handleOcrVinSelect = useCallback((vin) => {
+  const handleOcrVinSelect = useCallback((vin: string) => {
     closeScanner();
     setSaveCategoryPicker({ vin, source: 'ai_vision' });
   }, [closeScanner]);
 
   // ── Category picker handler ──────────────────────────────────────────
 
-  const handleCategorySave = useCallback(async (category) => {
+  const handleCategorySave = useCallback(async (category: string) => {
     if (!saveCategoryPicker) return;
     setSaveCategoryPicker(null);
 
@@ -1301,7 +1301,7 @@ export function VinScanScreen() {
                     {ocrResults && ocrResults.vins.length > 0 && (
                       <View style={styles.ocrResults}>
                         <Text style={styles.ocrResultsTitle}>TAP TO USE:</Text>
-                        {ocrResults.vins.map((vin) => (
+                        {ocrResults.vins.map((vin: string) => (
                           <Pressable
                             key={vin}
                             onPress={() => handleOcrVinSelect(vin)}
@@ -1451,7 +1451,7 @@ export function VinScanScreen() {
               onSaveToInventory={async () => {
                 await saveToInventory(vehicleDetailItem);
                 // Refresh from history so the save badge updates
-                setVehicleDetailItem((prev) => ({
+                setVehicleDetailItem((prev: any) => ({
                   ...prev,
                   savedToInventoryAt: new Date().toISOString(),
                 }));

@@ -60,7 +60,22 @@ const TOAST_CONFIG = {
   },
 };
 
-function ToastView({ toast, onDismiss }) {
+type ToastType = 'success' | 'error' | 'info' | 'warning' | 'offline' | 'sync';
+
+interface ToastItem {
+  id: string;
+  type: ToastType;
+  message: string;
+  title?: string;
+  duration?: number;
+}
+
+interface ToastOptions {
+  title?: string;
+  duration?: number;
+}
+
+function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const anim = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
   const config = TOAST_CONFIG[toast.type] || TOAST_CONFIG.info;
@@ -105,7 +120,7 @@ function ToastView({ toast, onDismiss }) {
         },
       ]}
     >
-      <Ionicons name={config.icon} size={18} color={config.color} />
+      <Ionicons name={config.icon as any} size={18} color={config.color} />
       <View style={styles.toastContent}>
         {toast.title && <Text style={[styles.toastTitle, { color: config.color }]}>{toast.title}</Text>}
         <Text style={styles.toastMessage} numberOfLines={2}>{toast.message}</Text>
@@ -114,22 +129,22 @@ function ToastView({ toast, onDismiss }) {
   );
 }
 
-export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = useCallback((type, message, options = {}) => {
+  const showToast = useCallback((type: ToastType, message: string, options: ToastOptions = {}) => {
     const id = `${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     setToasts((prev) => [...prev.slice(-2), { id, type, message, ...options }]);
   }, []);
 
-  const showSuccess = useCallback((message, options) => showToast('success', message, options), [showToast]);
-  const showError = useCallback((message, options) => showToast('error', message, options), [showToast]);
-  const showInfo = useCallback((message, options) => showToast('info', message, options), [showToast]);
-  const showWarning = useCallback((message, options) => showToast('warning', message, options), [showToast]);
-  const showOffline = useCallback((message, options) => showToast('offline', message || 'You are offline', options), [showToast]);
-  const showSync = useCallback((message, options) => showToast('sync', message || 'Syncing queued operations...', options), [showToast]);
+  const showSuccess = useCallback((message: string, options?: ToastOptions) => showToast('success', message, options), [showToast]);
+  const showError = useCallback((message: string, options?: ToastOptions) => showToast('error', message, options), [showToast]);
+  const showInfo = useCallback((message: string, options?: ToastOptions) => showToast('info', message, options), [showToast]);
+  const showWarning = useCallback((message: string, options?: ToastOptions) => showToast('warning', message, options), [showToast]);
+  const showOffline = useCallback((message: string, options?: ToastOptions) => showToast('offline', message || 'You are offline', options), [showToast]);
+  const showSync = useCallback((message: string, options?: ToastOptions) => showToast('sync', message || 'Syncing queued operations...', options), [showToast]);
 
-  const dismiss = useCallback((id) => {
+  const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 

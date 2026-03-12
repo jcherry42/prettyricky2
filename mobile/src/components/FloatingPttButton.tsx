@@ -10,7 +10,7 @@ import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 const SIZE = scaleSize(58);
 
-export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '\u2192' }) {
+export function FloatingPttButton({ onPress, recording, disabled, flagLabel, badgeDirection = '\u2192' }: { onPress: () => void; recording: boolean; disabled: boolean; flagLabel: string; badgeDirection?: string }) {
   const insets = useSafeAreaInsets();
   const bottomOffset = TAB_BAR_CONTENT_HEIGHT + Math.max(insets.bottom, 4) + scaleSize(76);
 

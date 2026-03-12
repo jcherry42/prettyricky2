@@ -3,7 +3,7 @@ import { impactLight } from '../lib/haptics';
 
 const TaillightFlashContext = createContext(null);
 
-export function TaillightFlashProvider({ children }) {
+export function TaillightFlashProvider({ children }: { children: React.ReactNode }) {
   const [flash, setFlash] = useState(false);
   const timerRef = useRef(null);
 

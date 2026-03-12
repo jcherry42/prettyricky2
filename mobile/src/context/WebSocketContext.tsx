@@ -87,14 +87,14 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const handlers = listenersRef.current.get(event);
     if (handlers) {
       handlers.forEach((h) => {
-        try { h(data); } catch (e) { console.warn('[WS] Handler error:', e); }
+        try { h(data); } catch (e: any) { console.warn('[WS] Handler error:', e); }
       });
     }
     // Also dispatch to wildcard '*' listeners
     const wildcards = listenersRef.current.get('*');
     if (wildcards) {
       wildcards.forEach((h) => {
-        try { h({ event, data }); } catch (e) { /* ignore */ }
+        try { h({ event, data }); } catch (e: any) { /* ignore */ }
       });
     }
   }, []);

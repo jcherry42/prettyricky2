@@ -3,7 +3,7 @@
  * Consolidated flag/label helpers used across multiple components.
  */
 
-export function flagFor(lang) {
+export function flagFor(lang: string): string {
   switch (lang) {
     case 'es': return '\uD83C\uDDF2\uD83C\uDDFD';
     case 'fr': return '\uD83C\uDDEB\uD83C\uDDF7';
@@ -13,7 +13,7 @@ export function flagFor(lang) {
   }
 }
 
-export function langName(lang) {
+export function langName(lang: string): string {
   switch (lang) {
     case 'es': return 'Spanish';
     case 'fr': return 'French';

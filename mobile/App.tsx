@@ -40,9 +40,9 @@ enableScreens(!isExpoGo);
  * ComposeProviders — reduces deep nesting from 11 levels to a flat list.
  * Renders providers inside-out: last in the array is innermost.
  */
-function ComposeProviders({ providers, children }) {
+function ComposeProviders({ providers, children }: { providers: React.ComponentType<{ children: React.ReactNode }>[]; children: React.ReactNode }) {
   return providers.reduceRight(
-    (acc, Provider) => <Provider>{acc}</Provider>,
+    (acc: React.ReactNode, Provider: React.ComponentType<{ children: React.ReactNode }>) => <Provider>{acc}</Provider>,
     children
   );
 }

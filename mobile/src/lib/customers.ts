@@ -37,7 +37,7 @@ export async function createCustomerFromLocalEntry(entry: any, options: any = {}
       return created.customer;
     }
     return null;
-  } catch (e) {
+  } catch (e: any) {
     // Do not block local flows if backend customer creation fails
     return null;
   }

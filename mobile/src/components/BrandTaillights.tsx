@@ -6,7 +6,7 @@ import { useTaillightFlash } from '../context/TaillightFlashContext';
 
 const ELECTRIC_BLUE = colors.electricBlue;
 
-function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }) {
+function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }: { size: number; dots?: number; dotSize?: number; glowAnim: any }) {
   const pts = useMemo(() => {
     const r = size * 0.36;
     const cx = size / 2;
@@ -48,7 +48,7 @@ function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }) {
   );
 }
 
-function Lamp({ size, variant, glowAnim }) {
+function Lamp({ size, variant, glowAnim }: { size: number; variant: string; glowAnim: any }) {
   const isOuter = variant === 'outer';
   return (
     <View
@@ -96,7 +96,7 @@ function Lamp({ size, variant, glowAnim }) {
   );
 }
 
-function Cluster({ flip = false, glowAnim }) {
+function Cluster({ flip = false, glowAnim }: { flip?: boolean; glowAnim: any }) {
   const outer = 28;
   const inner = 20;
   const left = flip ? <Lamp size={inner} variant="inner" glowAnim={glowAnim} /> : <Lamp size={outer} variant="outer" glowAnim={glowAnim} />;
