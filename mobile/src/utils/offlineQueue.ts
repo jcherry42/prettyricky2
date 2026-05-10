@@ -60,7 +60,7 @@ export async function clearQueue(): Promise<void> {
 /**
  * Process offline queue
  */
-export async function syncQueue(onProgress?: (current: number, total: number) => void) {
+export async function syncQueue(onProgress?: (_current: number, _total: number) => void) {
   if (syncInProgress) {
     return { success: false, error: 'Sync already in progress' };
   }

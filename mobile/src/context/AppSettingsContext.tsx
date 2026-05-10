@@ -161,7 +161,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
       setDealershipName,
       setDealershipAddress,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
     [loaded, settings, activePrinter]
     // Action callbacks are stable via settingsRef pattern; omitting them
     // from deps is intentional and safe.

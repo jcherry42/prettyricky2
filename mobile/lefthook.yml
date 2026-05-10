@@ -1,0 +1,28 @@
+# Pre-commit hooks — blocks commits that break strict TypeScript or lint rules
+# Install: npx lefthook install
+
+pre-commit:
+  parallel: true
+  commands:
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: npx tsc --noEmit
+      stage_fixed: true
+    lint:
+      glob: "*.{ts,tsx}"
+      run: npx eslint --max-warnings=0 {staged_files}
+      stage_fixed: true
+    no-duplicate-files:
+      run: |
+        # Fail if any duplicate exports are detected (same component name exported from multiple files)
+        duplicates=$(grep -rh "^export function\|^export const\|^export default" src/ --include="*.tsx" --include="*.ts" | sort | uniq -d)
+        if [ -n "$duplicates" ]; then
+          echo "DUPLICATE EXPORTS DETECTED:"
+          echo "$duplicates"
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    typecheck-full:
+      run: npx tsc --noEmit

@@ -22,10 +22,10 @@ import {
   Pressable,
   ActivityIndicator,
   ScrollView,
-  Alert,
+
   Linking,
   Animated,
-  TouchableWithoutFeedback,
+
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';

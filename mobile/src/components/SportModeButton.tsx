@@ -55,7 +55,7 @@ export function SportModeButton() {
   const active    = Boolean(settings.sportMode);
   const flag      = flagFor(settings.defaultTargetLanguage);
   const profileId = settings.soundProfile || 'merica';
-  const profile   = (SOUND_PROFILES as Record<string, any>)[profileId] || SOUND_PROFILES.merica;
+  const _profile  = (SOUND_PROFILES as Record<string, any>)[profileId] || SOUND_PROFILES.merica;
 
   const [showActivation, setShowActivation] = useState(false);
 
@@ -70,7 +70,7 @@ export function SportModeButton() {
       cancelAnimation(glowOpacity);
       glowOpacity.value = withTiming(0, { duration: 250 });
     }
-  }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [active]);
 
   const pressStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pressScale.value }],
@@ -97,7 +97,7 @@ export function SportModeButton() {
       );
       setTimeout(toggleSportMode, 900);
     }
-  }, [active, toggleSportMode, profileId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [active, toggleSportMode, profileId]);
 
 
   return (

@@ -51,7 +51,7 @@ import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 // ── Safe ML Kit import — gracefully unavailable in Expo Go ─────────────
 let TextRecognition: any = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   TextRecognition = require('@react-native-ml-kit/text-recognition').default;
 } catch {
   console.warn('[DlScan] @react-native-ml-kit/text-recognition not available — cloud fallback will be used.');

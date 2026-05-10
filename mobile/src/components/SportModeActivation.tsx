@@ -62,7 +62,7 @@ export function SportModeActivation({ visible, profileId = 'merica', onComplete 
       textScale.value = 0.25;
       textOp.value = 0;
     };
-  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   if (!visible && !run) return null;
 

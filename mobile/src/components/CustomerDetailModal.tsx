@@ -6,7 +6,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, impactLight, notificationSuccess, notificationError } from '../lib/haptics';
-import { textCustomer, sendTowerTalkSms } from '../lib/sms';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { flagFor, langName } from '../utils/language';
