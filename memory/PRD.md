@@ -17,11 +17,36 @@ Production-ready native mobile application for the automotive industry featuring
 - **OCR**: ML Kit on-device + GPT-4o-mini cloud fallback
 - **Auth**: JWT Bearer tokens enforced on all protected endpoints
 - **Session**: Auto-save (30s + app background) → AsyncStorage + MongoDB backup
-- **TypeScript**: `strict: true` enabled (strictNullChecks deferred)
+- **TypeScript**: `strict: true` + `strictNullChecks: true` — FULL strict mode enabled
 
 ## What's Been Implemented
 
-### Strict Lint Pipeline + Pre-commit Hooks (Jun 2026 — Latest)
+### strictNullChecks + PostHog + Mobile Telemetry (Jun 2026 — Latest)
+- **`strictNullChecks: true` fully enabled** — went from 396 errors to 0 errors
+- Typed 6 major contexts: `CustomerContext`, `InventoryContext`, `AuthContext`,
+  `PttContext`, `AppSettingsContext`, `ToastContext`, `NetworkContext`,
+  `AmbientLightingContext`, `TaillightFlashContext` — cascading null-safety
+  fixes to ~50 consuming components/screens
+- Fixed `useState(null)` → `useState<X | null>(null)` patterns across 12+ files
+- Fixed `useRef(null)` → `useRef<TextInput | null>(null)` (or proper types) across 20+ refs
+- Fixed `loadJson(key, null)` callers to specify explicit generic types
+- Patched `keyExtractor` returns that could be `string | undefined`
+- Fixed `setActivePrinter(id: string)` signature to accept `string | null`
+- All 75+ `.ts/.tsx` files now pass strict null checks
+
+### PostHog Telemetry Integration (Jun 2026)
+- Installed `posthog==7.16.2` in backend `requirements.txt`
+- Activated `_init_posthog()` in `TelemetryService.__init__`
+- Wired up `_persist_event()` to forward to PostHog via executor (non-blocking)
+- **Graceful degradation**: without `POSTHOG_API_KEY` env var, only MongoDB
+  persistence is used — log line confirms: `"POSTHOG_API_KEY not set — MongoDB-only telemetry"`
+- Created `/app/mobile/src/lib/telemetry.ts` — fire-and-forget client helper
+  with `track()` and `startTimer()` API, session-ID auto-generated
+- Backend bug fixed by testing agent: `_store_anomaly()` was mutating caller's
+  dict via motor's `insert_one()` (added `_id`), leaking ObjectId into API
+  responses. Now inserts a copy.
+
+### Strict Lint Pipeline + Pre-commit Hooks (Jun 2026)
 - **All 43 ESLint errors cleared** across the mobile app (unused vars / imports / catch bindings)
 - `no-explicit-any` rule pragmatically disabled (RN ecosystem escape hatches: Ionicons glyph
   names, Animated callbacks, opaque 3rd-party JS modules) — replaced with `unknown` and
@@ -55,24 +80,25 @@ Production-ready native mobile application for the automotive industry featuring
 - PIN recovery with master reset codes
 
 ## Test Coverage
+- iteration_10: 29/29 PostHog + telemetry + regression (100%) — one backend bug fixed (ObjectId leak in anomaly scan)
 - iteration_9: 17/17 session persistence (100%)
 - iteration_8: 25/25 performance optimization (100%)
 - iteration_7: 37/37 auth enforcement (100%)
 - iteration_6: 30/30 modernization (100%)
-- TypeScript: 0 errors with strict: true (strictNullChecks deferred)
+- TypeScript: 0 errors with `strict: true` + `strictNullChecks: true` (FULL strict mode)
+- ESLint: 0 errors, 0 warnings with `--max-warnings=0`
+- Pre-commit hooks: `tsc --noEmit` + ESLint + duplicate-export detector, installed at `/app/.git/hooks/pre-commit`
 
 ## Prioritized Backlog
 
 ### P0 — None remaining
 
 ### P1 (High)
-- Enable `strictNullChecks: true` — exposes 396 errors (mostly `useState(null)` and
-  `useState([])` without explicit generics resulting in `never` types). Dedicated sprint
-  needed: `useState<X | null>(null)` + null-guard property accesses across ~28 files.
-- Restore `no-explicit-any` as `'warn'` once a typing sprint replaces the ~248 `: any`
-  occurrences with proper types (Customer, Vehicle, Ionicons.glyphMap, etc.)
-- PostHog telemetry integration (needs API key)
-- Full native device regression test
+- Restore `no-explicit-any` as `'warn'` (currently OFF) after a typing sprint replaces
+  the ~230 `: any` occurrences with proper types (Customer, Vehicle, Ionicons.glyphMap, etc.)
+- Mobile-side telemetry instrumentation — call `track('vin_scan', 'completed', {...})`
+  from VIN/DL scan flows, PTT, customer create, etc. (`/app/mobile/src/lib/telemetry.ts` ready)
+- Provide actual `POSTHOG_API_KEY` in `/app/backend/.env` to activate PostHog forwarding
 
 ### P2 (Medium)
 - Team management features
@@ -80,3 +106,5 @@ Production-ready native mobile application for the automotive industry featuring
 - Lock screen audio controls
 - WebSocket real-time anomaly alerts
 - Structured logging
+- Legacy `POST /api/customers` (camelCase) endpoint: either 400 on missing
+  firstName/lastName or document the silent-default behavior (tester flagged)
