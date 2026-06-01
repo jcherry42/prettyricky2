@@ -37,11 +37,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadJson, saveJson } from '../lib/storage';
 import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
-import { buildApiUrlAsync } from '../config/backend';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import {
-  impactLight,
   impactMedium,
   notificationError,
   notificationSuccess,
@@ -62,7 +60,7 @@ const STORAGE_KEY = 'sc_v1_driver_license_scans';
 const MAX_HISTORY = 50;
 
 // Credit-card aspect ratio: ISO 7810 ID-1 = 85.6 mm × 54 mm
-const CARD_ASPECT = 85.6 / 54; // ≈ 1.586
+
 
 // Extraction fields shown in the detail modal
 const EXTRACTION_FIELDS = [
@@ -302,7 +300,7 @@ export function DlScanScreen() {
   // ── Upload + AI OCR core ─────────────────────────────────────────────────
   // ── Single-step scan: ML Kit pre-check + cloud OCR ─────────────────────
   const scanDirect = useCallback(async (uri: string, scanMethod = 'ocr') => {
-    const { signal, cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(45000);
+    const { cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(45000);
 
     try {
       setUploading(true);
@@ -314,7 +312,7 @@ export function DlScanScreen() {
         try {
           const mlResult = await TextRecognition.recognize(uri);
           mlText = mlResult?.text || '';
-        } catch (_) {
+        } catch {
           // ML Kit unavailable — continue without it
         }
       }

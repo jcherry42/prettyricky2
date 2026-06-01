@@ -8,7 +8,7 @@
  * CustomerCard) do NOT subscribe — they stay fully memoized.
  */
 
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { designoColors, ambientIntensity } from '../theme/designo';
 import { useAppSettings } from './AppSettingsContext';
 

@@ -17,13 +17,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { scaleSize, scaleFont } from '../theme/layout';
 import { useSession } from '../context/SessionContext';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
-import { impactMedium, notificationSuccess, notificationError, selectionTap, impactLight, impactHeavy } from '../lib/haptics';
+import { impactMedium, notificationSuccess, notificationError, selectionTap, impactLight } from '../lib/haptics';
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
@@ -255,7 +254,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
 
       // Auto-stop after 12 seconds
       dictationTimeoutRef.current = setTimeout(() => stopDictation(), 12000);
-    } catch (e: any) {
+    } catch {
       setDictationStatus('idle');
       setIsDictating(false);
     }
@@ -291,7 +290,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
         });
         impactLight();
       }
-    } catch (e: any) {
+    } catch {
       // silently fail — don't disrupt UX
     } finally {
       setDictationStatus('idle');
@@ -464,7 +463,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
         setCopiedTranslation(true);
         setTimeout(() => setCopiedTranslation(false), 2000);
       }
-    } catch (e: any) {
+    } catch {
       // silently fail
     }
   }, []);
@@ -479,7 +478,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
         notificationError();
         Alert.alert('SMS Error', result.error);
       }
-    } catch (e: any) {
+    } catch {
       notificationError();
       Alert.alert('SMS Error', 'Failed to open SMS composer');
     }

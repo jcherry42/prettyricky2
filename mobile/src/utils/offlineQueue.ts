@@ -88,7 +88,7 @@ export async function syncQueue(onProgress?: (_current: number, _total: number) 
         if (onProgress) {
           onProgress(i + 1, queue.length);
         }
-      } catch (_error) {
+      } catch {
         if (item.retries < 3) {
           remainingQueue.push({
             ...item,

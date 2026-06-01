@@ -11,7 +11,7 @@
  *   - Apple AirPrint: Minimal UI, instant action affordance
  */
 
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import {
   Modal,
   View,
@@ -20,7 +20,6 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
-  ScrollView,
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +27,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { GlassCard } from '../components/GlassCard';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { useCustomers } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
@@ -131,7 +129,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
   preSelectedLicenseImage,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const { settings, activePrinter } = useAppSettings();
+  const { settings: _settings, activePrinter } = useAppSettings();
   const { customers } = useCustomers();
   const { vehicles } = useInventory();
 
@@ -221,7 +219,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
     setPrinting(true);
     setLastResult(null);
     try {
-      const { vin, category, customer_id, vehicle_id, status, _queued, ...vehicleData } = v;
+      const { vin, category, customer_id: _cid, vehicle_id: _vid, status: _st, _queued, ...vehicleData } = v;
       const res = await apiFetch('/api/print/vehicle', {
         method: 'POST',
         body: JSON.stringify({

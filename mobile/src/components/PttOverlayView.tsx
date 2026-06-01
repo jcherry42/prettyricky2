@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View, ActivityIndicator, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -134,7 +134,6 @@ export function PttOverlayView({ visible, onClose }: { visible: boolean; onClose
   const isRecording = ptt.status === 'recording';
   const isRequesting = ptt.status === 'requesting';
   const isBusy = ptt.status === 'uploading' || ptt.status === 'translating' || ptt.status === 'speaking';
-  const isDone = ptt.status === 'done' || (ptt.status === 'speaking' && Boolean(ptt.result?.translated_text));
   const canSpeak = Boolean(ptt.result?.translated_text) && (ptt.status === 'done' || ptt.status === 'speaking');
 
   const copyTranscript = useCallback(async () => {

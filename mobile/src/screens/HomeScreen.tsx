@@ -20,7 +20,6 @@ import { NetworkStatusDot } from '../components/NetworkStatusDot';
 import { CustomerListSkeleton } from '../components/LoadingSkeleton';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { impactMedium } from '../lib/haptics';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ---------- Ambient light strip ---------- */
@@ -194,10 +193,6 @@ export function HomeScreen() {
       setRefreshing(false);
     }
   }, [fetchCustomers, toast]);
-
-  const renderCustomer = ({ item }: { item: any }) => (
-    <CustomerCard customer={item} onPress={handleCustomerPress} />
-  );
 
   const ecoMode = Boolean(settings.ecoMode);
 

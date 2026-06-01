@@ -1,42 +1,33 @@
-# EXAMPLE USAGE:
-#
-#   Refer for explanation to following link:
-#   https://lefthook.dev/configuration/
-#
-# pre-push:
-#   jobs:
-#     - name: packages audit
-#       tags:
-#         - frontend
-#         - security
-#       run: yarn audit
-#
-#     - name: gems audit
-#       tags:
-#         - backend
-#         - security
-#       run: bundle audit
-#
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+# Pre-commit hooks — blocks commits that break strict TypeScript or lint rules
+# Hooks operate on the React Native frontend under /app/mobile.
+# Install: cd /app/mobile && npx lefthook install (or run from repo root)
+
+pre-commit:
+  parallel: true
+  commands:
+    typecheck:
+      glob: "mobile/**/*.{ts,tsx}"
+      root: "mobile/"
+      run: npx tsc --noEmit
+      stage_fixed: true
+    lint:
+      glob: "mobile/**/*.{ts,tsx}"
+      root: "mobile/"
+      run: npx eslint --max-warnings=0 {staged_files}
+      stage_fixed: true
+    no-duplicate-files:
+      root: "mobile/"
+      run: |
+        # Fail if any duplicate exports are detected
+        duplicates=$(grep -rh "^export function\|^export const\|^export default" src/ --include="*.tsx" --include="*.ts" | sort | uniq -d)
+        if [ -n "$duplicates" ]; then
+          echo "DUPLICATE EXPORTS DETECTED:"
+          echo "$duplicates"
+          exit 1
+        fi
+
+pre-push:
+  commands:
+    typecheck-full:
+      root: "mobile/"
+      run: npx tsc --noEmit

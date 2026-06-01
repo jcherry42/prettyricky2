@@ -94,7 +94,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     const wildcards = listenersRef.current.get('*');
     if (wildcards) {
       wildcards.forEach((h) => {
-        try { h({ event, data }); } catch (e: any) { /* ignore */ }
+        try { h({ event, data }); } catch { /* ignore */ }
       });
     }
   }, []);

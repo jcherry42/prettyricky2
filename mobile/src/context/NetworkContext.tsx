@@ -66,7 +66,7 @@ export function NetworkProvider({ children }: { children: React.ReactNode }) {
     if (syncStatusRef.current === 'syncing') return;
     setSyncStatus('syncing');
     try {
-      const result = await syncQueue((processed, total) => {
+      const result = await syncQueue((_processed, _total) => {
         // Progress callback
       });
       setLastSyncResult(result);

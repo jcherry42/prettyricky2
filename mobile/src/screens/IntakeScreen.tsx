@@ -21,7 +21,6 @@ import {
   Alert,
   Modal,
   Keyboard,
-  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -193,7 +192,7 @@ function IntakeHub({ navigation }: { navigation: any }) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    try { await fetchInventory(); } catch (_) {}
+    try { await fetchInventory(); } catch { /* ignore */ }
     setRefreshing(false);
   }, [fetchInventory]);
 

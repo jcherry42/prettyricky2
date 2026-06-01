@@ -19,12 +19,21 @@ module.exports = [
       '@typescript-eslint': tsPlugin,
     },
     rules: {
-      // TypeScript
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // TypeScript — keep `any` allowed (RN ecosystem requires escape hatches:
+      // Ionicons glyph names, Animated callbacks, opaque 3rd-party JS modules).
+      // The stronger safety net is `strictNullChecks` in tsconfig.json.
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-require-imports': 'off',
 
-      // Redundancy prevention
+      // Redundancy prevention — fail CI if duplicate imports appear.
       'no-duplicate-imports': 'error',
 
       // Code quality

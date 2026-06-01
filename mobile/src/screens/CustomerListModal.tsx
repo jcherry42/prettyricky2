@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Modal,
   View,
@@ -17,7 +17,6 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { loadJson, saveJson } from '../lib/storage';
 import { GlassCard } from '../components/GlassCard';
-import { impactMedium, notificationSuccess } from '../lib/haptics';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 

@@ -9,6 +9,7 @@ import { impactMedium, impactLight, notificationSuccess, notificationError } fro
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { flagFor, langName } from '../utils/language';
+import { textCustomer } from '../lib/sms';
 
 const STATUS_CONFIG = {
   new: { label: 'NEW', color: colors.blue },

@@ -540,7 +540,6 @@ export function VinScanScreen() {
   // Zoom slider pan responder
   // Slider track width = SCREEN_W - 32 (horizontal padding)
   const SLIDER_TRACK_W = SCREEN_W - 80;
-  const zoomPanRef = useRef(null);
   const zoomOffset = useRef(0); // tracks position during drag
 
   const zoomSliderAnim = useRef(new Animated.Value(0)).current; // 0..1 maps to 0..SLIDER_TRACK_W
@@ -554,7 +553,7 @@ export function VinScanScreen() {
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: (_, gs) => {
+        onPanResponderGrant: () => {
           zoomOffset.current = zoom * SLIDER_TRACK_W;
         },
         onPanResponderMove: (_, gs) => {

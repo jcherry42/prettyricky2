@@ -126,7 +126,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }: { item: any; active
 
 export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: any; initialSection?: any }) {
   const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
-  const { customers, fetchCustomers, createCustomer, loading: customersLoading } = useCustomers();
+  const { customers, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const [activeTab, setActiveTab] = useState('dashboard');
   const insets = useSafeAreaInsets();
@@ -225,8 +225,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
       } else {
         setPrinterTest({ state: 'error', message: res?.error || 'Failed' });
       }
-    } catch (e: any) {
-      setPrinterTest({ state: 'error', message: String(e?.message || e) });
+    } catch (e: unknown) {
+      setPrinterTest({ state: 'error', message: e instanceof Error ? e.message : String(e) });
     }
   }, [activePrinter]);
 
@@ -236,7 +236,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     try {
       const data = await apiFetch('/api/dashboard/stats');
       setStats(data);
-    } catch (e: any) {
+    } catch {
       Alert.alert('Error', 'Failed to load dashboard stats');
     } finally {
       setLoadingStats(false);
@@ -297,7 +297,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               impactMedium();
               await deleteVehicle(vehicle.vehicle_id);
               notificationSuccess();
-            } catch (error: any) {
+            } catch {
               Alert.alert('Error', 'Failed to delete vehicle');
             }
           },

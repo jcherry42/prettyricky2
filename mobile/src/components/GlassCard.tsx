@@ -1,7 +1,6 @@
 import React, { memo, ReactNode } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../theme/colors';
 
 interface GlassCardProps {
   children?: ReactNode;

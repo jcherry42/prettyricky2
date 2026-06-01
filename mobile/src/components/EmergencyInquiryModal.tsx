@@ -5,12 +5,11 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking } from 'react-native';
+import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
-import { type } from '../theme/typography';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { sendSms } from '../lib/sms';
 import { useAppSettings } from '../context/AppSettingsContext';

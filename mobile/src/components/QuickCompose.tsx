@@ -141,9 +141,9 @@ export function QuickCompose() {
         notificationSuccess();
         toast.showSuccess('Translation complete');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       notificationError();
-      toast.showError(e.message || 'Translation failed');
+      toast.showError(e instanceof Error ? e.message : 'Translation failed');
     } finally {
       setTranslating(false);
     }
