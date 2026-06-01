@@ -44,8 +44,8 @@ export function PinScreen() {
     error: authError, lockoutUntil, pendingResetCode,
   } = useAuth();
 
-  const [digits, setDigits]             = useState([]);
-  const [confirmDigits, setConfirmDigits] = useState(null);
+  const [digits, setDigits]             = useState<string[]>([]);
+  const [confirmDigits, setConfirmDigits] = useState<string[] | null>(null);
   const [shaking, setShaking]           = useState(false);
   const [status, setStatus]             = useState('');
   const [processing, setProcessing]     = useState(false);
@@ -468,7 +468,7 @@ export function PinScreen() {
 
             <Pressable
               onPress={async () => {
-                await Clipboard.setStringAsync(pendingResetCode);
+                await Clipboard.setStringAsync(pendingResetCode || '');
                 Alert.alert('Copied', 'Reset code copied to clipboard.');
               }}
               style={styles.resetCodeBox}

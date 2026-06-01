@@ -139,11 +139,11 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
   const sportOn = Boolean(settings.sportMode);
   const insets = useSafeAreaInsets();
 
-  const [selectedType, setSelectedType] = useState(null);
+  const [selectedType, setSelectedType] = useState<any | null>(null);
   const [translatingIdx, setTranslatingIdx] = useState(-1);
   const [translatedResponses, setTranslatedResponses] = useState({});
   const [speakingIdx, setSpeakingIdx] = useState(-1);
-  const playerRef = useRef(null);
+  const playerRef = useRef<any | null>(null);
 
   const handleSelectType = (inquiry: any) => {
     impactLight();

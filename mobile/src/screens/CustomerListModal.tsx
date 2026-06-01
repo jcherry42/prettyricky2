@@ -45,7 +45,7 @@ function CustomerRow({ item }: { item: any }) {
 }
 
 export function CustomerListModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const insets = useSafeAreaInsets();
 

@@ -5,7 +5,23 @@ import { apiFetch } from '../lib/api';
 const ACCESS_KEY = 'sc_access_token';
 const REFRESH_KEY = 'sc_refresh_token';
 
-const AuthContext = createContext(null);
+interface AuthContextValue {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  needsSetup: boolean;
+  error: string | null;
+  lockoutUntil: Date | null;
+  pendingResetCode: string | null;
+  login: (pin: string) => Promise<boolean>;
+  setupPin: (pin: string) => Promise<boolean>;
+  resetPin: (resetCode: string) => Promise<boolean>;
+  dismissResetCode: () => void;
+  logout: () => Promise<void>;
+  getAccessToken: () => string | null;
+  refreshAccessToken: () => Promise<boolean>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
  * AuthProvider — manages PIN auth lifecycle with JWT tokens.
@@ -21,11 +37,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [needsSetup, setNeedsSetup] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
   const [pendingResetCode, setPendingResetCode] = useState<string | null>(null); // shown once after setup
-  const accessTokenRef = useRef(null);
-  const refreshTokenRef = useRef(null);
+  const accessTokenRef = useRef<string | null>(null);
+  const refreshTokenRef = useRef<string | null>(null);
 
   // Store tokens securely
   const _storeTokens = useCallback(async (access: string, refresh: string) => {

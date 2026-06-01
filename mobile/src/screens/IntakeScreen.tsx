@@ -335,7 +335,7 @@ function IntakeHub({ navigation }: { navigation: any }) {
         ) : (
           <FlatList
             data={filtered}
-            keyExtractor={(i) => i.id || i.vehicle_id || i.vin}
+            keyExtractor={(i) => i.id || i.vehicle_id || i.vin || ''}
             renderItem={({ item }) => (
               <VehicleCard
                 item={item}

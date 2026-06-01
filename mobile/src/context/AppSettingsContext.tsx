@@ -3,13 +3,34 @@ import { loadJson, saveJson } from '../lib/storage';
 
 const STORAGE_KEY = 'sc_v1_settings';
 
-const DEFAULT_SETTINGS = {
+interface Printer {
+  id: string;
+  name: string;
+  ip: string;
+}
+
+interface AppSettings {
+  defaultTargetLanguage: string;
+  sportMode: boolean;
+  ecoMode: boolean;
+  pttDirection: string;
+  printers: Printer[];
+  activePrinterId: string | null;
+  ambientLightingEnabled: boolean;
+  ambientLightingIntensity: string;
+  soundProfile: string;
+  salesRepName: string;
+  dealershipName: string;
+  dealershipAddress: string;
+}
+
+const DEFAULT_SETTINGS: AppSettings = {
   defaultTargetLanguage: 'es',
   sportMode: false,
   ecoMode: false,
   pttDirection: 'en_to_target',
-  printers: [] as any[],
-  activePrinterId: null as string | null,
+  printers: [],
+  activePrinterId: null,
   ambientLightingEnabled: true,
   ambientLightingIntensity: 'medium',
   soundProfile: 'merica',
@@ -18,10 +39,31 @@ const DEFAULT_SETTINGS = {
   dealershipAddress: '',
 };
 
-const AppSettingsContext = createContext(null);
+interface AppSettingsContextValue {
+  loaded: boolean;
+  settings: AppSettings;
+  activePrinter: Printer | null;
+  setDefaultTargetLanguage: (lang: string) => Promise<void>;
+  setSportMode: (v: boolean) => Promise<void>;
+  toggleSportMode: () => Promise<void>;
+  setEcoMode: (v: boolean) => Promise<void>;
+  setPttDirection: (v: string) => Promise<void>;
+  upsertPrinter: (p: { id?: string; name?: string; ip?: string }) => Promise<string>;
+  removePrinter: (id: string) => Promise<void>;
+  setActivePrinter: (id: string | null) => Promise<void>;
+  setAmbientLightingEnabled: (v: boolean) => Promise<void>;
+  setAmbientLightingIntensity: (v: string) => Promise<void>;
+  toggleAmbientLighting: () => Promise<void>;
+  setSoundProfile: (v: string) => Promise<void>;
+  setSalesRepName: (v: string) => Promise<void>;
+  setDealershipName: (v: string) => Promise<void>;
+  setDealershipAddress: (v: string) => Promise<void>;
+}
+
+const AppSettingsContext = createContext<AppSettingsContextValue | null>(null);
 
 export function AppSettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
   // Keep a ref that always points to the latest settings.
@@ -33,7 +75,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     (async () => {
-      const stored = await loadJson(STORAGE_KEY, null);
+      const stored = await loadJson<Partial<AppSettings> | null>(STORAGE_KEY, null);
       if (stored && typeof stored === 'object') {
         const merged = { ...DEFAULT_SETTINGS, ...stored };
         setSettings(merged);
@@ -44,7 +86,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
   }, []);
 
   // persist is stable: setSettings from useState never changes
-  const persist = useCallback(async (next: any) => {
+  const persist = useCallback(async (next: AppSettings) => {
     setSettings(next);
     settingsRef.current = next;
     await saveJson(STORAGE_KEY, next);
@@ -97,7 +139,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
     await persist({ ...s, printers: nextPrinters, activePrinterId: nextActive });
   }, [persist]);
 
-  const setActivePrinter = useCallback(async (id: string) => {
+  const setActivePrinter = useCallback(async (id: string | null) => {
     await persist({ ...settingsRef.current, activePrinterId: id });
   }, [persist]);
 
@@ -131,7 +173,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
     await persist({ ...settingsRef.current, dealershipAddress: address });
   }, [persist]);
 
-  const activePrinter = useMemo(() => {
+  const activePrinter = useMemo<Printer | null>(() => {
     const printers = settings.printers || [];
     if (!settings.activePrinterId) return printers[0] || null;
     return printers.find((p) => p.id === settings.activePrinterId) || printers[0] || null;

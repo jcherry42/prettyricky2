@@ -11,7 +11,28 @@ import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
 import { useAppSettings } from './AppSettingsContext';
 
-const PttContext = createContext(null);
+interface PttResult {
+  transcript: string;
+  translated_text: string;
+  source_lang: string;
+  target_lang: string;
+}
+
+interface PttContextValue {
+  direction: string;
+  targetLang: string;
+  status: string;
+  error: string | null;
+  result: PttResult;
+  elapsedMs: number;
+  startRecording: () => Promise<void>;
+  stopRecording: () => Promise<void>;
+  toggleDirection: () => Promise<void>;
+  speakTranslated: () => Promise<void>;
+  reset: () => void;
+}
+
+const PttContext = createContext<PttContextValue | null>(null);
 
 const MAX_RECORDING_MS = 15000; // 15-second hard cap
 
@@ -42,23 +63,23 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
 
   // States: 'idle' | 'requesting' | 'recording' | 'uploading' | 'translating' | 'speaking' | 'done' | 'error'
   const [status, setStatus] = useState('idle');
-  const [error, setError] = useState(null);
-  const [result, setResult] = useState({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<PttResult>({ transcript: '', translated_text: '', source_lang: 'en', target_lang: targetLang });
   const [elapsedMs, setElapsedMs] = useState(0);
 
   // expo-audio recorder hook — reusable across multiple recordings
   const recorder = useAudioRecorder(RECORDING_OPTIONS);
 
-  const playbackRef = useRef(null);
-  const timeoutRef = useRef(null);
-  const timerRef = useRef(null);
-  const timerStartRef = useRef(null);
+  const playbackRef = useRef<any | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerStartRef = useRef<number | null>(null);
   const pendingStopRef = useRef(false);
 
   // stopRecording is defined after startRecording; we use this ref so the
   // auto-stop timeout and the startRecording body can always call the
   // latest version without creating a circular useCallback dependency.
-  const stopFnRef = useRef(null);
+  const stopFnRef = useRef<(() => Promise<void>) | null>(null);
 
   // --- Elapsed timer ---
   const startTimer = useCallback(() => {

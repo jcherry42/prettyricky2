@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 10 backend regression: PostHog integration + telemetry pipeline + all prior endpoints. 29/29 pytest tests pass after one backend fix (anomaly scan ObjectId serialization). PostHog graceful degradation log confirmed.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/anomalies/scan",
+        "issue": "Returned 500 due to MongoDB ObjectId leaking into response (motor's insert_one mutates the inserted dict with `_id`). Fixed in this iteration by inserting on `dict(anomaly)` copy in `_store_anomaly()` (services/anomaly_detection.py)."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration10_telemetry_posthog.py",
+    "/app/test_reports/pytest/pytest_results_iteration10.xml"
+  ],
+  "action_items": [
+    "(Optional) Make `POST /api/customers` legacy endpoint reject unknown camelCase->snake_case mismatched payloads or document the schema requirement (it silently falls back to defaults 'License'/'Scan' if firstName/lastName fields are not present, which can confuse callers who send snake_case)."
+  ],
+  "critical_code_review_comments": [
+    "services/anomaly_detection.py::_store_anomaly was mutating the caller's dict via motor's insert_one side-effect (adds `_id`), which leaked an ObjectId into the API response and broke JSON serialization. Fixed by inserting a copy.",
+    "routes/customers_v2.py has two create endpoints (POST /customers legacy camelCase and POST /customers/create snake_case). The legacy one silently substitutes defaults 'License'/'Scan' when firstName/lastName are missing — consider 400-ing instead, or document this in the route docstring.",
+    "telemetry_service.py _init_posthog() is correctly called in __init__ with graceful degradation when POSTHOG_API_KEY missing (verified via log line). All telemetry endpoints functional."
+  ],
+  "updated_files": [
+    "/app/backend/services/anomaly_detection.py",
+    "/app/backend/tests/test_iteration10_telemetry_posthog.py"
+  ],
+  "success_rate": {"backend": "100%", "frontend": "N/A (backend-only test request)"},
+  "test_credentials": "PIN: 11111 (verified working via /api/auth/login)",
+  "seed_data_creation": "Created and deleted TEST_Iter10 customer + TEST-prefixed vehicle within the same test; no residual data. Telemetry events with action=test_iter10_<uuid8> persisted to MongoDB.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iteration 10 backend regression complete. Test file: /app/backend/tests/test_iteration10_telemetry_posthog.py covers health, auth (login/status/invalid PIN), strict auth enforcement (12 protected endpoints), telemetry (track/summary/sales-funnel/ai-usage), sessions (save/restore/auto-save/delete with delta wrapper), anomaly (summary+scan), customers CRUD via /api/customers/create, vehicles CRUD, and VIN OCR sanity. PostHog graceful degradation verified via backend log. One backend bug fixed: anomaly_detection _store_anomaly was mutating dict via motor's insert_one. The legacy POST /api/customers endpoint (LicenseScanner) uses camelCase; main snake_case endpoint is POST /api/customers/create.",
+  "rca of the issue": "Anomaly scan 500: motor's insert_one() mutates the input dict by adding `_id` (ObjectId). `run_full_scan()` keeps the same dict reference in `results['details']`, so the API response contained an un-serializable ObjectId, causing FastAPI's jsonable_encoder to raise ValueError. Reproduction: `POST /api/anomalies/scan` with valid Bearer token while at least one anomaly exists to insert. Mitigation: insert on a shallow copy `dict(anomaly)` so the original returned dict is unchanged. Verified by re-running the test → 200 OK."
+}

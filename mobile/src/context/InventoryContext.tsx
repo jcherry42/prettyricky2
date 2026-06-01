@@ -6,17 +6,31 @@ import { queueOperation } from '../utils/offlineQueue';
 const CACHE_KEY = 'sc_v1_inventory_cache';
 const MAX_INVENTORY = 150;
 
-const InventoryContext = createContext(null);
+type VehicleRecord = Record<string, any> & { id?: string; vehicle_id?: string; vin?: string };
+
+interface InventoryContextValue {
+  vehicles: VehicleRecord[];
+  loading: boolean;
+  error: string | null;
+  isAtLimit: boolean;
+  maxInventory: number;
+  fetchInventory: () => Promise<VehicleRecord[]>;
+  addVehicle: (vehicleData: any) => Promise<VehicleRecord>;
+  updateVehicle: (id: string, updates: Record<string, any>) => Promise<Record<string, any>>;
+  deleteVehicle: (id: string) => Promise<void>;
+}
+
+const InventoryContext = createContext<InventoryContextValue | null>(null);
 
 export function InventoryProvider({ children }: { children: React.ReactNode }) {
-  const [vehicles, setVehicles] = useState([]);
+  const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load cached inventory on mount
   useEffect(() => {
     (async () => {
-      const cached = await loadJson(CACHE_KEY, null);
+      const cached = await loadJson<{ vehicles: VehicleRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.vehicles) {
         setVehicles(cached.vehicles);
       }
@@ -42,7 +56,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       return list;
     } catch (e: any) {
       // If network error, serve from cache
-      const cached = await loadJson(CACHE_KEY, null);
+      const cached = await loadJson<{ vehicles: VehicleRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.vehicles) {
         setVehicles(cached.vehicles);
         setError('Serving cached data (offline)');

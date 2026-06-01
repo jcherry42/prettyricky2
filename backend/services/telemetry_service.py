@@ -123,8 +123,9 @@ class TelemetryService:
         # In-memory counters for real-time dashboard
         self._counters: Dict[str, int] = defaultdict(int)
         self._hourly: Dict[str, Dict[str, int]] = {}  # hour_key → {action: count}
-        # PostHog client (None until configured)
+        # PostHog client (None until configured via POSTHOG_API_KEY env var)
         self._posthog = None
+        self._init_posthog()
 
     async def ensure_indexes(self):
         """Create TTL + query indexes."""
@@ -138,21 +139,27 @@ class TelemetryService:
 
     def _init_posthog(self):
         """Initialize PostHog client if credentials are available.
-        To enable:
-          1. pip install posthog
-          2. Set POSTHOG_API_KEY and POSTHOG_HOST in backend/.env
+        To enable: set POSTHOG_API_KEY (and optionally POSTHOG_HOST) in backend/.env.
+        Without a key, telemetry stays in MongoDB only — no impact on the app.
         """
         api_key = os.environ.get("POSTHOG_API_KEY")
         host = os.environ.get("POSTHOG_HOST", "https://us.i.posthog.com")
         if api_key:
             try:
                 import posthog
+                # SDK 7+ uses an explicit Posthog() client; we keep the
+                # module-level convenience API for backward compat.
                 posthog.project_api_key = api_key
                 posthog.host = host
+                posthog.disabled = False
+                # Performance: queue events client-side and flush in batches
+                posthog.flush_interval = 0.5  # 500ms
                 self._posthog = posthog
                 logger.info(f"PostHog telemetry sink enabled (host={host})")
             except ImportError:
                 logger.info("PostHog package not installed — MongoDB-only telemetry")
+            except Exception as e:
+                logger.warning(f"PostHog init failed ({e}) — MongoDB-only telemetry")
         else:
             logger.info("POSTHOG_API_KEY not set — MongoDB-only telemetry")
 
@@ -194,18 +201,23 @@ class TelemetryService:
         except Exception as e:
             logger.debug(f"Telemetry persist failed: {e}")
 
-        # ── PostHog Sink (uncomment when ready) ──
-        # if self._posthog:
-        #     try:
-        #         ph_event = event.to_posthog_event()
-        #         self._posthog.capture(
-        #             distinct_id=ph_event["distinct_id"],
-        #             event=ph_event["event"],
-        #             properties=ph_event["properties"],
-        #             timestamp=event.timestamp,
-        #         )
-        #     except Exception as e:
-        #         logger.debug(f"PostHog capture failed: {e}")
+        # PostHog sink (active when POSTHOG_API_KEY is set)
+        if self._posthog:
+            try:
+                ph_event = event.to_posthog_event()
+                # PostHog SDK is sync — run in default executor to avoid blocking event loop
+                loop = asyncio.get_event_loop()
+                loop.run_in_executor(
+                    None,
+                    lambda: self._posthog.capture(
+                        distinct_id=ph_event["distinct_id"],
+                        event=ph_event["event"],
+                        properties=ph_event["properties"],
+                        timestamp=event.timestamp,
+                    ),
+                )
+            except Exception as e:
+                logger.debug(f"PostHog capture failed: {e}")
 
     # ── Query / Dashboard ────────────────────────────────────────
 

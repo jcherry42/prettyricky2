@@ -488,20 +488,20 @@ export function VinScanScreen() {
   const { addVehicle, isAtLimit, maxInventory } = useInventory();
   const insets = useSafeAreaInsets();
 
-  const [dealerHistory, setDealerHistory] = useState([]);
-  const [tradeInHistory, setTradeInHistory] = useState([]);
-  const [decoding, setDecoding] = useState(null);
+  const [dealerHistory, setDealerHistory] = useState<any[]>([]);
+  const [tradeInHistory, setTradeInHistory] = useState<any[]>([]);
+  const [decoding, setDecoding] = useState<any | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scanMode, setScanMode] = useState(SCAN_MODE.BARCODE);
   const [scanning, setScanning] = useState(false);
   const [manualVin, setManualVin] = useState('');
-  const [lastScan, setLastScan] = useState(null);
-  const [vinValidation, setVinValidation] = useState(null);
+  const [lastScan, setLastScan] = useState<any | null>(null);
+  const [vinValidation, setVinValidation] = useState<{ valid: boolean; checksumValid: boolean; checksumWarning?: string | null; error?: string } | null>(null);
   const [activeTab, setActiveTab] = useState(CATEGORY.DEALER);
-  const [saveCategoryPicker, setSaveCategoryPicker] = useState(null);
+  const [saveCategoryPicker, setSaveCategoryPicker] = useState<any | null>(null);
 
   // Vehicle detail modal
-  const [vehicleDetailItem, setVehicleDetailItem] = useState(null); // item with .decoded
+  const [vehicleDetailItem, setVehicleDetailItem] = useState<any | null>(null); // item with .decoded
 
   // Camera state
   const [torchOn, setTorchOn] = useState(false);
@@ -514,9 +514,9 @@ export function VinScanScreen() {
   // AI OCR state
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const [ocrStatus, setOcrStatus] = useState('');
-  const [ocrResults, setOcrResults] = useState(null); // {vins, confidence, notes}
+  const [ocrResults, setOcrResults] = useState<any | null>(null); // {vins, confidence, notes}
 
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<any>(null);
   const lastScanTime = useRef(0);
   const lastScannedVin = useRef('');
   // Ref pattern (PTT-style) — prevent stale closures in async callbacks
@@ -583,7 +583,7 @@ export function VinScanScreen() {
   }, [scannerOpen, scanMode, scanning, scanLineAnim]);
 
   // Pulse animation for OCR processing — properly stoppable (PTT pattern)
-  const ocrLoopRef = useRef(null);
+  const ocrLoopRef = useRef<Animated.CompositeAnimation | null>(null);
   useEffect(() => {
     if (ocrProcessing) {
       const loop = Animated.loop(
@@ -678,7 +678,7 @@ export function VinScanScreen() {
     impactMedium();
 
     if (validation.checksumWarning) {
-      setTimeout(() => Alert.alert('Checksum Advisory', validation.checksumWarning), 300);
+      setTimeout(() => Alert.alert('Checksum Advisory', validation.checksumWarning || ''), 300);
     }
     return entry;
   }, [persistHistory]);

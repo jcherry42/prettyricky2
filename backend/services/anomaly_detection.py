@@ -270,12 +270,17 @@ class AnomalyDetectionService:
         }
 
     async def _store_anomaly(self, anomaly: Dict):
-        """Store anomaly if not already detected (dedup by check+vin)."""
+        """Store anomaly if not already detected (dedup by check+vin).
+
+        Insert on a copy so we don't mutate the caller's dict with MongoDB's
+        auto-generated ObjectId (`_id`), which would break JSON serialization
+        of the API response.
+        """
         existing = await self._anomalies_col.find_one(
             {"check": anomaly["check"], "vin": anomaly["vin"], "resolved": False}
         )
         if not existing:
-            await self._anomalies_col.insert_one(anomaly)
+            await self._anomalies_col.insert_one(dict(anomaly))
 
 
 # ── VIN Checksum Validation ───────────────────────────────────────────

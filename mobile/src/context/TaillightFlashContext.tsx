@@ -1,11 +1,16 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { impactLight } from '../lib/haptics';
 
-const TaillightFlashContext = createContext(null);
+interface TaillightFlashContextValue {
+  flash: boolean;
+  triggerFlash: () => void;
+}
+
+const TaillightFlashContext = createContext<TaillightFlashContextValue | null>(null);
 
 export function TaillightFlashProvider({ children }: { children: React.ReactNode }) {
   const [flash, setFlash] = useState(false);
-  const timerRef = useRef(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerFlash = useCallback(() => {
     if (timerRef.current) {

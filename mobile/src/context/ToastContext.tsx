@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactLight, notificationSuccess, notificationError } from '../lib/haptics';
 
-const ToastContext = createContext(null);
+const ToastContext = createContext<ToastContextValue | null>(null);
 
 const TOAST_DURATION = 3000;
 
@@ -73,6 +73,16 @@ interface ToastItem {
 interface ToastOptions {
   title?: string;
   duration?: number;
+}
+
+interface ToastContextValue {
+  showToast: (type: ToastType, message: string, options?: ToastOptions) => void;
+  showSuccess: (message: string, options?: ToastOptions) => void;
+  showError: (message: string, options?: ToastOptions) => void;
+  showInfo: (message: string, options?: ToastOptions) => void;
+  showWarning: (message: string, options?: ToastOptions) => void;
+  showOffline: (message: string, options?: ToastOptions) => void;
+  showSync: (message: string, options?: ToastOptions) => void;
 }
 
 function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {

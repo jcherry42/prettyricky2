@@ -104,10 +104,10 @@ export function QuickCompose() {
   const [translating, setTranslating] = useState(false);
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
   const [showInventoryPicker, setShowInventoryPicker] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
   const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef(null);
+  const inputRef = useRef<TextInput | null>(null);
 
   const charCount = text.length;
   const hasText = text.trim().length > 0;

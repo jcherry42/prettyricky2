@@ -104,7 +104,7 @@ export function useSessionPersistence(
 
     try {
       // Try local first (fastest)
-      let session = await loadJson(LOCAL_SESSION_KEY, null);
+      let session = await loadJson<SessionState | null>(LOCAL_SESSION_KEY, null);
 
       // If no local session or it's stale (>7 days), try remote
       if (!session || (session.saved_at && Date.now() - session.saved_at > 7 * 24 * 3600 * 1000)) {

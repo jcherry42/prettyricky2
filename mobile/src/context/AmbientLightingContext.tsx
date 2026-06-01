@@ -16,7 +16,14 @@ const CYCLE_DURATION = 30000;
 const COLOR_COUNT = 64;
 const INTERVAL = CYCLE_DURATION / COLOR_COUNT; // ~468 ms
 
-const AmbientLightingContext = createContext({
+interface AmbientLightingContextValue {
+  isEnabled: boolean;
+  currentColor: string | null;
+  opacity: number;
+  intensity: string;
+}
+
+const AmbientLightingContext = createContext<AmbientLightingContextValue>({
   isEnabled: false,
   currentColor: null,
   opacity: 0.08,

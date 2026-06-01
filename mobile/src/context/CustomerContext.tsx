@@ -6,13 +6,27 @@ import { queueOperation } from '../utils/offlineQueue';
 const CACHE_KEY = 'sc_v1_customers_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-const CustomerContext = createContext(null);
+type CustomerRecord = Record<string, any> & { id?: string; customer_id?: string };
+
+interface CustomerContextValue {
+  customers: CustomerRecord[];
+  loading: boolean;
+  error: string | null;
+  lastFetch: number | null;
+  fetchCustomers: (options?: { limit?: number; search?: string; append?: boolean; skip?: number }) => Promise<{ customers: CustomerRecord[]; hasMore: boolean }>;
+  getCustomer: (id: string) => Promise<CustomerRecord | null>;
+  createCustomer: (customerData: Record<string, any>) => Promise<CustomerRecord | null>;
+  updateCustomer: (id: string, updates: Record<string, any>) => Promise<CustomerRecord | null>;
+  deleteCustomer: (id: string) => Promise<void>;
+}
+
+const CustomerContext = createContext<CustomerContextValue | null>(null);
 
 export function CustomerProvider({ children }: { children: React.ReactNode }) {
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [lastFetch, setLastFetch] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastFetch, setLastFetch] = useState<number | null>(null);
 
   // Ref always pointing to latest customers — prevents stale closures in callbacks
   const customersRef = useRef(customers);
@@ -21,7 +35,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
   // Load cached customers on mount
   useEffect(() => {
     (async () => {
-      const cached = await loadJson(CACHE_KEY, null);
+      const cached = await loadJson<{ customers: CustomerRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.customers && cached?.timestamp) {
         const age = Date.now() - cached.timestamp;
         if (age < CACHE_DURATION) {
@@ -80,7 +94,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       return { customers: list, hasMore };
     } catch (e: any) {
       // If network error, serve from cache
-      const cached = await loadJson(CACHE_KEY, null);
+      const cached = await loadJson<{ customers: CustomerRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.customers) {
         const normalized = cached.customers.map(normalizeCustomer);
         setCustomers(normalized);

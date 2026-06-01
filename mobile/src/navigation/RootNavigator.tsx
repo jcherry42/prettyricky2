@@ -57,8 +57,8 @@ export function RootNavigator() {
 
   // Restore modal states from session, default to closed
   const [ccOpen, setCcOpen] = useState(session.modalStates?.commandCenter || false);
-  const [ccTab, setCcTab] = useState(null);
-  const [ccSection, setCcSection] = useState(null);
+  const [ccTab, setCcTab] = useState<string | null>(null);
+  const [ccSection, setCcSection] = useState<string | null>(null);
   const [printOpen, setPrintOpen] = useState(false);
   const [pttOpen, setPttOpen] = useState(false);
   const [talkOpen, setTalkOpen] = useState(session.modalStates?.towerTalk || false);

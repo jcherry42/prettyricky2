@@ -25,7 +25,7 @@ export function NetworkStatusDot({ showLabel = false }: { showLabel?: boolean })
       onPress={() => {
         if (isOnline && queueCount > 0) {
           impactLight();
-          triggerSync();
+          triggerSync?.();
         }
       }}
       style={styles.container}

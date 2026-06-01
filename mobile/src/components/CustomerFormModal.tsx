@@ -29,14 +29,14 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
   const [notes, setNotes] = useState('');
   const [leadStatus, setLeadStatus] = useState('new');
   const [saving, setSaving] = useState(false);
-  const [validationError, setValidationError] = useState(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Refs for keyboard focus chaining
-  const lastNameRef = useRef(null);
-  const phoneRef = useRef(null);
-  const emailRef = useRef(null);
-  const addressRef = useRef(null);
-  const vehicleRef = useRef(null);
+  const lastNameRef = useRef<TextInput | null>(null);
+  const phoneRef = useRef<TextInput | null>(null);
+  const emailRef = useRef<TextInput | null>(null);
+  const addressRef = useRef<TextInput | null>(null);
+  const vehicleRef = useRef<TextInput | null>(null);
 
   // Load customer data when editing
   useEffect(() => {

@@ -140,8 +140,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   }, [visible, initialTab]);
 
 
-  const scrollRef = useRef(null);
-  const backendSectionRef = useRef(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const backendSectionRef = useRef<View | null>(null);
 
   React.useEffect(() => {
     if (!visible) return;
@@ -170,7 +170,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
 
   // Dashboard stats
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<any | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
   // Customer search
@@ -179,8 +179,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   // Inventory search
   const [inventorySearch, setInventorySearch] = useState('');
 
-  const ipInputRefs = useRef([]);
-  const printerNameRef = useRef(null);
+  const ipInputRefs = useRef<(TextInput | null)[]>([]);
+  const printerNameRef = useRef<TextInput | null>(null);
 
   const fullIp = useMemo(() => ipParts.join('.'), [ipParts]);
 
@@ -441,7 +441,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 ) : (
                   <FlatList
                     data={filteredCustomers.slice(0, 10)}
-                    keyExtractor={(item) => item.customer_id || item.id}
+                    keyExtractor={(item) => item.customer_id || item.id || ''}
                     renderItem={({ item }) => (
                       <View style={styles.customerRow}>
                         <View style={{ flex: 1 }}>
@@ -525,7 +525,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 ) : (
                   <FlatList
                     data={filteredVehicles}
-                    keyExtractor={(item) => item.vehicle_id || item.vin}
+                    keyExtractor={(item) => item.vehicle_id || item.vin || ''}
                     renderItem={({ item }) => (
                       <View style={styles.vehicleCard}>
                         <View style={styles.quiltedPattern} />

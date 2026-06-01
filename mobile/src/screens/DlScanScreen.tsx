@@ -234,8 +234,8 @@ export function DlScanScreen() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // History
-  const [history, setHistory] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
   // ── Custom OCR camera modal (replaces system ImagePicker camera) ──
@@ -243,7 +243,7 @@ export function DlScanScreen() {
   const [ocrCamReady, setOcrCamReady] = useState(false);
   const [ocrTorch, setOcrTorch] = useState(false);
   const [ocrCapturing, setOcrCapturing] = useState(false);
-  const ocrCamRef = useRef(null);
+  const ocrCamRef = useRef<any>(null);
 
   // Ref pattern (PTT-style) — prevent stale closure in barcode callback
   const historyRef = useRef(history);

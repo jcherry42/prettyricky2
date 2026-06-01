@@ -8,14 +8,32 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import NetInfo from '@react-native-community/netinfo';
 import { syncQueue, getQueue } from '../utils/offlineQueue';
 
-const NetworkContext = createContext(null);
+interface SyncResult {
+  success: boolean;
+  error?: string;
+  processed?: number;
+  failed?: number;
+  remaining?: number;
+}
+
+interface NetworkContextValue {
+  isOnline: boolean;
+  isConnected: boolean;
+  isInternetReachable: boolean;
+  syncStatus: string;
+  queueCount: number;
+  lastSyncResult: SyncResult | null;
+  triggerSync: () => Promise<void>;
+}
+
+const NetworkContext = createContext<NetworkContextValue | null>(null);
 
 export function NetworkProvider({ children }: { children: React.ReactNode }) {
   const [isConnected, setIsConnected] = useState(true);
   const [isInternetReachable, setIsInternetReachable] = useState(true);
   const [syncStatus, setSyncStatus] = useState('idle'); // idle | syncing | done | error
   const [queueCount, setQueueCount] = useState(0);
-  const [lastSyncResult, setLastSyncResult] = useState(null);
+  const [lastSyncResult, setLastSyncResult] = useState<SyncResult | null>(null);
   const wasOffline = useRef(false);
 
   const isOnline = isConnected && isInternetReachable;

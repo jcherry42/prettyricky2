@@ -105,8 +105,7 @@ const PRESET_RESPONSES = {
 
 // Animated waveform bars during voice recording
 function VoiceWaveform() {
-  // MUST NOT use useRef inside Array.from — create refs individually
-  const barsRef = useRef(null);
+  const barsRef = useRef<Animated.Value[] | null>(null);
   if (!barsRef.current) {
     barsRef.current = Array.from({ length: 5 }, () => new Animated.Value(0.3));
   }
@@ -159,16 +158,16 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const [tradeVin, setTradeVin] = useState('');
   const [tradeMileage, setTradeMileage] = useState('');
 
-  const [state, setState] = useState({ status: 'idle', error: null });
+  const [state, setState] = useState<{ status: string; error: string | null }>({ status: 'idle', error: null });
   const [reply, setReply] = useState(savedTT?.reply || '');
   const [displayedReply, setDisplayedReply] = useState(savedTT?.reply || '');
-  const autoTranslateRef = useRef(null);
+  const autoTranslateRef = useRef<string | null>(null);
   const [translated, setTranslated] = useState('');
   const [copied, setCopied] = useState(false);
   const [copiedTranslation, setCopiedTranslation] = useState(false);
 
   const [selectedInquiry, setSelectedInquiry] = useState(savedTT?.selectedInquiry || 'new_lead');
-  const [presetIndex, setPresetIndex] = useState(null);
+  const [presetIndex, setPresetIndex] = useState<number | null>(null);
 
   // Auto-save Tower Talk form drafts to session
   useEffect(() => {
@@ -182,7 +181,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   // Voice dictation state
   const [isDictating, setIsDictating] = useState(false);
   const [dictationStatus, setDictationStatus] = useState('idle'); // idle | requesting | recording | processing
-  const dictationTimeoutRef = useRef(null);
+  const dictationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // expo-audio recorder hook for voice dictation (reusable)
   const dictationRecorder = useAudioRecorder(
@@ -207,9 +206,9 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   );
 
   // Refs for keyboard focus chaining
-  const vehicleRef = useRef(null);
-  const tradeVinRef = useRef(null);
-  const tradeMileageRef = useRef(null);
+  const vehicleRef = useRef<TextInput | null>(null);
+  const tradeVinRef = useRef<TextInput | null>(null);
+  const tradeMileageRef = useRef<TextInput | null>(null);
 
   // Typewriter effect for AI response
   useEffect(() => {

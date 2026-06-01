@@ -28,8 +28,7 @@ function formatElapsed(ms: number) {
 
 // Animated audio waveform — 7 bars with staggered pulse
 function AudioWaveform({ color = colors.red }) {
-  // MUST NOT use useRef inside Array.from — create a single ref holding the array
-  const barsRef = useRef(null);
+  const barsRef = useRef<Animated.Value[] | null>(null);
   if (!barsRef.current) {
     barsRef.current = Array.from({ length: 7 }, () => new Animated.Value(0.2));
   }
