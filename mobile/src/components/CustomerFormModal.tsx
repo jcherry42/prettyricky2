@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLingo } from '../context/ModeContext';
+import { errorMessage } from '../lib/errors';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,7 +18,9 @@ const STATUS_OPTIONS = [
   { value: 'lost', label: 'Lost', color: colors.red },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function CustomerFormModal({ visible, customer, onClose, onSave }: { visible: boolean; customer: any; onClose: () => void; onSave: (data: any, existingCustomer?: any) => Promise<any> }) {
+  const lingo = useLingo();
   const isEditing = Boolean(customer);
   const insets = useSafeAreaInsets();
 
@@ -28,6 +32,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
   const [vehicleInterest, setVehicleInterest] = useState('');
   const [notes, setNotes] = useState('');
   const [leadStatus, setLeadStatus] = useState('new');
+  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'es' | 'fr' | 'ko'>('en');
   const [saving, setSaving] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -49,6 +54,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
       setVehicleInterest(customer.vehicle_interest || '');
       setNotes(customer.notes || '');
       setLeadStatus(customer.lead_status || 'new');
+      setPreferredLanguage((customer.preferred_language as 'en' | 'es' | 'fr' | 'ko') || 'en');
     } else {
       // Reset form for new customer
       setFirstName('');
@@ -59,6 +65,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
       setVehicleInterest('');
       setNotes('');
       setLeadStatus('new');
+      setPreferredLanguage('en');
     }
   }, [customer]);
 
@@ -92,14 +99,15 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
         vehicle_interest: vehicleInterest.trim(),
         notes: notes.trim(),
         lead_status: leadStatus,
+        preferred_language: preferredLanguage,
       };
 
       await onSave(customerData, customer);
       notificationSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       notificationError();
-      setValidationError(`Save failed: ${error.message}`);
+      setValidationError(`Save failed: ${errorMessage(error)}`);
     } finally {
       setSaving(false);
     }
@@ -122,7 +130,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
             <Pressable onPress={onClose} style={styles.closeButton} disabled={saving}>
               <Ionicons name="close" size={28} color={colors.text} />
             </Pressable>
-            <Text style={styles.headerTitle}>{isEditing ? 'Edit Customer' : 'New Customer'}</Text>
+            <Text style={styles.headerTitle}>{isEditing ? `Edit ${lingo.customerSingular}` : `New ${lingo.customerSingular}`}</Text>
             <View style={{ width: 28 }} />
           </LinearGradient>
 
@@ -270,6 +278,42 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
                     style={[
                       styles.statusButtonText,
                       leadStatus === option.value && { color: option.color },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Preferred Language — pre-warm target for Tower Talk auto-translation */}
+            <Text style={styles.sectionTitle}>PREFERRED LANGUAGE</Text>
+            <View style={styles.statusGrid}>
+              {([
+                { value: 'en', label: '🇺🇸 English' },
+                { value: 'es', label: '🇲🇽 Español' },
+                { value: 'fr', label: '🇫🇷 Français' },
+                { value: 'ko', label: '🇰🇷 한국어' },
+              ] as const).map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => {
+                    impactMedium();
+                    setPreferredLanguage(option.value);
+                  }}
+                  disabled={saving}
+                  data-testid={`preferred-language-${option.value}`}
+                  style={({ pressed }) => [
+                    styles.statusButton,
+                    preferredLanguage === option.value && styles.statusButtonActive,
+                    { borderColor: preferredLanguage === option.value ? '#00E5FF' : 'rgba(255,255,255,0.10)' },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusButtonText,
+                      preferredLanguage === option.value && { color: '#00E5FF' },
                     ]}
                   >
                     {option.label}

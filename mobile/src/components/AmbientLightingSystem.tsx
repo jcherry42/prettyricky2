@@ -22,7 +22,7 @@ export function AmbientLightingSystem() {
   const { settings } = useAppSettings();
 
   // Disable if eco mode is on or ambient lighting is off
-  if (!isEnabled || settings?.ecoMode) return null;
+  if (!isEnabled || settings?.serviceMode) return null;
   if (!currentColor) return null;
 
   return (

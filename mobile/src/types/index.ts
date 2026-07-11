@@ -186,7 +186,7 @@ export interface TowerTalkResponse {
 // ============== SETTINGS ==============
 
 export interface AppSettings {
-  ecoMode: boolean;
+  serviceMode: boolean;
   haptics: boolean;
   soundProfile: string;
   language: string;
@@ -275,22 +275,67 @@ export type WsAction = 'ping' | 'subscribe' | 'unsubscribe';
 
 // ============== SESSION PERSISTENCE ==============
 
+export type FormDraft = Record<string, unknown>;
+export type FormDraftMap = Record<string, FormDraft>;
+
+/** Well-known form draft shapes. Consumers can cast `formDrafts.towerTalk as TowerTalkFormDraft`. */
+export interface TowerTalkFormDraft {
+  situation?: string;
+  customerName?: string;
+  vehicle?: string;
+  reply?: string;
+  translated?: string;
+  selectedInquiry?: string;
+  targetLanguage?: string;
+  historyIndex?: number;
+}
+
+/** A single Tower Talk / Quick Compose exchange the user has already generated. */
+export interface TowerTalkHistoryEntry {
+  id?: string;
+  situation: string;
+  reply: string;
+  translated?: string;
+  targetLanguage?: string;
+  customerName?: string;
+  vehicle?: string;
+  createdAt: string;
+  mode?: 'sales' | 'service';
+}
+
+export interface PttLastResult {
+  transcript: string;
+  translated_text: string;
+  source_lang: string;
+  target_lang: string;
+  translated_speech_audio?: string;
+  detected_language?: string;
+}
+
+/** Loose navigation state — the React Navigation shape is deeply generic, we just persist/restore it opaquely. */
+export type NavigationState = { routes?: unknown[]; index?: number } & Record<string, unknown>;
+
+/** Intake screen resumable state. */
+export interface IntakeState {
+  step?: number;
+  scanned_license?: LicenseData | null;
+  scanned_vin?: string | null;
+  customer_notes?: string;
+  [key: string]: unknown;
+}
+
 export interface SessionSnapshot {
-  navigation_state?: any;
+  navigation_state?: NavigationState | null;
   active_customer_id?: string | null;
-  active_customer?: Customer | null;
-  form_drafts?: Record<string, any>;
-  tower_talk_history?: any[];
-  ptt_last_result?: {
-    transcript: string;
-    translated_text: string;
-    source_lang: string;
-    target_lang: string;
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  active_customer?: any | null;  // Loose — same shape as CustomerRecord (avoids circular type import)
+  form_drafts?: FormDraftMap;
+  tower_talk_history?: TowerTalkHistoryEntry[];
+  ptt_last_result?: PttLastResult | null;
   modal_states?: Record<string, boolean>;
   search_query?: string;
   scroll_positions?: Record<string, number>;
-  intake_state?: any;
+  intake_state?: IntakeState | null;
   version: number;
   saved_at?: number;
 }

@@ -9,6 +9,14 @@ Reset protocol:
   - POST /auth/reset-pin accepts { reset_code } to wipe the PIN record,
     returning the app to setup mode.
   - Login tracks failed attempts; 5 consecutive failures triggers a 30-second lockout.
+
+Refresh-token security:
+  - Every refresh token includes a unique `jti` (JWT ID) claim.
+  - On refresh, the OLD jti is added to a `revoked_tokens` denylist with TTL = remaining exp.
+    A new refresh token (with a new jti) is issued. This is the "rotation" pattern —
+    if a stolen refresh token is used after the legit owner refreshes, it's already revoked.
+  - POST /auth/logout revokes the supplied refresh token immediately.
+  - Refresh attempts with a revoked or replayed jti return 401.
 """
 from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel, Field
@@ -36,6 +44,16 @@ LOCKOUT_SECONDS = 30
 def init_pin_auth_routes(db):
     global _db
     _db = db
+    # Schedule the TTL index creation on the running event loop
+    try:
+        import asyncio
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(_ensure_revoked_tokens_ttl())
+        else:
+            loop.run_until_complete(_ensure_revoked_tokens_ttl())
+    except Exception as e:
+        logger.debug(f"revoked_tokens TTL setup deferred: {e}")
 
 
 # --- Request / Response Models ---
@@ -64,17 +82,100 @@ class EmergencyResetRequest(BaseModel):
 
 # --- Helpers ---
 
-def _create_token_pair(user_id: str):
-    """Create access + refresh token pair."""
+def _create_token_pair(user_id: str, family_id: Optional[str] = None):
+    """Create access + refresh token pair. The refresh token includes a unique `jti`
+    so it can be individually revoked (rotation + logout). Access tokens do NOT
+    carry a jti — they're short-lived (15 min) so revocation costs more than it saves.
+
+    `family_id` groups all refresh tokens descended from a single login. On rotation,
+    the family_id is preserved. On detection of a reused (revoked) jti, we mark the
+    entire family as compromised in `revoked_families` and reject all future refreshes
+    for that family — forcing the (likely compromised) user to re-authenticate.
+    """
+    if family_id is None:
+        family_id = str(uuid.uuid4())
     access = create_access_token(
         data={"sub": user_id, "type": "access"},
         expires_delta=timedelta(minutes=15),
     )
+    refresh_jti = str(uuid.uuid4())
     refresh = create_access_token(
-        data={"sub": user_id, "type": "refresh"},
+        data={"sub": user_id, "type": "refresh", "jti": refresh_jti, "fam": family_id},
         expires_delta=timedelta(days=REFRESH_TOKEN_DAYS),
     )
     return access, refresh
+
+
+async def _is_family_revoked(family_id: str) -> bool:
+    """Return True if this refresh-token family has been marked compromised."""
+    if not family_id:
+        return False
+    found = await _db.revoked_families.find_one({"family_id": family_id})
+    return found is not None
+
+
+async def _revoke_family(family_id: str, user_id: str, reason: str = "token_reuse"):
+    """Mark an entire refresh-token family as compromised. All descendants (past
+    and future) become unusable. TTL matches max refresh-token lifetime.
+    """
+    if not family_id:
+        return
+    try:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_DAYS + 1)
+        await _db.revoked_families.update_one(
+            {"family_id": family_id},
+            {"$set": {
+                "family_id": family_id,
+                "user_id": user_id,
+                "reason": reason,
+                "revoked_at": datetime.now(timezone.utc),
+                "expires_at": expires_at,
+            }},
+            upsert=True,
+        )
+        logger.warning(f"Family revoked (family={family_id}, user={user_id}, reason={reason})")
+    except Exception as e:
+        logger.error(f"Failed to revoke family {family_id}: {e}")
+
+
+async def _is_jti_revoked(jti: str) -> bool:
+    """Return True if this refresh-token jti has been revoked (logout or rotation)."""
+    if not jti:
+        return False
+    found = await _db.revoked_tokens.find_one({"jti": jti})
+    return found is not None
+
+
+async def _revoke_jti(jti: str, exp_timestamp: Optional[int] = None):
+    """Add a refresh-token jti to the denylist. MongoDB TTL index on `expires_at`
+    auto-cleans entries after the token would have naturally expired anyway.
+    """
+    if not jti:
+        return
+    # Use the token's `exp` as the cleanup timestamp; fall back to "now + 30 days" if unknown
+    if exp_timestamp:
+        expires_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
+    else:
+        expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_DAYS)
+    try:
+        await _db.revoked_tokens.update_one(
+            {"jti": jti},
+            {"$set": {"jti": jti, "revoked_at": datetime.now(timezone.utc), "expires_at": expires_at}},
+            upsert=True,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to revoke jti {jti}: {e}")
+
+
+async def _ensure_revoked_tokens_ttl():
+    """Idempotent: create the TTL index on `expires_at` so MongoDB auto-cleans the denylist."""
+    try:
+        await _db.revoked_tokens.create_index("expires_at", expireAfterSeconds=0)
+        await _db.revoked_tokens.create_index("jti", unique=True)
+        await _db.revoked_families.create_index("expires_at", expireAfterSeconds=0)
+        await _db.revoked_families.create_index("family_id", unique=True)
+    except Exception as e:
+        logger.debug(f"revoked_tokens index init: {e}")
 
 
 def _generate_reset_code() -> str:
@@ -271,7 +372,16 @@ async def emergency_reset(request: EmergencyResetRequest):
 
 @router.post("/auth/refresh")
 async def refresh_token(request: RefreshRequest):
-    """Exchange a valid refresh token for a new access token."""
+    """Exchange a valid refresh token for a NEW token pair.
+
+    Rotation:
+      - The supplied refresh token's `jti` is checked against the denylist.
+      - If valid + not revoked, the OLD jti is revoked immediately.
+      - A fresh access token + fresh refresh token (new jti) are returned.
+
+    This means a stolen refresh token gets invalidated the moment the legit owner
+    refreshes — they can use it at most once.
+    """
     try:
         payload = verify_token(request.refresh_token)
     except HTTPException:
@@ -284,17 +394,63 @@ async def refresh_token(request: RefreshRequest):
     if not user_id:
         raise HTTPException(status_code=401, detail="Malformed token")
 
-    access = create_access_token(
-        data={"sub": user_id, "type": "access"},
-        expires_delta=timedelta(minutes=15),
-    )
+    jti = payload.get("jti")
+    family_id = payload.get("fam")
+
+    # Family revocation check — if this family is marked compromised, deny
+    # every descendant regardless of individual jti state.
+    if family_id and await _is_family_revoked(family_id):
+        logger.warning(f"Refresh attempt on revoked family (family={family_id}, user={user_id})")
+        raise HTTPException(status_code=401, detail="Refresh token family has been revoked. Please log in again.")
+
+    if jti and await _is_jti_revoked(jti):
+        # Reuse of a revoked token = strong signal of theft. Nuke the entire family.
+        logger.warning(f"Revoked refresh token reused (jti={jti}, user={user_id}) — REVOKING FAMILY {family_id}")
+        if family_id:
+            await _revoke_family(family_id, user_id, reason="token_reuse")
+        raise HTTPException(status_code=401, detail="Refresh token has been revoked. Please log in again.")
+
+    # Rotate: revoke the OLD jti, issue a new pair carrying the SAME family_id.
+    if jti:
+        await _revoke_jti(jti, exp_timestamp=payload.get("exp"))
+
+    new_access, new_refresh = _create_token_pair(user_id, family_id=family_id)
 
     return {
         "success": True,
-        "access_token": access,
+        "access_token": new_access,
+        "refresh_token": new_refresh,
         "token_type": "bearer",
         "expires_in": 900,
     }
+
+
+@router.post("/auth/logout")
+async def logout(request: RefreshRequest):
+    """Revoke the supplied refresh token so it can never be used again.
+
+    The client should also clear its local SecureStore copies of both tokens.
+    Access tokens aren't revoked server-side because they're short-lived (15 min),
+    but discarding them client-side is enough for practical purposes.
+    """
+    try:
+        payload = verify_token(request.refresh_token)
+    except HTTPException:
+        # Even on invalid token, return 200 — logout should be idempotent and not
+        # leak information about token validity.
+        return {"success": True, "revoked": False}
+
+    if payload.get("type") != "refresh":
+        return {"success": True, "revoked": False}
+
+    jti = payload.get("jti")
+    if jti:
+        await _revoke_jti(jti, exp_timestamp=payload.get("exp"))
+        logger.info(f"Refresh token revoked via logout (user={payload.get('sub')})")
+        return {"success": True, "revoked": True}
+
+    # Legacy refresh tokens without jti can't be individually revoked.
+    return {"success": True, "revoked": False, "warning": "Legacy token without jti"}
 
 
 @router.get("/auth/verify")

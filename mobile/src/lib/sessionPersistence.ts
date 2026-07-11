@@ -16,21 +16,29 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { loadJson, saveJson } from './storage';
 import { apiFetch } from './api';
+import type { CustomerRecord } from '../context/CustomerContext';
+import type {
+  FormDraftMap,
+  IntakeState,
+  NavigationState,
+  PttLastResult,
+  TowerTalkHistoryEntry,
+} from '../types';
 
 const LOCAL_SESSION_KEY = 'sc_v1_session';
 const AUTO_SAVE_INTERVAL_MS = 30_000; // 30 seconds
 
 export interface SessionState {
-  navigation_state?: any;
+  navigation_state?: NavigationState | null;
   active_customer_id?: string | null;
-  active_customer?: any;
-  form_drafts?: Record<string, any>;
-  tower_talk_history?: any[];
-  ptt_last_result?: any;
+  active_customer?: CustomerRecord | null;
+  form_drafts?: FormDraftMap;
+  tower_talk_history?: TowerTalkHistoryEntry[];
+  ptt_last_result?: PttLastResult | null;
   modal_states?: Record<string, boolean>;
   search_query?: string;
   scroll_positions?: Record<string, number>;
-  intake_state?: any;
+  intake_state?: IntakeState | null;
   version: number;
   saved_at?: number;
 }
@@ -74,7 +82,7 @@ export function useSessionPersistence(
         await apiFetch('/api/sessions/save', {
           method: 'POST',
           body: JSON.stringify(state),
-        }).catch((e: any) => console.debug('[Session] Remote save failed:', e.message));
+        }).catch((e: unknown) => console.debug('[Session] Remote save failed:', (e as Error)?.message));
       } else {
         // Lightweight delta — just the changeable fields
         apiFetch('/api/sessions/auto-save', {
@@ -92,7 +100,7 @@ export function useSessionPersistence(
           }),
         }).catch(() => {}); // Silent — don't disrupt UX
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.debug('[Session] Save error:', e);
     }
   }, []);
@@ -124,7 +132,7 @@ export function useSessionPersistence(
         console.log('[Session] Restored session (age:', session.saved_at ? `${Math.round((Date.now() - session.saved_at) / 1000)}s` : 'unknown', ')');
         onRestoreRef.current(session);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.debug('[Session] Restore error:', e);
     }
   }, []);

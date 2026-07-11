@@ -13,6 +13,8 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { errorMessage } from '../lib/errors';
+import { startTimer } from '../lib/telemetry';
 import {
   ActivityIndicator,
   Alert,
@@ -47,6 +49,7 @@ import {
 import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 
 // ── Safe ML Kit import — gracefully unavailable in Expo Go ─────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let TextRecognition: any = null;
 try {
    
@@ -78,6 +81,7 @@ const EXTRACTION_FIELDS = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function HistoryCard({ item, onPress, onSaveToCustomer }: { item: any; onPress: (item: any) => void; onSaveToCustomer: (item: any) => void }) {
   const confidence = item.confidence || 0;
   const isSaved = Boolean(item.savedToCustomerAt);
@@ -152,6 +156,7 @@ function HistoryCard({ item, onPress, onSaveToCustomer }: { item: any; onPress: 
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSaved }: { data: any; onEdit: (data: any) => void; onSaveToCustomer: (data: any) => void; isSaved: boolean }) {
   const [editing, setEditing] = useState(false);
   const [edited, setEdited] = useState(data);
@@ -181,7 +186,7 @@ function ExtractionPanel({ data, onEdit, onSaveToCustomer, isSaved }: { data: an
         {EXTRACTION_FIELDS.map((f) => (
           <View key={f.key} style={styles.fieldBox}>
             <View style={styles.fieldLabelRow}>
-              <Ionicons name={f.icon as any} size={14} color={f.required ? colors.gold : colors.textMute} />
+              <Ionicons name={f.icon as keyof typeof Ionicons.glyphMap} size={14} color={f.required ? colors.gold : colors.textMute} />
               <Text style={styles.fieldLabel}>
                 {f.label}
                 {f.required && <Text style={{ color: colors.red }}> *</Text>}
@@ -234,7 +239,9 @@ export function DlScanScreen() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // History
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [history, setHistory] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -243,6 +250,7 @@ export function DlScanScreen() {
   const [ocrCamReady, setOcrCamReady] = useState(false);
   const [ocrTorch, setOcrTorch] = useState(false);
   const [ocrCapturing, setOcrCapturing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ocrCamRef = useRef<any>(null);
 
   // Ref pattern (PTT-style) — prevent stale closure in barcode callback
@@ -280,6 +288,7 @@ export function DlScanScreen() {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveToHistory = useCallback(async (entry: any) => {
     setHistory((prev) => {
       const next = [entry, ...prev].slice(0, MAX_HISTORY);
@@ -289,6 +298,7 @@ export function DlScanScreen() {
     return entry;
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateHistoryItem = useCallback(async (id: string, updates: any) => {
     setHistory((prev) => {
       const next = prev.map((item) => (item.id === id ? { ...item, ...updates } : item));
@@ -301,6 +311,7 @@ export function DlScanScreen() {
   // ── Single-step scan: ML Kit pre-check + cloud OCR ─────────────────────
   const scanDirect = useCallback(async (uri: string, scanMethod = 'ocr') => {
     const { cleanup: abortCleanup } = ocrLifecycle.abortableTimeout(45000);
+    const finishScan = startTimer('dl_scan', 'ocr');
 
     try {
       setUploading(true);
@@ -332,6 +343,7 @@ export function DlScanScreen() {
         uri,
         type: 'image/jpeg',
         name: `license_${Date.now()}.jpg`,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       // Send ML Kit text as a hint to help GPT-4o parse faster
@@ -383,16 +395,20 @@ export function DlScanScreen() {
           response.error || 'Could not fully read the license. Please verify the fields manually.',
           [{ text: 'OK' }]
         );
+        finishScan({ method: scanMethod, success: false, reason: 'ocr_incomplete' });
       } else {
         notificationSuccess();
+        finishScan({ method: scanMethod, success: true });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       abortCleanup();
       notificationError();
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         Alert.alert('Timeout', 'License scan timed out. Try with better lighting.');
+        finishScan({ method: scanMethod, success: false, reason: 'timeout' });
       } else {
-        Alert.alert('Scan Failed', err.message || 'Unable to scan license');
+        Alert.alert('Scan Failed', errorMessage(err) || 'Unable to scan license');
+        finishScan({ method: scanMethod, success: false, reason: 'error' });
       }
     } finally {
       setUploading(false);
@@ -442,9 +458,9 @@ export function DlScanScreen() {
       if (photo?.uri) {
         await scanDirect(photo.uri, 'ocr');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       notificationError();
-      Alert.alert('Capture Failed', e.message || 'Could not capture photo');
+      Alert.alert('Capture Failed', errorMessage(e) || 'Could not capture photo');
     } finally {
       setOcrCapturing(false);
     }
@@ -465,11 +481,13 @@ export function DlScanScreen() {
   }, [scanDirect]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleItemPress = (item: any) => {
     setSelectedItem(item);
     setShowDetail(true);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEdit = (editedData: any) => {
     if (selectedItem) {
       updateHistoryItem(selectedItem.id, editedData);
@@ -477,6 +495,7 @@ export function DlScanScreen() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSaveToCustomer = async (item: any) => {
     try {
       impactMedium();
@@ -496,6 +515,7 @@ export function DlScanScreen() {
       if (item.expiration) noteLines.push(`Expiration: ${item.expiration}`);
       if (item.state) noteLines.push(`State: ${item.state}`);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const customerData: any = {
         first_name: item.first_name,
         last_name: item.last_name,
@@ -529,6 +549,7 @@ export function DlScanScreen() {
       Alert.alert('Success', `Customer profile created for ${item.first_name} ${item.last_name}.\nLicense image saved to profile.`);
     } catch (err) {
       notificationError();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Alert.alert('Save Failed', (err as any).message || 'Unable to save customer');
     }
   };

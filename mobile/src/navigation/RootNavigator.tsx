@@ -11,6 +11,7 @@ import { type } from '../theme/typography';
 
 import { useAppSettings } from '../context/AppSettingsContext';
 import { usePtt } from '../context/PttContext';
+import { useLingo } from '../context/ModeContext';
 import { emit } from '../lib/events';
 
 import { HomeScreen } from '../screens/HomeScreen';
@@ -54,6 +55,13 @@ export const TAB_BAR_CONTENT_HEIGHT = 52;
 
 export function RootNavigator() {
   const session = useSession();
+  const lingo = useLingo();
+
+  // Convenience: pre-compute the tab labels (uppercase) so we don't do work on every render
+  const lingoRef = useMemo(() => ({
+    homeTab: lingo.customerPlural.toUpperCase(),
+    intakeTab: lingo.intakeTitle.toUpperCase(),
+  }), [lingo]);
 
   // Restore modal states from session, default to closed
   const [ccOpen, setCcOpen] = useState(session.modalStates?.commandCenter || false);
@@ -152,7 +160,7 @@ export function RootNavigator() {
                 <Ionicons name={focused ? 'clipboard' : 'clipboard-outline'} size={21} color={focused ? colors.gold : colors.textMute} />
               </View>
             ),
-            tabBarLabel: ({ focused }) => <TabLabel focused={focused}>INTAKE</TabLabel>,
+            tabBarLabel: ({ focused }) => <TabLabel focused={focused}>{lingoRef.intakeTab}</TabLabel>,
           }}
         />
       </Tab.Navigator>

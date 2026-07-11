@@ -16,6 +16,7 @@ import { type } from '../theme/typography';
 import { GlassCard } from '../components/GlassCard';
 import { impactLight } from '../lib/haptics';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function VehicleEditorScreen({ vehicle, onSave, onCancel }: { vehicle: any; onSave: (data: any) => void; onCancel: () => void }) {
   const title = useMemo(
     () => [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' '),

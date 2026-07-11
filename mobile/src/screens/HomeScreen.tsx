@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
+import { errorMessage } from '../lib/errors';
 import { View, Text, StyleSheet, Pressable, FlatList, Animated, TextInput, RefreshControl, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,7 +12,8 @@ import { QuickCompose } from '../components/QuickCompose';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { on } from '../lib/events';
-import { useCustomers } from '../context/CustomerContext';
+import { useCustomers, type CustomerRecord } from '../context/CustomerContext';
+import { useLingo } from '../context/ModeContext';
 import { useToast } from '../context/ToastContext';
 import { useSession } from '../context/SessionContext';
 import { SportModeButton } from '../components/SportModeButton';
@@ -23,11 +25,11 @@ import { type } from '../theme/typography';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
 
 /* ---------- Ambient light strip ---------- */
-function AmbientStrip({ active, color, ecoMode }: { active: boolean; color: string; ecoMode: boolean }) {
+function AmbientStrip({ active, color, serviceMode }: { active: boolean; color: string; serviceMode: boolean }) {
   const anim = useRef(new Animated.Value(0.12)).current;
 
   useEffect(() => {
-    if (ecoMode) {
+    if (serviceMode) {
       // Eco mode: static low-opacity strip, no animation to save battery
       anim.stopAnimation();
       anim.setValue(0.06);
@@ -44,7 +46,7 @@ function AmbientStrip({ active, color, ecoMode }: { active: boolean; color: stri
       anim.stopAnimation();
       anim.setValue(0.06);
     }
-  }, [active, anim, ecoMode]);
+  }, [active, anim, serviceMode]);
 
   return (
     <Animated.View style={[styles.ambientStrip, { backgroundColor: color, opacity: anim }]} />
@@ -58,10 +60,10 @@ function AmbientStrip({ active, color, ecoMode }: { active: boolean; color: stri
  * keyboard dismissal on every keystroke (a known React Native issue when
  * a TextInput lives inside ListHeaderComponent).
  * -------------------------------------------------------------------------- */
-const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }: { stripColor: string; ecoMode: boolean }) {
+const HomeListHeader = memo(function HomeListHeader({ stripColor, serviceMode }: { stripColor: string; serviceMode: boolean }) {
   return (
     <View>
-      <AmbientStrip active color={stripColor} ecoMode={ecoMode} />
+      <AmbientStrip active color={stripColor} serviceMode={serviceMode} />
 
       {/* SPORT button with subtle top branding */}
       <View style={styles.sportRow}>
@@ -74,7 +76,7 @@ const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }: { s
         <SportModeButton />
       </View>
 
-      <AmbientStrip active color={stripColor} ecoMode={ecoMode} />
+      <AmbientStrip active color={stripColor} serviceMode={serviceMode} />
 
       {/* Chrome accent divider */}
       <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 10 }} />
@@ -86,6 +88,7 @@ const HomeListHeader = memo(function HomeListHeader({ stripColor, ecoMode }: { s
 });
 
 export function HomeScreen() {
+  const lingo = useLingo();
   const { triggerFlash } = useTaillightFlash();
   const { settings } = useAppSettings();
   const { customers, loading, error, fetchCustomers, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
@@ -98,10 +101,10 @@ export function HomeScreen() {
 
   // Restore search query and selected customer from session
   const [searchQuery, setSearchQueryLocal] = useState(session.searchQuery || '');
-  const [selectedCustomer, setSelectedCustomer] = useState(session.activeCustomer || null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(session.activeCustomer || null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showFormModal, setShowFormModal] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingCustomer, setEditingCustomer] = useState<CustomerRecord | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   // Sync search query to session
@@ -124,7 +127,7 @@ export function HomeScreen() {
   const filteredCustomers = useMemo(() => {
     if (!searchQuery.trim()) return customers;
     const query = searchQuery.toLowerCase();
-    return customers.filter((c: any) => {
+    return customers.filter((c: CustomerRecord) => {
       const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
       const phone = String(c.phone || '');
       const email = String(c.email || '');
@@ -132,7 +135,7 @@ export function HomeScreen() {
     });
   }, [customers, searchQuery]);
 
-  const handleCustomerPress = useCallback((customer: any) => {
+  const handleCustomerPress = useCallback((customer: CustomerRecord) => {
     setSelectedCustomer(customer);
     session.setActiveCustomer(customer);
     setShowDetailModal(true);
@@ -146,36 +149,36 @@ export function HomeScreen() {
   // Exposed to RootNavigator via event bus (replaces globalThis pattern)
   useEffect(() => on('openNewCustomer', handleAddNew), [handleAddNew]);
 
-  const handleEdit = (customer: any) => {
+  const handleEdit = (customer: CustomerRecord) => {
     setShowDetailModal(false);
     setEditingCustomer(customer);
     setShowFormModal(true);
   };
 
-  const handleDelete = async (customer: any) => {
+  const handleDelete = async (customer: CustomerRecord) => {
     try {
-      await deleteCustomer(customer.customer_id || customer.id);
+      await deleteCustomer((customer.customer_id || customer.id) as string);
       setShowDetailModal(false);
       toast.showSuccess('Customer deleted');
-    } catch (e: any) {
-      toast.showError(`Delete failed: ${e.message}`);
+    } catch (e: unknown) {
+      toast.showError(`Delete failed: ${errorMessage(e)}`);
     }
   };
 
-  const handleSave = async (customerData: any, existingCustomer: any) => {
+  const handleSave = async (customerData: Partial<CustomerRecord>, existingCustomer: CustomerRecord | null) => {
     try {
       if (existingCustomer) {
-        await updateCustomer(existingCustomer.customer_id || existingCustomer.id, customerData);
+        await updateCustomer((existingCustomer.customer_id || existingCustomer.id) as string, customerData);
         toast.showSuccess('Customer updated');
       } else {
         await createCustomer(customerData);
         toast.showSuccess('Customer created');
       }
-    } catch (e: any) {
-      if (e._queued) {
+    } catch (e: unknown) {
+      if ((e as { _queued?: boolean })._queued) {
         toast.showOffline('Saved offline - will sync when connected');
       } else {
-        toast.showError(`Save failed: ${e.message}`);
+        toast.showError(`Save failed: ${errorMessage(e)}`);
       }
       throw e;
     }
@@ -185,8 +188,8 @@ export function HomeScreen() {
     setRefreshing(true);
     try {
       await fetchCustomers();
-    } catch (e: any) {
-      if (e.message?.includes('offline')) {
+    } catch (e: unknown) {
+      if (errorMessage(e).includes('offline')) {
         toast.showOffline('Showing cached customers');
       }
     } finally {
@@ -194,12 +197,12 @@ export function HomeScreen() {
     }
   }, [fetchCustomers, toast]);
 
-  const ecoMode = Boolean(settings.ecoMode);
+  const serviceMode = Boolean(settings.serviceMode);
 
-  // renderHeader depends on stripColor and ecoMode — stable identity
+  // renderHeader depends on stripColor and serviceMode — stable identity
   const renderHeader = useCallback(() => (
-    <HomeListHeader stripColor={stripColor} ecoMode={ecoMode} />
-  ), [stripColor, ecoMode]);
+    <HomeListHeader stripColor={stripColor} serviceMode={serviceMode} />
+  ), [stripColor, serviceMode]);
 
   const renderEmpty = () => {
     if (loading) {
@@ -249,13 +252,13 @@ export function HomeScreen() {
 
   // CustomerCard: marginVertical 6 * 2 + padding 14 * 2 + content ~50px = ~94px total
   const CARD_HEIGHT = 94;
-  const getItemLayout = useCallback((_data: any, index: number) => ({
+  const getItemLayout = useCallback((_data: ArrayLike<CustomerRecord> | null | undefined, index: number) => ({
     length: CARD_HEIGHT,
     offset: CARD_HEIGHT * index,
     index,
   }), []);
 
-  const renderCustomerMemo = useCallback(({ item }: { item: any }) => (
+  const renderCustomerMemo = useCallback(({ item }: { item: CustomerRecord }) => (
     <CustomerCard customer={item} onPress={handleCustomerPress} />
   ), [handleCustomerPress]);
 
@@ -283,7 +286,7 @@ export function HomeScreen() {
               <Ionicons name="search" size={16} color={colors.gold} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="Search customers..."
+                placeholder={`Search ${lingo.customerPlural.toLowerCase()}...`}
                 placeholderTextColor={colors.textGhost || colors.textMute}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -301,7 +304,7 @@ export function HomeScreen() {
         <View style={styles.listHeader}>
           <View style={styles.listTitleRow}>
             <View style={styles.goldDot} />
-            <Text style={styles.listTitle}>CUSTOMERS</Text>
+            <Text style={styles.listTitle}>{lingo.customerPlural.toUpperCase()}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <NetworkStatusDot />

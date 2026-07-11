@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 16 backend end-to-end HTTP verification against the live preview URL. All 15 tests PASS (100%). Covered: auth regression (login/logout/bad PIN), family-revocation (fam claim present + persists through rotation, reuse of revoked jti kills entire family & every descendant returns 401 with 'family' in body, fresh login recovers), /api/dashboard/stats new intelligence_24h block (sales_analyses / service_analyses / open_objections / hot_escalations as ints, no crash on empty telemetry), /api/intelligence/analyze new nested body shape {input, performanceMode} for both sales & service, empty customerMessage still 422, prompt_version='intel-v1.0.0' stamped, /api/tower-talk & /api/translate still work with and without performanceMode.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration16_endtoend.py",
+    "/app/test_reports/pytest/iteration16.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/pin_auth.py: family-revocation implementation is correct — the 'family' keyword appears in the 401 response body only for descendant revocation (not for logout jti-revocation), which allows clients to disambiguate compromise vs normal logout. Verified end-to-end.",
+    "routes/data_management.py: /dashboard/stats gracefully returns zeros for intelligence_24h when telemetry_events is empty; keys match spec exactly (sales_analyses, service_analyses, open_objections, hot_escalations) and all are int type.",
+    "routes/intelligence.py: nested {input, performanceMode} body shape works; empty customerMessage still 422 via Pydantic validator; response uses 'customerSentiment' (not 'sentiment') — mobile lingo keys should match this. Confirmed the mobile IntelligenceInsight component's insightSentiment label pipeline is correct.",
+    "prompt_version='intel-v1.0.0' correctly stamped.",
+    "Iteration 15's minor test-flake (byte-identical access_tokens in same second) is now FIXED — access_token carries iat + jti per iter16 changes; confirmed via test_iteration16_family_revocation.py::test_consecutive_access_tokens_are_distinct pattern."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration16_endtoend.py"],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None — all endpoints tested statelessly against live preview.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter16 introduced family-revocation on refresh reuse. Client-visible contract: 401 body contains 'revoked' for a normal denylisted jti and 'family' additionally when the whole family is dead. /api/dashboard/stats now includes intelligence_24h block. /api/intelligence/analyze body is {input:{mode,customerMessage,language,channel,...}, performanceMode:bool}. Note the response uses 'customerSentiment' (not 'sentiment') — kept for backward compat with iter15 clients. Tower-talk requires situation + inquiryType + context (Dict). All live LLM calls succeed against preview URL; expect ~5-8s per intelligence call.",
+  "rca of the issue": "No product bugs — 3 initial test failures were purely test-schema mismatches on my end (asserting 'sentiment' instead of 'customerSentiment'; missing situation/context fields in tower-talk payload). Corrected the test; all 15 pass."
+}

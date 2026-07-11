@@ -11,6 +11,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
+import { ModeProvider } from './src/context/ModeContext';
 import { AmbientLightingProvider } from './src/context/AmbientLightingContext';
 import { PttProvider } from './src/context/PttContext';
 import { TaillightFlashProvider } from './src/context/TaillightFlashContext';
@@ -81,6 +82,7 @@ function MainApp() {
     NetworkProvider,
     ToastProvider,
     AppSettingsProvider,
+    ModeProvider,       // Sales/Service mode — reads from AppSettings, feeds all lingo
     WebSocketProvider,
     SessionPersistenceProvider,    // Session persistence — captures & restores all app state
     CustomerProvider,

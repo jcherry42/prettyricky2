@@ -27,6 +27,7 @@ const FLAME_GIF = require('../../assets/flames/flame.gif');
 // ─── Overlay ──────────────────────────────────────────────────────────────────
 
 export function SportModeActivation({ visible, profileId = 'merica', onComplete }: { visible: boolean; profileId?: string; onComplete: () => void }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const profile = (SOUND_PROFILES as Record<string, any>)[profileId] || SOUND_PROFILES.merica;
   const [run, setRun] = useState(false);
 

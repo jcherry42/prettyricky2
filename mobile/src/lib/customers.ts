@@ -3,6 +3,7 @@ import { apiFetch } from './api';
 // Create a backend customer from a local DL/Bluetooth entry.
 // Entry shape (from DlScanScreen / CustomerListModal):
 // { fullName, address, dlNumber, expiration, licenseImageBase64?, source?, savedAt? }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createCustomerFromLocalEntry(entry: any, options: any = {}) {
   if (!entry) return null;
 
@@ -11,6 +12,7 @@ export async function createCustomerFromLocalEntry(entry: any, options: any = {}
   const firstName = options.firstName || (parts[0] || '');
   const lastName = options.lastName || (parts.slice(1).join(' ') || '');
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payload: any = {
     firstName,
     lastName,

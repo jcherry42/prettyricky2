@@ -1,0 +1,54 @@
+{
+  "summary": "Iteration 13 FULL backend audit complete. All 13 acceptance items verified — refresh-token rotation, server-side logout/revocation, JWT secret persistence, ObjectId-leak scan, PIN regression, protected-endpoint regression, raw-fetch audit. New suite: 31 passed + 1 skipped (alt endpoint name absent — covered by canonical name). Full regression across iter10+11+12+13: 88 passed, 1 skipped, 0 failures. Two iter12 stale fixtures were updated (module->function scope) because the new rotation behavior now invalidates a refresh token after first use — script fix only, no production change.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration13_auth_rotation_logout.py",
+    "/app/test_reports/pytest/pytest_results_iteration13.xml",
+    "/app/backend/tests/test_iteration12_auth_refresh.py"
+  ],
+  "verified_acceptance_items": [
+    "1. /api/auth/refresh with valid refresh -> 200 + NEW access_token + NEW refresh_token (different jti) ✓",
+    "2. OLD refresh after rotation -> 401 (denylisted) ✓",
+    "3. NEW refresh after rotation -> usable again (chained rotation) ✓",
+    "4. /api/auth/logout with valid refresh -> {success:true, revoked:true}, subsequent /refresh -> 401 ✓",
+    "5. /api/auth/logout with garbage token -> 200 {success:true, revoked:false} (no info leak) ✓",
+    "6. /api/auth/logout without Authorization header -> 200 (public endpoint) ✓",
+    "7. /api/auth/logout with ACCESS token -> 200 {revoked:false} (type-claim check works) ✓",
+    "8. revoked_tokens denylist behavior: double-revoke of same jti is idempotent (upsert path verified). TTL index + unique jti index defined in _ensure_revoked_tokens_ttl() at pin_auth.py:131-137 (code-inspected; cannot probe collection_stats from external test runner, but behavioral contract holds) ✓",
+    "9. JWT_SECRET_KEY persistent in /app/backend/.env (128-char hex, length-checked) — token-survives-restart was main-agent smoke-tested per review ✓",
+    "10. PIN 11111 login returns token pair; bad PIN -> 401 ✓",
+    "11. All listed protected endpoints (/api/sessions/*, /api/customers, /api/vehicles, /api/voice-translate, /api/vin/extract-from-image, /api/license/scan, /api/tower-talk, /api/translate, /api/telemetry/*) return 401 without Bearer, 200/404 with valid Bearer ✓",
+    "12. ObjectId leak scan on /api/customers, /api/vehicles, /api/sessions/restore, /api/anomalies — NO `_id` keys anywhere in recursive response inspection ✓",
+    "13. Raw fetch() inventory in /app/mobile/src/ contains ONLY allowed files: api.ts (internals), PinScreen.tsx (diagnostic probe), image.ts + chunkedUpload.ts (local file:// URI reads, NOT /api). No unauthorized raw fetch() callers ✓"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "pin_auth.py refresh rotation correctly revokes old jti via upsert and mints a new pair with fresh jti — clean implementation.",
+    "Refresh endpoint correctly rejects revoked jti reuse with 401; logger warns about possible family compromise (good signal — consider implementing per-user family-revocation in a future hardening pass).",
+    "Logout endpoint is shape-uniform between valid/invalid/access-token inputs (always 200, just revoked:true/false) — correctly prevents oracle/info leak on token validity.",
+    "TTL index + unique jti index on revoked_tokens defined in _ensure_revoked_tokens_ttl(); scheduled as background task in init — guarantees auto-cleanup so denylist stays bounded.",
+    "JWT_SECRET_KEY is now 128-char hex in backend/.env, so token validity survives backend restarts (verified by file inspection; live restart was main-agent smoke-tested).",
+    "Verified routes/data_management.py uses {\"_id\": 0} projection on crm_configs.find(); printer_v2.py uses {\"_id\": 0} on customers.find_one. No new ObjectId leaks introduced.",
+    "Minor: in refresh_token() at pin_auth.py:357-363, the 'reuse of revoked token' branch logs 'revoking family' but doesn't actually revoke the family — only re-denies the same jti (which is already denied). Comment acknowledges this is by design for now. Future: add user_id field to revoked_tokens and family-revoke on reuse signal.",
+    "All raw fetch() calls audited: 7 hits, 100% in allow-list (api.ts, image.ts, chunkedUpload.ts, PinScreen.tsx). No leakage."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration13_auth_rotation_logout.py (NEW — 32 tests, 31 pass + 1 skip)",
+    "/app/backend/tests/test_iteration12_auth_refresh.py (fixture scope module->function — required because rotation now invalidates a refresh after first use; behavior is correct, the old fixture was stale)"
+  ],
+  "success_rate": {"backend": "100% (31/31 new + 57/57 regression = 88/88, 1 skip for non-existent alt route)", "frontend": "N/A (backend-only request)"},
+  "test_credentials": "PIN: 11111 (verified). /app/memory/test_credentials.md is up to date.",
+  "seed_data_creation": "A few `revoked_tokens` entries from logout tests; all carry TTL = remaining-jwt-exp so self-clean within 30 days. No app-facing data created.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 13 closed all three iter12 security gaps: (a) refresh rotation with jti denylist, (b) server-side /api/auth/logout, (c) persistent JWT_SECRET_KEY in .env. Full regression suite is at /app/backend/tests/test_iteration13_auth_rotation_logout.py. If iter14 introduces multi-device sessions or family-revocation, add tests under TestRefreshRotation that simulate two parallel refresh chains and verify a reused-but-denied token triggers family-wide revocation. Stale fixture warning: any future test that holds a refresh_token across multiple /api/auth/refresh calls must use function scope or call _login() per-test — module scope will fail because rotation invalidates the token after first use.",
+  "rca of the issue": "No production issue found. All previously flagged gaps (refresh-token rotation, logout/revocation, JWT persistence) are correctly closed and tested. The only mutation made by this testing pass was updating two iter12 fixture scopes from module to function to keep regression tests passing under the new rotation semantics — no production code touched."
+}

@@ -19,10 +19,11 @@ module.exports = [
       '@typescript-eslint': tsPlugin,
     },
     rules: {
-      // TypeScript — keep `any` allowed (RN ecosystem requires escape hatches:
-      // Ionicons glyph names, Animated callbacks, opaque 3rd-party JS modules).
-      // The stronger safety net is `strictNullChecks` in tsconfig.json.
-      '@typescript-eslint/no-explicit-any': 'off',
+      // TypeScript — `: any` is allowed as a warning during the typing-sprint
+      // migration. Catch blocks default to `unknown` and use the `errorMessage()`
+      // helper for safe narrowing. Remaining `any` usages are tracked via this
+      // warning so they can be picked off incrementally without blocking dev.
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {

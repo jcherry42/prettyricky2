@@ -7,6 +7,7 @@
  * - PttContext: last translation result
  * - AppSettingsContext: (already persisted separately)
  * - Navigation state: current tab, modal states
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  * - Form drafts: any in-progress data entry
  *
  * Restores silently on app launch — zero user interaction required.
@@ -14,30 +15,39 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useSessionPersistence, SessionState } from '../lib/sessionPersistence';
+import type { CustomerRecord } from './CustomerContext';
+import type {
+  FormDraft,
+  FormDraftMap,
+  IntakeState,
+  NavigationState,
+  PttLastResult,
+  TowerTalkHistoryEntry,
+} from '../types';
 
 interface SessionContextValue {
   /** Current active customer being worked with */
   activeCustomerId: string | null;
-  activeCustomer: any;
-  setActiveCustomer: (customer: any) => void;
+  activeCustomer: CustomerRecord | null;
+  setActiveCustomer: (customer: CustomerRecord | null) => void;
   clearActiveCustomer: () => void;
 
   /** Form drafts (keyed by form name) */
-  formDrafts: Record<string, any>;
-  setFormDraft: (formName: string, data: any) => void;
+  formDrafts: FormDraftMap;
+  setFormDraft: (formName: string, data: FormDraft) => void;
   clearFormDraft: (formName: string) => void;
 
   /** Tower Talk conversation history */
-  towerTalkHistory: any[];
-  setTowerTalkHistory: (history: any[]) => void;
+  towerTalkHistory: TowerTalkHistoryEntry[];
+  setTowerTalkHistory: (history: TowerTalkHistoryEntry[]) => void;
 
   /** PTT last result */
-  pttLastResult: any;
-  setPttLastResult: (result: any) => void;
+  pttLastResult: PttLastResult | null;
+  setPttLastResult: (result: PttLastResult | null) => void;
 
   /** Navigation state for persistence */
-  navigationState: any;
-  setNavigationState: (state: any) => void;
+  navigationState: NavigationState | null;
+  setNavigationState: (state: NavigationState | null) => void;
 
   /** Modal states */
   modalStates: Record<string, boolean>;
@@ -48,8 +58,8 @@ interface SessionContextValue {
   setSearchQuery: (q: string) => void;
 
   /** Intake screen state */
-  intakeState: any;
-  setIntakeState: (state: any) => void;
+  intakeState: IntakeState | null;
+  setIntakeState: (state: IntakeState | null) => void;
 
   /** Manual save trigger */
   forceSave: () => Promise<void>;
@@ -63,14 +73,14 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionPersistenceProvider({ children }: { children: React.ReactNode }) {
   // ── Persisted state fields ─────────────────────────────────────
   const [activeCustomerId, setActiveCustomerId] = useState<string | null>(null);
-  const [activeCustomer, setActiveCustomerState] = useState<any>(null);
-  const [formDrafts, setFormDrafts] = useState<Record<string, any>>({});
-  const [towerTalkHistory, setTowerTalkHistory] = useState<any[]>([]);
-  const [pttLastResult, setPttLastResult] = useState<any>(null);
-  const [navigationState, setNavigationState] = useState<any>(null);
+  const [activeCustomer, setActiveCustomerState] = useState<CustomerRecord | null>(null);
+  const [formDrafts, setFormDrafts] = useState<FormDraftMap>({});
+  const [towerTalkHistory, setTowerTalkHistory] = useState<TowerTalkHistoryEntry[]>([]);
+  const [pttLastResult, setPttLastResult] = useState<PttLastResult | null>(null);
+  const [navigationState, setNavigationState] = useState<NavigationState | null>(null);
   const [modalStates, setModalStates] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [intakeState, setIntakeState] = useState<any>(null);
+  const [intakeState, setIntakeState] = useState<IntakeState | null>(null);
   const [wasRestored, setWasRestored] = useState(false);
 
   // Refs for the gather function (avoids stale closures)
@@ -118,7 +128,7 @@ export function SessionPersistenceProvider({ children }: { children: React.React
   const { saveSession } = useSessionPersistence(gatherSession, onRestore);
 
   // ── Public API ─────────────────────────────────────────────────
-  const setActiveCustomer = useCallback((customer: any) => {
+  const setActiveCustomer = useCallback((customer: CustomerRecord | null) => {
     setActiveCustomerState(customer);
     setActiveCustomerId(customer?.id || customer?.customer_id || null);
   }, []);
@@ -128,7 +138,7 @@ export function SessionPersistenceProvider({ children }: { children: React.React
     setActiveCustomerId(null);
   }, []);
 
-  const setFormDraft = useCallback((formName: string, data: any) => {
+  const setFormDraft = useCallback((formName: string, data: FormDraft) => {
     setFormDrafts((prev) => ({ ...prev, [formName]: data }));
   }, []);
 

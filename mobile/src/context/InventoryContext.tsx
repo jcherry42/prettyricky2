@@ -2,10 +2,12 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { apiFetch } from '../lib/api';
 import { loadJson, saveJson } from '../lib/storage';
 import { queueOperation } from '../utils/offlineQueue';
+import { errorMessage, isNetworkError } from '../lib/errors';
 
 const CACHE_KEY = 'sc_v1_inventory_cache';
 const MAX_INVENTORY = 150;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type VehicleRecord = Record<string, any> & { id?: string; vehicle_id?: string; vin?: string };
 
 interface InventoryContextValue {
@@ -15,7 +17,9 @@ interface InventoryContextValue {
   isAtLimit: boolean;
   maxInventory: number;
   fetchInventory: () => Promise<VehicleRecord[]>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addVehicle: (vehicleData: any) => Promise<VehicleRecord>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateVehicle: (id: string, updates: Record<string, any>) => Promise<Record<string, any>>;
   deleteVehicle: (id: string) => Promise<void>;
 }
@@ -54,7 +58,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       });
 
       return list;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // If network error, serve from cache
       const cached = await loadJson<{ vehicles: VehicleRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.vehicles) {
@@ -62,13 +66,14 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         setError('Serving cached data (offline)');
         return cached.vehicles;
       }
-      setError(e.message || 'Failed to fetch inventory');
+      setError(errorMessage(e) || 'Failed to fetch inventory');
       throw e;
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const addVehicle = useCallback(async (vehicleData: any) => {
     try {
       // Check 150 limit
@@ -112,9 +117,9 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       });
 
       return newVehicle;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         const { vin, category, ...rest } = vehicleData;
         await queueOperation('/api/vin/save-to-inventory', {
           method: 'POST',
@@ -124,11 +129,12 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         setVehicles(prev => [tempVehicle, ...prev]);
         return tempVehicle;
       }
-      setError(e.message || 'Failed to add vehicle');
+      setError(errorMessage(e) || 'Failed to add vehicle');
       throw e;
     }
   }, [vehicles]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateVehicle = useCallback(async (id: string, updates: Record<string, any>) => {
     try {
       await apiFetch(`/api/vehicles/${id}`, {
@@ -142,9 +148,9 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       ));
 
       return { ...updates, id };
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         await queueOperation(`/api/vehicles/${id}`, {
           method: 'PATCH',
           body: JSON.stringify(updates),
@@ -154,7 +160,7 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
         ));
         return { ...updates, vehicle_id: id, _queued: true };
       }
-      setError(e.message || 'Failed to update vehicle');
+      setError(errorMessage(e) || 'Failed to update vehicle');
       throw e;
     }
   }, []);
@@ -166,14 +172,14 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       });
 
       setVehicles(prev => prev.filter(v => v.vehicle_id !== id && v.id !== id));
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         await queueOperation(`/api/vehicles/${id}`, { method: 'DELETE' });
         setVehicles(prev => prev.filter(v => v.vehicle_id !== id && v.id !== id));
         return;
       }
-      setError(e.message || 'Failed to delete vehicle');
+      setError(errorMessage(e) || 'Failed to delete vehicle');
       throw e;
     }
   }, []);

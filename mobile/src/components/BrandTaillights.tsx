@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, Animated } from 'react-native';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useTaillightFlash } from '../context/TaillightFlashContext';
+import { useLingo } from '../context/ModeContext';
 
 const ELECTRIC_BLUE = colors.electricBlue;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }: { size: number; dots?: number; dotSize?: number; glowAnim: any }) {
   const pts = useMemo(() => {
     const r = size * 0.36;
@@ -48,6 +50,7 @@ function LedRing({ size, dots = 14, dotSize = 2.4, glowAnim }: { size: number; d
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Lamp({ size, variant, glowAnim }: { size: number; variant: string; glowAnim: any }) {
   const isOuter = variant === 'outer';
   return (
@@ -96,6 +99,7 @@ function Lamp({ size, variant, glowAnim }: { size: number; variant: string; glow
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Cluster({ flip = false, glowAnim }: { flip?: boolean; glowAnim: any }) {
   const outer = 28;
   const inner = 20;
@@ -109,6 +113,7 @@ function Cluster({ flip = false, glowAnim }: { flip?: boolean; glowAnim: any }) 
 }
 
 export function BrandTaillights({ compact = false }) {
+  const lingo = useLingo();
   const { flash } = useTaillightFlash();
   const glowAnim = useRef(new Animated.Value(1)).current;
 
@@ -125,7 +130,8 @@ export function BrandTaillights({ compact = false }) {
     <View style={[styles.wrap, compact && { paddingVertical: 6 }]}>
       <Cluster glowAnim={glowAnim} />
       <View style={styles.centerText}>
-        <Text style={styles.brand} allowFontScaling={false}>SUPERCHARG'D</Text>
+        <Text style={styles.brand} allowFontScaling={false}>SUPERCHARG&apos;D</Text>
+        <Text style={styles.brandMode} allowFontScaling={false}>{lingo.tagline}</Text>
       </View>
       <Cluster flip glowAnim={glowAnim} />
     </View>
@@ -168,5 +174,13 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,212,255,0.60)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 10,
+  },
+  brandMode: {
+    color: colors.gold,
+    ...type.label,
+    fontSize: 8,
+    letterSpacing: 3,
+    marginTop: 2,
+    opacity: 0.9,
   },
 });

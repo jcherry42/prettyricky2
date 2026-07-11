@@ -130,7 +130,7 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
         },
       ]}
     >
-      <Ionicons name={config.icon as any} size={18} color={config.color} />
+      <Ionicons name={config.icon as keyof typeof Ionicons.glyphMap} size={18} color={config.color} />
       <View style={styles.toastContent}>
         {toast.title && <Text style={[styles.toastTitle, { color: config.color }]}>{toast.title}</Text>}
         <Text style={styles.toastMessage} numberOfLines={2}>{toast.message}</Text>

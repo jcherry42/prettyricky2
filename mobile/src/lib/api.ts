@@ -7,7 +7,7 @@ const RETRY_DELAYS = [1200, 3000];
 // ----- Extended Error type for API errors --------------------------------
 interface ApiError extends Error {
   status?: number;
-  payload?: any;
+  payload?: unknown;
   code?: string;
 }
 
@@ -35,8 +35,8 @@ export async function healthCheck() {
       return { ok: true, url, latencyMs };
     }
     return { ok: false, url, error: `HTTP ${res.status}`, latencyMs };
-  } catch (e: any) {
-    return { ok: false, url: _urlCache || '', error: e.message, latencyMs: Date.now() - start };
+  } catch (e: unknown) {
+    return { ok: false, url: _urlCache || '', error: e instanceof Error ? e.message : String(e), latencyMs: Date.now() - start };
   }
 }
 
@@ -59,14 +59,117 @@ async function getBaseUrl(path: string): Promise<string | null> {
   return url;
 }
 
-// ----- Inflight GET deduplication ---------------------------------------
-const _inflight = new Map<string, Promise<any>>();
+/** Return type from an API call — kept loose because callers narrow to their own shape. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ApiResult = any;
+export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
+  body?: string | FormData | null;
+  timeout?: number;
+  retries?: number;
+  skipAuth?: boolean;
+  isFormData?: boolean;
+  // Internal / legacy hooks — kept for backward compatibility
+  _skipAuth?: boolean;
+  _noRetryRefresh?: boolean;
+}
 
-function isRetryable(error: any): boolean {
-  if (error.code === 'TIMEOUT') return true;
-  if (error.code === 'NETWORK_ERROR') return true;
-  if (error.status >= 500 && error.status < 600) return true;
-  if (error.message?.includes('Network request failed')) return true;
+// ----- Inflight GET deduplication ---------------------------------------
+const _inflight = new Map<string, Promise<ApiResult>>();
+
+// ----- Token refresh ---------------------------------------------------
+// SecureStore keys (kept in sync with AuthContext)
+const ACCESS_KEY = 'sc_access_token';
+const REFRESH_KEY = 'sc_refresh_token';
+
+// Shared refresh promise so multiple concurrent 401s only trigger ONE refresh.
+let _refreshPromise: Promise<string | null> | null = null;
+
+// Callback invoked when refresh fails — AuthContext registers this to force logout.
+let _onRefreshFailure: (() => void) | null = null;
+
+export function onRefreshFailure(cb: () => void) {
+  _onRefreshFailure = cb;
+}
+
+async function _readToken(key: string): Promise<string | null> {
+  try {
+    const SecureStore = require('expo-secure-store');
+    return await SecureStore.getItemAsync(key);
+  } catch {
+    return null;
+  }
+}
+
+async function _writeAccessToken(token: string): Promise<void> {
+  try {
+    const SecureStore = require('expo-secure-store');
+    await SecureStore.setItemAsync(ACCESS_KEY, token);
+  } catch {
+    // SecureStore unavailable — token lives in memory via the next apiFetch call
+  }
+}
+
+async function _writeRefreshToken(token: string): Promise<void> {
+  try {
+    const SecureStore = require('expo-secure-store');
+    await SecureStore.setItemAsync(REFRESH_KEY, token);
+  } catch {
+    // SecureStore unavailable
+  }
+}
+
+/**
+ * Attempt to exchange the refresh token for a fresh access token.
+ * Returns the new access token on success, null on failure.
+ *
+ * All concurrent callers share the same in-flight refresh promise so we never
+ * burst the backend with multiple refresh attempts when several requests
+ * 401 at the same time.
+ */
+async function _refreshAccessToken(baseUrl: string): Promise<string | null> {
+  if (_refreshPromise) return _refreshPromise;
+
+  _refreshPromise = (async () => {
+    const rt = await _readToken(REFRESH_KEY);
+    if (!rt) return null;
+
+    try {
+      const res = await fetch(`${baseUrl}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: rt }),
+      });
+      if (!res.ok) return null;
+      const json = await res.json();
+      const newToken = json?.access_token;
+      const newRefresh = json?.refresh_token;
+      if (newToken) {
+        await _writeAccessToken(newToken);
+        // Backend rotates refresh tokens — persist the new one so the old jti
+        // (already revoked server-side) never gets reused.
+        if (newRefresh) {
+          await _writeRefreshToken(newRefresh);
+        }
+        return newToken;
+      }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      // Clear the shared lock after this attempt completes
+      setTimeout(() => { _refreshPromise = null; }, 0);
+    }
+  })();
+
+  return _refreshPromise;
+}
+
+function isRetryable(error: unknown): boolean {
+  const e = error as { code?: string; status?: number; message?: string };
+  if (e?.code === 'TIMEOUT') return true;
+  if (e?.code === 'NETWORK_ERROR') return true;
+  if (typeof e?.status === 'number' && e.status >= 500 && e.status < 600) return true;
+  if (e?.message?.includes('Network request failed')) return true;
   return false;
 }
 
@@ -74,7 +177,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function _doFetch(url: string, options: any) {
+async function _doFetch(url: string, options: ApiFetchOptions) {
   const maxRetries = options.retries ?? MAX_RETRIES;
   const timeout = options.timeout || DEFAULT_TIMEOUT;
   let lastError: ApiError | null = null;
@@ -84,7 +187,7 @@ async function _doFetch(url: string, options: any) {
     const timer = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const headers = { ...(options.headers || {}) };
+      const headers: Record<string, string> = { ...(options.headers as Record<string, string> || {}) };
 
       // For FormData bodies let the runtime set Content-Type (with boundary).
       // For everything else default to JSON.
@@ -95,7 +198,12 @@ async function _doFetch(url: string, options: any) {
         headers['Content-Type'] = 'application/json';
       }
 
-      const fetchOptions = { ...options, signal: controller.signal, headers };
+      const fetchOptions: RequestInit & { retries?: number; timeout?: number; isFormData?: boolean } = {
+        ...options,
+        signal: controller.signal,
+        headers,
+        body: options.body ?? undefined,
+      };
       delete fetchOptions.retries;
       delete fetchOptions.timeout;
       delete fetchOptions.isFormData;
@@ -134,10 +242,10 @@ async function _doFetch(url: string, options: any) {
       }
 
       return json;
-    } catch (e: any) {
+    } catch (e: unknown) {
       clearTimeout(timer);
 
-      if (e.name === 'AbortError') {
+      if (e instanceof Error && e.name === 'AbortError') {
         const err = new Error(`Request timed out after ${timeout / 1000}s`) as ApiError;
         err.code = 'TIMEOUT';
         if (attempt < maxRetries) {
@@ -149,7 +257,7 @@ async function _doFetch(url: string, options: any) {
       }
 
       if (isRetryable(e) && attempt < maxRetries) {
-        lastError = e;
+        lastError = e as ApiError;
         await delay(RETRY_DELAYS[attempt] || 3000);
         continue;
       }
@@ -164,7 +272,7 @@ async function _doFetch(url: string, options: any) {
   }
 }
 
-export async function apiFetch(path: string, options: any = {}) {
+export async function apiFetch(path: string, options: ApiFetchOptions = {}): Promise<ApiResult> {
   const url = await getBaseUrl(path);
   if (!url) {
     const err = new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL or configure in-app.') as ApiError;
@@ -174,32 +282,62 @@ export async function apiFetch(path: string, options: any = {}) {
 
   // Auto-inject Bearer token unless _skipAuth is set
   if (!options._skipAuth) {
-    try {
-      const SecureStore = require('expo-secure-store');
-      const token = await SecureStore.getItemAsync('sc_access_token');
-      if (token) {
-        options.headers = {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${token}`,
-        };
-      }
-    } catch {
-      // SecureStore not available (e.g., web) — continue without token
+    const token = await _readToken(ACCESS_KEY);
+    if (token) {
+      options.headers = {
+        ...(options.headers || {}),
+        Authorization: `Bearer ${token}`,
+      };
     }
   }
-  // Remove internal flag before passing to fetch
+  const skipAuth = Boolean(options._skipAuth);
+  const noRetryRefresh = Boolean(options._noRetryRefresh);
+  // Remove internal flags before passing to fetch
   delete options._skipAuth;
+  delete options._noRetryRefresh;
 
   const method = (options.method || 'GET').toUpperCase();
+
+  // Wrap _doFetch with 401 → refresh → retry once.
+  const fetchWithRefresh = async (): Promise<ApiResult> => {
+    try {
+      return await _doFetch(url, options);
+    } catch (e: unknown) {
+      // Only refresh on a real 401 from a request that ought to be authenticated.
+      // Skip if the caller opted out, this IS the refresh call, or this was a retry attempt.
+      if ((e as { status?: number })?.status !== 401 || skipAuth || noRetryRefresh || path.startsWith('/api/auth/')) {
+        throw e;
+      }
+
+      // Resolve the backend base URL via the module's URL cache (already populated by getBaseUrl above).
+      const baseUrl = _urlCache || url.replace(path, '').replace(/\/$/, '');
+      const newAccess = await _refreshAccessToken(baseUrl);
+      if (!newAccess) {
+        // Refresh failed — caller is no longer authenticated. Notify AuthContext.
+        if (_onRefreshFailure) {
+          try { _onRefreshFailure(); } catch { /* ignore */ }
+        }
+        throw e;
+      }
+
+      // Retry the original request once with the new token.
+      options.headers = {
+        ...(options.headers || {}),
+        Authorization: `Bearer ${newAccess}`,
+      };
+      options._noRetryRefresh = true; // belt-and-suspenders against loops
+      return _doFetch(url, options);
+    }
+  };
 
   // Deduplicate concurrent identical GET requests
   if (method === 'GET') {
     const key = url;
     if (_inflight.has(key)) return _inflight.get(key);
-    const promise = _doFetch(url, options).finally(() => _inflight.delete(key));
+    const promise = fetchWithRefresh().finally(() => _inflight.delete(key));
     _inflight.set(key, promise);
     return promise;
   }
 
-  return _doFetch(url, options);
+  return fetchWithRefresh();
 }

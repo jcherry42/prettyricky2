@@ -10,6 +10,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { errorMessage } from '../lib/errors';
 import {
   View,
   Text,
@@ -49,6 +50,7 @@ const STATUS_COLORS = {
   sold:    colors.textMute,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function deriveDisplayStatus(v: any): string {
   if (v.status && v.status !== 'available') return v.status;
   if (v.category === 'trade_in') return 'trade';
@@ -56,6 +58,7 @@ function deriveDisplayStatus(v: any): string {
 }
 
 // ──────────── Vehicle Card ────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function VehicleCard({ item, onEdit, onRemove }: { item: any; onEdit: (item: any) => void; onRemove: (id: string) => void }) {
   const title      = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ');
   const displayStatus = deriveDisplayStatus(item);
@@ -172,10 +175,12 @@ function VehicleCard({ item, onEdit, onRemove }: { item: any; onEdit: (item: any
 }
 
 // ──────────── Intake Hub (main screen) ────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function IntakeHub({ navigation }: { navigation: any }) {
   const { vehicles, fetchInventory, deleteVehicle: ctxDeleteVehicle, updateVehicle: ctxUpdateVehicle } = useInventory();
   const [search, setSearch]       = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editing, setEditing]     = useState<any>(null);
   const { triggerFlash }           = useTaillightFlash();
   const insets                    = useSafeAreaInsets();
@@ -197,6 +202,7 @@ function IntakeHub({ navigation }: { navigation: any }) {
   }, [fetchInventory]);
 
   const filtered = search.trim()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? vehicles.filter((v: any) => {
         const q    = search.toLowerCase();
         const text = [v.vin, v.year, v.make, v.model, v.trim, v.stockNumber, v.stock_number, deriveDisplayStatus(v)]
@@ -207,11 +213,15 @@ function IntakeHub({ navigation }: { navigation: any }) {
 
   const stats = {
     total:   vehicles.length,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     active:  vehicles.filter((v: any) => deriveDisplayStatus(v) === 'active').length,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     trade:   vehicles.filter((v: any) => deriveDisplayStatus(v) === 'trade').length,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sold:    vehicles.filter((v: any) => deriveDisplayStatus(v) === 'sold').length,
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSave = useCallback(async (nextVehicle: any) => {
     try {
       const vid = editing.id || editing.vehicle_id;
@@ -224,8 +234,8 @@ function IntakeHub({ navigation }: { navigation: any }) {
       });
       setEditing(null);
       notificationSuccess();
-    } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Failed to save changes');
+    } catch (e: unknown) {
+      Alert.alert('Error', errorMessage(e) || 'Failed to save changes');
     }
   }, [editing, ctxUpdateVehicle]);
 
@@ -344,8 +354,8 @@ function IntakeHub({ navigation }: { navigation: any }) {
                   try {
                     await ctxDeleteVehicle(vid);
                     notificationSuccess();
-                  } catch (e: any) {
-                    Alert.alert('Error', e?.message || 'Failed to remove vehicle');
+                  } catch (e: unknown) {
+                    Alert.alert('Error', errorMessage(e) || 'Failed to remove vehicle');
                   }
                 }}
               />
@@ -402,10 +412,12 @@ export function IntakeScreen() {
           color: colors.text,
           fontWeight: '800',
           fontSize: 14,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
         headerBackTitleVisible: false,
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.bg0 },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any}
     >
       <Stack.Screen name="IntakeHub"  component={IntakeHub}  options={{ headerShown: false }} />

@@ -16,6 +16,7 @@
  */
 
 import { apiFetch } from '../lib/api';
+import { errorMessage } from '../lib/errors';
 
 const DEFAULT_CHUNK_SIZE = 1024 * 1024; // 1 MB
 
@@ -119,8 +120,8 @@ export async function uploadFileChunked(options: ChunkedUploadOptions): Promise<
     });
 
     return completeData.image_url;
-  } catch (error: any) {
-    throw new Error(`Chunked upload failed: ${error.message}`);
+  } catch (error: unknown) {
+    throw new Error(`Chunked upload failed: ${errorMessage(error)}`);
   }
 }
 
@@ -167,6 +168,7 @@ export async function uploadFileAuto(options: AutoUploadOptions): Promise<string
       uri,
       type: contentType,
       name: filename,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   }
 

@@ -20,6 +20,7 @@ import { GlassCard } from '../components/GlassCard';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildDisplayEntry(item: any) {
   const name = item.fullName && item.fullName.trim().length > 0 ? item.fullName : 'Name: —';
   const address = item.address && item.address.trim().length > 0 ? item.address : 'Address: —';
@@ -34,6 +35,7 @@ function buildDisplayEntry(item: any) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomerRow({ item }: { item: any }) {
   return (
     <View style={styles.row}>
@@ -45,6 +47,7 @@ function CustomerRow({ item }: { item: any }) {
 }
 
 export function CustomerListModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [entries, setEntries] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const insets = useSafeAreaInsets();

@@ -5,6 +5,7 @@
  */
 
 import React, { useState, useCallback, useRef } from 'react';
+import { errorMessage } from '../lib/errors';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,13 +14,26 @@ import { colors } from '../theme/colors';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { sendSms } from '../lib/sms';
 import { useAppSettings } from '../context/AppSettingsContext';
+import { useMode } from '../context/ModeContext';
+import { SERVICE_INQUIRY_TYPES } from '../data/serviceInquiries';
 import { flagFor, langName } from '../utils/language';
 import { apiFetch } from '../lib/api';
+
+// Shape of an inquiry entry (one card in the grid; responses are pre-written).
+interface InquiryType {
+  id: string;
+  label: string;
+  responses: string[];
+  icon?: keyof typeof Ionicons.glyphMap;
+  color?: string;
+}
+// expo-audio player handle — kept loose because the library doesn't export a public type.
+interface AudioPlayer { pause?: () => void; remove?: () => void; play?: () => void }
 import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
 import * as Clipboard from 'expo-clipboard';
 
-const INQUIRY_TYPES = [
+const INQUIRY_TYPES_SALES = [
   {
     id: 'price_objection',
     icon: 'cash-outline',
@@ -134,18 +148,21 @@ const INQUIRY_TYPES = [
 
 export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { settings } = useAppSettings();
+    const { isService } = useMode();
   const lang = settings.defaultTargetLanguage;
   const flag = flagFor(lang);
   const sportOn = Boolean(settings.sportMode);
   const insets = useSafeAreaInsets();
 
-  const [selectedType, setSelectedType] = useState<any | null>(null);
-  const [translatingIdx, setTranslatingIdx] = useState(-1);
-  const [translatedResponses, setTranslatedResponses] = useState({});
-  const [speakingIdx, setSpeakingIdx] = useState(-1);
-  const playerRef = useRef<any | null>(null);
+  const INQUIRY_TYPES = isService ? SERVICE_INQUIRY_TYPES : INQUIRY_TYPES_SALES;
 
-  const handleSelectType = (inquiry: any) => {
+  const [selectedType, setSelectedType] = useState<InquiryType | null>(null);
+  const [translatingIdx, setTranslatingIdx] = useState(-1);
+  const [translatedResponses, setTranslatedResponses] = useState<Record<number, string>>({});
+  const [speakingIdx, setSpeakingIdx] = useState(-1);
+  const playerRef = useRef<AudioPlayer | null>(null);
+
+  const handleSelectType = (inquiry: InquiryType) => {
     impactLight();
     stopPlayback();
     setSelectedType(selectedType?.id === inquiry.id ? null : inquiry);
@@ -155,8 +172,8 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
   const stopPlayback = useCallback(() => {
     if (playerRef.current) {
       try {
-        playerRef.current.pause();
-        playerRef.current.remove();
+        playerRef.current.pause?.();
+        playerRef.current.remove?.();
       } catch {}
       playerRef.current = null;
     }
@@ -178,7 +195,7 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
       setSpeakingIdx(idx);
 
       // Determine language: if translated text, use target lang; otherwise English
-      const isTranslated = (translatedResponses as any)[idx] && text === (translatedResponses as any)[idx];
+      const isTranslated = translatedResponses[idx] && text === translatedResponses[idx];
       const ttsLang = isTranslated ? lang : 'en';
 
       const res = await ttsSpeak({ text, language: ttsLang, voice: 'auto' });
@@ -197,9 +214,9 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
           setSpeakingIdx(-1);
         }
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       setSpeakingIdx(-1);
-      Alert.alert('TTS Failed', e?.message || 'Could not play audio.');
+      Alert.alert('TTS Failed', errorMessage(e) || 'Could not play audio.');
     }
   }, [speakingIdx, translatedResponses, lang, stopPlayback]);
 
@@ -220,14 +237,14 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
       setTranslatingIdx(idx);
       const res = await apiFetch('/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text, source_lang: 'en', target_lang: lang }),
+        body: JSON.stringify({ text, source_lang: 'en', target_lang: lang, performanceMode: !!settings.performanceMode }),
       });
       if (res?.translated_text) {
         setTranslatedResponses(prev => ({ ...prev, [idx]: res.translated_text }));
         notificationSuccess();
       }
-    } catch (e: any) {
-      Alert.alert('Translation Failed', e.message || 'Could not translate.');
+    } catch (e: unknown) {
+      Alert.alert('Translation Failed', errorMessage(e) || 'Could not translate.');
     } finally {
       setTranslatingIdx(-1);
     }
@@ -249,7 +266,7 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
             <Ionicons name="alert-circle" size={24} color="#FF2D2D" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>EMERGENCY RESPONSES</Text>
+            <Text style={styles.headerTitle}>{isService ? 'SERVICE RESPONSES' : 'EMERGENCY RESPONSES'}</Text>
             <Text style={styles.headerSub}>Select an inquiry type</Text>
           </View>
           <Pressable onPress={handleClose} style={styles.closeBtn} accessibilityLabel="Close">
@@ -265,7 +282,7 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
               return (
                 <Pressable
                   key={inq.id}
-                  onPress={() => handleSelectType(inq)}
+                  onPress={() => handleSelectType(inq as InquiryType)}
                   style={({ pressed }) => [
                     styles.typeCard,
                     {
@@ -334,7 +351,7 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
                   {/* Icon with glow */}
                   <View style={styles.typeIconWrap}>
                     <Ionicons
-                      name={inq.icon as any}
+                      name={inq.icon as keyof typeof Ionicons.glyphMap}
                       size={22}
                       color={active ? inq.color : `${inq.color}88`}
                       style={active ? {
@@ -375,8 +392,8 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
                 </Text>
               </View>
 
-              {selectedType.responses.map((response: any, idx: number) => {
-                const translated = (translatedResponses as any)[idx];
+              {selectedType.responses.map((response: string, idx: number) => {
+                const translated = translatedResponses[idx];
                 const isTranslating = translatingIdx === idx;
                 return (
                   <View key={idx} style={[styles.responseCard, { borderLeftColor: selectedType.color }]}>

@@ -451,9 +451,53 @@ async def get_dashboard_stats():
         sold = await _db.customers.count_documents({"lead_status": "sold"})
         active_inventory = await _db.vehicles.count_documents({"category": "active_inventory"})
         trade_ins = await _db.vehicles.count_documents({"category": "trade_in"})
+
+        # Intelligence-derived stats (last 24h + open escalations) — sourced from
+        # the telemetry.ai_usage events emitted by /api/intelligence/analyze.
+        from datetime import timedelta
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(hours=24)
+
+        # These queries are cheap because telemetry_events has time indexes.
+        # If the collection is missing (env with telemetry disabled) they return 0.
+        sales_analyses_24h = 0
+        service_analyses_24h = 0
+        open_objections = 0
+        hot_escalations = 0
+        try:
+            sales_analyses_24h = await _db.telemetry_events.count_documents({
+                "event_name": "intelligence_analyze",
+                "properties.mode": "sales",
+                "timestamp": {"$gte": yesterday},
+            })
+            service_analyses_24h = await _db.telemetry_events.count_documents({
+                "event_name": "intelligence_analyze",
+                "properties.mode": "service",
+                "timestamp": {"$gte": yesterday},
+            })
+            open_objections = await _db.telemetry_events.count_documents({
+                "event_name": "intelligence_analyze",
+                "properties.objection_detected": True,
+                "timestamp": {"$gte": yesterday},
+            })
+            hot_escalations = await _db.telemetry_events.count_documents({
+                "event_name": "intelligence_analyze",
+                "properties.risk_flags_count": {"$gte": 1},
+                "timestamp": {"$gte": yesterday},
+            })
+        except Exception:
+            # Telemetry collection missing/empty — return zeros gracefully
+            pass
+
         return {
             "customers": {"total": total_customers, "new": new_leads, "contacted": contacted, "qualified": qualified, "sold": sold},
-            "vehicles": {"active_inventory": active_inventory, "trade_ins": trade_ins, "total": active_inventory + trade_ins}
+            "vehicles": {"active_inventory": active_inventory, "trade_ins": trade_ins, "total": active_inventory + trade_ins},
+            "intelligence_24h": {
+                "sales_analyses": sales_analyses_24h,
+                "service_analyses": service_analyses_24h,
+                "open_objections": open_objections,
+                "hot_escalations": hot_escalations,
+            },
         }
     except Exception as e:
         logger.error(f"Dashboard stats error: {e}")

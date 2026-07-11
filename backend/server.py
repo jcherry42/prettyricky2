@@ -363,6 +363,7 @@ from routes.telemetry import router as telemetry_router
 from routes.diagnostics import router as diagnostics_router, init_diagnostics_routes
 from routes.anomaly_detection import router as anomaly_router, init_anomaly_routes
 from routes.sessions import router as sessions_router, init_session_routes, ensure_session_indexes
+from routes.intelligence import router as intelligence_router
 
 # Initialize auth deps with DB
 init_auth_deps(db)
@@ -407,6 +408,7 @@ api_router.include_router(knowledge_router, dependencies=_auth_dep)
 api_router.include_router(telemetry_router, dependencies=_auth_dep)
 api_router.include_router(anomaly_router, dependencies=_auth_dep)
 api_router.include_router(sessions_router, dependencies=_auth_dep)
+api_router.include_router(intelligence_router, dependencies=_auth_dep)
 logger.info("Auth enforcement enabled — all protected endpoints require valid JWT")
 
 

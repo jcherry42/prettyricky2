@@ -1,4 +1,5 @@
-import { buildApiUrlAsync } from '../config/backend';
+import { errorMessage } from './errors';
+import { apiFetch } from './api';
 import { onDeviceTranscribe, isOnDeviceSttAvailable } from './onDeviceStt';
 
 /**
@@ -41,8 +42,7 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     }
   }
 
-  const url = await buildApiUrlAsync('/api/voice-translate');
-  if (!url) throw new Error('Backend URL not configured. Set EXPO_PUBLIC_BACKEND_URL');
+  const url = '/api/voice-translate';
 
   // Use provided values or derive sensible defaults
   const ext = fileExtension || 'm4a';
@@ -54,36 +54,27 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     uri,
     name: filename,
     type: mime,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
   form.append('source_lang', sourceLang);
   form.append('target_lang', targetLang);
 
-  // Use a generous timeout for voice translation (STT + translation can take 8-12s)
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
   try {
-    const res = await fetch(url, {
+    const json = await apiFetch(url, {
       method: 'POST',
       body: form,
-      signal: controller.signal,
+      isFormData: true,
+      timeout: 30000, // 30s — STT + translation can take 8-12s
+      retries: 0,     // PTT should fail fast; on-device fallback below
     });
-
-    clearTimeout(timer);
-
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      throw new Error(json?.detail || json?.error || `Voice translate failed: ${res.status}`);
-    }
 
     if (json?.success === false) {
       throw new Error(json?.error || 'Voice translate failed — no speech detected');
     }
 
     return json;
-  } catch (e: any) {
-    clearTimeout(timer);
-    if (e?.name === 'AbortError') {
+  } catch (e: unknown) {
+    if (e instanceof Error && e.name === 'AbortError') {
       // On timeout, attempt on-device STT as fallback
       try {
         const onDeviceAvailable = await isOnDeviceSttAvailable();
@@ -108,7 +99,8 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
     }
 
     // On network errors, attempt on-device STT fallback
-    if (e?.message?.includes('Network request failed') || e?.message?.includes('fetch')) {
+    const msg = errorMessage(e);
+    if (msg.includes('Network request failed') || msg.includes('fetch')) {
       try {
         const onDeviceAvailable = await isOnDeviceSttAvailable();
         if (onDeviceAvailable) {

@@ -7,9 +7,13 @@ import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
 import { BackendUrlSection } from './BackendUrlSection';
-import { useAppSettings } from '../context/AppSettingsContext';
-import { useCustomers } from '../context/CustomerContext';
+import { useAppSettings, type Printer } from '../context/AppSettingsContext';
+// Vehicle row shape used inside CommandCenterModal
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type VehicleRow = Record<string, any> & { id?: string; vin?: string; year?: number | string; make?: string; model?: string };
+import { useCustomers, type CustomerRecord } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
+import { useLingo, useMode } from '../context/ModeContext';
 import { apiFetch } from '../lib/api';
 import { designoColors } from '../theme/designo';
 
@@ -51,7 +55,7 @@ function TabButton({ label, icon, active, onPress }: { label: string; icon: stri
       <View style={{ position: 'absolute', top: 3, left: '18%', right: '18%', height: 7, borderRadius: 4, backgroundColor: active ? 'rgba(255,220,140,0.32)' : 'rgba(255,255,255,0.14)' }} />
       {/* Secondary bottom reflection */}
       {active && <View style={{ position: 'absolute', bottom: 4, left: '25%', right: '25%', height: 4, borderRadius: 2, backgroundColor: 'rgba(214,178,94,0.12)' }} />}
-      <Ionicons name={icon as any} size={14} color={active ? '#F0D87A' : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
+      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={14} color={active ? '#F0D87A' : colors.textMute} style={active ? { textShadowColor: 'rgba(214,178,94,0.90)', textShadowRadius: 16, textShadowOffset: { width: 0, height: 0 } } : undefined} />
       <Text style={[styles.tabText, active && styles.tabTextActive]} numberOfLines={1} ellipsizeMode="tail">
         {label}
       </Text>
@@ -107,7 +111,7 @@ const LANGS = [
   { code: 'ko', flag: '\ud83c\uddf0\ud83c\uddf7', name: '한국어' },
 ];
 
-function PrinterRow({ item, active, onSetActive, onRemove }: { item: any; active: boolean; onSetActive: (id: string) => void; onRemove: (id: string) => void }) {
+function PrinterRow({ item, active, onSetActive, onRemove }: { item: Printer; active: boolean; onSetActive: (id: string) => void; onRemove: (id: string) => void }) {
   return (
     <View style={styles.printerRow}>
       <Pressable onPress={() => { impactLight(); onSetActive(item.id); }} style={({ pressed }) => [styles.radio, active && styles.radioActive, pressed && { opacity: 0.9 }]}>
@@ -124,10 +128,12 @@ function PrinterRow({ item, active, onSetActive, onRemove }: { item: any; active
   );
 }
 
-export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: any; initialSection?: any }) {
-  const { settings, setDefaultTargetLanguage, setEcoMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
+export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: string | null; initialSection?: string | null }) {
+  const { settings, setDefaultTargetLanguage, setServiceMode, setPerformanceMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
   const { customers, loading: customersLoading } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
+  const lingo = useLingo();
+  const { isService } = useMode();
   const [activeTab, setActiveTab] = useState('dashboard');
   const insets = useSafeAreaInsets();
 
@@ -170,7 +176,11 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const [printerTest, setPrinterTest] = useState({ state: 'idle', message: '' });
 
   // Dashboard stats
-  const [stats, setStats] = useState<any | null>(null);
+  const [stats, setStats] = useState<{
+    customers?: { total?: number; new?: number; contacted?: number; appointment?: number };
+    vehicles?: { total?: number };
+    intelligence_24h?: { sales_analyses?: number; service_analyses?: number; open_objections?: number; hot_escalations?: number };
+  } | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
   // Customer search
@@ -247,7 +257,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
     const query = customerSearch.toLowerCase();
-    return customers.filter((c: any) => {
+    return customers.filter((c: CustomerRecord) => {
       const name = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase();
       const phone = (c.phone || '').toLowerCase();
       const email = (c.email || '').toLowerCase();
@@ -259,7 +269,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
   const filteredVehicles = useMemo(() => {
     if (!inventorySearch.trim()) return vehicles;
     const query = inventorySearch.toLowerCase();
-    return vehicles.filter((v: any) => {
+    return vehicles.filter((v: VehicleRow) => {
       const vin = (v.vin || '').toLowerCase();
       const year = (v.year || '').toString().toLowerCase();
       const make = (v.make || '').toLowerCase();
@@ -269,12 +279,13 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     });
   }, [vehicles, inventorySearch]);
 
-  // Load stats when dashboard tab is selected
+  // Prefetch stats as soon as the modal becomes visible — regardless of active
+  // tab. This makes tapping the Dashboard tab feel instant (data already there).
   React.useEffect(() => {
-    if (visible && activeTab === 'dashboard' && !stats) {
+    if (visible && !stats && !loadingStats) {
       loadDashboardStats();
     }
-  }, [visible, activeTab, stats, loadDashboardStats]);
+  }, [visible, stats, loadingStats, loadDashboardStats]);
 
   // Load inventory when inventory tab is selected
   React.useEffect(() => {
@@ -283,7 +294,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
     }
   }, [visible, activeTab, fetchInventory]);
 
-  const handleDeleteVehicle = useCallback(async (vehicle: any) => {
+  const handleDeleteVehicle = useCallback(async (vehicle: VehicleRow) => {
     Alert.alert(
       'Delete Vehicle',
       `Remove ${vehicle.year || ''} ${vehicle.make || ''} ${vehicle.model || ''} from inventory?`,
@@ -350,39 +361,93 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 </View>
               ) : stats ? (
                 <>
+                  {/* Persona indicator badge */}
+                  <View style={styles.personaBadge} data-testid="dashboard-persona-badge">
+                    <Ionicons
+                      name={isService ? 'construct' : 'trending-up'}
+                      size={13}
+                      color={isService ? '#00FFCC' : colors.gold}
+                    />
+                    <Text style={[styles.personaBadgeText, { color: isService ? '#00FFCC' : colors.gold }]}>
+                      {lingo.dashboardTitle}
+                    </Text>
+                  </View>
+
                   <GlassCard style={{ marginTop: 14 }}>
                     <SectionTitle>Overview</SectionTitle>
                     <View style={{ height: 12 }} />
                     <View style={styles.statsGrid}>
                       <View style={styles.statCard}>
-                        <Ionicons name="people" size={24} color={colors.blue} />
+                        <Ionicons name={isService ? 'people-circle' : 'people'} size={24} color={colors.blue} />
                         <Text style={styles.statValue}>{stats.customers?.total || 0}</Text>
-                        <Text style={styles.statLabel}>Customers</Text>
+                        <Text style={styles.statLabel}>{lingo.customerPlural}</Text>
                       </View>
                       <View style={styles.statCard}>
-                        <Ionicons name="car" size={24} color={colors.green} />
+                        <Ionicons name={isService ? 'construct' : 'car'} size={24} color={colors.green} />
                         <Text style={styles.statValue}>{stats.vehicles?.total || 0}</Text>
-                        <Text style={styles.statLabel}>Vehicles</Text>
+                        <Text style={styles.statLabel}>{lingo.vehiclePlural}</Text>
                       </View>
                     </View>
                   </GlassCard>
 
                   <GlassCard style={{ marginTop: 14 }}>
-                    <SectionTitle>Lead Status</SectionTitle>
+                    <SectionTitle>{isService ? 'RO Pipeline' : 'Lead Status'}</SectionTitle>
                     <View style={{ height: 12 }} />
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.blue }]} />
-                      <Text style={[styles.statusText, styles.leadStatusText]}>New: {stats.customers?.new || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>
+                        {isService ? 'Just Written' : 'New'}: {stats.customers?.new || 0}
+                      </Text>
                     </View>
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.gold }]} />
-                      <Text style={[styles.statusText, styles.leadStatusText]}>Contacted: {stats.customers?.contacted || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>
+                        {isService ? 'In Shop' : 'Contacted'}: {stats.customers?.contacted || 0}
+                      </Text>
                     </View>
                     <View style={styles.statusRow}>
                       <View style={[styles.statusDot, { backgroundColor: colors.green }]} />
-                      <Text style={[styles.statusText, styles.leadStatusText]}>Appointment: {stats.customers?.appointment || 0}</Text>
+                      <Text style={[styles.statusText, styles.leadStatusText]}>
+                        {isService ? 'Ready for Pickup' : 'Appointment'}: {stats.customers?.appointment || 0}
+                      </Text>
                     </View>
                   </GlassCard>
+
+                  {/* Apex Intelligence 24-hour insights */}
+                  {stats.intelligence_24h ? (
+                    <GlassCard style={{ marginTop: 14 }} data-testid="dashboard-intelligence-card">
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Ionicons name="analytics" size={16} color="#00E5FF" />
+                        <SectionTitle>AI Insights · Last 24h</SectionTitle>
+                      </View>
+                      <View style={{ height: 12 }} />
+                      <View style={styles.statsGrid}>
+                        <View style={styles.statCard}>
+                          <Ionicons name="chatbubbles" size={20} color="#00E5FF" />
+                          <Text style={styles.statValue}>
+                            {isService
+                              ? (stats.intelligence_24h.service_analyses || 0)
+                              : (stats.intelligence_24h.sales_analyses || 0)}
+                          </Text>
+                          <Text style={styles.statLabel}>
+                            {isService ? 'Service Analyses' : 'Sales Analyses'}
+                          </Text>
+                        </View>
+                        <View style={styles.statCard}>
+                          <Ionicons name="warning" size={20} color="#FF7043" />
+                          <Text style={styles.statValue}>{stats.intelligence_24h.hot_escalations || 0}</Text>
+                          <Text style={styles.statLabel}>{lingo.kpiHotEscalations}</Text>
+                        </View>
+                      </View>
+                      <View style={{ height: 10 }} />
+                      <View style={styles.statusRow}>
+                        <View style={[styles.statusDot, { backgroundColor: '#FFB74D' }]} />
+                        <Text style={[styles.statusText, styles.leadStatusText]}>
+                          {lingo.kpiOpenObjections}: {stats.intelligence_24h.open_objections || 0}
+                        </Text>
+                      </View>
+                    </GlassCard>
+                  ) : null}
                 </>
               ) : (
                 <GlassCard style={{ marginTop: 14 }}>
@@ -691,14 +756,43 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
 
               <GlassCard style={{ marginTop: 14 }}>
-                <SectionTitle>Eco Mode</SectionTitle>
-                <View style={{ height: 12 }} />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="construct" size={18} color={settings.serviceMode ? '#FFA500' : colors.textMute} />
+                  <SectionTitle>Service Mode</SectionTitle>
+                </View>
+                <Text style={{ color: colors.textMute, fontSize: 12, marginTop: 6, marginBottom: 12, lineHeight: 16 }}>
+                  {settings.serviceMode
+                    ? 'Service Advisor workflow active. Tower Talk, VIN scan, and Intake use service-department terminology (RO, comeback, waiter, warranty claim). Toggle OFF to return to Retail Sales mode.'
+                    : 'Retail Sales workflow active. Toggle ON to switch the entire app to Service Advisor mode — same features, service-department lingo.'}
+                </Text>
                 <Pressable
-                  onPress={() => { impactLight(); setEcoMode(!settings.ecoMode); }}
-                  style={({ pressed }) => [styles.toggle, settings.ecoMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
+                  onPress={() => { impactLight(); setServiceMode(!settings.serviceMode); }}
+                  style={({ pressed }) => [styles.toggle, settings.serviceMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
+                  data-testid="service-mode-toggle"
                 >
-                  <View style={[styles.toggleDot, settings.ecoMode && styles.toggleDotOn]} />
-                  <Text style={[styles.toggleText, settings.ecoMode && { color: colors.gold }]}>{settings.ecoMode ? 'ON' : 'OFF'}</Text>
+                  <View style={[styles.toggleDot, settings.serviceMode && styles.toggleDotOn]} />
+                  <Text style={[styles.toggleText, settings.serviceMode && { color: colors.gold }]}>{settings.serviceMode ? 'SERVICE' : 'SALES'}</Text>
+                </Pressable>
+              </GlassCard>
+
+              {/* Performance Mode Section */}
+              <GlassCard style={{ marginTop: 14 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Ionicons name="flash" size={18} color={settings.performanceMode ? '#00E5FF' : colors.textMute} />
+                  <SectionTitle>Performance Mode</SectionTitle>
+                </View>
+                <Text style={{ color: colors.textMute, fontSize: 12, marginTop: 6, marginBottom: 12, lineHeight: 16 }}>
+                  {settings.performanceMode
+                    ? 'GPT-4o is locked in for every AI response — Tower Talk, Translate, and Intelligence — for maximum reasoning quality. Slightly slower, top-tier output.'
+                    : 'Balanced mode: GPT-4o-mini for fast tasks (translate, sales) and GPT-4o for high-stakes tasks (service, VIN). Toggle ON to force GPT-4o everywhere.'}
+                </Text>
+                <Pressable
+                  onPress={() => { impactLight(); setPerformanceMode(!settings.performanceMode); }}
+                  style={({ pressed }) => [styles.toggle, settings.performanceMode && styles.togglePerformanceOn, pressed && { opacity: 0.9 }]}
+                  data-testid="performance-mode-toggle"
+                >
+                  <View style={[styles.toggleDot, settings.performanceMode && styles.toggleDotPerformanceOn]} />
+                  <Text style={[styles.toggleText, settings.performanceMode && { color: '#00E5FF' }]}>{settings.performanceMode ? 'MAX QUALITY' : 'BALANCED'}</Text>
                 </Pressable>
               </GlassCard>
 
@@ -1572,6 +1666,35 @@ const styles = StyleSheet.create({
   },
   toggleDotAmbientOn: {
     backgroundColor: '#00FFCC',
+  },
+  togglePerformanceOn: {
+    borderColor: 'rgba(0,229,255,0.55)',
+    backgroundColor: 'rgba(0,229,255,0.10)',
+  },
+  toggleDotPerformanceOn: {
+    backgroundColor: '#00E5FF',
+    shadowColor: '#00E5FF',
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+  },
+  personaBadge: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginTop: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  personaBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   ambientLabel: {
     color: colors.textMute,

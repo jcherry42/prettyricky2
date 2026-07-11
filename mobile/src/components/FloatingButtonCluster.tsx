@@ -54,7 +54,7 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
 
       {/* Icon with glow */}
       <Ionicons
-        name={icon as any}
+        name={icon as keyof typeof Ionicons.glyphMap}
         size={19}
         color={iconColor}
         style={{

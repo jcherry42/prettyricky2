@@ -20,24 +20,28 @@ import { type } from '../theme/typography';
 import { useSession } from '../context/SessionContext';
 import { apiFetch } from '../lib/api';
 import { useAppSettings } from '../context/AppSettingsContext';
+import { useLingo, useMode } from '../context/ModeContext';
 import { ttsSpeak } from '../lib/tts';
 import { playBase64Audio } from '../lib/audioPlayback';
 import { impactMedium, notificationSuccess, notificationError, selectionTap, impactLight } from '../lib/haptics';
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
+import { analyzeInteraction, type AnalyzeOutput, type ChannelType } from '../lib/intelligence';
+import { IntelligenceInsight } from './IntelligenceInsight';
 
-function friendlyBackendError(e: any) {
-  if (e?.code === 'BACKEND_URL_MISSING') {
+function friendlyBackendError(e: unknown) {
+  const err = e as { code?: string; message?: string; status?: number };
+  if (err?.code === 'BACKEND_URL_MISSING') {
     return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
   }
-  const msg = e?.message || String(e) || 'Request failed';
+  const msg = err?.message || String(e) || 'Request failed';
   if (typeof msg === 'string' && msg.includes('EXPO_PUBLIC_BACKEND_URL')) {
     return 'Backend not configured. Open Command Center → Settings → Backend and set your backend URL.';
   }
   // 404 most commonly means a stale or missing backend URL.
   // Guide the user to the settings panel instead of showing a raw error.
-  if (e?.status === 404) {
+  if (err?.status === 404) {
     return 'Endpoint not found (404). Your backend URL may be stale. Open Command Center → Settings → Backend, tap Reset, then try again. If the issue persists, run npx expo start --clear.';
   }
   return msg;
@@ -112,7 +116,7 @@ function VoiceWaveform() {
   const bars = barsRef.current;
 
   useEffect(() => {
-    const animations = bars.map((anim: any, i: number) => {
+    const animations = bars.map((anim: Animated.Value, i: number) => {
       const delay = i * 80;
       return Animated.loop(
         Animated.sequence([
@@ -123,13 +127,13 @@ function VoiceWaveform() {
         ])
       );
     });
-    animations.forEach((a: any) => a.start());
-    return () => animations.forEach((a: any) => a.stop());
+    animations.forEach((a) => a.start());
+    return () => animations.forEach((a) => a.stop());
   }, []);
 
   return (
     <View style={styles.waveformWrap}>
-      {bars.map((anim: any, i: number) => (
+      {bars.map((anim: Animated.Value, i: number) => (
         <Animated.View
           key={i}
           style={[
@@ -143,6 +147,8 @@ function VoiceWaveform() {
 }
 
 export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible: boolean; onClose: () => void; onOpenSettings: () => void }) {
+  const lingo = useLingo();
+  const { isService: isServiceMode } = useMode();
   const { settings } = useAppSettings();
   const session = useSession();
   const lang = settings.defaultTargetLanguage;
@@ -151,7 +157,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const insets = useSafeAreaInsets();
 
   // Restore Tower Talk state from session
-  const savedTT = session.formDrafts?.towerTalk;
+  const savedTT = (session.formDrafts?.towerTalk || {}) as import('../types').TowerTalkFormDraft;
   const [situation, setSituation] = useState(savedTT?.situation || '');
   const [customerName, setCustomerName] = useState(savedTT?.customerName || '');
   const [vehicle, setVehicle] = useState(savedTT?.vehicle || '');
@@ -165,6 +171,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const [translated, setTranslated] = useState('');
   const [copied, setCopied] = useState(false);
   const [copiedTranslation, setCopiedTranslation] = useState(false);
+  const [intelligence, setIntelligence] = useState<AnalyzeOutput | null>(null);
+  const [intelligencePending, setIntelligencePending] = useState(false);
 
   const [selectedInquiry, setSelectedInquiry] = useState(savedTT?.selectedInquiry || 'new_lead');
   const [presetIndex, setPresetIndex] = useState<number | null>(null);
@@ -306,6 +314,24 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       setTranslated('');
       setCopied(false);
       setCopiedTranslation(false);
+      setIntelligence(null);
+      setIntelligencePending(true);
+
+      // Fire the intelligence analysis in PARALLEL — non-blocking, non-fatal.
+      // If it fails or is slow, the primary reply flow is unaffected.
+      const intelligencePromise = analyzeInteraction(
+        {
+          mode: isServiceMode ? 'service' : 'sales',
+          channel: 'sms' as ChannelType,
+          customerName: customerName.trim() || undefined,
+          customerMessage: situation.trim(),
+          vehicle: vehicle.trim() ? { model: vehicle.trim() } : undefined,
+          employee: { role: isServiceMode ? 'service_advisor' : 'salesperson' },
+        },
+        !!settings.performanceMode,
+      )
+        .then((r) => { setIntelligence(r); setIntelligencePending(false); })
+        .catch(() => { setIntelligencePending(false); /* silent — insight is optional */ });
 
       const res = await apiFetch('/api/tower-talk', {
         method: 'POST',
@@ -313,6 +339,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
         body: JSON.stringify({
           situation: situation.trim(),
           inquiryType: selectedInquiry,
+          mode: isServiceMode ? 'service' : 'sales',
+          performanceMode: !!settings.performanceMode,
           context: {
             customerName: customerName.trim() || undefined,
             vehicle: vehicle.trim() || undefined,
@@ -335,11 +363,38 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       setState({ status: 'done', error: null });
       notificationSuccess();
 
+      // Let the intelligence result trickle in whenever it's ready.
+      void intelligencePromise;
+
       // Auto-translate when SPORT mode is active
       if (sportOn && lang) {
         autoTranslateRef.current = responseText;
       }
-    } catch (e: any) {
+
+      // NEW — Preferred-language auto-translate: if the active customer has a
+      // preferred language other than English, fire an inline translation
+      // immediately. Cache pre-warm makes this ~150ms so the translated pane
+      // appears right below the English reply almost instantly.
+      const preferredLang = (session.activeCustomer as { preferred_language?: string } | null)?.preferred_language;
+      if (preferredLang && preferredLang !== 'en') {
+        try {
+          const tr = await apiFetch('/api/translate', {
+            method: 'POST',
+            timeout: 15000,
+            body: JSON.stringify({
+              text: responseText,
+              source_lang: 'en',
+              target_lang: preferredLang,
+              performanceMode: !!settings.performanceMode,
+            }),
+          });
+          const translatedText = (tr as { translated_text?: string })?.translated_text;
+          if (translatedText && translatedText.trim().length > 0) {
+            setTranslated(translatedText);
+          }
+        } catch { /* non-fatal — insight is enhancement */ }
+      }
+    } catch (e: unknown) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: errorMsg });
       notificationError();
@@ -371,7 +426,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       const res = await apiFetch('/api/translate', {
         method: 'POST',
         timeout: 20000,
-        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang }),
+        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang, performanceMode: !!settings.performanceMode }),
       });
 
       if (!res || typeof res !== 'object') {
@@ -386,7 +441,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       setTranslated(translatedText);
       setState({ status: 'done', error: null });
       notificationSuccess();
-    } catch (e: any) {
+    } catch (e: unknown) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `Translation error: ${errorMsg}` });
       notificationError();
@@ -404,7 +459,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       const res = await apiFetch('/api/translate', {
         method: 'POST',
         timeout: 20000,
-        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang }),
+        body: JSON.stringify({ text: reply.trim(), source_lang: 'en', target_lang: lang, performanceMode: !!settings.performanceMode }),
       });
 
       const translatedText = res?.translated_text || '';
@@ -419,7 +474,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       }
 
       setState({ status: 'done', error: null });
-    } catch (e: any) {
+    } catch (e: unknown) {
       setState({ status: 'error', error: `Translate & Speak error: ${friendlyBackendError(e)}` });
     }
   }, [reply, lang]);
@@ -445,7 +500,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       }
 
       setState({ status: 'done', error: null });
-    } catch (e: any) {
+    } catch (e: unknown) {
       const errorMsg = friendlyBackendError(e);
       setState({ status: 'error', error: `TTS error: ${errorMsg}` });
     }
@@ -507,7 +562,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
               <View style={styles.headRow}>
                 <View style={styles.titleRow}>
                   <View style={styles.titleDot} />
-                  <Text style={styles.title}>TOWER TALK</Text>
+                  <Text style={styles.title}>{lingo.towerTalkTitle.toUpperCase()}</Text>
                 </View>
                 <View style={styles.badgeRow}>
                   {sportOn && <Text style={styles.langBadge}>{flag}</Text>}
@@ -611,7 +666,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
                           {/* Icon + label */}
                           <View style={styles.inquiryInner}>
                             <Ionicons
-                              name={it.icon as any}
+                              name={it.icon as keyof typeof Ionicons.glyphMap}
                               size={17}
                               color={active ? '#F0D87A' : `${c}88`}
                               style={active ? {
@@ -909,6 +964,9 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
                       </View>
                     </View>
                     <Text style={styles.replyText}>{displayedReply}</Text>
+
+                    {/* Apex Intelligence insight strip — renders when analyze() completes */}
+                    <IntelligenceInsight data={intelligence} pending={intelligencePending} />
 
                     {/* Translation area */}
                     <View style={{ height: 12 }} />

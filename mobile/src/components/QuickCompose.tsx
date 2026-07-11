@@ -31,10 +31,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { impactLight, impactMedium, notificationSuccess, notificationError } from '../lib/haptics';
 import { useAppSettings } from '../context/AppSettingsContext';
-import { useCustomers } from '../context/CustomerContext';
+import { useCustomers, type CustomerRecord } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
 import { flagFor, langName } from '../utils/language';
 import { apiFetch } from '../lib/api';
+// VehicleRecord is the runtime shape used by InventoryContext (kept loose intentionally)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type VehicleRecord = Record<string, any> & { id?: string; vin?: string; vehicle_id?: string };
 import { textCustomer, sendSms } from '../lib/sms';
 import { useToast } from '../context/ToastContext';
 
@@ -85,7 +88,7 @@ const GlowIconButton = memo(function GlowIconButton({ icon, glowColor, selected,
         ]}
         pointerEvents="none"
       />
-      <Ionicons name={icon as any} size={16} color={glowColor} />
+      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={16} color={glowColor} />
     </Pressable>
   );
 });
@@ -104,8 +107,8 @@ export function QuickCompose() {
   const [translating, setTranslating] = useState(false);
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
   const [showInventoryPicker, setShowInventoryPicker] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
-  const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleRecord | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
 
@@ -134,7 +137,7 @@ export function QuickCompose() {
       setTranslating(true);
       const res = await apiFetch('/api/translate', {
         method: 'POST',
-        body: JSON.stringify({ text: text.trim(), source_lang: 'en', target_lang: lang }),
+        body: JSON.stringify({ text: text.trim(), source_lang: 'en', target_lang: lang, performanceMode: !!settings.performanceMode }),
       });
       if (res?.translated_text) {
         setTranslatedText(res.translated_text);
@@ -184,7 +187,7 @@ export function QuickCompose() {
   }, [text, translatedText, selectedCustomer, toast, settings.salesRepName]);
 
   // Link customer
-  const linkCustomer = useCallback((c: any) => {
+  const linkCustomer = useCallback((c: CustomerRecord) => {
     impactLight();
     setSelectedCustomer(c);
     setShowCustomerPicker(false);
@@ -193,7 +196,7 @@ export function QuickCompose() {
   }, [toast]);
 
   // Link vehicle
-  const linkVehicle = useCallback((v: any) => {
+  const linkVehicle = useCallback((v: VehicleRecord) => {
     impactLight();
     setSelectedVehicle(v);
     setShowInventoryPicker(false);
@@ -205,7 +208,7 @@ export function QuickCompose() {
   }, [text, toast]);
 
   // Clear translation when text changes
-  const onChangeText = useCallback((val: any) => {
+  const onChangeText = useCallback((val: string) => {
     if (val.length <= MAX_CHARS) {
       setText(val);
       if (translatedText) setTranslatedText('');
@@ -399,7 +402,7 @@ export function QuickCompose() {
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
             >
-              {(customers || []).map((c: any) => (
+              {(customers || []).map((c: CustomerRecord) => (
                 <Pressable
                   key={c.customer_id || c.id}
                   onPress={() => linkCustomer(c)}
@@ -446,7 +449,7 @@ export function QuickCompose() {
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
             >
-              {(vehicles || []).map((v: any, i: number) => (
+              {(vehicles || []).map((v: VehicleRecord, i: number) => (
                 <Pressable
                   key={v.vehicle_id || v.id || `v-${i}`}
                   onPress={() => linkVehicle(v)}

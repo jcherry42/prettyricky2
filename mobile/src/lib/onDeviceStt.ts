@@ -118,6 +118,7 @@ function _webSpeechRecognition(
   return new Promise((resolve) => {
     try {
       const SpeechRecognition =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
         resolve(null);
@@ -142,6 +143,7 @@ function _webSpeechRecognition(
         recognition.stop();
       }, timeoutMs);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         const r = event.results?.[0]?.[0];
         done(
@@ -204,6 +206,7 @@ async function _nativeSpeechRecognition(
 
     // Accumulate results
     subs.push(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       addSpeechRecognitionListener('result', (event: any) => {
         const first = event.results?.[0];
         if (first) {

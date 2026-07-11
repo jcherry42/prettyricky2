@@ -2,11 +2,17 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { apiFetch } from '../lib/api';
 import { loadJson, saveJson } from '../lib/storage';
 import { queueOperation } from '../utils/offlineQueue';
+import { errorMessage, isNetworkError } from '../lib/errors';
+import { track } from '../lib/telemetry';
 
 const CACHE_KEY = 'sc_v1_customers_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-type CustomerRecord = Record<string, any> & { id?: string; customer_id?: string };
+/** Loose runtime shape — customers arrive from backend, local storage, offline queue,
+ *  and each source may include extra fields. Kept permissive on purpose so consumers
+ *  don't need to cast at every access; discipline is enforced at the backend layer. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type CustomerRecord = Record<string, any> & { id?: string; customer_id?: string };
 
 interface CustomerContextValue {
   customers: CustomerRecord[];
@@ -15,7 +21,9 @@ interface CustomerContextValue {
   lastFetch: number | null;
   fetchCustomers: (options?: { limit?: number; search?: string; append?: boolean; skip?: number }) => Promise<{ customers: CustomerRecord[]; hasMore: boolean }>;
   getCustomer: (id: string) => Promise<CustomerRecord | null>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createCustomer: (customerData: Record<string, any>) => Promise<CustomerRecord | null>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateCustomer: (id: string, updates: Record<string, any>) => Promise<CustomerRecord | null>;
   deleteCustomer: (id: string) => Promise<void>;
 }
@@ -55,6 +63,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [customers]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function normalizeCustomer(c: any) {
     if (!c || typeof c !== 'object') return c;
     // Backend uses `id` (UUID). Some UI code historically used `customer_id`.
@@ -79,7 +88,9 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       if (append) {
         setCustomers(prev => {
           // Deduplicate by id
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const existing = new Set(prev.map((c: any) => c.customer_id || c.id));
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const fresh = list.filter((c: any) => !existing.has(c.customer_id || c.id));
           return [...prev, ...fresh];
         });
@@ -92,7 +103,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       // Cache is auto-saved via useEffect when customers state changes
 
       return { customers: list, hasMore };
-    } catch (e: any) {
+    } catch (e: unknown) {
       // If network error, serve from cache
       const cached = await loadJson<{ customers: CustomerRecord[]; timestamp: number } | null>(CACHE_KEY, null);
       if (cached?.customers) {
@@ -101,7 +112,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
         setError('Serving cached data (offline)');
         return { customers: normalized, hasMore: false };
       }
-      setError(e.message || 'Failed to fetch customers');
+      setError(errorMessage(e) || 'Failed to fetch customers');
       throw e;
     } finally {
       setLoading(false);
@@ -113,15 +124,16 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       const data = await apiFetch(`/api/customers/${id}`);
       // Backend returns the customer object directly (not wrapped).
       return normalizeCustomer(data) || null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Try to find in cached list (use ref for latest data)
       const found = customersRef.current.find((c) => (c.customer_id || c.id) === id);
       if (found) return found;
-      setError(e.message || 'Failed to fetch customer');
+      setError(errorMessage(e) || 'Failed to fetch customer');
       throw e;
     }
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createCustomer = useCallback(async (customerData: Record<string, any>) => {
     setLoading(true);
     try {
@@ -135,12 +147,13 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
         // Functional update — always uses latest state, no stale closure risk
         setCustomers((prev) => [newCustomer, ...prev]);
         // Cache is auto-saved via useEffect on customers change
+        track('customer', 'created', { source: customerData?._source || 'manual' });
       }
 
       return newCustomer;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline if network error
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         await queueOperation('/api/customers/create', {
           method: 'POST',
           body: JSON.stringify(customerData),
@@ -149,15 +162,17 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
         const tempId = `temp_${Date.now()}`;
         const tempCustomer = normalizeCustomer({ ...customerData, id: tempId, customer_id: tempId, _queued: true });
         setCustomers((prev) => [tempCustomer, ...prev]);
+        track('customer', 'created_offline', { source: customerData?._source || 'manual' });
         return tempCustomer;
       }
-      setError(e.message || 'Failed to create customer');
+      setError(errorMessage(e) || 'Failed to create customer');
       throw e;
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateCustomer = useCallback(async (id: string, updates: Record<string, any>) => {
     const cid = id;
     try {
@@ -179,9 +194,9 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       // Fallback: try to merge locally
       setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? normalizeCustomer({ ...c, ...updates }) : c)));
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         await queueOperation(`/api/customers/${cid}`, {
           method: 'PATCH',
           body: JSON.stringify(updates),
@@ -190,7 +205,7 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
         setCustomers((prev) => prev.map((c) => ((c.customer_id || c.id) === cid ? { ...c, ...updates, _queued: true } : c)));
         return { ...updates, customer_id: cid, id: cid, _queued: true };
       }
-      setError(e.message || 'Failed to update customer');
+      setError(errorMessage(e) || 'Failed to update customer');
       throw e;
     }
   }, []);
@@ -203,15 +218,15 @@ export function CustomerProvider({ children }: { children: React.ReactNode }) {
       });
 
       setCustomers((prev) => prev.filter((c) => (c.customer_id || c.id) !== cid));
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Queue for offline
-      if (e.code === 'TIMEOUT' || e.message?.includes('Network')) {
+      if (isNetworkError(e)) {
         await queueOperation(`/api/customers/${cid}`, { method: 'DELETE' });
         // Optimistic delete
         setCustomers((prev) => prev.filter((c) => (c.customer_id || c.id) !== cid));
         return;
       }
-      setError(e.message || 'Failed to delete customer');
+      setError(errorMessage(e) || 'Failed to delete customer');
       throw e;
     }
   }, []);

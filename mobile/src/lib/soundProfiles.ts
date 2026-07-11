@@ -15,6 +15,7 @@
  */
 
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { errorMessage } from './errors';
 import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -164,9 +165,9 @@ async function configureAudioSession() {
       shouldPlayInBackground: false,
       shouldRouteThroughEarpiece: false,
     });
-  } catch (e: any) {
+  } catch (e: unknown) {
     // Non-fatal — audio will still play on most devices without this
-    console.warn('[SoundProfile] Audio session config failed:', e?.message);
+    console.warn('[SoundProfile] Audio session config failed:', errorMessage(e));
   }
 }
 
@@ -199,8 +200,8 @@ async function playAsset(asset: number): Promise<AudioPlayer | null> {
 
     player.play();
     return player;
-  } catch (e: any) {
-    console.warn('[SoundProfile] Failed to load/play asset:', e?.message);
+  } catch (e: unknown) {
+    console.warn('[SoundProfile] Failed to load/play asset:', errorMessage(e));
     _activePlayer = null;
     return null;
   }
@@ -248,9 +249,12 @@ async function fadeOutActivePlayer(durationMs = 1500) {
  */
 export async function playActivationSound(profileId: string = 'merica') {
   const id = (SOUND_PROFILES as Record<string, unknown>)[profileId] ? profileId : 'merica';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hapticFn = (HAPTICS as Record<string, any>)[id]?.activate;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const asset = (AUDIO_ASSETS as Record<string, any>)[id]?.activate;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const promises: Promise<any>[] = [];
   if (asset) {
     promises.push(
@@ -272,6 +276,7 @@ export async function playActivationSound(profileId: string = 'merica') {
  */
 export async function playDeactivationSound(profileId: string = 'merica') {
   const id = (SOUND_PROFILES as Record<string, unknown>)[profileId] ? profileId : 'merica';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hapticFn = (HAPTICS as Record<string, any>)[id]?.deactivate;
 
   // Kill any lingering activation audio instantly — user expects silence

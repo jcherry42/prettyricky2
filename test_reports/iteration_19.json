@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 19 backend verification — CRITICAL cache-collision fix VERIFIED. 21/21 tests PASS (3 new iter19 tests + 18 iter18 regressions). services/ai_gateway.py::_ResponseCache._key() now hashes feature+model+system_message+prompt, and both get()/set() pass system_message through from chat(). Same-source-text triple-language translation (ES/FR/KO) now returns correct-language output for every target. Pre-warm sequencing after /api/tower-talk: ES=143ms/FR=117ms/KO=102ms — all met the strict <400ms target with correct-language content. All regression flows (auth login/refresh/rotation/family-revocation/logout, intelligence sales/service/es/empty-422/cache-hit, tower-talk SMS/no-emoji, dashboard intelligence_24h ints) still green.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration19_cache_key_fix.py",
+    "/app/backend/tests/test_iteration18_language_scope.py",
+    "/app/test_reports/pytest/iteration19.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "services/ai_gateway.py L228-233: _key now correctly includes system_message. Fix is minimally invasive and applies at the cache layer (not per-route) which is the right architectural choice — any future feature that varies output by system_message benefits automatically.",
+    "services/ai_gateway.py L440,495: chat() passes system_message to both _cache.get() and _cache.set() — consistent, no key mismatch between write & read paths.",
+    "routes/tower_talk_v2.py::_translation_cache is now redundant with the fixed ai_gateway cache but harmless — it does correctly key on target_lang and provides a first-line short-circuit. Consider removing later to reduce memory duplication.",
+    "Verified sample outputs: ES='Hola, ¿cómo estás hoy?...' / FR='Bonjour, comment allez-vous...' / KO='안녕하세요...' — all three targets from identical English source now yield distinct correct-language outputs."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration19_cache_key_fix.py"],
+  "success_rate": {"backend": "100% (21/21)", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111",
+  "seed_data_creation": "None — stateless HTTP tests against live preview URL.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iter19 cache-collision fix is verified end-to-end. The new test_iteration19_cache_key_fix.py contains 3 permanent regression tests: (1) same-source ES/FR/KO all return correct language, (2) same source+target hits route-level cache and returns identical text fast, (3) full tower-talk → 3s wait → ES/FR/KO pre-warm sub-400ms with language checks. Keep both iter18 and iter19 test files in the regression suite for future iterations. Observed pre-warm timings: es=143ms, fr=117ms, ko=102ms — well under 400ms.",
+  "rca of the issue": "N/A — bug is fixed. Prior RCA: cache key omitted system_message, causing target-language collision on /api/translate. Fix applied at cache layer in services/ai_gateway.py (Option 1 from iter18 recommendations) — least invasive, self-healing for other features."
+}

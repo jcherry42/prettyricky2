@@ -1,0 +1,24 @@
+{
+  "summary": "Iteration 17 backend verification against live preview URL. 15/15 tests PASS (100%). Covered: (a) NEW SPEED — tower-talk background pre-warm confirmed: cold tower-talk ~2556ms, then warm /api/translate on the raw reply for target_lang='es' completed in 161ms and target_lang='fr' in 125ms (both well under 400ms target, previously ~700-1500ms). (b) NEW cache — /api/intelligence/analyze with identical input: cold 5973ms → warm 129ms (cache hit confirmed, dramatic speedup). (c) Regressions all green: auth login/logout/refresh with rotation + family-revocation on reuse, intelligence sales+service in English + Spanish, empty customerMessage → 422, /api/translate with both perf modes, /api/dashboard/stats intelligence_24h block with all 4 int fields present.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration17_prewarm_cache.py",
+    "/app/test_reports/pytest/iteration17.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/tower_talk_v2.py: pre-warm implementation is correct — asyncio.create_task for both 'es' and 'fr' with cache_ttl=86400 using the same 'translate' feature and identical system_message that /translate endpoint uses. Cache-key derivation in ai_gateway (feature+model+prompt hash) means the follow-up /translate call hits the cache reliably. Verified end-to-end.",
+    "ai_gateway.py: CACHE_TTLS bumped translate 3600→86400 and _MAX_CACHE_ENTRIES 512→2048 as spec'd. Intelligence TTL of 300s (5 min) gives snappy re-analyze without pinning stale insights. All settings align with the P2 speed goals.",
+    "One minor style nit (not blocking): tower_talk_v2.py imports asyncio three separate times with different aliases (_aio, _aio, _aio_pw) within the same function scope; could be consolidated to a single top-of-function import for readability. Zero runtime impact.",
+    "The pre-warm loop iterates target langs but does not currently pre-warm the 'high performance' variant when performanceMode=True — it uses the same feature-flag logic as the primary call which is correct (users toggling perfMode get perfMode pre-warm). Well thought out."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration17_prewarm_cache.py"],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "None — all endpoints tested statelessly against live preview URL.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter17 confirmed tower-talk background pre-warm works: 2.5s pause after tower-talk is enough for both 'es' and 'fr' pre-warm tasks to populate the ai_gateway cache; subsequent /api/translate on raw reply returns in <200ms consistently. Cache TTL is 24h. Intelligence cache is 5min TTL (identical input → <150ms warm). All previous iteration flows still pass. Test file uses `target_lang` (not `targetLanguage`) matching the actual TranslateRequest schema. Pre-warm uses the tower-talk `clean` reply (post emoji-strip) — that's the exact text the client will pass to /translate, so keys match.",
+  "rca of the issue": "No bugs found. Pre-warm implementation correctly seeds both es and fr translations via asyncio.create_task using identical (feature, system_message, prompt) as the client's /translate call, ensuring cache-key equivalence."
+}

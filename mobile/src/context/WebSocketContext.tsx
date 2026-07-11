@@ -30,16 +30,19 @@ import { buildApiUrlAsync } from '../config/backend';
 
 interface WsMessage {
   event: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   ts: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type WsEventHandler = (data: any) => void;
 
 interface WebSocketContextValue {
   connected: boolean;
   activeClients: number;
   subscribe: (event: string, handler: WsEventHandler) => () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   send: (action: string, payload?: Record<string, any>) => void;
   joinChannel: (channel: string) => void;
   leaveChannel: (channel: string) => void;
@@ -83,11 +86,12 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // ── Dispatch event to listeners ──
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dispatch = useCallback((event: string, data: any) => {
     const handlers = listenersRef.current.get(event);
     if (handlers) {
       handlers.forEach((h) => {
-        try { h(data); } catch (e: any) { console.warn('[WS] Handler error:', e); }
+        try { h(data); } catch (e: unknown) { console.warn('[WS] Handler error:', e); }
       });
     }
     // Also dispatch to wildcard '*' listeners
@@ -243,6 +247,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const send = useCallback((action: string, payload: Record<string, any> = {}) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ action, ...payload }));

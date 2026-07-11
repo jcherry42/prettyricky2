@@ -5,6 +5,7 @@
  */
 
 import * as SMS from 'expo-sms';
+import { errorMessage } from './errors';
 import { Alert, Linking, Platform } from 'react-native';
 
 /**
@@ -64,10 +65,10 @@ export async function sendSms({ recipients, message }: { recipients: string | st
       cancelled: result === 'cancelled',
       result,
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
     return {
       success: false,
-      error: e?.message || 'Failed to open SMS composer',
+      error: errorMessage(e) || 'Failed to open SMS composer',
     };
   }
 }

@@ -13,6 +13,7 @@ import { colors } from '../theme/colors';
  * Quilted Leather Overlay
  * Diamond pattern typical of Nappa leather seats.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function QuiltedLeatherOverlay({ style, tint = 'dark' }: { style?: any; tint?: string }) {
   const base = tint === 'light'
     ? 'rgba(232,220,200,0.04)'
@@ -64,6 +65,7 @@ export function QuiltedLeatherOverlay({ style, tint = 'dark' }: { style?: any; t
  * Wood Bezel Frame
  * Burr walnut or Bird's-Eye Maple frame effect.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function WoodBezelFrame({ children, style, variant = 'walnut' }: { children?: React.ReactNode; style?: any; variant?: string }) {
   const woodColors = (variant === 'maple'
     ? [colors.woodBirdsEyeMaple, colors.woodBirdsEyeMapleLight, colors.woodBirdsEyeMaple]
@@ -104,6 +106,7 @@ export function WoodBezelFrame({ children, style, variant = 'walnut' }: { childr
  * Brushed Metal Surface
  * Fine horizontal brushing pattern for premium surfaces.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function BrushedMetalSurface({ children, style }: { children?: React.ReactNode; style?: any }) {
   return (
     <View style={[styles.metalSurface, style]}>
@@ -142,6 +145,7 @@ export function BrushedMetalSurface({ children, style }: { children?: React.Reac
  * Chrome Accent Line
  * High-polish chrome divider.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ChromeAccent({ style }: { style?: any }) {
   return (
     <View style={[styles.chromeWrap, style]}>
@@ -168,6 +172,7 @@ export function ChromeAccent({ style }: { style?: any }) {
  * Contrast Stitching Line
  * Decorative gold stitch pattern.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function ContrastStitching({ style, horizontal = true }: { style?: any; horizontal?: boolean }) {
   return (
     <View

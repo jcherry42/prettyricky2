@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 11 backend regression for mobile telemetry instrumentation. Backend (routes/telemetry.py, services/telemetry_service.py) is unchanged from iteration 10. Re-ran iteration 10 suite (29/29 pass) and added iteration 11 mobile-event-shape test suite (7/7 pass). All telemetry, auth-enforcement, sessions, anomaly (ObjectId fix still intact), customers, vehicles, and OCR endpoints function correctly. Total: 36/36 pytest tests pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/telemetry/track",
+        "issue": "Mobile telemetry helper (mobile/src/lib/telemetry.ts) sends timing under `properties.duration_ms`, but backend's `get_summary()` latency aggregation (`latency_by_action`) only buckets `properties.latency_ms`. As a result, the new mobile timing data does NOT appear in the latency_by_action breakdown. Recommend either (a) renaming mobile field to `latency_ms`, or (b) updating the aggregator to also match `duration_ms`. The events themselves are persisted correctly — only the per-action average latency view is affected."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration11_mobile_telemetry.py",
+    "/app/backend/tests/test_iteration10_telemetry_posthog.py",
+    "/app/test_reports/pytest/pytest_results_iteration11.xml",
+    "/app/test_reports/pytest/pytest_results_iteration11_mobile.xml"
+  ],
+  "action_items": [
+    "(Minor) Reconcile mobile telemetry property naming with backend aggregator: rename `properties.duration_ms` -> `properties.latency_ms` in mobile/src/lib/telemetry.ts (track + startTimer), OR extend backend services/telemetry_service.py:get_summary() $match to also accept `properties.duration_ms`. Otherwise per-action latency dashboards will show empty for mobile events.",
+    "(Optional, carried over from iter10) POST /api/customers legacy endpoint silently substitutes 'License'/'Scan' for missing camelCase fields — consider 400 on missing required fields."
+  ],
+  "critical_code_review_comments": [
+    "Mismatch between mobile telemetry property name (`duration_ms`) and backend aggregator field (`latency_ms`) — mobile timing data will not appear in latency_by_action view. Easy fix on either side.",
+    "/api/telemetry/track and all /api/telemetry/* GET endpoints correctly require Bearer auth (verified parametrically — 12 protected endpoints all return 401 without token).",
+    "TelemetryService PostHog graceful degradation verified: `posthog_enabled=false` returned in summary when POSTHOG_API_KEY is unset; no errors logged.",
+    "Anomaly _store_anomaly() ObjectId-leak fix from iteration 10 still holds — POST /api/anomalies/scan returns 200 with JSON-serializable body.",
+    "routes/telemetry.py is thin and clean — all logic delegated to TelemetryService. No file-size or DRY concerns."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration11_mobile_telemetry.py (NEW)"
+  ],
+  "success_rate": {"backend": "100% (36/36)", "frontend": "N/A (backend-only test request)"},
+  "test_credentials": "PIN: 11111 (verified via /api/auth/login)",
+  "seed_data_creation": "Iteration 11 test inserts ~11 telemetry events tagged with a per-run uuid8 session_id (sess-auth-<id>, sess-vin-<id>, sess-dl-<id>, sess-ptt-<id>, sess-cust-<id>). Events have a 90-day TTL on `expires_at` so they self-clean. No customer/vehicle data created in this iteration.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend telemetry surface is fully covered by /app/backend/tests/test_iteration10_telemetry_posthog.py (regression) + /app/backend/tests/test_iteration11_mobile_telemetry.py (mobile event shapes). Both pass against the public REACT_APP_BACKEND_URL. Note the duration_ms vs latency_ms naming gap if main agent decides to surface mobile latency in the dashboard. Auth fixture uses PIN 11111 with setup-pin fallback. All anomaly endpoints under /api/anomalies/* (plural).",
+  "rca of the issue": "No production bug found in this iteration. The only finding is a minor field-name mismatch (duration_ms vs latency_ms) between the new mobile telemetry helper and the backend latency aggregation pipeline — this does not break event tracking, only suppresses the per-action latency averages for mobile-emitted events."
+}

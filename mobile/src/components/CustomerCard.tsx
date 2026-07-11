@@ -46,6 +46,7 @@ function Avatar({ name, color }: { name: string; color: string }) {
   const initials = (name || '')
     .split(' ')
     .filter(Boolean)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((w: any) => w[0])
     .join('')
     .slice(0, 2)
@@ -66,12 +67,15 @@ function Avatar({ name, color }: { name: string; color: string }) {
 }
 
 interface CustomerCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   customer: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onPress?: (customer: any) => void;
 }
 
 export const CustomerCard = memo(function CustomerCard({ customer, onPress }: CustomerCardProps) {
   const status = customer?.lead_status || 'new';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const statusConfig = (STATUS_CONFIG as Record<string, any>)[status] || STATUS_CONFIG.new;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 

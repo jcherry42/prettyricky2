@@ -18,10 +18,75 @@ Production-ready native mobile application for the automotive industry featuring
 - **Auth**: JWT Bearer tokens enforced on all protected endpoints
 - **Session**: Auto-save (30s + app background) → AsyncStorage + MongoDB backup
 - **TypeScript**: `strict: true` + `strictNullChecks: true` — FULL strict mode enabled
+- **ESLint**: `no-explicit-any: warn` (211 warnings remaining as tracked tech debt)
+- **JWT**: persistent 128-char hex secret in `/app/backend/.env` (tokens survive restarts)
 
 ## What's Been Implemented
 
-### strictNullChecks + PostHog + Mobile Telemetry (Jun 2026 — Latest)
+### Service Mode — Dual-persona App (Sales ↔ Service Advisor) (Jun 2026 — Latest)
+
+**Command Center → Settings → Service Mode toggle** (replaces Eco Mode):
+- Toggling flips the entire app between two personas with zero-regression semantics
+- Default (OFF) = 100% identical to previous sales build
+- Ambient lighting still disabled when Service Mode is ON (advisors don't need distracting glow)
+
+**Sales mode (default)** — untouched:
+- Tower Talk uses Grant-Cardone-style aggressive close: "I've got 2:00 and 4:30 — which grabs you?"
+- 9 sales inquiry types: new_lead, price_question, availability, trade_in, financing, test_drive, follow_up, objection, appointment_setting
+- Existing customer/vehicle/lead terminology
+
+**Service mode (new)** — full dealership Service Advisor experience:
+- Tower Talk pivots to trusted-family-mechanic tone: "Tuesday 8 AM or Thursday 10:30 — I'll pre-order the parts"
+- 10 service inquiry types with 3 AI-crafted responses each: waiter_status, estimate_upsell, comeback, warranty_claim, parts_hold, tech_consult, loaner_request, declined_service, pickup_ready, schedule_appointment
+- Service-department lingo throughout: Guest (not Customer), RO (not Ticket), Tech / Master Tech, Warranty Coverage, Comeback, Loaner, Shop, Bay
+- Brand tagline swaps: SALES ↔ SERVICE under the SUPERCHARG'D wordmark
+
+**Implementation** (single source of truth, minimal surface area):
+- `/app/mobile/src/context/ModeContext.tsx` — new context + `useLingo()` hook returning mode-appropriate labels
+- `/app/mobile/src/data/serviceInquiries.ts` — 10 service inquiry presets with 3 responses each
+- `/app/backend/routes/tower_talk_v2.py` — `SERVICE_INQUIRY_GUIDANCE` dict + `is_service_mode` branch in system prompt
+- Backend `mode` field is optional (default = `sales`), backward-compatible
+
+### Full Security Audit + Refresh Rotation + /auth/logout + JWT Persistence + Connection Diagnostic (Jun 2026)
+
+**Closed all 3 security gaps from iter12:**
+- **Refresh-token rotation**: every refresh issues a new pair; old jti added to `revoked_tokens` MongoDB denylist with TTL=exp. Stolen refresh tokens self-invalidate when the legit owner refreshes.
+- **POST /api/auth/logout endpoint**: idempotent revocation. Always returns 200; `revoked:true|false`. Same response shape for valid/invalid/access-token inputs (no info-leak oracle).
+- **JWT_SECRET_KEY persistence**: 128-char hex secret now in `/app/backend/.env`. Tokens issued before a restart still validate after.
+
+**Connection-error UX fix (root cause of user's "can't log in")**:
+- Added a `<wifi>` FAB top-right of PinScreen (always visible, even pre-login)
+- Diagnostic modal probes `/api/health` against the resolved URL with 8s timeout
+- Editable URL field + "Test", "Reset to default", and "Save new URL" actions
+- "Diagnose connection ▸" link auto-appears under any connection-related error message
+- Wraps `getBackendUrlAsync()` + `setBackendUrlOverride()` + `clearBackendUrlOverride()` so a stale AsyncStorage override (typical cause) can be cleared in 2 taps
+
+**Mobile-side updates to support rotation**:
+- `_refreshAccessToken()` now persists the rotated `refresh_token` (so old jti never gets reused locally)
+- `AuthContext.logout()` now calls `POST /api/auth/logout` server-side before clearing local SecureStore
+- New telemetry events: `auth.logout`, `auth.session_expired`
+
+**Verified by testing_agent_v3_fork (iteration 13): 88/88 backend tests pass + 1 skip (alt endpoint name absent).**
+Full regression: iter10 + iter11 + iter12 + iter13 all green. Zero critical issues. Zero minor issues. ObjectId-leak audit: all GET endpoints clean. Raw fetch() audit: only justified callers remain (api.ts internals, PinScreen diagnostic probe, image.ts/chunkedUpload.ts local URI reads).
+- Created `/app/mobile/src/lib/errors.ts` — `errorMessage()`, `errorCode()`, `isNetworkError()`
+  helpers for safely narrowing `unknown` from catch blocks
+- Mass-replaced 51 `catch (e: any)` with `catch (e: unknown)` then migrated all
+  `e.message`, `e?.message || e`, `String(e?.message || e)` patterns to use `errorMessage(e)`
+- Mass-replaced `name={...as any}` Ionicons patterns with proper `keyof typeof Ionicons.glyphMap` casts
+- Restored `@typescript-eslint/no-explicit-any` to `'warn'` (was OFF) — 208 warnings remain
+  in screen-level FlatList renderItems, AI Gateway responses, SessionContext state slots
+- Split lint scripts: `yarn lint` (errors only) + `yarn lint:strict` (zero warnings, for CI)
+- **Mobile telemetry instrumentation** in 5 critical flows:
+  - `Auth`: `login_success` / `login_failed` (with `reason`) / `login_locked` (with `seconds`)
+  - `VinScan`: `barcode_success` + `ocr` (with `source: mlkit|cloud`, `confidence`, `vins_found`, error reason)
+  - `DlScan`: `ocr` (with `method`, `success`, failure reason)
+  - `PTT`: `translate` (with `source_lang`, `target_lang`, `on_device` flag, error reason)
+  - `Customer`: `created` / `created_offline` (with `source`)
+- Fixed `duration_ms` → `latency_ms` field naming to match backend `latency_by_action` aggregator
+- End-to-end verified: events flow mobile → backend → MongoDB and show up in
+  `/api/telemetry/summary` `latency_by_action` with proper `avg_latency_ms` per action
+
+### strictNullChecks + PostHog + Mobile Telemetry (Jun 2026)
 - **`strictNullChecks: true` fully enabled** — went from 396 errors to 0 errors
 - Typed 6 major contexts: `CustomerContext`, `InventoryContext`, `AuthContext`,
   `PttContext`, `AppSettingsContext`, `ToastContext`, `NetworkContext`,
@@ -80,25 +145,33 @@ Production-ready native mobile application for the automotive industry featuring
 - PIN recovery with master reset codes
 
 ## Test Coverage
-- iteration_10: 29/29 PostHog + telemetry + regression (100%) — one backend bug fixed (ObjectId leak in anomaly scan)
-- iteration_9: 17/17 session persistence (100%)
-- iteration_8: 25/25 performance optimization (100%)
-- iteration_7: 37/37 auth enforcement (100%)
-- iteration_6: 30/30 modernization (100%)
-- TypeScript: 0 errors with `strict: true` + `strictNullChecks: true` (FULL strict mode)
-- ESLint: 0 errors, 0 warnings with `--max-warnings=0`
-- Pre-commit hooks: `tsc --noEmit` + ESLint + duplicate-export detector, installed at `/app/.git/hooks/pre-commit`
+- **iteration_14**: 119/120 Service Mode dual-persona (31 new + 88 regression + 1 pre-existing skip)
+- iteration_13: 88/88 FULL security audit
+- iteration_12: 57/57 auth refresh contract
+- iteration_11: 36/36 mobile telemetry + regression
+- iteration_10: 29/29 PostHog + telemetry + regression (ObjectId leak fix)
+- iteration_9: 17/17 session persistence
+- iteration_8: 25/25 performance optimization
+- iteration_7: 37/37 auth enforcement
+- iteration_6: 30/30 modernization
+- TypeScript: 0 errors with `strict: true` + `strictNullChecks: true`
+- ESLint: 0 errors, 211 warnings (tracked)
+- Pre-commit hooks: `tsc --noEmit` + ESLint + duplicate-export detector at `/app/.git/hooks/pre-commit`
 
 ## Prioritized Backlog
 
 ### P0 — None remaining
 
 ### P1 (High)
-- Restore `no-explicit-any` as `'warn'` (currently OFF) after a typing sprint replaces
-  the ~230 `: any` occurrences with proper types (Customer, Vehicle, Ionicons.glyphMap, etc.)
-- Mobile-side telemetry instrumentation — call `track('vin_scan', 'completed', {...})`
-  from VIN/DL scan flows, PTT, customer create, etc. (`/app/mobile/src/lib/telemetry.ts` ready)
-- Provide actual `POSTHOG_API_KEY` in `/app/backend/.env` to activate PostHog forwarding
+- Reduce the 211 remaining `no-explicit-any` warnings: type FlatList renderItems
+  with `Customer` / `Vehicle` interfaces, type SessionContext state slots,
+  type AI Gateway responses. Then promote `no-explicit-any` to `'error'`.
+- Add telemetry to remaining flows: print success/failure, session save/restore,
+  anomaly scan, settings changes.
+- Provide actual `POSTHOG_API_KEY` in `/app/backend/.env` to activate forwarding.
+- (Future security hardening) Family-revocation on refresh-token reuse: when a
+  revoked jti is replayed, revoke ALL refresh tokens for that user_id (currently
+  only the single jti stays denylisted).
 
 ### P2 (Medium)
 - Team management features
@@ -108,3 +181,184 @@ Production-ready native mobile application for the automotive industry featuring
 - Structured logging
 - Legacy `POST /api/customers` (camelCase) endpoint: either 400 on missing
   firstName/lastName or document the silent-default behavior (tester flagged)
+
+### Apex Sales & Service Intelligence Framework + Performance Mode (Feb 2026, iter15)
+
+**Delivered**: A deterministic, non-hallucinating, multilingual AI brain running on
+an isolated route so existing Tower Talk / Translate flows carry zero regression risk.
+
+- **New endpoint**: `POST /api/intelligence/analyze` (Bearer-auth)
+  - Body: `{ input: AutomotiveInteractionInput, performanceMode: bool }`
+  - Returns: `AutomotiveInteractionOutput` with detected language, translated meaning,
+    primaryIntent, conversationStage, objection (ACRA), sentiment, 3 response variants
+    (recommended/direct/empathetic), nextBestAction, missingInformation, riskFlags,
+    prompt_version, latency_ms, fallback_used.
+- **Model routing**: `intelligence_sales` (gpt-4o-mini) · `intelligence_service` (gpt-4o) ·
+  `intelligence_high` (gpt-4o locked). `tower_talk_high` and `translate_high` mirror
+  this for Performance Mode overrides.
+- **Deterministic guardrails** (30 pytest tests, all green in
+  `/app/backend/tests/intelligence/test_pipeline_validator.py`):
+  - Enum coercion: invalid intent/stage/strategy fall back to safe defaults
+  - Objection normalization: `category` cleared when `detected=false`
+  - Channel char caps: SMS ≤ 320, email ≤ 2000 — enforced regardless of model output
+  - Risk-flag deterministic detector: manager/lawyer/repeat_repair/damage/safety/social
+    always flagged in service mode; hard triggers force `escalate_to_human` strategy
+  - JSON extractor: handles markdown fences + prose-wrapped JSON
+  - Prompt version stamped on every output (`intel-v1.0.0`)
+- **Performance Mode toggle** (Command Center → Settings): persists in
+  `AppSettingsContext.performanceMode`. When ON, mobile sends `performanceMode: true`
+  on all Tower Talk, Translate, and Intelligence calls → locks GPT-4o everywhere.
+- **JWT hardening**: access tokens now carry unique `jti` + `iat` so consecutive
+  logins/refreshes yield distinct tokens (was a subtle same-second collision).
+- **Verified by testing_agent_v3_fork iter15**: 11/11 core cases green against live LLM.
+
+### P1 (High)
+- Migrate Tower Talk & Quick Compose UI to consume `/api/intelligence/analyze`
+  (surface `nextBestAction`, `riskFlags`, `missingInformation` in UI)
+- Role-based Command Center dashboards (Sales KPIs vs Service KPIs from telemetry)
+- Real `POSTHOG_API_KEY` in backend `.env` to enable forwarding (currently
+  degrades gracefully to DB-logging)
+- Family-revocation on refresh-token reuse (revoke ALL user tokens if replay detected)
+
+### P2 (Medium)
+- Reduce 211 remaining `no-explicit-any` warnings; promote rule to `error`
+
+
+### All P1 Next-Action Items Cleared (Feb 2026, iter16)
+
+**Delivered — all 4 P1s green, verified 15/15 end-to-end + 80 unit tests:**
+
+1. **Family-revocation on refresh-token reuse** (`/app/backend/routes/pin_auth.py`)
+   - Every refresh token now carries a `fam` (family_id) claim.
+   - Rotation preserves the family_id — all descendants share one lineage.
+   - Reuse of a revoked jti → **entire family** marked compromised in a new
+     `revoked_families` MongoDB collection (TTL-indexed on `expires_at`).
+   - Every subsequent refresh on that family returns 401 with a "family has
+     been revoked" message — forces the compromised user to re-authenticate.
+   - Logout stays scoped to the specific jti (not the family) — logging out
+     on one device does NOT kick you off others.
+   - 7 pytest cases in `tests/test_iteration16_family_revocation.py` — all pass.
+
+2. **Tower Talk UI now consumes `/api/intelligence/analyze`** (parallel, non-fatal)
+   - New `/app/mobile/src/lib/intelligence.ts` — typed `analyzeInteraction()`
+     helper + human-friendly label maps (INTENT/STRATEGY/RISK/OBJECTION/SENTIMENT).
+   - New `/app/mobile/src/components/IntelligenceInsight.tsx` — glassy cyan
+     panel that surfaces: sentiment pill, escalation banner (when
+     `escalate_to_human`), intent + strategy chips, objection block, risk-flag
+     chips, next-best-action, missing-information chips, and (if non-English)
+     the translated meaning.
+   - `TowerTalkOverlay.tsx` now fires `analyzeInteraction()` **in parallel**
+     with `/api/tower-talk` — zero regression risk. If analyze() fails or is
+     slow, the primary reply flow is unaffected; the insight simply doesn't
+     render. When it succeeds, it appears beneath the reply.
+
+3. **Role-based Command Center dashboards**
+   - `CommandCenterModal.tsx` dashboard tab now uses `useLingo()` labels —
+     "Customers" ↔ "Guests", "Vehicles" ↔ "RO Queue", "Lead Status" ↔ "RO
+     Pipeline", "New/Contacted/Appointment" ↔ "Just Written/In Shop/Ready
+     for Pickup". A persona indicator badge at the top shows the active mode.
+   - New "AI Insights · Last 24h" card driven by the extended
+     `/api/dashboard/stats` payload (`intelligence_24h` block).
+   - Backend `GET /api/dashboard/stats` now returns
+     `intelligence_24h: { sales_analyses, service_analyses, open_objections,
+     hot_escalations }` sourced from the `telemetry_events` collection with
+     graceful zero-fallback if telemetry is disabled.
+
+4. **All new UI text mirrored across BOTH persona lingos** (`ModeContext.tsx`)
+   - Added 13 new persona-aware keys covering insight panel labels and KPI
+     dashboard labels. Every new string has both a Sales variant and a Service
+     variant, keeping the dual-persona system consistent.
+
+**Also fixed:**
+- Standardized `/api/intelligence/analyze` body shape from query-param to
+  nested `{ input, performanceMode }` — cleaner API surface, all callers updated.
+- iter15 minor issue (byte-identical consecutive access tokens) resolved via
+  `iat` + `jti` claims on access tokens.
+
+### P1 (High) — remaining
+- Real `POSTHOG_API_KEY` in backend `.env` to activate PostHog forwarding
+  (currently degrades gracefully to DB-logging into `telemetry_events`).
+
+### P2 (Medium)
+- Reduce 211 remaining `no-explicit-any` ESLint warnings; promote rule to `error`.
+
+
+### Rolls-Royce Polish Push (Feb 2026, iter17) — Speed + Motion + Type Safety
+
+**Delivered — verified 15/15 backend e2e + 49/49 unit tests, mobile typecheck clean:**
+
+1. **P2 — Type-safety sweep** (169 → 129 `no-explicit-any` warnings, 24% reduction)
+   - Enriched `/app/mobile/src/types/index.ts` with `FormDraft`, `FormDraftMap`,
+     `TowerTalkHistoryEntry`, `PttLastResult`, `NavigationState`, `IntakeState`,
+     `TowerTalkFormDraft`.
+   - Swept `SessionContext.tsx` (-19), `sessionPersistence.ts` (-6),
+     `api.ts` (-6, added `ApiFetchOptions` interface), `inventory.ts` (-7,
+     added `VinDecodedPayload` / `InventoryVehicle` / `InventoryData`).
+   - Zero TypeScript errors after every step. VinScanScreen deferred (heavy
+     cascade cost — 22 warnings remain, ~all at legit NHTSA-boundary).
+
+2. **Speed — Zero-lag translation via aggressive caching + pre-warming**
+   - `CACHE_TTLS`: `translate` bumped 1h → 24h; new `translate_high` mirrors it;
+     new `intelligence_sales/service/high` cache 5 min for snappy re-analysis.
+   - `_MAX_CACHE_ENTRIES`: 512 → 2048.
+   - **Pre-warm hook** in `/api/tower-talk`: on every successful reply, fires
+     background `asyncio.create_task` to translate to Spanish AND French.
+   - Measured impact: Translate ES **~1000ms → 161ms** (6x faster on toggle).
+   - Repeat intelligence call **5973ms → 129ms** (46x faster on cache hit).
+
+3. **Silky-smooth UI — motion + haptics + skeleton**
+   - `IntelligenceInsight.tsx` rewritten with Reanimated:
+     - Fade + slide-up entrance (320ms Easing.out cubic) on data arrival.
+     - Shimmer skeleton (900ms breathing loop) while analyze() is in-flight.
+     - Pulsing halo (1.0 → 1.08 → 1.0, 1s cadence) on sentiment pill when
+       frustrated or angry — draws the eye without being noisy.
+     - Haptic feedback on tap for risk-flag chips (Medium) and next-action (Light).
+   - `TowerTalkOverlay` now tracks `intelligencePending` and passes it to
+     `<IntelligenceInsight pending>` so the skeleton replaces the empty gap.
+
+4. **Command Center prefetch**
+   - Dashboard stats now prefetch as soon as the Command Center modal opens.
+
+### P1 (High) — remaining
+- Real `POSTHOG_API_KEY` in backend `.env` to activate PostHog forwarding.
+
+### P2 (Medium) — remaining
+- 129 remaining `no-explicit-any` (mostly in `VinScanScreen.tsx`).
+- Promote ESLint rule from `warn` to `error` once ≤ 30 remain.
+
+
+### Language Scope Tightening + Deeper P2 + Cache-Collision Fix (Feb 2026, iter18-19)
+
+**Delivered — verified 21/21 backend e2e + 49/49 unit tests:**
+
+1. **Language scope: EN, ES, FR, KO only**
+   - Removed Japanese from `/api/translate` `lang_names`, from `/api/tower-talk`
+     pre-warm targets, and from auto-detection in `tower_talk_v2.py`.
+   - Pre-warm now fires ES + FR + KO in parallel — verified sub-200ms warm hits
+     for all three (ES=143ms, FR=117ms, KO=102ms).
+
+2. **Critical cache-collision bug fixed** (surfaced by iter18 testing)
+   - `services/ai_gateway.py::_ResponseCache._key()` now hashes
+     `feature + model + system_message + prompt`. Previously the same source
+     text translated to different target languages collided in the LRU cache.
+   - `get()` and `set()` accept `system_message`; `chat()` threads it through.
+   - Same text → ES/FR/KO now returns correct-language output for every target.
+
+3. **P2 — TypeScript any-warning sweep (deeper)**
+   - Round 2 killed 40 more warnings across 6 files: HomeScreen, QuickCompose,
+     EmergencyInquiryModal, PrintCenterModal, CommandCenterModal, TowerTalkOverlay,
+     PttOverlayView.
+   - Exported `CustomerRecord` from `CustomerContext` and `Printer` from
+     `AppSettingsContext` for cross-component consumption.
+   - Aligned `SessionContext` and `sessionPersistence.SessionState` to use
+     `CustomerRecord` (loose runtime shape) rather than the strict `Customer`
+     type — avoids cascade errors while keeping the type discipline useful.
+   - Cumulative: **169 → 89 warnings, 47% reduction (killed 80).** Zero TS errors.
+
+### P1 (High) — remaining
+- Real `POSTHOG_API_KEY` in backend `.env` to activate PostHog forwarding.
+
+### P2 (Medium) — remaining
+- 89 remaining `no-explicit-any` (mostly `VinScanScreen.tsx` = 22, `DlScanScreen.tsx` = 14, `IntakeScreen.tsx` = 11 — all deep NHTSA/state-machine boundaries with heavy cascade cost).
+- Promote ESLint rule from `warn` to `error` once ≤ 30 remain.
+

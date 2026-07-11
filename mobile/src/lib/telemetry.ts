@@ -48,11 +48,15 @@ export function track(category: string, action: string, properties?: TrackProps)
  *
  *   const finish = startTimer('vin_scan', 'ocr');
  *   await runOcr();
- *   finish({ vin: result.vin });   // properties.duration_ms is added automatically
+ *   finish({ vin: result.vin });   // properties.latency_ms is added automatically
+ *
+ * Note: the latency key matches the backend `services/telemetry_service.py`
+ * `latency_by_action` aggregator so per-action averages show up in the
+ * dashboard out of the box.
  */
 export function startTimer(category: string, action: string) {
   const start = Date.now();
   return (properties?: TrackProps) => {
-    track(category, action, { ...properties, duration_ms: Date.now() - start });
+    track(category, action, { ...properties, latency_ms: Date.now() - start });
   };
 }

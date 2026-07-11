@@ -82,7 +82,7 @@ export async function syncQueue(onProgress?: (_current: number, _total: number) 
       const item = queue[i];
 
       try {
-        await apiFetch(item.path, item.options as RequestInit);
+        await apiFetch(item.path, item.options as import('../lib/api').ApiFetchOptions);
         processed++;
 
         if (onProgress) {
@@ -102,7 +102,7 @@ export async function syncQueue(onProgress?: (_current: number, _total: number) 
     await saveJson(QUEUE_KEY, remainingQueue);
 
     return { success: true, processed, failed, remaining: remainingQueue.length };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: (error as Error).message };
   } finally {
     syncInProgress = false;

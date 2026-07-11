@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 18 backend verification against live preview URL. 17/18 tests PASS. Language-scope reduction (EN/ES/FR/KO) verified: Korean returns Hangul (U+AC00-D7AF), French/Spanish still work, Japanese ('ja') no longer supported but does not crash (200 fallback), auto-detect classifies Hangul input as 'ko'. All auth, intelligence sales/service (en+es), empty-message 422, intelligence 5-min cache hit, dashboard intelligence_24h, tower-talk SMS/no-emoji format — all green. HOWEVER, one CRITICAL bug found by the new triple pre-warm test: the ai_gateway response cache key omits system_message, so /api/translate returns the WRONG language when the same source text is translated to multiple targets. Reproduced deterministically outside the test (see rca).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "/api/translate + services/ai_gateway.py::_ResponseCache._key",
+        "issue": "Cache key is sha256('{feature}:{model}:{prompt}') and does NOT include target_lang or system_message. Because /api/translate uses the same feature ('translate' or 'translate_high'), same model, and same prompt (the raw text) for every target language, all target langs collide onto ONE cache entry. Result: whichever translation lands in cache first is returned for every subsequent target_lang. Iter18 pre-warm fires es+fr+ko in parallel on the same tower-talk reply, so /api/translate for target_lang='ko' can return Spanish/French text (or vice versa). Reproduced with unique input text: KO first-call returned correct Hangul in 970ms; ES and FR follow-ups returned the IDENTICAL Korean text in ~100ms (cache hits) instead of Spanish/French.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration18_language_scope.py",
+    "/app/test_reports/pytest/iteration18.xml"
+  ],
+  "action_items": [
+    "Fix ai_gateway response cache key to include target-differentiating context. Simplest patch: include a stable hash of system_message in the key, e.g. raw = f\"{feature}:{model}:{hashlib.sha256(system_message.encode()).hexdigest()}:{prompt}\". Alternatively, /api/translate can inject the target_lang into the prompt (e.g. prefix with '[to:ko] ') so the prompt-hash alone disambiguates. Iter17's pre-warm 'worked' only because the ES/FR tests used different tower-talk situations, avoiding key collision; iter18 pre-warms 3 langs on the SAME reply which surfaces the collision.",
+    "Add a regression test asserting /api/translate returns Hangul for target_lang='ko' AND non-Hangul (Latin) for target_lang='es' when both use the identical source text within the same session."
+  ],
+  "critical_code_review_comments": [
+    "services/ai_gateway.py L228-231: _ResponseCache._key = sha256(feature:model:prompt). System message (which encodes the target language for translate) is not part of the key. This is a correctness bug once the same prompt is used with different system_messages — exactly what pre-warm does. Fix at the cache layer, not in individual routes.",
+    "routes/tower_talk_v2.py L332-348: pre-warm now correctly iterates ('es','fr','ko') and lang_names only lists EN/ES/FR/KO. That side is correct. The Japanese removal is complete: no 'ja' entries anywhere in lang_names, pre-warm targets, or auto-detect.",
+    "routes/tower_talk_v2.py L405-413: auto-detect ordering is fine (ES accents → KO Hangul → FR accents → EN fallback). Note: FR check includes 'é' which also appears in ES, but ES is checked first — ok. Since 'ja' is removed, mixed Japanese input will fall through to 'en' which is acceptable per the new scope.",
+    "routes/tower_talk_v2.py has a small in-memory _translation_cache keyed by source:target:text[:200] which DOES include target_lang and would mask the ai_gateway bug on the SECOND call for the same (target, text). But the FIRST call for each target hits the ai_gateway cache directly and returns the wrong language — so the route-level cache doesn't help.",
+    "No test in the repo previously exercised multiple target languages against the same source text on the same server session; iter17 accidentally avoided the bug by using different prompts per test. Suggest adding a permanent regression."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration18_language_scope.py"],
+  "success_rate": {"backend": "94% (17/18)", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111",
+  "seed_data_creation": "None — stateless HTTP tests against live preview URL.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iter18 scope-narrowing (EN/ES/FR/KO only) is correctly implemented in routes/tower_talk_v2.py — verified end-to-end. The failure is deeper: services/ai_gateway.py cache key doesn't disambiguate target language, causing cross-language cache collisions. All 5 language-scope tests, all 5 auth tests, all 5 intelligence tests, dashboard, and tower-talk format tests pass. The single failing test (TestTowerTalkTriplePrewarm) is a real product bug, NOT a test issue. Timing side of pre-warm is fine (es=136ms, fr=109ms, ko=101ms — all sub-200ms warm). After fix, re-run test_iteration18_language_scope.py.",
+  "rca of the issue": "Root cause: services/ai_gateway.py::_ResponseCache._key(feature, prompt, model) computes sha256(f\"{feature}:{model}:{prompt}\"). It does not include system_message. Because /api/translate routes all target languages through the same (feature='translate', model='gpt-4o-mini', prompt=<raw text>) and only varies system_message ('Translate to Spanish' vs 'Korean' vs 'French'), all three keys collide. Reproduction: POST /api/translate with a fresh text and target_lang='ko' → 970ms, correct Hangul. Immediately POST same text with target_lang='es' → 107ms, returns the KOREAN Hangul instead of Spanish. Same for 'fr'. Mitigation options: (1) include hashlib.sha256(system_message.encode()).hexdigest() in the cache key; (2) inject target lang into the prompt hash input (e.g. f'[to:{target_lang}] {prompt}') before calling ai_gateway.chat; (3) namespace cache_ttl / feature per target lang (e.g. feature='translate_ko'). Option 1 is the least invasive."
+}

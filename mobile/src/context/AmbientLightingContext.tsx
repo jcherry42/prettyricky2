@@ -32,7 +32,7 @@ const AmbientLightingContext = createContext<AmbientLightingContextValue>({
 
 export function AmbientLightingProvider({ children }: { children: React.ReactNode }) {
   const { settings } = useAppSettings();
-  const isEnabled = (settings?.ambientLightingEnabled ?? true) && !settings?.ecoMode;
+  const isEnabled = (settings?.ambientLightingEnabled ?? true) && !settings?.serviceMode;
   const intensity: string = settings?.ambientLightingIntensity || 'medium';
   const opacity = (ambientIntensity as Record<string, number>)[intensity] || ambientIntensity.medium;
 

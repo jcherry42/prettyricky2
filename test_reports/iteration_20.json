@@ -1,0 +1,28 @@
+{
+  "summary": "Iteration 20 backend verification COMPLETE — 12/12 tests PASS. NEW Preferred Language contract fully verified: POST /api/customers accepts preferred_language='ko' -> response has 'ko'; PATCH /api/customers/{id} to 'fr' persists; GET returns 'fr'; default (omitted) yields 'en'. All 7 regression flows still green: /api/translate KO returns Hangul, ES/FR/KO cache-key collision fix holds (3 distinct correct-language outputs from same source), /api/intelligence/analyze 2nd-call cache hit <400ms, /api/auth/login pin=11111 works, refresh token rotation revokes prior jti AND revokes family on reuse, /api/auth/logout revokes only the supplied refresh_token's jti (returns 200 with body), /api/dashboard/stats intelligence_24h fields all int, /api/tower-talk returns SMS-length (<500 chars) reply with no emoji and appointment invitation (e.g., '2:00 and 4:30 open — which works better').",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration20_preferred_language.py",
+    "/app/test_reports/pytest/iteration20.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes/customers_v2.py L216-256: POST /customers (legacy) correctly accepts both camelCase (firstName/lastName/leadStatus) and snake_case (first_name/last_name/lead_status/preferred_language) — good backwards compat. Defaults preferred_language to 'en' when omitted (L247). Returns 201 with the full doc including preferred_language.",
+    "routes/customers_v2.py L304-320: PATCH uses strict CustomerUpdate model (models/app_models.py L86-104). preferred_language: Optional[str] = None on the update model — no enum validation. Consider Literal['en','es','fr','ko'] for defense-in-depth so a typo like 'kor' can't slip in. Not blocking.",
+    "models/app_models.py L83, L125: CustomerCreate.preferred_language defaults to 'en' but Customer.preferred_language also defaults to 'en'. Consistent. Same non-enum caveat as above — a Literal would be safer.",
+    "routes/pin_auth.py L428-453: /auth/logout is correctly scoped — only the refresh token's own jti is revoked via _revoke_jti, family_id is NOT touched. Matches iter20 spec. Idempotent on invalid/legacy tokens.",
+    "routes/pin_auth.py L406-411: Refresh reuse still correctly nukes the family via _revoke_family — verified live (rotated token also rejected after reuse of parent).",
+    "Suggestion: add a GET /customers/{id} response contract test that also asserts preferred_language is echoed back unchanged after multiple PATCH round-trips — covered implicitly by iter20 tests but explicit tests aid future refactors."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration20_preferred_language.py (new — 12 tests, 4 NEW + 8 regression)"
+  ],
+  "success_rate": {"backend": "100% (12/12)", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111",
+  "seed_data_creation": "Two TEST_iter20_* customers created via API and deleted in fixture teardown. Backend DB state clean after run.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter20 test file is stateless (creates TEST_ prefixed customers, deletes them in fixture teardown). Keep it in the regression suite alongside iter18 & iter19 test files. Correct request shapes used: (a) POST /api/tower-talk expects `situation`/`inquiryType`/`context`/`mode`/`performanceMode` and returns `response`. (b) POST /api/translate expects `text`/`source_lang`/`target_lang` and returns `translated_text`. (c) POST /api/intelligence/analyze expects wrapper `{input:{mode,channel,customerMessage,...}, performanceMode}`. (d) All endpoints except /api/auth/login require Bearer token. (e) /api/auth/logout requires `{refresh_token}` body AND Bearer access header. Observed intelligence cache-hit latency in prod preview: sub-50ms typical.",
+  "rca of the issue": "N/A — no bugs found. Preferred Language contract behaves per spec end-to-end."
+}

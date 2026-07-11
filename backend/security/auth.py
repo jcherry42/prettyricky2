@@ -1,5 +1,6 @@
 """JWT Authentication for federal-level security"""
 import os
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import HTTPException, Security, Depends
@@ -24,14 +25,20 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 security = HTTPBearer()
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Create JWT access token"""
+    """Create JWT access token with iat + unique jti so consecutive
+    tokens are guaranteed distinct (needed for correct rotation semantics)."""
     to_encode = data.copy()
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode.update({'exp': expire})
+        expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({
+        'exp': expire,
+        'iat': now,
+        'jti': uuid.uuid4().hex,
+    })
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { errorMessage } from '../lib/errors';
 import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert, Linking, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,7 +22,7 @@ const STATUS_CONFIG = {
 };
 
 // ---------- Translate helper (pure async, no hook dependency) ----------
-async function translateTextRequest(text: string, targetLang: string) {
+async function translateTextRequest(text: string, targetLang: string, performanceMode = false) {
   const res = await apiFetch('/api/translate', {
     method: 'POST',
     timeout: 15000,
@@ -29,12 +30,14 @@ async function translateTextRequest(text: string, targetLang: string) {
       text: text.trim(),
       source_lang: 'en',
       target_lang: targetLang,
+      performanceMode,
     }),
   });
   if (!res?.translated_text) throw new Error('Translation returned empty');
   return res.translated_text;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDelete }: { visible: boolean; customer: any; onClose: () => void; onEdit: (customer: any) => void; onDelete: (customer: any) => void }) {
   const { settings } = useAppSettings();
   const [translating, setTranslating] = useState(false);
@@ -49,6 +52,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
     : '';
   const status = customer?.lead_status || 'new';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const statusConfig = (STATUS_CONFIG as Record<string, any>)[status] || STATUS_CONFIG.new;
   const hasPhone = customer?.phone && customer.phone !== '—';
   const hasEmail = customer?.email && customer.email !== '—';
@@ -74,12 +78,12 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     try {
       impactLight();
       setTranslating(true);
-      const result = await translateTextRequest(smsGreeting, lang);
+      const result = await translateTextRequest(smsGreeting, lang, !!settings.performanceMode);
       setTranslatedSms(result);
       notificationSuccess();
-    } catch (e: any) {
+    } catch (e: unknown) {
       notificationError();
-      Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
+      Alert.alert('Translation Failed', errorMessage(e) || 'Could not translate the message.');
     } finally {
       setTranslating(false);
     }
@@ -102,12 +106,12 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
     try {
       impactLight();
       setTranslating(true);
-      const result = await translateTextRequest(emailBody, lang);
+      const result = await translateTextRequest(emailBody, lang, !!settings.performanceMode);
       setTranslatedEmail(result);
       notificationSuccess();
-    } catch (e: any) {
+    } catch (e: unknown) {
       notificationError();
-      Alert.alert('Translation Failed', e.message || 'Could not translate the message.');
+      Alert.alert('Translation Failed', errorMessage(e) || 'Could not translate the message.');
     } finally {
       setTranslating(false);
     }
@@ -369,6 +373,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function InfoRow({ icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <View style={styles.infoRow}>

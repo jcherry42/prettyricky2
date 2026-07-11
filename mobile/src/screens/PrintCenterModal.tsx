@@ -12,6 +12,7 @@
  */
 
 import React, { memo, useCallback, useEffect, useState } from 'react';
+import { errorMessage } from '../lib/errors';
 import {
   Modal,
   View,
@@ -28,7 +29,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { useAppSettings } from '../context/AppSettingsContext';
-import { useCustomers } from '../context/CustomerContext';
+import { useCustomers, type CustomerRecord } from '../context/CustomerContext';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type VehicleRecord = Record<string, any> & { id?: string; vin?: string; vehicle_id?: string };
 import { useInventory } from '../context/InventoryContext';
 import { apiFetch } from '../lib/api';
 
@@ -53,7 +56,7 @@ interface Props {
   onClose: () => void;
   preSelectedCustomerId?: string;
   preSelectedVin?: string;
-  preSelectedVehicle?: any;
+  preSelectedVehicle?: VehicleRecord;
   preSelectedLicenseImage?: string;
 }
 
@@ -74,7 +77,7 @@ function ActionButton({ label, icon, onPress, disabled, loading }: {
       >
         {loading
           ? <ActivityIndicator size="small" color={colors.gold} />
-          : <Ionicons name={icon as any} size={16} color={colors.gold} />
+          : <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={16} color={colors.gold} />
         }
         <Text style={styles.btnText}>{label}</Text>
       </LinearGradient>
@@ -82,13 +85,13 @@ function ActionButton({ label, icon, onPress, disabled, loading }: {
   );
 }
 
-const CustomerItem = memo(function CustomerItem({ item, selected, onPress }: any) {
+const CustomerItem = memo(function CustomerItem({ item, selected, onPress }: { item: CustomerRecord; selected: boolean; onPress: (id: string) => void }) {
   const first = (item.first_name || '').trim();
   const last = (item.last_name || '').trim();
   const name = `${first} ${last}`.trim() || item.name || 'Unknown';
   return (
     <Pressable
-      onPress={() => onPress(item.id || item.customer_id)}
+      onPress={() => onPress((item.id || item.customer_id) as string)}
       style={[styles.listItem, selected && styles.listItemSelected]}
     >
       <View style={[styles.listDot, selected && styles.listDotActive]} />
@@ -101,7 +104,7 @@ const CustomerItem = memo(function CustomerItem({ item, selected, onPress }: any
   );
 });
 
-const VehicleItem = memo(function VehicleItem({ item, selected, onPress }: any) {
+const VehicleItem = memo(function VehicleItem({ item, selected, onPress }: { item: VehicleRecord; selected: boolean; onPress: (v: VehicleRecord) => void }) {
   const label = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ') || item.vin;
   return (
     <Pressable
@@ -135,7 +138,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
 
   const [tab, setTab] = useState<TabKey>('customer');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleRecord | null>(null);
   const [printing, setPrinting] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
 
@@ -179,8 +182,8 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         ? 'Sent to printer successfully'
         : `PDF generated (${Math.round(res.bytes / 1024)} KB)`;
       setLastResult(msg);
-    } catch (e: any) {
-      setLastResult(`Error: ${e.message}`);
+    } catch (e: unknown) {
+      setLastResult(`Error: ${errorMessage(e)}`);
     } finally {
       setPrinting(false);
     }
@@ -203,8 +206,8 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         ? 'Sent to printer successfully'
         : `PDF generated (${Math.round(res.bytes / 1024)} KB)`;
       setLastResult(msg);
-    } catch (e: any) {
-      setLastResult(`Error: ${e.message}`);
+    } catch (e: unknown) {
+      setLastResult(`Error: ${errorMessage(e)}`);
     } finally {
       setPrinting(false);
     }
@@ -234,8 +237,8 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         ? 'Sent to printer successfully'
         : `PDF generated (${Math.round(res.bytes / 1024)} KB)`;
       setLastResult(msg);
-    } catch (e: any) {
-      setLastResult(`Error: ${e.message}`);
+    } catch (e: unknown) {
+      setLastResult(`Error: ${errorMessage(e)}`);
     } finally {
       setPrinting(false);
     }
@@ -250,7 +253,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
       <Text style={styles.tabDesc}>Select a customer to generate a branded profile PDF.</Text>
       <FlatList
         data={customers}
-        keyExtractor={(c: any) => c.id || c.customer_id || c.email || c.phone || 'unknown'}
+        keyExtractor={(c: CustomerRecord) => (c.id || c.customer_id || c.email || c.phone || 'unknown') as string}
         renderItem={({ item }) => (
           <CustomerItem
             item={item}
@@ -307,7 +310,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
       <Text style={styles.tabDesc}>Select a vehicle to generate a branded spec sheet PDF.</Text>
       <FlatList
         data={vehicles}
-        keyExtractor={(v: any) => v.vehicle_id || v.id || v.vin || String(v.year) + String(v.make)}
+        keyExtractor={(v: VehicleRecord) => (v.vehicle_id || v.id || v.vin || String(v.year) + String(v.make)) as string}
         renderItem={({ item }) => (
           <VehicleItem
             item={item}
@@ -367,7 +370,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
               onPress={() => { setTab(t.key); setLastResult(null); }}
               style={[styles.tab, tab === t.key && styles.tabActive]}
             >
-              <Ionicons name={t.icon as any} size={16} color={tab === t.key ? colors.gold : colors.textMute} />
+              <Ionicons name={t.icon as keyof typeof Ionicons.glyphMap} size={16} color={tab === t.key ? colors.gold : colors.textMute} />
               <Text style={[styles.tabLabel, tab === t.key && styles.tabLabelActive]}>{t.label}</Text>
             </Pressable>
           ))}

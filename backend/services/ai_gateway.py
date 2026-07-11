@@ -49,10 +49,16 @@ MODEL_ROUTES: Dict[str, ModelRoute] = {
     "license_ocr":    ModelRoute(provider="openai", primary="gpt-4o-mini", fallback="gpt-4o"),
     "vin_ocr":        ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "tower_talk":     ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
+    "tower_talk_high":ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o"),
     "translate":      ModelRoute(provider="openai", primary="gpt-4o-mini", fallback="gpt-4o-mini"),
+    "translate_high": ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "vehicle_vision": ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "extraction":     ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
     "tts":            ModelRoute(provider="openai", primary="tts-1-hd",   fallback="tts-1"),
+    # Apex Intelligence Framework
+    "intelligence_sales":   ModelRoute(provider="openai", primary="gpt-4o-mini", fallback="gpt-4o"),
+    "intelligence_service": ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o-mini"),
+    "intelligence_high":    ModelRoute(provider="openai", primary="gpt-4o",     fallback="gpt-4o"),
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -64,10 +70,15 @@ RATE_LIMITS: Dict[str, int] = {
     "license_ocr":      3,
     "vin_ocr":          3,
     "tower_talk":       3,
+    "tower_talk_high":  3,
     "translate":        5,
+    "translate_high":   3,
     "vehicle_vision":   2,
     "extraction":       2,
     "tts":              3,
+    "intelligence_sales":   3,
+    "intelligence_service": 3,
+    "intelligence_high":    3,
 }
 
 
@@ -185,15 +196,23 @@ class _CircuitBreaker:
 
 # Default per-feature TTLs in seconds.  None = no caching.
 CACHE_TTLS: Dict[str, Optional[int]] = {
-    "translate":      3600,      # 1 hour — translations are deterministic
-    "tower_talk":     None,
-    "license_ocr":    None,
-    "vehicle_vision": None,
-    "extraction":     None,
-    "tts":            None,      # TTS has its own MongoDB cache
+    "translate":       86400,     # 24 hours — translations are deterministic
+    "translate_high":  86400,     # same aggressive caching for high-perf variant
+    "tower_talk":      None,
+    "tower_talk_high": None,
+    "license_ocr":     None,
+    "vehicle_vision":  None,
+    "extraction":      None,
+    "tts":             None,      # TTS has its own MongoDB cache
+    # Intelligence — deterministic-enough that same input in short window returns same output.
+    # 5-minute TTL keeps the panel snappy on quick re-analyses without pinning stale insights.
+    "intelligence_sales":   300,
+    "intelligence_service": 300,
+    "intelligence_high":    300,
 }
 
-_MAX_CACHE_ENTRIES = 512
+# Bump cache capacity for translation-heavy dealerships.
+_MAX_CACHE_ENTRIES = 2048
 
 
 class _ResponseCache:
@@ -207,17 +226,19 @@ class _ResponseCache:
         self._misses = 0
 
     @staticmethod
-    def _key(feature: str, prompt: str, model: str) -> str:
-        raw = f"{feature}:{model}:{prompt}"
+    def _key(feature: str, prompt: str, model: str, system_message: str = "") -> str:
+        # System message is part of the cache key — critical for translations
+        # where the SAME prompt maps to different outputs based on target language.
+        raw = f"{feature}:{model}:{system_message}:{prompt}"
         return hashlib.sha256(raw.encode()).hexdigest()
 
-    async def get(self, feature: str, prompt: str, model: str) -> Optional[str]:
+    async def get(self, feature: str, prompt: str, model: str, system_message: str = "") -> Optional[str]:
         ttl = CACHE_TTLS.get(feature)
         if ttl is None:
             self._misses += 1
             return None
 
-        key = self._key(feature, prompt, model)
+        key = self._key(feature, prompt, model, system_message)
         async with self._lock:
             entry = self._store.get(key)
             if entry is None:
@@ -233,12 +254,12 @@ class _ResponseCache:
             self._hits += 1
             return value
 
-    async def set(self, feature: str, prompt: str, model: str, value: str):
+    async def set(self, feature: str, prompt: str, model: str, value: str, system_message: str = ""):
         ttl = CACHE_TTLS.get(feature)
         if ttl is None:
             return
 
-        key = self._key(feature, prompt, model)
+        key = self._key(feature, prompt, model, system_message)
         async with self._lock:
             self._store[key] = (time.monotonic(), value)
             self._store.move_to_end(key)
@@ -416,7 +437,7 @@ class AIGateway:
             CACHE_TTLS[feature] = cache_ttl
 
         # ── Cache check ───────────────────────────────────────────
-        cached = await self._cache.get(feature, prompt, route.primary)
+        cached = await self._cache.get(feature, prompt, route.primary, system_message or "")
         if cached is not None:
             await self._tracker.log(_CallRecord(
                 feature=feature, model=route.primary, provider=route.provider,
@@ -471,7 +492,7 @@ class AIGateway:
                     self._rate_limiter.release(feature)
 
                     await self._circuit_breaker.record_success(route.provider)
-                    await self._cache.set(feature, prompt, route.primary, response)
+                    await self._cache.set(feature, prompt, route.primary, response, system_message or "")
                     await self._tracker.log(_CallRecord(
                         feature=feature, model=model, provider=route.provider,
                         latency_ms=round(latency, 1), success=True, cached=False,

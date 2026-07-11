@@ -2,47 +2,90 @@ import { loadJson, saveJson } from './storage';
 
 const INVENTORY_KEY = 'sc_v1_local_inventory';
 
-export async function loadInventory() {
-  const data = await loadJson(INVENTORY_KEY, { vehicles: [] });
+/** Loose decoded-vehicle shape from the VIN backend (NHTSA returns 100+ fields). */
+export interface VinDecodedPayload {
+  vehicle?: Record<string, unknown> & {
+    year?: number | string;
+    make?: string;
+    model?: string;
+    trim?: string;
+    fuel_type?: string;
+    engine_display?: string;
+    plant_country?: string;
+    assembly_location?: string;
+  };
+  confidence?: number;
+  source?: string;
+  [key: string]: unknown;
+}
+
+/** Local inventory record — a decoded vehicle enriched with dealership fields. */
+export interface InventoryVehicle {
+  id: string;
+  vin: string;
+  year: number | string | null;
+  make: string | null;
+  model: string | null;
+  trim: string | null;
+  fuelType: string | null;
+  engineDisplay: string | null;
+  plantCountry: string | null;
+  assemblyLocation: string | null;
+  stockNumber: string;
+  price: number | null;
+  mileage: number | null;
+  status: string;
+  notes: string;
+  confidence: number | null;
+  source: string;
+  addedAt: string;
+  updatedAt: string | null;
+  decodedRaw: VinDecodedPayload | null;
+}
+
+export interface InventoryData { vehicles: InventoryVehicle[] }
+
+export async function loadInventory(): Promise<InventoryData> {
+  const data = await loadJson(INVENTORY_KEY, { vehicles: [] }) as InventoryData | null;
   if (!data || typeof data !== 'object') return { vehicles: [] };
   if (!Array.isArray(data.vehicles)) return { vehicles: [] };
   return data;
 }
 
-export async function saveInventory(next: Record<string, unknown>) {
+export async function saveInventory(next: InventoryData) {
   return saveJson(INVENTORY_KEY, next);
 }
 
-export function buildVehicleFromDecode({ vin, decoded }: { vin: string; decoded: any }) {
+export function buildVehicleFromDecode({ vin, decoded }: { vin: string; decoded: VinDecodedPayload | null }): InventoryVehicle {
   const v = decoded?.vehicle || {};
   return {
     id: `${Date.now()}_${Math.random().toString(16).slice(2)}`,
     vin,
-    year: v.year || null,
-    make: v.make || null,
-    model: v.model || null,
-    trim: v.trim || null,
-    fuelType: v.fuel_type || null,
-    engineDisplay: v.engine_display || null,
-    plantCountry: v.plant_country || null,
-    assemblyLocation: v.assembly_location || null,
+    year: (v.year as number | string) ?? null,
+    make: (v.make as string) ?? null,
+    model: (v.model as string) ?? null,
+    trim: (v.trim as string) ?? null,
+    fuelType: (v.fuel_type as string) ?? null,
+    engineDisplay: (v.engine_display as string) ?? null,
+    plantCountry: (v.plant_country as string) ?? null,
+    assemblyLocation: (v.assembly_location as string) ?? null,
 
     // editable fields
     stockNumber: '',
-    price: null as number | null,
-    mileage: null as number | null,
+    price: null,
+    mileage: null,
     status: 'active',
     notes: '',
 
     confidence: decoded?.confidence ?? null,
     source: decoded?.source || 'backend',
     addedAt: new Date().toISOString(),
-    updatedAt: null as string | null,
+    updatedAt: null,
     decodedRaw: decoded || null,
   };
 }
 
-export function countryFlagForVehicle(v: any): string {
+export function countryFlagForVehicle(v: Pick<InventoryVehicle, 'assemblyLocation' | 'plantCountry'>): string {
   const country = (v.assemblyLocation || v.plantCountry || '').toUpperCase();
   if (!country) return '🏁';
   if (country.includes('USA') || country.includes('UNITED STATES')) return '🇺🇸';
@@ -61,12 +104,12 @@ export function countryFlagForVehicle(v: any): string {
   return '🌍';
 }
 
-export async function addToInventory({ vin, decoded }: { vin: string; decoded: any }) {
+export async function addToInventory({ vin, decoded }: { vin: string; decoded: VinDecodedPayload | null }) {
   const inv = await loadInventory();
-  const exists = inv.vehicles.find((x: any) => x.vin === vin);
+  const exists = inv.vehicles.find((x) => x.vin === vin);
   if (exists) {
     // Update existing with latest decode
-    const updated = inv.vehicles.map((x: any) => (x.vin === vin ? { ...x, decodedRaw: decoded || x.decodedRaw } : x));
+    const updated = inv.vehicles.map((x) => (x.vin === vin ? { ...x, decodedRaw: decoded || x.decodedRaw } : x));
     const next = { ...inv, vehicles: updated };
     await saveInventory(next);
     return next;
@@ -79,9 +122,9 @@ export async function addToInventory({ vin, decoded }: { vin: string; decoded: a
   return next;
 }
 
-export async function updateVehicle(vehicleId: string, patch: Record<string, unknown>) {
+export async function updateVehicle(vehicleId: string, patch: Partial<InventoryVehicle>) {
   const inv = await loadInventory();
-  const nextVehicles = inv.vehicles.map((v: any) => (v.id === vehicleId ? { ...v, ...patch, updatedAt: new Date().toISOString() } : v));
+  const nextVehicles = inv.vehicles.map((v) => (v.id === vehicleId ? { ...v, ...patch, updatedAt: new Date().toISOString() } : v));
   const next = { ...inv, vehicles: nextVehicles };
   await saveInventory(next);
   return next;
@@ -89,7 +132,7 @@ export async function updateVehicle(vehicleId: string, patch: Record<string, unk
 
 export async function removeFromInventory(vehicleId: string) {
   const inv = await loadInventory();
-  const next = { ...inv, vehicles: inv.vehicles.filter((v: any) => v.id !== vehicleId) };
+  const next: InventoryData = { ...inv, vehicles: inv.vehicles.filter((v) => v.id !== vehicleId) };
   await saveInventory(next);
   return next;
 }

@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 12 backend-only verification for the new mobile auto-refresh-on-401 flow. Backend `/api/auth/refresh` contract verified end-to-end (valid -> 200 + access_token, invalid -> 401, missing field -> 422, empty body -> 422, public access without Authorization header -> 200, freshly-minted access_token accepted by /api/auth/verify). Login contract confirmed to return both access_token and refresh_token under PIN 11111. Regression smoke on sessions, anomaly, telemetry, voice-translate, customers, vehicles, vin/extract-from-image all green. New suite: 21/21 pass. Re-ran iteration 10+11 suites: 36/36 still pass. Total 57/57.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/auth/refresh",
+        "issue": "Endpoint returns ONLY `access_token` (plus success/token_type/expires_in) — it does NOT return a fresh `refresh_token`. The review request stated the response should contain a fresh refresh_token, but routes/pin_auth.py:refresh_token() does not rotate/return one. This is consistent with the mobile client (api.ts only reads `json.access_token`), so nothing is functionally broken — flagging as a spec/doc mismatch and a missed best-practice (refresh-token rotation prevents replay if a refresh token is leaked)."
+      },
+      {
+        "endpoint": "POST /api/auth/logout (missing)",
+        "issue": "There is no server-side logout / refresh-token-revocation endpoint. The review request's regression criterion 'refresh-token endpoint still rejects revoked tokens (logout should invalidate the refresh token)' cannot be validated because the backend has no revocation store/blacklist and no /auth/logout route. Currently a stolen refresh token remains valid until natural JWT expiry. AuthContext clears tokens client-side only."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iteration12_auth_refresh.py",
+    "/app/test_reports/pytest/pytest_results_iteration12.xml",
+    "/app/backend/tests/test_iteration11_mobile_telemetry.py",
+    "/app/backend/tests/test_iteration10_telemetry_posthog.py"
+  ],
+  "action_items": [
+    "(Spec mismatch) Either update review-request docs to reflect that /api/auth/refresh returns only an access_token, OR implement refresh-token rotation in routes/pin_auth.py:refresh_token() (mint and return a new refresh_token; mobile api.ts would need a small change to persist it).",
+    "(Security gap) Add a POST /api/auth/logout endpoint that invalidates the supplied refresh_token (e.g. JTI denylist collection with TTL = remaining exp). Required to satisfy the 'logout should invalidate the refresh token' requirement.",
+    "(Optional best practice) Add `jti` claim to refresh tokens so they can be revoked individually without a global denylist.",
+    "(Carried over from iter11) Mobile telemetry helper sends `properties.duration_ms` but backend aggregator buckets only `properties.latency_ms` — per-action latency view is empty for mobile events."
+  ],
+  "critical_code_review_comments": [
+    "routes/pin_auth.py:refresh_token() does not rotate refresh tokens — same long-lived refresh token used until expiry. Industry standard is rotation + family-revocation on reuse.",
+    "No server-side session/refresh revocation primitive exists (no /auth/logout, no denylist collection, no jti claim). AuthContext logout is client-only — a stolen refresh token survives the user's 'logout'.",
+    "mobile/src/lib/api.ts:_refreshAccessToken — `setTimeout(() => { _refreshPromise = null; }, 0)` correctly clears the shared in-flight lock; concurrent 401s will share the same refresh attempt. Good.",
+    "mobile/src/lib/api.ts retry-after-refresh — make sure the retried request explicitly carries the NEW Authorization header (verified in code: api.ts line ~280 passes newAccess into _doFetch retry branch).",
+    "Refresh endpoint correctly rejects an access_token presented as a refresh_token (type-claim check at pin_auth.py:280) — verified by test.",
+    "Refresh endpoint is correctly public (no Authorization required) — verified by test; this is required because the access token is already expired when the client retries."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration12_auth_refresh.py (NEW, 21 tests)"
+  ],
+  "success_rate": {"backend": "100% (21/21 new + 36/36 regression = 57/57)", "frontend": "N/A (backend-only request)"},
+  "test_credentials": "PIN: 11111 (verified via /api/auth/login). /app/memory/test_credentials.md does not exist — flagged for main agent to create if needed.",
+  "seed_data_creation": "One telemetry event tagged `iter12_refresh_smoke` with session_id `sess-iter12-<epoch>` inserted via /api/telemetry/track. Has 90-day TTL on expires_at — self-cleans.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Refresh contract is fully covered in /app/backend/tests/test_iteration12_auth_refresh.py. If main agent implements refresh-token rotation or a /auth/logout revocation endpoint, add: (a) a test that verifies the OLD refresh_token is 401'd after rotation, and (b) a test that verifies refresh_token is 401'd after /auth/logout. The mobile-side auto-refresh-on-401 logic itself (api.ts shared _refreshPromise lock + retry-once) is purely client-side and would need a Detox/integration test or a unit test with a fetch mock — not covered here.",
+  "rca of the issue": "No production bug found. Two spec/security observations: (1) Backend returns only access_token from /auth/refresh while the review request mentioned both tokens — mobile only consumes access_token so no breakage, but refresh-token rotation is a recommended hardening. (2) The 'logout invalidates refresh token' requirement is not satisfiable today because there is no server-side revocation mechanism; logout is client-only token clearing."
+}

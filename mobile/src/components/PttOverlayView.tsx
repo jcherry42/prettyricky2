@@ -35,7 +35,7 @@ function AudioWaveform({ color = colors.red }) {
   const bars = barsRef.current;
 
   useEffect(() => {
-    const animations = bars.map((anim: any, i: number) => {
+    const animations = bars.map((anim: Animated.Value, i: number) => {
       const delay = i * 60;
       return Animated.loop(
         Animated.sequence([
@@ -47,13 +47,13 @@ function AudioWaveform({ color = colors.red }) {
         ])
       );
     });
-    animations.forEach((a: any) => a.start());
-    return () => animations.forEach((a: any) => a.stop());
+    animations.forEach((a) => a.start());
+    return () => animations.forEach((a) => a.stop());
   }, []);
 
   return (
     <View style={waveStyles.wrap}>
-      {bars.map((anim: any, i: number) => (
+      {bars.map((anim: Animated.Value, i: number) => (
         <Animated.View
           key={i}
           style={[waveStyles.bar, { backgroundColor: color, transform: [{ scaleY: anim }] }]}

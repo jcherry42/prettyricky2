@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { apiFetch } from '../lib/api';
+import { apiFetch, onRefreshFailure } from '../lib/api';
+import { errorMessage } from './../lib/errors';
+import { track } from '../lib/telemetry';
 
 const ACCESS_KEY = 'sc_access_token';
 const REFRESH_KEY = 'sc_refresh_token';
@@ -50,9 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await SecureStore.setItemAsync(ACCESS_KEY, access);
       if (refresh) await SecureStore.setItemAsync(REFRESH_KEY, refresh);
-    } catch (e: any) {
+    } catch (e: unknown) {
       // SecureStore might fail on some devices — fallback to memory-only
-      console.warn('[Auth] SecureStore write failed:', e.message);
+      console.warn('[Auth] SecureStore write failed:', errorMessage(e));
     }
   }, []);
 
@@ -62,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await SecureStore.deleteItemAsync(ACCESS_KEY);
       await SecureStore.deleteItemAsync(REFRESH_KEY);
-    } catch (e: any) {
-      console.warn('[Auth] SecureStore clear failed:', e.message);
+    } catch (e: unknown) {
+      console.warn('[Auth] SecureStore clear failed:', errorMessage(e));
     }
   }, []);
 
@@ -135,8 +137,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // No valid tokens — need PIN entry
         await _clearTokens();
-      } catch (e: any) {
-        console.warn('[Auth] Boot check failed:', e.message);
+      } catch (e: unknown) {
+        console.warn('[Auth] Boot check failed:', errorMessage(e));
       }
       setIsLoading(false);
     })();
@@ -145,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Login with PIN — reads lockout details from 429 / 401 responses
   const login = useCallback(async (pin: string) => {
     setError(null);
+    const start = Date.now();
     try {
       const data = await apiFetch('/api/auth/login', {
         method: 'POST',
@@ -156,22 +159,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         setNeedsSetup(false);
         setLockoutUntil(null);
+        track('auth', 'login_success', { latency_ms: Date.now() - start });
         return true;
       }
       setError('Invalid PIN');
+      track('auth', 'login_failed', { reason: 'invalid_pin' });
       return false;
-    } catch (e: any) {
-      const msg = e?.message || '';
+    } catch (e: unknown) {
+      const msg = errorMessage(e);
       // Parse lockout duration from 429 detail
       const lockMatch = msg.match(/(\d+)\s*second/);
       if (lockMatch) {
         const seconds = parseInt(lockMatch[1], 10);
         setLockoutUntil(new Date(Date.now() + seconds * 1000));
         setError(`Too many attempts. Locked for ${seconds}s.`);
+        track('auth', 'login_locked', { seconds });
       } else if (msg.includes('Invalid PIN') || msg.includes('401')) {
         setError(msg.replace(/^.*?:\s*/, '')); // strip "Error: " prefix
+        track('auth', 'login_failed', { reason: 'invalid_pin' });
       } else {
         setError('Connection error. Try again.');
+        track('auth', 'login_failed', { reason: 'network_error' });
       }
       return false;
     }
@@ -196,8 +204,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setError('Setup failed. Try again.');
       return false;
-    } catch (e: any) {
-      setError(e?.message || 'Setup failed');
+    } catch (e: unknown) {
+      setError(errorMessage(e) || 'Setup failed');
       return false;
     }
   }, [_storeTokens]);
@@ -219,8 +227,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
       return false;
-    } catch (e: any) {
-      const msg = e?.message || 'Invalid reset code';
+    } catch (e: unknown) {
+      const msg = errorMessage(e) || 'Invalid reset code';
       setError(msg.replace(/^.*?:\s*/, ''));
       return false;
     }
@@ -228,10 +236,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const dismissResetCode = useCallback(() => setPendingResetCode(null), []);
 
-  // Logout — clear tokens, lock screen
+  // Logout — revoke refresh token server-side, then clear local tokens, lock screen
   const logout = useCallback(async () => {
+    const rt = refreshTokenRef.current;
+    if (rt) {
+      // Best-effort revoke. If it fails (offline, server down), we still clear locally.
+      apiFetch('/api/auth/logout', {
+        method: 'POST',
+        body: JSON.stringify({ refresh_token: rt }),
+        _skipAuth: true,
+      }).catch(() => { /* idempotent — server returns success even on failure */ });
+    }
     await _clearTokens();
     setIsAuthenticated(false);
+    track('auth', 'logout');
+  }, [_clearTokens]);
+
+  // Register apiFetch's refresh-failure hook → force logout to the lock screen.
+  // When the access token expires AND the refresh token is invalid (e.g. revoked
+  // or older than the 30-day TTL), apiFetch surfaces a 401 and calls this.
+  useEffect(() => {
+    onRefreshFailure(() => {
+      // Mark unauthenticated synchronously so the UI swaps to PinScreen.
+      // _clearTokens fires async — fine, the screen is already gated.
+      setIsAuthenticated(false);
+      _clearTokens().catch(() => { /* swallowed — UI already updated */ });
+      track('auth', 'session_expired');
+    });
   }, [_clearTokens]);
 
   // Get current access token (for apiFetch integration)

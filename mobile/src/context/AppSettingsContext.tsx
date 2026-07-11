@@ -3,7 +3,7 @@ import { loadJson, saveJson } from '../lib/storage';
 
 const STORAGE_KEY = 'sc_v1_settings';
 
-interface Printer {
+export interface Printer {
   id: string;
   name: string;
   ip: string;
@@ -12,7 +12,8 @@ interface Printer {
 interface AppSettings {
   defaultTargetLanguage: string;
   sportMode: boolean;
-  ecoMode: boolean;
+  serviceMode: boolean;
+  performanceMode: boolean;
   pttDirection: string;
   printers: Printer[];
   activePrinterId: string | null;
@@ -27,7 +28,8 @@ interface AppSettings {
 const DEFAULT_SETTINGS: AppSettings = {
   defaultTargetLanguage: 'es',
   sportMode: false,
-  ecoMode: false,
+  serviceMode: false,
+  performanceMode: false,
   pttDirection: 'en_to_target',
   printers: [],
   activePrinterId: null,
@@ -46,7 +48,10 @@ interface AppSettingsContextValue {
   setDefaultTargetLanguage: (lang: string) => Promise<void>;
   setSportMode: (v: boolean) => Promise<void>;
   toggleSportMode: () => Promise<void>;
-  setEcoMode: (v: boolean) => Promise<void>;
+  setServiceMode: (v: boolean) => Promise<void>;
+  toggleServiceMode: () => Promise<void>;
+  setPerformanceMode: (v: boolean) => Promise<void>;
+  togglePerformanceMode: () => Promise<void>;
   setPttDirection: (v: string) => Promise<void>;
   upsertPrinter: (p: { id?: string; name?: string; ip?: string }) => Promise<string>;
   removePrinter: (id: string) => Promise<void>;
@@ -100,8 +105,18 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
     await persist({ ...settingsRef.current, sportMode: !!sportMode });
   }, [persist]);
 
-  const setEcoMode = useCallback(async (ecoMode: boolean) => {
-    await persist({ ...settingsRef.current, ecoMode: !!ecoMode });
+  const setServiceMode = useCallback(async (serviceMode: boolean) => {
+    await persist({ ...settingsRef.current, serviceMode: !!serviceMode });
+  }, [persist]);
+  const toggleServiceMode = useCallback(async () => {
+    await persist({ ...settingsRef.current, serviceMode: !settingsRef.current.serviceMode });
+  }, [persist]);
+
+  const setPerformanceMode = useCallback(async (performanceMode: boolean) => {
+    await persist({ ...settingsRef.current, performanceMode: !!performanceMode });
+  }, [persist]);
+  const togglePerformanceMode = useCallback(async () => {
+    await persist({ ...settingsRef.current, performanceMode: !settingsRef.current.performanceMode });
   }, [persist]);
 
   const setPttDirection = useCallback(async (pttDirection: string) => {
@@ -120,8 +135,10 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
       ip: String(ip || '').trim(),
     };
     const printers = s.printers || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const exists = printers.some((p: any) => p.id === clean.id);
     const nextPrinters = exists
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? printers.map((p: any) => (p.id === clean.id ? { ...p, ...clean } : p))
       : [clean, ...printers];
     await persist({
@@ -134,6 +151,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
 
   const removePrinter = useCallback(async (id: string) => {
     const s = settingsRef.current;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nextPrinters = (s.printers || []).filter((p: any) => p.id !== id);
     const nextActive = s.activePrinterId === id ? (nextPrinters[0]?.id || null) : s.activePrinterId;
     await persist({ ...s, printers: nextPrinters, activePrinterId: nextActive });
@@ -190,7 +208,10 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
       setDefaultTargetLanguage,
       setSportMode,
       toggleSportMode,
-      setEcoMode,
+      setServiceMode,
+      toggleServiceMode,
+      setPerformanceMode,
+      togglePerformanceMode,
       setPttDirection,
       upsertPrinter,
       removePrinter,

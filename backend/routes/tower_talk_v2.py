@@ -74,11 +74,29 @@ INQUIRY_TYPE_GUIDANCE = {
     "appointment_setting": "APPOINTMENT — YOUR #1 KPI. Everything you do leads here. Use the Assumptive Close: give TWO specific times, both today or tomorrow. 'I've got a 2:00 and a 4:30 — which one grabs you?' Never ask open-ended questions. Make the visit feel exclusive: 'I'll have the vehicle staged just for you.' Reduce friction: 'Give me 20 minutes — if it's not the one, you'll know fast.'",
 }
 
+# ---------- SERVICE ADVISOR MODE ----------
+# Same idea as INQUIRY_TYPE_GUIDANCE, but tailored for a service advisor handling
+# repair orders, waiters, comebacks, warranty claims, and estimate presentations.
+SERVICE_INQUIRY_GUIDANCE = {
+    "waiter_status": "WAITER STATUS UPDATE — REDUCE ANXIETY. Waiting customers want three things: honesty, an ETA, and a small comfort. Give a specific milestone ('tech is finishing the multi-point right now'), a specific time range ('back in the bay in 15 minutes'), and a small comfort ('coffee, water, WiFi'). Never say 'a little while longer.'",
+    "estimate_upsell": "ESTIMATE PRESENTATION — BE THE TRUSTED ADVISOR, NOT THE UPSELLER. Present findings in tiers: SAFETY-CRITICAL (must do today), WEAR ITEMS (due soon), MAINTENANCE (schedule). Show photos or invite them to see the vehicle. Bundle related work to save labor. Never surprise them at the register.",
+    "comeback": "COMEBACK — OWN IT INSTANTLY. This customer trusted you and left disappointed. First words: 'I hear you and I own this.' Then: bring them back in with priority scheduling, free re-diagnosis, and a loaner if warranted. Master tech looks at it personally. Do NOT be defensive. Do NOT dispute their story. Fix it and rebuild trust.",
+    "warranty_claim": "WARRANTY VERIFICATION — SHOW THE WIN. Confirm coverage with specifics (VIN pulled, months/miles remaining). If covered, say 'zero cost to you' plainly. Set the appointment. Mention the manufacturer TSB if one applies — that reassures the customer this is a known issue with a known fix, not a diagnosis-in-progress.",
+    "parts_hold": "PARTS ORDER STATUS — FIRM DATE + CONTINGENCY PLAN. Give a real ETA ('here by 10 AM tomorrow'). Confirm safety of driving in the meantime. Reserve a same-day appointment for when the part arrives. If the OEM is backordered, offer a factory-warrantied alternative — the customer's decision, transparently.",
+    "tech_consult": "TECH CONSULT — HAND OFF TO THE EXPERT. When the diagnosis matters, don't relay. Bring the master tech to the guest, or step away to consult and return with a concrete answer. Never guess. If a diagnostic is needed, explain that the diag fee gets applied to the repair — that reframes the cost as an investment.",
+    "loaner_request": "LOANER REQUEST — SOLVE THE MOBILITY PROBLEM. Warranty loaners are a right, courtesy loaners are an offer. Present clearly: cost (usually free), timing (5-minute paperwork), and alternatives (shuttle, Uber credits). The goal is to eliminate the mobility objection so the customer approves the repair.",
+    "declined_service": "DECLINED SERVICE — RESPECT THE CALL, DOCUMENT IT. When the guest declines, don't pressure. Note the decline on the RO. Explain what to watch for (specific symptoms). Offer to re-inspect at no charge next visit. This builds trust for the LONG game — declined today, approved next time.",
+    "pickup_ready": "READY FOR PICKUP — RECAP + INVITE NEXT VISIT. Total came in AT or UNDER estimate (great). Explain what was done in plain English. Show them the old parts. Explain the warranty on this repair. Then invite them back for the recommended-but-deferred items with a soft appointment mention.",
+    "schedule_appointment": "SCHEDULE APPOINTMENT — TWO REAL TIME SLOTS. Never say 'when works for you.' Say 'Tuesday 8 AM or Thursday 10:30.' Pre-order parts based on symptoms. Confirm quarter-tank of fuel for a road test. Offer shuttle if it's an all-day. Make it feel effortless.",
+}
+
 
 class TowerTalkRequest(BaseModel):
     situation: str
     inquiryType: Optional[str] = "new_lead"
     context: Dict[str, Any]
+    mode: Optional[str] = "sales"  # "sales" | "service" — routes to sales-close vs service-advisor prompt
+    performanceMode: Optional[bool] = False  # when true, locks to gpt-4o via tower_talk_high feature
 
 
 class TowerTalkResponse(BaseModel):
@@ -89,6 +107,7 @@ class TranslateRequest(BaseModel):
     text: str
     source_lang: str = "auto"  # "auto", "en", "es"
     target_lang: str = "es"    # "en", "es"
+    performanceMode: Optional[bool] = False
 
 
 class TranslateResponse(BaseModel):
@@ -136,12 +155,12 @@ async def tower_talk(request: TowerTalkRequest):
             if trade_mileage:
                 trade_context += f" ({trade_mileage} miles)"
 
-        # Get inquiry-type-specific guidance
+        # Get inquiry-type-specific guidance — routes to sales OR service prompt based on `mode`
         inquiry_type = (request.inquiryType or "new_lead").strip()
-        inquiry_guidance = INQUIRY_TYPE_GUIDANCE.get(
-            inquiry_type,
-            INQUIRY_TYPE_GUIDANCE["new_lead"]
-        )
+        is_service_mode = (request.mode or "sales").lower() == "service"
+        guidance_dict = SERVICE_INQUIRY_GUIDANCE if is_service_mode else INQUIRY_TYPE_GUIDANCE
+        fallback_key = "waiter_status" if is_service_mode else "new_lead"
+        inquiry_guidance = guidance_dict.get(inquiry_type, guidance_dict[fallback_key])
 
         # === VECTOR SEARCH CONTEXT ENRICHMENT ===
         knowledge_context = ""
@@ -183,7 +202,48 @@ async def tower_talk(request: TowerTalkRequest):
         except Exception as e:
             _logger.debug(f"Vector search enrichment skipped: {e}")
 
-        system_message = f"""You are the #1 closer at a high-volume dealership — the person every GM calls when a deal is about to walk. You don't just sell cars, you set appointments, crush objections, and close deals at a level most salespeople will never reach. Your communication style: TRUSTED AUTHORITY who speaks like a sharp friend, not a stereotypical car salesman.
+        if is_service_mode:
+            system_message = f"""You are the top-performing SERVICE ADVISOR at a busy dealership — the person guests ask for by name because you treat them like family, give straight answers, and never surprise them with a bill. You speak with technical accuracy but plain-English clarity. Your job: turn confused, worried, or frustrated guests into loyal repeat customers.
+
+=== YOUR IDENTITY ===
+- Dealership Service Dept: {dealership}
+- Your name: {salesperson}
+- Guest: {customer_name}
+- RO Vehicle: {vehicle}{f' (estimate {vehicle_price})' if vehicle_price else ''}
+{trade_context}
+
+=== SITUATION: {inquiry_type.upper().replace('_', ' ')} ===
+{inquiry_guidance}
+
+=== SERVICE ADVISOR METHODOLOGY ===
+You operate on four principles:
+1. HONESTY OVER UPSELL: Never invent findings. Tiered recommendations, always.
+2. EDUCATE, DON'T PRESSURE: Show photos, explain "why this matters." Let the guest decide.
+3. OWN COMEBACKS: The moment a guest is upset, apologize first, fix it second, ask questions third.
+4. WARRANTY-FIRST: Always check coverage before quoting. "Zero cost to you" is the strongest phrase in the service lane.
+
+Language rules:
+- Use "guest" not "customer" (dealership brand standard).
+- Use "RO" (Repair Order) not "ticket" or "job."
+- Use "tech" not "mechanic."
+- Use "master tech" or "shop foreman" when escalating.
+- Prefer "recommend" over "need" — respect the guest's authority to decide.
+
+=== THE CLOSE — NON-NEGOTIABLE ===
+EVERY message must end with a specific, low-friction next step.
+Not "let us know" — that's passive.
+Use: "Coffee or WiFi while you wait?" / "I'll call the moment the part lands." / "Want me to hold the loaner?" / "Should I book Tuesday 8 AM or Thursday 10:30?"
+
+=== ABSOLUTE FORMAT RULES — VIOLATION INVALIDATES THE RESPONSE ===
+RULE 1 — LENGTH: EXACTLY 2 to 3 sentences maximum. Direct. No fluff.
+RULE 2 — EMOJIS: ZERO. None. Not one. This is professional communication.
+RULE 3 — BRACKETS/PLACEHOLDERS: Zero brackets, zero [NAME] tokens, zero parenthetical notes.
+RULE 4 — TONE: Calm, confident, technically credible — like a trusted family mechanic who happens to work at the dealer. Never patronizing, never dismissive.
+{signoff_rule}
+RULE 6 — FORMAT: One ready-to-copy text message. Plain text only. No lists, headers, bullets, or asterisks.
+RULE 7 — SELF-AUDIT: Before output, verify: (a) No emojis? (b) Ends with a specific low-friction next step? (c) 2-3 sentences max? If any fail, rewrite.{knowledge_context}{similar_responses_context}"""
+        else:
+            system_message = f"""You are the #1 closer at a high-volume dealership — the person every GM calls when a deal is about to walk. You don't just sell cars, you set appointments, crush objections, and close deals at a level most salespeople will never reach. Your communication style: TRUSTED AUTHORITY who speaks like a sharp friend, not a stereotypical car salesman.
 
 === YOUR IDENTITY ===
 - Dealership: {dealership}
@@ -226,7 +286,7 @@ RULE 7 — SELF-AUDIT: Before output, verify: (a) No emojis? (b) Ends with speci
         import time as _time
         _t0 = _time.monotonic()
         response = await ai_gateway.chat(
-            feature='tower_talk',
+            feature='tower_talk_high' if bool(request.performanceMode) else 'tower_talk',
             prompt=user_prompt,
             system_message=system_message,
         )
@@ -261,6 +321,35 @@ RULE 7 — SELF-AUDIT: Before output, verify: (a) No emojis? (b) Ends with speci
         except Exception:
             pass
 
+        # Zero-lag toggle: pre-warm the translation cache for the most common
+        # target languages so the "Show translation" button responds instantly.
+        # Fire-and-forget — never blocks the primary reply. Cache is 24h so even
+        # if the user doesn't toggle immediately, the warm-up isn't wasted.
+        try:
+            import asyncio as _aio_pw
+            # Supported customer languages for this app: EN, ES, FR, KO.
+            # Pre-warm all three non-English targets so every toggle is sub-200ms.
+            _prewarm_targets = ('es', 'fr', 'ko')
+            _prewarm_source = 'en'
+            for _tgt in _prewarm_targets:
+                _lang_names = {'en': 'English', 'es': 'Spanish', 'fr': 'French', 'ko': 'Korean'}
+                _prewarm_system = (
+                    f"You are a professional translator specializing in automotive industry communications. "
+                    f"Translate the following text to {_lang_names.get(_tgt, _tgt)}. "
+                    f"Preserve the tone, formality level, and any sales or technical automotive terminology accurately. "
+                    f"Output ONLY the translation — no explanations, no alternatives, no quotation marks."
+                )
+                # We deliberately DO NOT await — the cache warms in the background.
+                _aio_pw.create_task(ai_gateway.chat(
+                    feature='translate_high' if bool(request.performanceMode) else 'translate',
+                    prompt=clean,
+                    system_message=_prewarm_system,
+                    cache_ttl=86400,
+                ))
+                _ = _prewarm_source  # placeholder to make lint happy on unused var
+        except Exception:
+            pass  # pre-warming is best-effort; never break the response
+
         return TowerTalkResponse(response=clean)
 
     except HTTPException:
@@ -292,7 +381,6 @@ async def translate_text(request: TranslateRequest):
             "en": "English",
             "es": "Spanish",
             "fr": "French",
-            "ja": "Japanese",
             "ko": "Korean",
         }
         target_lang_name = lang_names.get(request.target_lang, request.target_lang)
@@ -306,10 +394,10 @@ async def translate_text(request: TranslateRequest):
         start_time = datetime.now(timezone.utc)
 
         translated = await ai_gateway.chat(
-            feature='translate',
+            feature='translate_high' if bool(request.performanceMode) else 'translate',
             prompt=text,
             system_message=system_message,
-            cache_ttl=3600,
+            cache_ttl=86400,
         )
         _ = (datetime.now(timezone.utc) - start_time).total_seconds()
 
@@ -317,8 +405,6 @@ async def translate_text(request: TranslateRequest):
         if request.source_lang == "auto":
             if any(c in text for c in ["á", "é", "í", "ó", "ú", "ñ", "¿", "¡"]):
                 detected = "es"
-            elif any("\u3040" <= c <= "\u309f" or "\u30a0" <= c <= "\u30ff" for c in text):
-                detected = "ja"
             elif any("\uac00" <= c <= "\ud7af" for c in text):
                 detected = "ko"
             elif any(c in text for c in ["à", "â", "ç", "è", "é", "ê", "ë", "î", "ï", "ô", "ù", "û", "œ"]):

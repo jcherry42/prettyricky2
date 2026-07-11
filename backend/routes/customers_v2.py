@@ -197,16 +197,20 @@ async def list_customers_filtered(
 class LegacyCustomerCreateRequest(BaseModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
+    first_name: Optional[str] = None  # Modern snake_case
+    last_name: Optional[str] = None
     name: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
     address: Optional[str] = None
     policyNumber: Optional[str] = None
     leadStatus: Optional[str] = None
+    lead_status: Optional[str] = None
     source: Optional[str] = None
     vehicleOfInterest: Optional[str] = None
     tradeVehicle: Optional[Dict[str, Any]] = None
     license_image: Optional[str] = None
+    preferred_language: Optional[str] = None  # 'en'|'es'|'fr'|'ko'
 
 
 @router.post("/customers", status_code=201)
@@ -214,8 +218,9 @@ async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
     if _db is None:
         raise HTTPException(status_code=500, detail="Customer routes not initialized")
 
-    first_name = (payload.firstName or "").strip()
-    last_name = (payload.lastName or "").strip()
+    # Accept both camelCase (legacy) and snake_case (modern) field names
+    first_name = (payload.firstName or payload.first_name or "").strip()
+    last_name = (payload.lastName or payload.last_name or "").strip()
 
     if not first_name and payload.name:
         parts = payload.name.strip().split()
@@ -234,11 +239,12 @@ async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
         "email": email,
         "address": payload.address,
         "lead_source": payload.source or "manual",
-        "lead_status": payload.leadStatus or "new",
+        "lead_status": payload.lead_status or payload.leadStatus or "new",
         "notes": None,
         "vehicle_interests": [],
         "trade_in_vehicle_id": None,
         "interactions": [],
+        "preferred_language": (payload.preferred_language or "en"),
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
     }

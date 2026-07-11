@@ -10,6 +10,8 @@ import { Platform } from 'react-native';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
 import { useAppSettings } from './AppSettingsContext';
+import { errorMessage } from '../lib/errors';
+import { startTimer as startTelemetryTimer } from '../lib/telemetry';
 
 interface PttResult {
   transcript: string;
@@ -70,6 +72,7 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
   // expo-audio recorder hook — reusable across multiple recordings
   const recorder = useAudioRecorder(RECORDING_OPTIONS);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playbackRef = useRef<any | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -161,8 +164,8 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
         stopFnRef.current?.();
       }, MAX_RECORDING_MS);
 
-    } catch (e: any) {
-      const msg = e?.message || String(e);
+    } catch (e: unknown) {
+      const msg = errorMessage(e);
       console.warn('[PTT] startRecording error:', msg);
       setStatus('error');
       if (msg.includes('already recording') || msg.includes('prepare')) {
@@ -190,6 +193,7 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const finishTranslate = startTelemetryTimer('ptt', 'translate');
     try {
       setStatus('uploading');
       await recorder.stop();
@@ -219,18 +223,23 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
 
       setResult(out);
       setStatus('done');
-    } catch (e: any) {
-      const msg = e?.message || String(e);
+      finishTranslate({ source_lang: sourceLang, target_lang: outTarget, on_device: !!out.on_device });
+    } catch (e: unknown) {
+      const msg = errorMessage(e);
       console.warn('[PTT] stopRecording error:', msg);
       setStatus('error');
       if (msg.includes('Backend URL')) {
         setError('Backend not connected. Check your server URL in Command Center \u2192 Settings.');
+        finishTranslate({ error: 'no_backend_url' });
       } else if (msg.includes('timed out') || msg.includes('Timeout') || msg.includes('TIMEOUT')) {
         setError('Translation timed out. Please try again with a shorter phrase.');
+        finishTranslate({ error: 'timeout' });
       } else if (msg.includes('Network request failed') || msg.includes('fetch')) {
         setError('Network error. Check your internet connection and try again.');
+        finishTranslate({ error: 'network' });
       } else {
         setError(msg);
+        finishTranslate({ error: 'unknown' });
       }
     }
   }, [direction, targetLang, stopTimer, recorder]);
@@ -270,9 +279,9 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
         }
       });
       player.play();
-    } catch (e: any) {
+    } catch (e: unknown) {
       setStatus('error');
-      setError(String(e?.message || e));
+      setError(errorMessage(e));
     }
   }, [result]);
 

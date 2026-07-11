@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { errorMessage } from '../lib/errors';
+import { track, startTimer } from '../lib/telemetry';
 import {
   View,
   Text,
@@ -30,10 +32,11 @@ import { validateVin } from '../utils/vinChecksum';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { impactMedium, notificationSuccess, notificationError, impactLight, impactHeavy } from '../lib/haptics';
-import { buildApiUrlAsync } from '../config/backend';
+import { apiFetch } from '../lib/api';
 import { useCameraLifecycle } from '../hooks/useCameraLifecycle';
 
 // ── Safe ML Kit import — gracefully unavailable in Expo Go ─────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let TextRecognition: any = null;
 try {
    
@@ -86,6 +89,7 @@ const categoryMeta = {
 };
 
 // ── History Item ─────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }: { item: any; onPress: (item: any) => void; onSaveToInventory: (item: any) => void; isAtLimit: boolean; category: string }) {
   const decoded = item.decoded?.vehicle || item.decoded;
   const label = decoded
@@ -109,7 +113,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }: 
         <View style={styles.historyContent}>
           <View style={styles.historyLeft}>
             <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}>
-              <Ionicons name={meta.icon as any} size={10} color={meta.color} />
+              <Ionicons name={meta.icon as keyof typeof Ionicons.glyphMap} size={10} color={meta.color} />
               <Text style={[styles.categoryBadgeText, { color: meta.color }]}>{meta.short}</Text>
             </View>
             <Text style={styles.vinText}>{item.vin}</Text>
@@ -170,6 +174,7 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }: 
 // ── Vehicle Detail Modal — shows full NHTSA decoded data ──────────────
 // ═══════════════════════════════════════════════════════════════════════
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item: any; onClose: () => void; onSaveToInventory: (item: any) => void; insets: any }) {
   const d = item.decoded?.vehicle || item.decoded || {};
   const validation = item.decoded?.validation || {};
@@ -212,7 +217,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
         </Pressable>
         <View style={vdStyles.headerCenter}>
           <View style={[vdStyles.catBadge, { backgroundColor: categoryMeta_item.bg }]}>
-            <Ionicons name={categoryMeta_item.icon as any} size={11} color={categoryMeta_item.color} />
+            <Ionicons name={categoryMeta_item.icon as keyof typeof Ionicons.glyphMap} size={11} color={categoryMeta_item.color} />
             <Text style={[vdStyles.catBadgeText, { color: categoryMeta_item.color }]}>{categoryMeta_item.short}</Text>
           </View>
           <Text style={vdStyles.vehicleYear}>{year}</Text>
@@ -257,6 +262,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
           <VDSection title="SAFETY SYSTEMS" icon="shield-checkmark">
             {safetyFeatures.length > 0 && (
               <View style={vdStyles.tagCloud}>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {safetyFeatures.map((f: any) => (
                   <View key={f} style={vdStyles.safetyTag}>
                     <Ionicons name="checkmark-circle" size={12} color={colors.green} />
@@ -286,6 +292,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
         {/* ── Validation ── */}
         {validation.sources_checked?.length > 0 && (
           <VDSection title="DATA SOURCES" icon="library">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {validation.sources_checked.map((s: any) => (
               <View key={s} style={vdStyles.sourceRow}>
                 <Ionicons name="checkmark-circle" size={14} color={colors.green} />
@@ -325,6 +332,7 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
 }
 
 // ── Vehicle Detail sub-components ──
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function VDSection({ title, icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
     <View style={vdStyles.section}>
@@ -337,6 +345,7 @@ function VDSection({ title, icon, children }: { title: string; icon: any; childr
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function VDRow({ label, value, highlight }: { label: string; value: any; highlight?: boolean }) {
   if (!value) return null;
   return (
@@ -488,19 +497,25 @@ export function VinScanScreen() {
   const { addVehicle, isAtLimit, maxInventory } = useInventory();
   const insets = useSafeAreaInsets();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [dealerHistory, setDealerHistory] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [tradeInHistory, setTradeInHistory] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [decoding, setDecoding] = useState<any | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scanMode, setScanMode] = useState(SCAN_MODE.BARCODE);
   const [scanning, setScanning] = useState(false);
   const [manualVin, setManualVin] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [lastScan, setLastScan] = useState<any | null>(null);
   const [vinValidation, setVinValidation] = useState<{ valid: boolean; checksumValid: boolean; checksumWarning?: string | null; error?: string } | null>(null);
   const [activeTab, setActiveTab] = useState(CATEGORY.DEALER);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [saveCategoryPicker, setSaveCategoryPicker] = useState<any | null>(null);
 
   // Vehicle detail modal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [vehicleDetailItem, setVehicleDetailItem] = useState<any | null>(null); // item with .decoded
 
   // Camera state
@@ -514,8 +529,10 @@ export function VinScanScreen() {
   // AI OCR state
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const [ocrStatus, setOcrStatus] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [ocrResults, setOcrResults] = useState<any | null>(null); // {vins, confidence, notes}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cameraRef = useRef<any>(null);
   const lastScanTime = useRef(0);
   const lastScannedVin = useRef('');
@@ -629,6 +646,7 @@ export function VinScanScreen() {
     }
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const persistHistory = useCallback(async (category: string, list: any[]) => {
     const key = category === CATEGORY.TRADEIN ? STORAGE_KEY_TRADEIN : STORAGE_KEY_INVENTORY;
     await saveJson(key, list);
@@ -644,6 +662,7 @@ export function VinScanScreen() {
     if (!validation.valid) {
       setVinValidation(validation);
       notificationError();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Alert.alert('Invalid VIN', (validation as any).error || 'VIN format validation failed');
       return null;
     }
@@ -685,6 +704,7 @@ export function VinScanScreen() {
 
   // ── Decode ───────────────────────────────────────────────────────────
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const decodeAndSave = useCallback(async (item: any) => {
     try {
       setDecoding(item.id);
@@ -701,8 +721,8 @@ export function VinScanScreen() {
       await persistHistory(item.category, next);
       setLastScan({ vin: item.vin, decoded });
       notificationSuccess();
-    } catch (e: any) {
-      const entry = { ...item, decodeError: String(e?.message || e), decodedAt: new Date().toISOString() };
+    } catch (e: unknown) {
+      const entry = { ...item, decodeError: errorMessage(e), decodedAt: new Date().toISOString() };
       const isTrade = item.category === CATEGORY.TRADEIN;
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
@@ -710,7 +730,7 @@ export function VinScanScreen() {
       if (isTrade) setTradeInHistory(next);
       else setDealerHistory(next);
       await persistHistory(item.category, next);
-      setLastScan({ vin: item.vin, error: String(e?.message || e) });
+      setLastScan({ vin: item.vin, error: errorMessage(e) });
       notificationError();
     } finally {
       setDecoding(null);
@@ -719,6 +739,7 @@ export function VinScanScreen() {
 
   // ── Save to backend inventory ────────────────────────────────────────
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const saveToInventory = useCallback(async (item: any) => {
     if (!item.decoded) {
       Alert.alert('Decode First', 'Please decode this VIN before adding to inventory');
@@ -744,9 +765,9 @@ export function VinScanScreen() {
       await persistHistory(item.category, next);
       notificationSuccess();
       Alert.alert('Success', `Vehicle added to ${isTrade ? 'Trade-In' : 'Dealer Inventory'}`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       notificationError();
-      Alert.alert('Save Failed', String(e?.message || e));
+      Alert.alert('Save Failed', errorMessage(e));
     }
   }, [dealerHistory, tradeInHistory, addVehicle, isAtLimit, maxInventory, persistHistory]);
 
@@ -788,6 +809,7 @@ export function VinScanScreen() {
 
   // ── Barcode handler ──────────────────────────────────────────────────
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onBarcodeScanned = useCallback(async ({ data }: { data: any }) => {
     if (!scanning) return;
 
@@ -812,6 +834,7 @@ export function VinScanScreen() {
     // Show "VIN FOUND" banner for 800ms, then close scanner
     setVinFoundBanner(v);
     vinFoundAnim.setValue(0);
+    track('vin_scan', 'barcode_success', { vin: v });
     Animated.sequence([
       Animated.timing(vinFoundAnim, { toValue: 1, duration: 180, useNativeDriver: true }),
       Animated.delay(700),
@@ -829,6 +852,7 @@ export function VinScanScreen() {
     if (!cameraRef.current || ocrProcessing || !cameraReady) return;
 
     impactMedium();
+    const finishOcr = startTimer('vin_scan', 'ocr');
 
     // Flash effect
     Animated.sequence([
@@ -840,7 +864,7 @@ export function VinScanScreen() {
     setOcrResults(null);
 
     // AbortController with 30s hard timeout (PTT pattern)
-    const { signal, cleanup: abortCleanup } = abortableTimeout(30000);
+    const { cleanup: abortCleanup } = abortableTimeout(30000);
 
     try {
       const photo = await cameraRef.current.takePictureAsync({
@@ -887,9 +911,11 @@ export function VinScanScreen() {
               notificationSuccess();
               abortCleanup();
               setOcrProcessing(false);
+              finishOcr({ source: 'mlkit', vins_found: allUnique.length, confidence: result.confidence });
               return;
             }
           }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (mlErr: any) {
           // ML Kit failed — continue to cloud fallback silently
           console.warn('[ML Kit]', mlErr?.message);
@@ -909,38 +935,34 @@ export function VinScanScreen() {
 
       setOcrStatus('AI Vision scanning...');
 
-      const apiUrl = await buildApiUrlAsync('/api/vin/extract-from-image');
-      const response = await fetch(apiUrl, {
+      const result = await apiFetch('/api/vin/extract-from-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: photo.base64 }),
-        signal,
+        timeout: 30000,
       });
 
       abortCleanup();
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      const result = await response.json();
 
       if (result.vins && result.vins.length > 0) {
         setOcrResults(result);
         setOcrStatus(`Found ${result.vins.length} VIN${result.vins.length > 1 ? 's' : ''}!`);
         notificationSuccess();
+        finishOcr({ source: 'cloud', vins_found: result.vins.length, confidence: result.confidence });
       } else {
         setOcrResults({ vins: [], confidence: 'low', notes: result.notes || 'No VIN found' });
         setOcrStatus('No VIN detected. Reposition and try again.');
         notificationError();
+        finishOcr({ source: 'cloud', vins_found: 0, confidence: 'low' });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       abortCleanup();
-      if (e.name === 'AbortError') {
+      if (e instanceof Error && e.name === 'AbortError') {
         setOcrStatus('Request timed out (30s). Try again with better lighting.');
+        finishOcr({ source: 'cloud', error: 'timeout' });
       } else {
-        console.warn('[VIN OCR]', e?.message);
+        console.warn('[VIN OCR]', errorMessage(e));
         setOcrStatus('Error. Check connection and try again.');
+        finishOcr({ source: 'cloud', error: 'network' });
       }
       notificationError();
     } finally {
@@ -1450,6 +1472,7 @@ export function VinScanScreen() {
               onSaveToInventory={async () => {
                 await saveToInventory(vehicleDetailItem);
                 // Refresh from history so the save badge updates
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setVehicleDetailItem((prev: any) => ({
                   ...prev,
                   savedToInventoryAt: new Date().toISOString(),

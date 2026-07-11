@@ -83,6 +83,7 @@ class CustomerBrief(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     lead_status: Optional[str] = None
+    preferred_language: Optional[str] = None
     created_at: Optional[str] = None
 
 

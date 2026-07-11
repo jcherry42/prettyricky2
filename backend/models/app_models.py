@@ -78,6 +78,9 @@ class CustomerCreate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     zip_code: Optional[str] = None
+    # Preferred communication language — used by Tower Talk for auto-translation.
+    # One of: 'en' | 'es' | 'fr' | 'ko'. Defaults to English.
+    preferred_language: Optional[str] = "en"
 
 
 class CustomerUpdate(BaseModel):
@@ -98,6 +101,7 @@ class CustomerUpdate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     zip_code: Optional[str] = None
+    preferred_language: Optional[str] = None
 
 
 class Customer(BaseModel):
@@ -117,6 +121,8 @@ class Customer(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(__import__('datetime').timezone.utc))
     sold_at: Optional[datetime] = None  # For auto-delete tracking
     source_id: Optional[str] = None  # For imports
+    # Preferred communication language ('en'|'es'|'fr'|'ko'). Defaults to English.
+    preferred_language: Optional[str] = "en"
 
 
 # ============== VEHICLE ==============

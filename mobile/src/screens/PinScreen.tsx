@@ -19,6 +19,8 @@ import * as Clipboard from 'expo-clipboard';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
+import { getBackendUrlAsync } from '../config/backend';
+import { setBackendUrlOverride, clearBackendUrlOverride } from '../config/backendOverride';
 
 const { width: SW } = Dimensions.get('window');
 const PIN_LENGTH = 5;
@@ -63,6 +65,13 @@ export function PinScreen() {
   const [wipeConfirmText, setWipeConfirmText] = useState('');
   const [wipeBusy, setWipeBusy]           = useState(false);
   const [wipeError, setWipeError]         = useState('');
+
+  // Connection diagnostic state
+  const [showDiag, setShowDiag]                       = useState(false);
+  const [diagUrl, setDiagUrl]                         = useState<string>('');
+  const [diagStatus, setDiagStatus]                   = useState<'idle' | 'checking' | 'ok' | 'fail'>('idle');
+  const [diagDetail, setDiagDetail]                   = useState<string>('');
+  const [diagEditUrl, setDiagEditUrl]                 = useState<string>('');
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const dotAnims  = useRef(Array.from({ length: PIN_LENGTH }, () => new Animated.Value(0))).current;
@@ -221,10 +230,76 @@ export function PinScreen() {
   }, [wipeConfirmText, resetPin]);
 
 
+  // ── Connection diagnostic ─────────────────────────────
+  const openDiagnostic = useCallback(async () => {
+    const url = await getBackendUrlAsync();
+    setDiagUrl(url);
+    setDiagEditUrl(url);
+    setDiagStatus('idle');
+    setDiagDetail('');
+    setShowDiag(true);
+    // Auto-run probe
+    setTimeout(() => runDiagnosticProbe(url), 200);
+  }, []);
+
+  const runDiagnosticProbe = useCallback(async (urlToProbe: string) => {
+    setDiagStatus('checking');
+    setDiagDetail('');
+    if (!urlToProbe) {
+      setDiagStatus('fail');
+      setDiagDetail('No backend URL is configured.');
+      return;
+    }
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(`${urlToProbe.replace(/\/$/, '')}/api/health`, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) {
+        setDiagStatus('ok');
+        setDiagDetail(`Reached ${urlToProbe}. /api/health returned ${res.status}.`);
+      } else {
+        setDiagStatus('fail');
+        setDiagDetail(`Server replied ${res.status}. URL is reachable but backend is unhealthy.`);
+      }
+    } catch (e: unknown) {
+      setDiagStatus('fail');
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('Aborted') || msg.includes('aborted')) {
+        setDiagDetail('Timeout after 8s. Phone may be offline or the URL is unreachable.');
+      } else {
+        setDiagDetail(`Network error: ${msg}`);
+      }
+    }
+  }, []);
+
+  const applyDiagnosticUrl = useCallback(async () => {
+    const cleaned = (diagEditUrl || '').trim();
+    if (cleaned && cleaned !== diagUrl) {
+      await setBackendUrlOverride(cleaned);
+      setDiagUrl(cleaned);
+      await runDiagnosticProbe(cleaned);
+    }
+  }, [diagEditUrl, diagUrl, runDiagnosticProbe]);
+
+  const resetDiagnosticUrl = useCallback(async () => {
+    await clearBackendUrlOverride();
+    const fresh = await getBackendUrlAsync();
+    setDiagUrl(fresh);
+    setDiagEditUrl(fresh);
+    await runDiagnosticProbe(fresh);
+  }, [runDiagnosticProbe]);
+
   // ── Derive status / error display ─────────────────────
   const displayError = isLocked
     ? `Locked — try again in ${lockSecondsLeft}s`
     : (authError && !shaking ? authError : null);
+
+  // Detect a connection error so we can prompt the user to run the diagnostic
+  const isConnectionError = !!displayError && /connection|network|offline|fetch/i.test(displayError);
 
   return (
     <ImageBackground
@@ -237,6 +312,20 @@ export function PinScreen() {
         colors={['rgba(4,6,8,0.82)', 'rgba(10,14,20,0.78)', 'rgba(13,17,23,0.85)']}
         style={[styles.container, { paddingTop: insets.top + 40 }]}
       >
+      {/* Discoverable network-diagnostic button (top-right) — always available, even before login */}
+      <Pressable
+        onPress={openDiagnostic}
+        hitSlop={16}
+        style={({ pressed }) => [
+          styles.diagFab,
+          { top: insets.top + 16 },
+          pressed && { opacity: 0.5 },
+        ]}
+        data-testid="pin-diag-fab"
+      >
+        <Ionicons name="wifi-outline" size={20} color="rgba(255,255,255,0.55)" />
+      </Pressable>
+
       {/* ── Branding ── */}
       <View style={styles.header}>
         <Text style={styles.brandName}>SUPERCHARG'D</Text>
@@ -246,9 +335,21 @@ export function PinScreen() {
       {/* ── Status ── */}
       <Text style={styles.statusText}>{status}</Text>
       {displayError ? (
-        <Text style={[styles.errorText, isLocked && styles.lockedText]}>
-          {displayError}
-        </Text>
+        <>
+          <Text style={[styles.errorText, isLocked && styles.lockedText]}>
+            {displayError}
+          </Text>
+          {isConnectionError ? (
+            <Pressable
+              onPress={openDiagnostic}
+              hitSlop={12}
+              style={({ pressed }) => [{ marginTop: 6, opacity: pressed ? 0.6 : 1 }]}
+              data-testid="pin-connection-diagnostic-btn"
+            >
+              <Text style={styles.diagLink}>Diagnose connection ▸</Text>
+            </Pressable>
+          ) : null}
+        </>
       ) : null}
 
       {/* ── PIN Dots ── */}
@@ -446,6 +547,111 @@ export function PinScreen() {
         </Pressable>
       </Modal>
 
+      {/* ── Connection Diagnostic modal ── */}
+      <Modal
+        visible={showDiag}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDiag(false)}
+      >
+        <Pressable style={styles.overlay} onPress={() => setShowDiag(false)}>
+          <Pressable style={[styles.forgotCard, { borderColor: 'rgba(92,200,255,0.30)' }]} onPress={() => {}}>
+            <View style={styles.forgotHeader}>
+              <Ionicons name="wifi" size={26} color="#5CC8FF" />
+              <Text style={[styles.forgotTitle, { color: '#5CC8FF' }]}>Connection Diagnostic</Text>
+            </View>
+
+            <Text style={styles.forgotDesc}>
+              The app couldn{"'"}t reach the backend. The URL below is what it's trying to use.
+              You can edit it (in case you're testing against a custom server) or reset to default.
+            </Text>
+
+            <Text style={[styles.statusText, { fontSize: 12, color: colors.textMute, marginTop: 8, marginBottom: 4 }]}>
+              CURRENT BACKEND URL
+            </Text>
+            <TextInput
+              value={diagEditUrl}
+              onChangeText={setDiagEditUrl}
+              placeholder="https://your-backend.example.com"
+              placeholderTextColor={colors.textMute}
+              style={[styles.resetInput, { letterSpacing: 0, fontSize: 13, textAlign: 'left', paddingHorizontal: 12 }]}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              returnKeyType="done"
+              onSubmitEditing={applyDiagnosticUrl}
+              data-testid="pin-diag-url-input"
+            />
+
+            <View style={{ marginTop: 12, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: 'rgba(20,24,32,0.7)' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {diagStatus === 'checking' ? (
+                  <Ionicons name="ellipsis-horizontal" size={18} color={colors.textMute} />
+                ) : diagStatus === 'ok' ? (
+                  <Ionicons name="checkmark-circle" size={18} color="#3DDB7C" />
+                ) : diagStatus === 'fail' ? (
+                  <Ionicons name="close-circle" size={18} color="#FF4B4B" />
+                ) : (
+                  <Ionicons name="help-circle-outline" size={18} color={colors.textMute} />
+                )}
+                <Text style={{ color: diagStatus === 'ok' ? '#3DDB7C' : diagStatus === 'fail' ? '#FF4B4B' : colors.text, fontSize: 13, fontWeight: '700' }}>
+                  {diagStatus === 'checking' ? 'Probing /api/health…' : diagStatus === 'ok' ? 'Backend reachable' : diagStatus === 'fail' ? 'Backend unreachable' : 'Not yet probed'}
+                </Text>
+              </View>
+              {diagDetail ? (
+                <Text style={{ color: colors.textMute, fontSize: 12, marginTop: 6, lineHeight: 16 }}>{diagDetail}</Text>
+              ) : null}
+            </View>
+
+            <View style={[styles.resetBtnRow, { marginTop: 16 }]}>
+              <Pressable
+                onPress={resetDiagnosticUrl}
+                style={({ pressed }) => [styles.resetBtn, styles.resetBtnCancel, pressed && { opacity: 0.8 }]}
+                data-testid="pin-diag-reset-btn"
+              >
+                <Ionicons name="refresh" size={14} color={colors.text} />
+                <Text style={styles.resetBtnCancelText}>RESET TO DEFAULT</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => runDiagnosticProbe(diagEditUrl)}
+                style={({ pressed }) => [
+                  styles.resetBtn,
+                  { borderColor: 'rgba(92,200,255,0.4)', backgroundColor: 'rgba(92,200,255,0.15)' },
+                  pressed && { opacity: 0.8 },
+                ]}
+                data-testid="pin-diag-test-btn"
+              >
+                <Ionicons name="pulse" size={14} color="#5CC8FF" />
+                <Text style={[styles.resetBtnConfirmText, { color: '#5CC8FF' }]}>TEST</Text>
+              </Pressable>
+            </View>
+
+            {diagEditUrl !== diagUrl ? (
+              <Pressable
+                onPress={applyDiagnosticUrl}
+                style={({ pressed }) => [
+                  styles.resetBtn,
+                  { marginTop: 10, alignSelf: 'stretch', borderColor: colors.gold, backgroundColor: 'rgba(214,178,94,0.15)' },
+                  pressed && { opacity: 0.8 },
+                ]}
+                data-testid="pin-diag-save-btn"
+              >
+                <Ionicons name="save" size={14} color={colors.gold} />
+                <Text style={[styles.resetBtnConfirmText, { color: colors.gold }]}>SAVE NEW URL</Text>
+              </Pressable>
+            ) : null}
+
+            <Pressable
+              onPress={() => setShowDiag(false)}
+              style={{ marginTop: 14, alignSelf: 'center' }}
+              hitSlop={10}
+            >
+              <Text style={{ color: colors.textMute, fontSize: 13 }}>Close</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       {/* ── One-time Reset Code display (shown after PIN setup) ── */}
       <Modal
         visible={!!pendingResetCode}
@@ -508,6 +714,15 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 16, color: colors.text, marginBottom: 30, fontWeight: '500' },
   errorText:  { fontSize: 13, color: '#FF4B4B', marginTop: -20, marginBottom: 15, textAlign: 'center', paddingHorizontal: 30 },
   lockedText: { color: '#FF8C00' },
+  diagLink:   { fontSize: 13, color: '#5CC8FF', textDecorationLine: 'underline', textDecorationColor: 'rgba(92,200,255,0.4)', marginBottom: 15 },
+  diagFab: {
+    position: 'absolute', right: 16,
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(20,24,32,0.55)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)',
+    zIndex: 10,
+  },
 
   dotsRow: { flexDirection: 'row', gap: 18, marginBottom: 50 },
   dot: {
