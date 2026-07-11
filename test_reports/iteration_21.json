@@ -1,0 +1,107 @@
+{
+  "summary": "Iteration 21 COMPREHENSIVE production-readiness audit — 36/36 pytest tests PASS. No CRITICAL crashes, no 500s under load, no PII leaks in logs or responses, no LLM API key exposure, brute-force lockout works (5 attempts → 429 with Retry-After), refresh-token rotation + family revocation works, logout revokes only own jti, VIN decode handles bad chars gracefully (no 500), all 4 languages (EN/ES/FR/KO) translate correctly with no cache-key collision, service-mode escalation returns risk flags for angry customers, intelligence 2nd-call cache hit <2s, tower-talk auth-enforced. HOWEVER — found several MEDIUM validation/hardening gaps that should be closed before app-store submission (details below).",
+  "top_priority_findings": {
+    "critical": [],
+    "high": [
+      {
+        "area": "Input validation — CustomerCreate",
+        "issue": "POST /api/customers silently accepts an invalid `preferred_language` value (e.g. 'zz') and persists it verbatim. This contradicts the spec ('should either default to en or return 422') and lets bogus locales leak into downstream translate/UI code. Reproduced: POST {preferred_language: 'zz'} → 201 with preferred_language='zz' stored.",
+        "endpoint": "POST /api/customers, PATCH /api/customers/{id}",
+        "fix": "Change CustomerCreate.preferred_language / CustomerUpdate.preferred_language to `Literal['en','es','fr','ko']` in /app/backend/models/app_models.py (L83, L100, L125). FastAPI will then reject invalid values with 422 automatically."
+      },
+      {
+        "area": "Input validation — email format",
+        "issue": "POST /api/customers accepts obviously malformed email 'not-an-email' with 201. No RFC-5322 validation. Bad data propagates to CRM exports and possibly email flows.",
+        "endpoint": "POST /api/customers",
+        "fix": "Change `email: Optional[str]` to `email: Optional[EmailStr]` in CustomerCreate (pydantic will reject with 422). Requires `email-validator` package which is already in most FastAPI deployments."
+      }
+    ],
+    "medium": [
+      {
+        "area": "/api/ready honesty",
+        "issue": "/api/ready returns only {'ready': true} — no `db` or dependency status. Spec requires it to include db status and return 503 if MongoDB is down. Currently a Kubernetes/monitoring probe cannot distinguish a healthy app from one whose Mongo has died.",
+        "endpoint": "GET /api/ready",
+        "fix": "In server.py `/ready` handler, do `await db.command('ping')` inside try/except and return 503 with `{'ready': false, 'db': 'down'}` on failure. Return `{'ready': true, 'db': 'up'}` on success."
+      },
+      {
+        "area": "Input validation — long free-text",
+        "issue": "POST /api/customers accepts a 10,000-char `notes` field silently (201). No max_length. Repeated abuse can grow docs indefinitely and slow down list/read queries.",
+        "endpoint": "POST /api/customers, PATCH /api/customers/{id}",
+        "fix": "Add `notes: Optional[str] = Field(default=None, max_length=4000)` on CustomerCreate/CustomerUpdate."
+      },
+      {
+        "area": "Logout idempotency vs spec",
+        "issue": "Spec requested: 'Second call with same token returns 401, not 200.' Actual behavior: /auth/logout is idempotent — second call still returns 200 (with revoked=true because jti is now in the denylist, but no 401). This is a common industry pattern (don't leak token validity info via logout) — but it diverges from the stated acceptance criterion. Recommend deciding: either keep idempotent 200 (safer against enumeration) OR return 401 on second call per spec.",
+        "endpoint": "POST /api/auth/logout",
+        "fix": "If spec-fidelity matters: after `_is_jti_revoked(jti)` check in logout, return 401. If idempotent behavior is preferred (recommended for security), update the spec/PRD instead."
+      },
+      {
+        "area": "Rate limiting — /api/tower-talk",
+        "issue": "6 rapid /tower-talk requests all returned 200. No 429 was ever emitted. Under sustained abuse a single client could burn the entire EMERGENT_LLM_KEY quota. No per-user or per-IP rate cap on the LLM-heavy endpoints.",
+        "endpoint": "/api/tower-talk, /api/intelligence/analyze, /api/translate",
+        "fix": "Add slowapi (or in-house) rate limiter — e.g. 30 req/min/user for tower-talk. FastAPI has slowapi + fastapi-limiter that integrate cleanly."
+      },
+      {
+        "area": "Translate whitelist bypass",
+        "issue": "Spec says Japanese was 'removed', but /api/translate with target_lang='ja' returns valid Japanese ('こんにちは') because the code falls through to the raw language code when it's not in the {en,es,fr,ko} dict. Not a crash (good) but silently supports non-approved languages.",
+        "endpoint": "POST /api/translate",
+        "fix": "In routes/tower_talk_v2.py L386, if target_lang not in lang_names, either 422 or force EN. Use `target_lang: Literal['en','es','fr','ko']` on TranslateRequest for defense-in-depth."
+      }
+    ],
+    "low": [
+      {
+        "area": "Empty text 400 vs 422 consistency",
+        "issue": "POST /api/translate with empty text returns 400 (not 422). Elsewhere pydantic gives 422 for validation failures. Minor inconsistency.",
+        "fix": "Use `text: str = Field(..., min_length=1)` on TranslateRequest → pydantic 422."
+      },
+      {
+        "area": "Password hash for reset code",
+        "issue": "In pin_auth.py, `reset_code_hash` uses bcrypt via `hash_password`. bcrypt truncates at 72 bytes — fine here (8 chars) but tag as intentional in code comments."
+      }
+    ]
+  },
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/customers", "issue": "No preferred_language enum validation"},
+      {"endpoint": "/api/customers", "issue": "No email format validation"},
+      {"endpoint": "/api/customers", "issue": "No notes max_length"},
+      {"endpoint": "/api/ready", "issue": "Does not include db/dependency status (dishonest probe)"},
+      {"endpoint": "/api/tower-talk /api/intelligence/analyze /api/translate", "issue": "No rate limiting"},
+      {"endpoint": "/api/translate", "issue": "target_lang whitelist not enforced (ja passes through)"},
+      {"endpoint": "/api/auth/logout", "issue": "Idempotent 200 on re-use vs spec's expected 401"}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration21_prod_audit.py",
+    "/app/test_reports/pytest/iteration21.xml"
+  ],
+  "action_items": [
+    "Add Literal enum to preferred_language on CustomerCreate/CustomerUpdate/Customer",
+    "Switch email to EmailStr on CustomerCreate",
+    "Add max_length=4000 to notes",
+    "Enhance /api/ready to actually ping MongoDB and return 503 when down",
+    "Add rate limiting to LLM-heavy endpoints (/tower-talk, /intelligence/analyze, /translate)",
+    "Enforce target_lang whitelist on /api/translate (Literal or explicit check)",
+    "Decide + document /api/auth/logout second-call contract (idempotent 200 vs spec 401)"
+  ],
+  "critical_code_review_comments": [
+    "models/app_models.py — preferred_language typed as Optional[str] with default 'en'. Any string accepted. Change to Literal['en','es','fr','ko'].",
+    "routes/customers_v2.py L216-256 — legacy POST /customers has no email or length validation; will happily insert garbage. Switch to Pydantic model with EmailStr, max_length constraints.",
+    "routes/tower_talk_v2.py L361-433 — /translate has no rate limiting, no target-language whitelist enforcement, and returns HTTP 400 for empty text (inconsistent w/ 422 elsewhere).",
+    "server.py /ready — Only returns {'ready': true}. Not honest per Kubernetes readiness-probe conventions; should verify Mongo reachability.",
+    "routes/pin_auth.py L428-453 — /auth/logout is fully idempotent (returns 200 for re-use). If spec fidelity matters, add a jti-revoked check before returning. If not, update PRD to codify idempotent behavior.",
+    "ai_gateway — no per-user rate limits observed. 6 rapid /tower-talk calls all succeed; sustained load could exhaust the shared EMERGENT_LLM_KEY quota."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iteration21_prod_audit.py (new — 36 tests across 9 test classes covering auth, tower-talk, intelligence, translate, VIN, customers, rate limits, dashboard, privacy, health)"
+  ],
+  "success_rate": {"backend": "100% (36/36) — all tests pass; findings are structural gaps, not runtime failures", "frontend": "N/A (skipped as requested)"},
+  "test_credentials": "PIN=11111",
+  "seed_data_creation": "TEST_iter21_* customers created during test run and deleted in test teardowns. Two additional TEST_lang/TEST_email customers created via curl during exploratory audit and manually cleaned up. DB state clean.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "iter21 audit test file is comprehensive and stateless — keep in regression suite. Response schema for /api/intelligence/analyze uses camelCase: primaryIntent, recommendedStrategy, responses.recommended (NOT suggestedResponse), riskFlags, nextBestAction.action, customerSentiment.label, conversationStage, objection.detected, latency_ms.total_ms. Rate-limit tests intentionally stay under 10 concurrent requests to avoid burning EMERGENT_LLM_KEY quota. Brute-force test consumes a 30-second lockout window then recovers — sleep(32) needed. All 6 medium-priority hardening findings are documented in top_priority_findings.medium — main agent should tackle them before app-store submission.",
+  "rca of the issue": "No blocking bugs found. The audit surfaced 6 medium-priority hardening gaps (input validation, honest /ready, rate limiting, translate whitelist, logout idempotency divergence). Root cause pattern: several endpoints use loose Optional[str] typing rather than pydantic Literal/EmailStr/constrained fields, so invalid data is silently accepted. Fix pattern: tighten Pydantic models across CustomerCreate/CustomerUpdate/TranslateRequest with Literal/EmailStr/max_length constraints — FastAPI will emit 422 automatically. No code deletion required, only additive type hints."
+}
