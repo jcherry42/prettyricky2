@@ -47,7 +47,7 @@ function friendlyBackendError(e: unknown) {
   return msg;
 }
 
-const INQUIRY_TYPES = [
+const INQUIRY_TYPES_SALES = [
   { id: 'new_lead',           label: 'New Lead',  icon: 'star' },
   { id: 'price_question',     label: 'Price',     icon: 'pricetag' },
   { id: 'availability',       label: 'In Stock',    icon: 'calendar' },
@@ -57,6 +57,21 @@ const INQUIRY_TYPES = [
   { id: 'follow_up',          label: 'Follow Up',  icon: 'time' },
   { id: 'objection',          label: 'Objections', icon: 'chatbubble' },
   { id: 'appointment_setting', label: 'Appt',     icon: 'location' },
+];
+
+// Service-mode inquiry types mirror the Service Emergency Inquiry Modal
+// (SERVICE_INQUIRY_TYPES) MINUS 'schedule_appointment' per product spec.
+// Icons are trimmed to the base name (no '-outline') to match Tower Talk's pill style.
+const INQUIRY_TYPES_SERVICE = [
+  { id: 'waiter_status',     label: 'Waiter',    icon: 'timer' },
+  { id: 'estimate_upsell',   label: 'Estimate',  icon: 'clipboard' },
+  { id: 'comeback',          label: 'Comeback',  icon: 'refresh-circle' },
+  { id: 'warranty_claim',    label: 'Warranty',  icon: 'shield-checkmark' },
+  { id: 'parts_hold',        label: 'Parts',     icon: 'construct' },
+  { id: 'tech_consult',      label: 'Tech',      icon: 'people' },
+  { id: 'loaner_request',    label: 'Loaner',    icon: 'car-sport' },
+  { id: 'declined_service',  label: 'Declined',  icon: 'close-circle' },
+  { id: 'pickup_ready',      label: 'Pickup',    icon: 'checkmark-done' },
 ];
 
 const PRESET_RESPONSES = {
@@ -149,6 +164,13 @@ function VoiceWaveform() {
 export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible: boolean; onClose: () => void; onOpenSettings: () => void }) {
   const lingo = useLingo();
   const { isService: isServiceMode } = useMode();
+
+  // Inquiry types swap based on Service Mode. When the app switches personas,
+  // reset the selected inquiry so we never carry a stale sales id into service.
+  const inquiryTypes = React.useMemo(
+    () => (isServiceMode ? INQUIRY_TYPES_SERVICE : INQUIRY_TYPES_SALES),
+    [isServiceMode],
+  );
   const { settings } = useAppSettings();
   const session = useSession();
   const lang = settings.defaultTargetLanguage;
@@ -175,6 +197,16 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const [intelligencePending, setIntelligencePending] = useState(false);
 
   const [selectedInquiry, setSelectedInquiry] = useState(savedTT?.selectedInquiry || 'new_lead');
+
+  // If persona flips (e.g. user toggles Service Mode from the Command Center)
+  // and the currently-selected inquiry id doesn't exist in the new list,
+  // snap to the first valid one for this persona.
+  React.useEffect(() => {
+    const validIds = inquiryTypes.map((t) => t.id);
+    if (!validIds.includes(selectedInquiry)) {
+      setSelectedInquiry(validIds[0]);
+    }
+  }, [inquiryTypes, selectedInquiry]);
   const [presetIndex, setPresetIndex] = useState<number | null>(null);
 
   // Auto-save Tower Talk form drafts to session
@@ -584,7 +616,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
                 <View style={styles.inquiryBlock}>
                   <Text style={styles.sectionLabel}>INQUIRY TYPE</Text>
                   <View style={styles.inquiryGrid}>
-                    {INQUIRY_TYPES.map((it) => {
+                    {inquiryTypes.map((it) => {
                       const active = selectedInquiry === it.id;
                       const c = colors.gold; // accent color
                       return (
