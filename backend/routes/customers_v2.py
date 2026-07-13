@@ -27,8 +27,8 @@ Notes:
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Any, Dict, Optional
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing import Any, Dict, Literal, Optional
 from datetime import datetime, timezone
 import uuid
 
@@ -195,22 +195,32 @@ async def list_customers_filtered(
 
 # Legacy endpoint compatibility (LicenseScanner + ImportModal)
 class LegacyCustomerCreateRequest(BaseModel):
-    firstName: Optional[str] = None
-    lastName: Optional[str] = None
-    first_name: Optional[str] = None  # Modern snake_case
-    last_name: Optional[str] = None
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    address: Optional[str] = None
-    policyNumber: Optional[str] = None
+    firstName: Optional[str] = Field(default=None, max_length=100)
+    lastName: Optional[str] = Field(default=None, max_length=100)
+    first_name: Optional[str] = Field(default=None, max_length=100)  # Modern snake_case
+    last_name: Optional[str] = Field(default=None, max_length=100)
+    name: Optional[str] = Field(default=None, max_length=200)
+    phone: Optional[str] = Field(default=None, max_length=40)
+    email: Optional[EmailStr] = None
+    address: Optional[str] = Field(default=None, max_length=300)
+    policyNumber: Optional[str] = Field(default=None, max_length=100)
     leadStatus: Optional[str] = None
     lead_status: Optional[str] = None
     source: Optional[str] = None
-    vehicleOfInterest: Optional[str] = None
+    vehicleOfInterest: Optional[str] = Field(default=None, max_length=200)
     tradeVehicle: Optional[Dict[str, Any]] = None
     license_image: Optional[str] = None
-    preferred_language: Optional[str] = None  # 'en'|'es'|'fr'|'ko'
+    notes: Optional[str] = Field(default=None, max_length=4000)
+    preferred_language: Optional[Literal['en', 'es', 'fr', 'ko']] = None
+
+    @field_validator('email', mode='before')
+    @classmethod
+    def _empty_email_to_none(cls, v):
+        # Callers commonly submit "" from empty form fields; treat as None so
+        # EmailStr doesn't fail on it. Any non-empty string still gets full RFC validation.
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
 
 
 @router.post("/customers", status_code=201)

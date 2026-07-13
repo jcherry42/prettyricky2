@@ -17,8 +17,11 @@ Notes:
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Any, Dict, Optional
+from pydantic import BaseModel, Field
+from typing import Any, Dict, Literal, Optional
+from fastapi import Request as FastAPIRequest
+
+from security.llm_rate_limit import enforce as enforce_llm_rate
 from datetime import datetime, timezone
 import os
 import uuid
@@ -104,9 +107,9 @@ class TowerTalkResponse(BaseModel):
 
 
 class TranslateRequest(BaseModel):
-    text: str
-    source_lang: str = "auto"  # "auto", "en", "es"
-    target_lang: str = "es"    # "en", "es"
+    text: str = Field(..., min_length=1, max_length=5000)
+    source_lang: str = Field(default="auto", max_length=8)  # "auto", "en", "es", "fr", "ko"
+    target_lang: Literal["en", "es", "fr", "ko"] = "es"     # Strict whitelist — 422 on anything else
     performanceMode: Optional[bool] = False
 
 
@@ -133,7 +136,8 @@ def init_tower_talk_routes(_llm_key: str | None = None, vector_search=None, tele
 
 
 @router.post("/tower-talk", response_model=TowerTalkResponse)
-async def tower_talk(request: TowerTalkRequest):
+async def tower_talk(request: TowerTalkRequest, http_request: FastAPIRequest):
+    await enforce_llm_rate(http_request, "tower_talk")
     """Generate AI-powered personalized sales message with persuasion psychology.
     Enriched with vector search context from sales knowledge base."""
     try:
@@ -359,7 +363,8 @@ RULE 7 — SELF-AUDIT: Before output, verify: (a) No emojis? (b) Ends with speci
 
 
 @router.post("/translate", response_model=TranslateResponse)
-async def translate_text(request: TranslateRequest):
+async def translate_text(request: TranslateRequest, http_request: FastAPIRequest):
+    await enforce_llm_rate(http_request, "translate")
     """Fast translation endpoint using GPT-4o-mini with in-memory caching."""
     global _translation_cache
 

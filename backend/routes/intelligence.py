@@ -14,6 +14,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from security.llm_rate_limit import enforce as enforce_llm_rate
 from services.intelligence import analyze
 from services.intelligence.schemas import (
     AutomotiveInteractionInput,
@@ -41,7 +42,10 @@ async def analyze_interaction(
     - Sales mode default: gpt-4o-mini (fast).
     - Service mode default: gpt-4o (higher stakes).
     - performanceMode=true: locks to gpt-4o for both.
+
+    Rate limit: 20 req/min per authenticated user.
     """
+    await enforce_llm_rate(request, "intelligence")
     try:
         out, latency = await analyze(body.input, high_performance=body.performanceMode)
     except ValueError as e:

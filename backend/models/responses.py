@@ -22,6 +22,7 @@ class HealthResponse(BaseModel):
 
 class ReadyResponse(BaseModel):
     ready: bool
+    db: Optional[str] = None  # 'up' | 'down' | 'unknown'
 
 
 class RootResponse(BaseModel):

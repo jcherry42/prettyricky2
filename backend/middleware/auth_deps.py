@@ -13,7 +13,7 @@ To enforce auth on an entire router when including it:
   api_router.include_router(some_router, dependencies=[Depends(require_auth)])
 """
 import logging
-from fastapi import Depends, HTTPException, Header
+from fastapi import Depends, HTTPException, Header, Request
 from typing import Optional
 
 from security.auth import verify_token
@@ -41,9 +41,10 @@ async def optional_auth(authorization: Optional[str] = Header(None)):
     return {"authenticated": False}
 
 
-async def require_auth(authorization: Optional[str] = Header(None)):
+async def require_auth(request: Request, authorization: Optional[str] = Header(None)):
     """Strict auth — validates JWT Bearer token.
-    Returns user dict or raises 401."""
+    Returns user dict or raises 401. Also attaches user_id to request.state so
+    downstream middleware/handlers (rate limiting, audit logging) can key off it."""
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Authentication required")
 
@@ -54,6 +55,9 @@ async def require_auth(authorization: Optional[str] = Header(None)):
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token: no subject")
+        # Attach for downstream consumers
+        request.state.user_id = user_id
+        request.state.sub = user_id
         return {
             "user_id": user_id,
             "type": payload.get("type", "access"),

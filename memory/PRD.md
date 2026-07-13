@@ -401,3 +401,46 @@ an isolated route so existing Tower Talk / Translate flows carry zero regression
 - P1: Real POSTHOG key.
 - Enhancement candidates: language-pack onboarding, translation-quality feedback loop, Risk Radar drill-down.
 
+
+### Production-Readiness Audit + Full Hardening (Feb 2026, iter21-22)
+
+**Delivered — iter21 broad audit (36/36 pass, 9 findings) + iter22 fixes (all closed):**
+
+Comprehensive audit swept every core flow — sales, service, translation, VIN,
+license, auth, network-recovery — and produced 9 findings. All fixed.
+
+1. **Input validation tightened across all customer routes**
+   - `email` → `EmailStr` (RFC-validated) on both `CustomerCreate` and legacy
+     `LegacyCustomerCreateRequest`; empty string coerces to None (form-friendly).
+   - `notes` → `Field(max_length=4000)` — 10K-char submissions now rejected 422.
+   - `preferred_language` → `Literal['en','es','fr','ko']` — 'zz' etc. return 422.
+   - All string fields now have `max_length` caps (first_name/last_name 100,
+     address 300, license_number 64, etc.) to prevent memory-blowup attacks.
+
+2. **`/api/translate` locked down**
+   - `target_lang` → `Literal['en','es','fr','ko']` — 'ja', 'zh', etc. return 422.
+   - `text` → `Field(min_length=1, max_length=5000)` — empty submissions get 422.
+
+3. **Per-endpoint LLM rate limiting** (`/app/backend/security/llm_rate_limit.py`)
+   - `/api/tower-talk` 20 req/min/user
+   - `/api/intelligence/analyze` 20 req/min/user
+   - `/api/translate` 40 req/min/user (cached hits are cheap)
+   - Returns HTTP 429 with `Retry-After` header per RFC 7231.
+   - Verified firing at exactly the 41st translate call in <60s.
+   - Per-user (JWT sub) keying with IP fallback for unauth endpoints.
+
+4. **`require_auth` now populates `request.state.user_id`**
+   - Enables downstream middleware (rate limiter, audit logging) to key per user.
+
+5. **`/api/ready` is now honest**
+   - Response always includes `db: "up" | "down"` field.
+   - Returns 503 with `{"ready":false,"db":"down","reason":...}` when Mongo ping fails.
+
+### P1 (High) — remaining
+- Real `POSTHOG_API_KEY` in backend `.env` to activate PostHog forwarding.
+
+### Next / Backlog
+- Language-pack onboarding, translation-quality feedback loop, Risk Radar drill-down.
+- Optional: consider migrating in-process rate-limit store to Redis for
+  multi-instance deployments.
+

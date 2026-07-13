@@ -3,10 +3,15 @@ Enhanced Customer & Vehicle Models
 Supports full CRM functionality with interaction tracking
 """
 
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, EmailStr, Field
+from typing import List, Literal, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
+
+
+# Supported languages for CustomerRecord.preferred_language.
+# Any value outside this literal will be rejected with 422 by FastAPI/Pydantic.
+PreferredLanguage = Literal['en', 'es', 'fr', 'ko']
 
 
 class LeadStatus(str, Enum):
@@ -60,48 +65,48 @@ class CustomerInteraction(BaseModel):
 # ============== CUSTOMER ==============
 
 class CustomerCreate(BaseModel):
-    first_name: str
-    last_name: str
-    phone: str = ""
-    email: Optional[str] = None
-    address: Optional[str] = None
+    first_name: str = Field(..., max_length=100)
+    last_name: str = Field(..., max_length=100)
+    phone: str = Field(default="", max_length=40)
+    email: Optional[EmailStr] = None
+    address: Optional[str] = Field(default=None, max_length=300)
     lead_source: LeadSource = LeadSource.MANUAL
     lead_status: LeadStatus = LeadStatus.NEW
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(default=None, max_length=4000)
     vehicle_interests: List[str] = Field(default_factory=list, max_length=2)  # Max 2 vehicles
     trade_in_vehicle_id: Optional[str] = None
     # License scan fields
     license_image_url: Optional[str] = None
-    license_number: Optional[str] = None
+    license_number: Optional[str] = Field(default=None, max_length=64)
     license_dob: Optional[str] = None
     license_expiration: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    zip_code: Optional[str] = None
+    city: Optional[str] = Field(default=None, max_length=100)
+    state: Optional[str] = Field(default=None, max_length=100)
+    zip_code: Optional[str] = Field(default=None, max_length=20)
     # Preferred communication language — used by Tower Talk for auto-translation.
-    # One of: 'en' | 'es' | 'fr' | 'ko'. Defaults to English.
-    preferred_language: Optional[str] = "en"
+    # Strict enum: only 'en' | 'es' | 'fr' | 'ko' accepted. Others → 422.
+    preferred_language: Optional[PreferredLanguage] = "en"
 
 
 class CustomerUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
-    address: Optional[str] = None
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
+    phone: Optional[str] = Field(default=None, max_length=40)
+    email: Optional[EmailStr] = None
+    address: Optional[str] = Field(default=None, max_length=300)
     lead_source: Optional[LeadSource] = None
     lead_status: Optional[LeadStatus] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(default=None, max_length=4000)
     vehicle_interests: Optional[List[str]] = None
     trade_in_vehicle_id: Optional[str] = None
     license_image_url: Optional[str] = None
-    license_number: Optional[str] = None
+    license_number: Optional[str] = Field(default=None, max_length=64)
     license_dob: Optional[str] = None
     license_expiration: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    zip_code: Optional[str] = None
-    preferred_language: Optional[str] = None
+    city: Optional[str] = Field(default=None, max_length=100)
+    state: Optional[str] = Field(default=None, max_length=100)
+    zip_code: Optional[str] = Field(default=None, max_length=20)
+    preferred_language: Optional[PreferredLanguage] = None
 
 
 class Customer(BaseModel):

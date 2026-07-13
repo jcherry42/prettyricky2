@@ -449,15 +449,16 @@ async def health_check():
 
 @api_router.get("/ready", response_model=ReadyResponse)
 async def readiness_check(request: Request):
-    """Readiness probe — returns 503 until app is fully initialized."""
+    """Readiness probe — returns 503 until app is fully initialized OR if DB is down.
+    Response ALWAYS includes db status for observability (kubernetes/monitoring probes)."""
     if not getattr(request.app.state, 'ready', False):
-        raise HTTPException(status_code=503, detail="Service not ready")
-    # Quick DB ping to verify connectivity
+        raise HTTPException(status_code=503, detail={"ready": False, "db": "unknown", "reason": "app_starting"})
+    # Verify Mongo connectivity
     try:
         await db.command("ping")
-    except Exception:
-        raise HTTPException(status_code=503, detail="Database unavailable")
-    return {"ready": True}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail={"ready": False, "db": "down", "reason": str(e)[:200]})
+    return {"ready": True, "db": "up"}
 
 
 @api_router.get("/metrics", response_model=MetricsResponse)
