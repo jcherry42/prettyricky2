@@ -760,11 +760,7 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                   <Ionicons name="construct" size={18} color={settings.serviceMode ? '#FFA500' : colors.textMute} />
                   <SectionTitle>Service Mode</SectionTitle>
                 </View>
-                <Text style={{ color: colors.textMute, fontSize: 12, marginTop: 6, marginBottom: 12, lineHeight: 16 }}>
-                  {settings.serviceMode
-                    ? 'Service Advisor workflow active. Tower Talk, VIN scan, and Intake use service-department terminology (RO, comeback, waiter, warranty claim). Toggle OFF to return to Retail Sales mode.'
-                    : 'Retail Sales workflow active. Toggle ON to switch the entire app to Service Advisor mode — same features, service-department lingo.'}
-                </Text>
+                <View style={{ height: 12 }} />
                 <Pressable
                   onPress={() => { impactLight(); setServiceMode(!settings.serviceMode); }}
                   style={({ pressed }) => [styles.toggle, settings.serviceMode && styles.toggleOn, pressed && { opacity: 0.9 }]}
@@ -783,8 +779,8 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 </View>
                 <Text style={{ color: colors.textMute, fontSize: 12, marginTop: 6, marginBottom: 12, lineHeight: 16 }}>
                   {settings.performanceMode
-                    ? 'GPT-4o is locked in for every AI response — Tower Talk, Translate, and Intelligence — for maximum reasoning quality. Slightly slower, top-tier output.'
-                    : 'Balanced mode: GPT-4o-mini for fast tasks (translate, sales) and GPT-4o for high-stakes tasks (service, VIN). Toggle ON to force GPT-4o everywhere.'}
+                    ? 'GPT-4o locked in everywhere. Top-tier reasoning, slightly slower.'
+                    : 'Balanced. Toggle ON to force GPT-4o for every AI response.'}
                 </Text>
                 <Pressable
                   onPress={() => { impactLight(); setPerformanceMode(!settings.performanceMode); }}

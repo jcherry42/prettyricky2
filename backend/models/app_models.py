@@ -3,7 +3,7 @@ Enhanced Customer & Vehicle Models
 Supports full CRM functionality with interaction tracking
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import List, Literal, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -12,6 +12,20 @@ from enum import Enum
 # Supported languages for CustomerRecord.preferred_language.
 # Any value outside this literal will be rejected with 422 by FastAPI/Pydantic.
 PreferredLanguage = Literal['en', 'es', 'fr', 'ko']
+
+
+def _empty_str_to_none(v):
+    """Coerce empty strings and whitespace-only strings to None.
+
+    License scans and offline queue submissions frequently send `email: ""`
+    for fields the OCR couldn't extract. EmailStr rejects "" outright, so we
+    normalize before validation.
+    """
+    if v is None:
+        return None
+    if isinstance(v, str) and not v.strip():
+        return None
+    return v
 
 
 class LeadStatus(str, Enum):
@@ -87,6 +101,16 @@ class CustomerCreate(BaseModel):
     # Strict enum: only 'en' | 'es' | 'fr' | 'ko' accepted. Others → 422.
     preferred_language: Optional[PreferredLanguage] = "en"
 
+    # Normalize common empty-string submissions from OCR / license-scan flows
+    # to None BEFORE Pydantic runs stricter validators (EmailStr, etc).
+    @field_validator('email', 'address', 'notes', 'license_number', 'license_dob',
+                     'license_expiration', 'city', 'state', 'zip_code',
+                     'trade_in_vehicle_id', 'license_image_url',
+                     mode='before')
+    @classmethod
+    def _empty_to_none(cls, v):
+        return _empty_str_to_none(v)
+
 
 class CustomerUpdate(BaseModel):
     first_name: Optional[str] = Field(default=None, max_length=100)
@@ -107,6 +131,14 @@ class CustomerUpdate(BaseModel):
     state: Optional[str] = Field(default=None, max_length=100)
     zip_code: Optional[str] = Field(default=None, max_length=20)
     preferred_language: Optional[PreferredLanguage] = None
+
+    @field_validator('email', 'address', 'notes', 'license_number', 'license_dob',
+                     'license_expiration', 'city', 'state', 'zip_code',
+                     'trade_in_vehicle_id', 'license_image_url',
+                     mode='before')
+    @classmethod
+    def _empty_to_none(cls, v):
+        return _empty_str_to_none(v)
 
 
 class Customer(BaseModel):
