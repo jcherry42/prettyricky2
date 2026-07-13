@@ -47,6 +47,32 @@ function friendlyBackendError(e: unknown) {
   return msg;
 }
 
+// Starter phrases pre-populated into the situation text field when an inquiry
+// pill is tapped. Only applied when the field is empty — never overwrites the
+// rep's own typing.
+const SITUATION_STARTERS: Record<string, string> = {
+  // Sales
+  new_lead: 'Customer just reached out about ',
+  price_question: 'Customer wants to know the price on ',
+  availability: 'Customer asking if we have ',
+  trade_in: "Customer wants to know their trade-in value on their ",
+  financing: 'Customer has a financing question about ',
+  test_drive: 'Customer wants to schedule a test drive of ',
+  follow_up: "It's been a few days since we last spoke — following up about ",
+  objection: 'Customer objection: ',
+  appointment_setting: 'Customer wants to come in — needs an appointment for ',
+  // Service (mirrors SERVICE_INQUIRY_TYPES minus schedule_appointment)
+  waiter_status: 'Waiter needs an update on their ',
+  estimate_upsell: 'Presenting the estimate for ',
+  comeback: 'Customer is coming back in — same issue on their ',
+  warranty_claim: 'Customer asking about warranty coverage on ',
+  parts_hold: "Parts order status for the customer's ",
+  tech_consult: 'Customer wants to talk to the tech about their ',
+  loaner_request: 'Customer is asking about a loaner while we work on their ',
+  declined_service: 'Customer declined the recommended service on their ',
+  pickup_ready: 'Their vehicle is ready — walking them through what we did on their ',
+};
+
 const INQUIRY_TYPES_SALES = [
   { id: 'new_lead',           label: 'New Lead',  icon: 'star' },
   { id: 'price_question',     label: 'Price',     icon: 'pricetag' },
@@ -629,6 +655,12 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
                             setReply('');
                             setDisplayedReply('');
                             setTranslated('');
+                            // Pre-populate the situation field with a starter
+                            // phrase — but ONLY if the rep hasn't typed anything.
+                            const starter = SITUATION_STARTERS[it.id];
+                            if (starter && !situation.trim()) {
+                              setSituation(starter);
+                            }
                           }}
                           style={({ pressed }) => [
                             styles.inquiryPill,

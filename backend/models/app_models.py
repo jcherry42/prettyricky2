@@ -32,8 +32,11 @@ class LeadStatus(str, Enum):
     NEW = "new"
     CONTACTED = "contacted"
     QUALIFIED = "qualified"
+    APPOINTMENT = "appointment"
     NEGOTIATING = "negotiating"
     SOLD = "sold"
+    SERVICE = "service"
+    # Legacy value kept for backward compatibility with older records.
     LOST = "lost"
 
 

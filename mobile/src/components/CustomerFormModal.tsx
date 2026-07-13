@@ -15,7 +15,7 @@ const STATUS_OPTIONS = [
   { value: 'appointment', label: 'Appointment', color: colors.green },
   { value: 'negotiating', label: 'Negotiating', color: '#FF9500' },
   { value: 'sold', label: 'Sold', color: colors.green },
-  { value: 'lost', label: 'Lost', color: colors.red },
+  { value: 'service', label: 'Service', color: '#FFA500' },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -242,18 +242,22 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
               blurOnSubmit={false}
             />
 
-            {/* Vehicle Interest */}
-            <Text style={styles.sectionTitle}>VEHICLE INTEREST</Text>
+            {/* Vehicle Interest — becomes "Repair Order #" when the customer
+                is flagged as Service (advisor workflow, not sales). */}
+            <Text style={styles.sectionTitle}>
+              {leadStatus === 'service' ? 'REPAIR ORDER #' : 'VEHICLE INTEREST'}
+            </Text>
             <TextInput
               ref={vehicleRef}
               style={styles.input}
               value={vehicleInterest}
               onChangeText={setVehicleInterest}
-              placeholder="Vehicle of interest"
+              placeholder={leadStatus === 'service' ? 'e.g. RO-12345' : 'Vehicle of interest'}
               placeholderTextColor={colors.textMute}
-              autoCapitalize="words"
+              autoCapitalize={leadStatus === 'service' ? 'characters' : 'words'}
               returnKeyType="done"
               editable={!saving}
+              data-testid={leadStatus === 'service' ? 'repair-order-input' : 'vehicle-interest-input'}
             />
 
             {/* Status */}
@@ -445,21 +449,34 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+    // 6 buttons fill exactly 2 rows of 3 with no blank space.
+    // (100% - 2*gap) / 3 = ~31.5% each. Using flexBasis lets flexbox handle
+    // the residual pixel perfectly.
+    flexBasis: '31.5%',
+    flexGrow: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(214,178,94,0.06)',
+    borderColor: 'rgba(214,178,94,0.10)',
     backgroundColor: 'rgba(0,0,0,0.30)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statusButtonActive: {
-    backgroundColor: 'rgba(214,178,94,0.08)',
-    borderColor: 'rgba(214,178,94,0.30)',
+    backgroundColor: 'rgba(214,178,94,0.16)',
+    borderColor: colors.gold,
+    // Subtle gold glow when selected
+    shadowColor: colors.gold,
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 4,
   },
   statusButtonText: {
     ...type.label,
-    fontSize: 10,
+    fontSize: 11,
     color: colors.textDim,
+    textAlign: 'center',
   },
   saveButton: {
     marginTop: 24,
