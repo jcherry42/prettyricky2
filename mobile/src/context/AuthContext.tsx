@@ -94,8 +94,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        // 1. Check if PIN is configured
-        const statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
+        // 1. Check if PIN is configured — with self-healing on stale override.
+        //    If the user has an AsyncStorage backend URL override pointing at a
+        //    now-dead preview host (common after Emergent job forks), the boot
+        //    check will 404. We detect that specific failure mode, clear the
+        //    override so the app falls back to EXPO_PUBLIC_BACKEND_URL from .env,
+        //    then retry once.
+        let statusRes;
+        try {
+          statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
+        } catch (e: unknown) {
+          const err = e as { status?: number; message?: string };
+          if (err?.status === 404 || (err?.message || '').includes('404')) {
+            try {
+              const { clearBackendUrlOverride, getBackendUrlOverride } =
+                await import('../config/backendOverride');
+              const currentOverride = await getBackendUrlOverride();
+              if (currentOverride) {
+                console.warn('[Auth] Stale backend override detected — clearing and retrying');
+                await clearBackendUrlOverride();
+                statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
+              } else {
+                throw e;
+              }
+            } catch {
+              throw e;
+            }
+          } else {
+            throw e;
+          }
+        }
         setNeedsSetup(!statusRes?.pin_set);
 
         if (!statusRes?.pin_set) {
