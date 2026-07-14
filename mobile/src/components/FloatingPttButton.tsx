@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { impactHeavy } from '../lib/haptics';
 import { scaleSize } from '../theme/layout';
-import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/layout';
 
 const SIZE = scaleSize(58);
 

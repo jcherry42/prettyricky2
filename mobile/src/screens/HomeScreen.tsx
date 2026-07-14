@@ -22,7 +22,7 @@ import { NetworkStatusDot } from '../components/NetworkStatusDot';
 import { CustomerListSkeleton } from '../components/LoadingSkeleton';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
-import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/layout';
 
 /* ---------- Ambient light strip ---------- */
 function AmbientStrip({ active, color, serviceMode }: { active: boolean; color: string; serviceMode: boolean }) {

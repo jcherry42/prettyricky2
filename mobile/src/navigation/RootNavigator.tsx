@@ -32,6 +32,12 @@ import { TowerTalkOverlay } from '../components/TowerTalkOverlay';
 import { CustomerListModal } from '../screens/CustomerListModal';
 import { flagFor } from '../utils/language';
 import { useSession } from '../context/SessionContext';
+import { TAB_BAR_CONTENT_HEIGHT } from './layout';
+
+// Re-export for backward compatibility with any external code that
+// imported this constant from RootNavigator directly. Prefer importing
+// from './layout' in new code to avoid require cycles.
+export { TAB_BAR_CONTENT_HEIGHT };
 
 const Tab = createBottomTabNavigator();
 
@@ -51,7 +57,8 @@ function TabLabel({ children, focused }: { children: React.ReactNode; focused: b
 }
 
 // Tab bar content height (icons + labels, no safe area)
-export const TAB_BAR_CONTENT_HEIGHT = 52;
+// Kept as a re-export from ./layout for source-compat with older imports.
+// See ./layout.ts for the canonical definition.
 
 export function RootNavigator() {
   const session = useSession();

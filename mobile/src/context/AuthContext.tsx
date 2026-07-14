@@ -94,37 +94,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        // 1. Check if PIN is configured — with self-healing on ANY failure.
-        //    If the app can't reach the backend on first try (stale AsyncStorage
-        //    URL override pointing at a dead preview host, DNS failure, timeout,
-        //    or 404 from an old fallback), we clear the override, invalidate the
-        //    module-level URL cache, and retry ONCE with a fresh URL resolution.
-        //    If the retry still fails, we swallow it and let the user open the
-        //    Connection Diagnostic modal (top-right wifi icon) to reset manually.
-        let statusRes;
-        try {
-          statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
-        } catch (e: unknown) {
-          console.warn('[Auth] Boot check failed on first try — attempting self-heal:', errorMessage(e));
+        // ── 1. Boot check via a resilient probe chain ─────────────────
+        // Historically /api/auth/status has been prone to false-404s from
+        // stale CDN/edge caches at the client's ISP even when the backend
+        // is 100% healthy. To defeat that:
+        //   a) Try /api/health FIRST — it's cheaper and less commonly
+        //      hit by scanners, so its edge state is usually pristine.
+        //   b) Append a per-boot cache-buster (?_t=<epoch>) to bypass any
+        //      negatively-cached response at the edge.
+        //   c) If /health is reachable, treat that as PROOF the backend
+        //      is up and only THEN ask /auth/status. If /auth/status
+        //      still 404s after /health worked, we assume `pin_set: true`
+        //      (any user already on this device has completed setup) so
+        //      the login screen renders and the actual PIN attempt will
+        //      surface a real, actionable error to the user.
+        //   d) If both attempts fail AND the local override is set, clear
+        //      it and try one final health probe with the .env default.
+        //   e) If everything fails, don't spam the console — surface a
+        //      SINGLE warning and continue to the PinScreen. Real network
+        //      errors will show up on the actual login attempt.
+
+        const cacheBust = () => `?_t=${Date.now()}`;
+        // Default `true` = show login screen (safe for existing users).
+        // Only flip to `false` if we successfully reach /auth/status AND it
+        // says pin_set is false (fresh install / factory reset).
+        let pinSet = true;
+
+        // Attempt 1 — health + status via current URL resolution
+        const probe = async () => {
+          try {
+            await apiFetch(`/api/health${cacheBust()}`, {
+              _skipAuth: true,
+              retries: 0,
+              timeout: 6000,
+            });
+            // Health OK → backend is definitely up.
+            try {
+              const s = await apiFetch(`/api/auth/status${cacheBust()}`, {
+                _skipAuth: true,
+                retries: 0,
+                timeout: 6000,
+              });
+              pinSet = !!s?.pin_set;
+            } catch {
+              // /health OK but /auth/status 404'd → almost certainly a stale
+              // edge cache on this ONE path. Keep the default (pinSet=true).
+            }
+            return true;
+          } catch {
+            return false;
+          }
+        };
+
+        let ok = await probe();
+
+        // Attempt 2 — clear override + invalidate URL cache + retry
+        if (!ok) {
           try {
             const { clearBackendUrlOverride } = await import('../config/backendOverride');
             await clearBackendUrlOverride();
-            invalidateUrlCache();
-            statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
-            console.warn('[Auth] Self-heal succeeded after clearing override.');
-          } catch (retryErr: unknown) {
-            console.warn('[Auth] Self-heal retry failed:', errorMessage(retryErr));
-            throw retryErr;
-          }
+          } catch { /* ignore */ }
+          invalidateUrlCache();
+          ok = await probe();
         }
-        setNeedsSetup(!statusRes?.pin_set);
 
-        if (!statusRes?.pin_set) {
+        if (!ok) {
+          // Backend truly unreachable from this device right now.
+          // Assume PIN exists (existing user) and let PinScreen render.
+          // The user can tap the wifi FAB → RESET → TEST to diagnose,
+          // and the actual login attempt will surface the real error.
+          console.warn('[Auth] Backend unreachable during boot — deferring to PinScreen. Tap the wifi icon to diagnose.');
+        }
+
+        setNeedsSetup(!pinSet);
+
+        if (!pinSet) {
           setIsLoading(false);
           return;
         }
 
-        // 2. Try to restore tokens from SecureStore
+        // ── 2. Try to restore tokens from SecureStore ─────────────
         const storedAccess = await SecureStore.getItemAsync(ACCESS_KEY).catch((): string | null => null);
         const storedRefresh = await SecureStore.getItemAsync(REFRESH_KEY).catch((): string | null => null);
 
@@ -132,11 +181,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           accessTokenRef.current = storedAccess;
           refreshTokenRef.current = storedRefresh;
 
-          // 3. Verify access token
+          // 3. Verify access token — non-fatal if backend still down
           try {
             const verifyRes = await apiFetch('/api/auth/verify', {
               headers: { Authorization: `Bearer ${storedAccess}` },
               _skipAuth: true,
+              retries: 0,
+              timeout: 6000,
             });
             if (verifyRes?.valid) {
               setIsAuthenticated(true);
@@ -144,7 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               return;
             }
           } catch {
-            // Access token expired — try refresh
+            // Access token expired OR backend unreachable — try refresh
           }
 
           // 4. Refresh
@@ -159,7 +210,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // No valid tokens — need PIN entry
         await _clearTokens();
       } catch (e: unknown) {
-        console.warn('[Auth] Boot check failed:', errorMessage(e));
+        // Truly unexpected — log once and continue to PinScreen.
+        console.warn('[Auth] Unexpected boot-check exception:', errorMessage(e));
       }
       setIsLoading(false);
     })();

@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { impactMedium } from '../lib/haptics';
-import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/layout';
 
 const SIZE = 44;
 

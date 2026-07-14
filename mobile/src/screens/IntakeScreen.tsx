@@ -40,7 +40,7 @@ import { NetworkStatusDot } from '../components/NetworkStatusDot';
 import { VehicleEditorScreen } from './VehicleEditorScreen';
 import { VinScanScreen } from './VinScanScreen';
 import { DlScanScreen } from './DlScanScreen';
-import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/RootNavigator';
+import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/layout';
 
 // ──────────── Helpers ────────────
 const STATUS_COLORS = {
