@@ -18,9 +18,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
-import { apiFetch } from '../lib/api';
+import { apiFetch, invalidateUrlCache } from '../lib/api';
 import { getBackendUrlAsync } from '../config/backend';
-import { setBackendUrlOverride, clearBackendUrlOverride } from '../config/backendOverride';
+import { clearBackendUrlOverride } from '../config/backendOverride';
 
 const { width: SW } = Dimensions.get('window');
 const PIN_LENGTH = 5;
@@ -71,7 +71,6 @@ export function PinScreen() {
   const [diagUrl, setDiagUrl]                         = useState<string>('');
   const [diagStatus, setDiagStatus]                   = useState<'idle' | 'checking' | 'ok' | 'fail'>('idle');
   const [diagDetail, setDiagDetail]                   = useState<string>('');
-  const [diagEditUrl, setDiagEditUrl]                 = useState<string>('');
 
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const dotAnims  = useRef(Array.from({ length: PIN_LENGTH }, () => new Animated.Value(0))).current;
@@ -234,7 +233,6 @@ export function PinScreen() {
   const openDiagnostic = useCallback(async () => {
     const url = await getBackendUrlAsync();
     setDiagUrl(url);
-    setDiagEditUrl(url);
     setDiagStatus('idle');
     setDiagDetail('');
     setShowDiag(true);
@@ -276,20 +274,11 @@ export function PinScreen() {
     }
   }, []);
 
-  const applyDiagnosticUrl = useCallback(async () => {
-    const cleaned = (diagEditUrl || '').trim();
-    if (cleaned && cleaned !== diagUrl) {
-      await setBackendUrlOverride(cleaned);
-      setDiagUrl(cleaned);
-      await runDiagnosticProbe(cleaned);
-    }
-  }, [diagEditUrl, diagUrl, runDiagnosticProbe]);
-
   const resetDiagnosticUrl = useCallback(async () => {
     await clearBackendUrlOverride();
+    invalidateUrlCache();
     const fresh = await getBackendUrlAsync();
     setDiagUrl(fresh);
-    setDiagEditUrl(fresh);
     await runDiagnosticProbe(fresh);
   }, [runDiagnosticProbe]);
 
@@ -563,25 +552,33 @@ export function PinScreen() {
 
             <Text style={styles.forgotDesc}>
               The app couldn{"'"}t reach the backend. The URL below is what it's trying to use.
-              You can edit it (in case you're testing against a custom server) or reset to default.
+              Tap RESET to fall back to the app{"'"}s default URL, then TEST to verify.
             </Text>
 
             <Text style={[styles.statusText, { fontSize: 12, color: colors.textMute, marginTop: 8, marginBottom: 4 }]}>
               CURRENT BACKEND URL
             </Text>
-            <TextInput
-              value={diagEditUrl}
-              onChangeText={setDiagEditUrl}
-              placeholder="https://your-backend.example.com"
-              placeholderTextColor={colors.textMute}
-              style={[styles.resetInput, { letterSpacing: 0, fontSize: 13, textAlign: 'left', paddingHorizontal: 12 }]}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              returnKeyType="done"
-              onSubmitEditing={applyDiagnosticUrl}
-              data-testid="pin-diag-url-input"
-            />
+            <View
+              style={{
+                height: 52, borderRadius: 14,
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderWidth: 1, borderColor: 'rgba(214,178,94,0.25)',
+                paddingHorizontal: 12, marginBottom: 12,
+                justifyContent: 'center',
+              }}
+              data-testid="pin-diag-url-display"
+            >
+              <Text
+                selectable
+                numberOfLines={2}
+                style={{
+                  color: colors.text, fontSize: 13, fontWeight: '600',
+                  letterSpacing: 0, textAlign: 'center',
+                }}
+              >
+                {diagUrl || '(not configured)'}
+              </Text>
+            </View>
 
             <View style={{ marginTop: 12, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: 'rgba(20,24,32,0.7)' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -613,7 +610,7 @@ export function PinScreen() {
                 <Text style={styles.resetBtnCancelText}>RESET TO DEFAULT</Text>
               </Pressable>
               <Pressable
-                onPress={() => runDiagnosticProbe(diagEditUrl)}
+                onPress={() => runDiagnosticProbe(diagUrl)}
                 style={({ pressed }) => [
                   styles.resetBtn,
                   { borderColor: 'rgba(92,200,255,0.4)', backgroundColor: 'rgba(92,200,255,0.15)' },
@@ -626,20 +623,10 @@ export function PinScreen() {
               </Pressable>
             </View>
 
-            {diagEditUrl !== diagUrl ? (
-              <Pressable
-                onPress={applyDiagnosticUrl}
-                style={({ pressed }) => [
-                  styles.resetBtn,
-                  { marginTop: 10, alignSelf: 'stretch', borderColor: colors.gold, backgroundColor: 'rgba(214,178,94,0.15)' },
-                  pressed && { opacity: 0.8 },
-                ]}
-                data-testid="pin-diag-save-btn"
-              >
-                <Ionicons name="save" size={14} color={colors.gold} />
-                <Text style={[styles.resetBtnConfirmText, { color: colors.gold }]}>SAVE NEW URL</Text>
-              </Pressable>
-            ) : null}
+            <Text style={styles.diagHelperText}>
+              Still failing after RESET? Close Expo Go completely and re-open (or press{' '}
+              <Text style={{ color: colors.gold, fontWeight: '800' }}>r</Text> in Metro) to reload the bundle — env vars are baked at bundle time.
+            </Text>
 
             <Pressable
               onPress={() => setShowDiag(false)}
@@ -796,6 +783,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255,75,75,0.55)',
     textDecorationLine: 'underline',
     textDecorationColor: 'rgba(255,75,75,0.3)',
+  },
+  diagHelperText: {
+    fontSize: 11,
+    lineHeight: 16,
+    color: colors.textMute,
+    textAlign: 'center',
+    marginTop: 14,
+    paddingHorizontal: 4,
   },
 
   // ── Reset code reveal card ──

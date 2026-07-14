@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import { apiFetch, onRefreshFailure } from '../lib/api';
+import { apiFetch, invalidateUrlCache, onRefreshFailure } from '../lib/api';
 import { errorMessage } from './../lib/errors';
 import { track } from '../lib/telemetry';
 
@@ -94,34 +94,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        // 1. Check if PIN is configured — with self-healing on stale override.
-        //    If the user has an AsyncStorage backend URL override pointing at a
-        //    now-dead preview host (common after Emergent job forks), the boot
-        //    check will 404. We detect that specific failure mode, clear the
-        //    override so the app falls back to EXPO_PUBLIC_BACKEND_URL from .env,
-        //    then retry once.
+        // 1. Check if PIN is configured — with self-healing on ANY failure.
+        //    If the app can't reach the backend on first try (stale AsyncStorage
+        //    URL override pointing at a dead preview host, DNS failure, timeout,
+        //    or 404 from an old fallback), we clear the override, invalidate the
+        //    module-level URL cache, and retry ONCE with a fresh URL resolution.
+        //    If the retry still fails, we swallow it and let the user open the
+        //    Connection Diagnostic modal (top-right wifi icon) to reset manually.
         let statusRes;
         try {
           statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
         } catch (e: unknown) {
-          const err = e as { status?: number; message?: string };
-          if (err?.status === 404 || (err?.message || '').includes('404')) {
-            try {
-              const { clearBackendUrlOverride, getBackendUrlOverride } =
-                await import('../config/backendOverride');
-              const currentOverride = await getBackendUrlOverride();
-              if (currentOverride) {
-                console.warn('[Auth] Stale backend override detected — clearing and retrying');
-                await clearBackendUrlOverride();
-                statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
-              } else {
-                throw e;
-              }
-            } catch {
-              throw e;
-            }
-          } else {
-            throw e;
+          console.warn('[Auth] Boot check failed on first try — attempting self-heal:', errorMessage(e));
+          try {
+            const { clearBackendUrlOverride } = await import('../config/backendOverride');
+            await clearBackendUrlOverride();
+            invalidateUrlCache();
+            statusRes = await apiFetch('/api/auth/status', { _skipAuth: true });
+            console.warn('[Auth] Self-heal succeeded after clearing override.');
+          } catch (retryErr: unknown) {
+            console.warn('[Auth] Self-heal retry failed:', errorMessage(retryErr));
+            throw retryErr;
           }
         }
         setNeedsSetup(!statusRes?.pin_set);
