@@ -9,6 +9,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import { captureException } from '../lib/sentry';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -33,8 +34,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
-    // Log error (could send to backend later)
+    // Log to console for local debugging + forward to Sentry when configured.
     console.error('ErrorBoundary caught:', error, errorInfo);
+    captureException(error);
   }
 
   handleReset = () => {

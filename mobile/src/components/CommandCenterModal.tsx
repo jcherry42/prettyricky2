@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert, Platform, Keyboard } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View, ActivityIndicator, FlatList, ScrollView, Alert, Platform, Keyboard, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -132,7 +132,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }: { item: Printer; ac
 
 export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: string | null; initialSection?: string | null }) {
   const { settings, setDefaultTargetLanguage, setServiceMode, setPerformanceMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
-  const { customers, loading: customersLoading } = useCustomers();
+  const { customers, loading: customersLoading, fetchCustomers } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const lingo = useLingo();
   const { isService } = useMode();
@@ -355,7 +355,20 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* DASHBOARD */}
           {activeTab === 'dashboard' ? (
-            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 20 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={loadingStats}
+                  onRefresh={loadDashboardStats}
+                  tintColor={colors.gold}
+                  colors={[colors.gold]}
+                />
+              }
+            >
               {loadingStats ? (
                 <>
                   <GlassCard style={{ marginTop: 14 }}>
@@ -487,7 +500,20 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* CUSTOMERS */}
           {activeTab === 'customers' ? (
-            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 20 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={customersLoading}
+                  onRefresh={() => fetchCustomers()}
+                  tintColor={colors.gold}
+                  colors={[colors.gold]}
+                />
+              }
+            >
               <GlassCard style={{ marginTop: 14 }}>
                 <View style={styles.searchHeader}>
                   <Ionicons name="search" size={16} color={colors.gold} />
@@ -567,7 +593,20 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
 
           {/* INVENTORY */}
           {activeTab === 'inventory' ? (
-            <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 20 }}
+              refreshControl={
+                <RefreshControl
+                  refreshing={vehiclesLoading}
+                  onRefresh={() => fetchInventory()}
+                  tintColor={colors.gold}
+                  colors={[colors.gold]}
+                />
+              }
+            >
               <GlassCard style={{ marginTop: 14 }}>
                 <View style={styles.searchHeader}>
                   <Ionicons name="search" size={16} color={colors.gold} />

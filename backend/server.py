@@ -73,6 +73,50 @@ for var in _RECOMMENDED_ENV:
     if not os.environ.get(var):
         logger.warning(f"Recommended env var '{var}' not set — some features may be limited")
 
+# ── Sentry crash reporting + performance monitoring (optional) ────────
+# Enabled only when SENTRY_DSN_BACKEND is set. Fails gracefully otherwise.
+_SENTRY_DSN = os.environ.get('SENTRY_DSN_BACKEND') or os.environ.get('SENTRY_DSN')
+if _SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+        from sentry_sdk.integrations.starlette import StarletteIntegration
+
+        def _scrub_event(event, _hint):
+            # Strip auth headers + cookies + user PII before sending to Sentry.
+            user = event.get('user') or {}
+            user.pop('email', None)
+            user.pop('ip_address', None)
+            req = event.get('request') or {}
+            headers = req.get('headers') or {}
+            for h in ('authorization', 'cookie', 'x-api-key'):
+                headers.pop(h, None)
+            req['headers'] = headers
+            event['request'] = req
+            event['user'] = user
+            return event
+
+        sentry_sdk.init(
+            dsn=_SENTRY_DSN,
+            environment=os.environ.get('SENTRY_ENVIRONMENT', 'production'),
+            release=os.environ.get('APP_RELEASE'),
+            send_default_pii=False,
+            traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
+            profiles_sample_rate=float(os.environ.get('SENTRY_PROFILES_SAMPLE_RATE', '0.0')),
+            integrations=[
+                StarletteIntegration(transaction_style='endpoint'),
+                FastApiIntegration(transaction_style='endpoint'),
+            ],
+            before_send=_scrub_event,
+        )
+        logger.info(f"Sentry initialized (env={os.environ.get('SENTRY_ENVIRONMENT', 'production')})")
+    except ImportError:
+        logger.warning("SENTRY_DSN set but sentry-sdk not installed — skipping crash reporting")
+    except Exception as e:
+        logger.warning(f"Sentry initialization failed (non-fatal): {e}")
+else:
+    logger.info("Sentry disabled — set SENTRY_DSN_BACKEND to enable crash reporting")
+
 # MongoDB connection with tuned pool — production-grade settings
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(

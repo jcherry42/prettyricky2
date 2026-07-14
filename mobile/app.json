@@ -61,6 +61,9 @@
       "bundleIdentifier": "com.superchargd.mobile",
       "buildNumber": "1.0.0",
       "requireFullScreen": true,
+      "privacyManifests": {
+        "NSPrivacyManifestFile": "./assets/PrivacyInfo.xcprivacy"
+      },
       "infoPlist": {
         "NSCameraUsageDescription": "Supercharg'd uses the camera to scan VINs and driver's licenses.",
         "NSMicrophoneUsageDescription": "Supercharg'd uses the microphone for the voice push-to-talk translation feature.",

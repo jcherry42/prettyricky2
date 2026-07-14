@@ -524,3 +524,71 @@ license, auth, network-recovery — and produced 9 findings. All fixed.
 - Optional: Redis rate-limit backend for multi-instance deployments.
 
 
+### P2(G,I) Performance + Testing + P1 Store-Readiness Sweep (Feb 2026, iter24)
+
+**Delivered — perf + QA infra + store submission unblockers:**
+
+1. **Pull-to-refresh on Command Center** — dashboard, customers, and inventory
+   tabs all support native RefreshControl (gold spinner matches brand).
+
+2. **I45 — Startup timing metric** — `App.tsx` captures cold-start at module
+   load; `AuthGate` fires `perf.app_cold_start` telemetry event with
+   `latency_ms` and `first_screen` (pin vs main) on first paint. Also logged
+   to console in `__DEV__`.
+
+3. **I42 / I43 — Bundle + image audit** — src is 1.1MB / 23K LOC (small);
+   largest image is `pin_bg.jpg` at 316KB (already optimized). No action.
+
+4. **I44 — Reanimated worklet audit** — 42 worklet-related symbols across the
+   codebase, **zero `runOnJS` bridging** (best case, no perf leaks).
+
+5. **G34 — Maestro E2E scaffold** — `/app/mobile/.maestro/`
+   - Flows: `pin_login.yaml`, `pin_setup.yaml`, `backend_diagnostic.yaml`
+   - README with install, run, CI integration notes
+
+6. **G35 — Backend load-test suite** — `/app/backend/tests/load/locustfile.py`
+   - 4-endpoint traffic model (health, dashboard, translate, tower-talk)
+   - README with baseline SLO targets (p95, p99, error rates)
+   - 429s on translate/tower-talk validated as EXPECTED rate-limit signals
+
+7. **P1 — Sentry crash reporting** (via integration_playbook_expert_v2)
+   - Mobile: `@sentry/react-native@8.18.0` installed, `initSentry()` in
+     `App.tsx` (runs BEFORE any other import), `Sentry.wrap()` around root
+     component, `ErrorBoundary.componentDidCatch` forwards to Sentry.
+     - No-op when `EXPO_PUBLIC_SENTRY_DSN` is unset (safe default).
+     - PII scrubbing: strips `user.email`, `user.ip_address`, `authorization`,
+       `cookie` headers before every event.
+   - Backend: `sentry-sdk[fastapi]==2.65.0` installed, `sentry_sdk.init()`
+     in `server.py` (env-driven, silent when DSN missing).
+     - `_scrub_event()` before-send hook enforces same PII policy.
+     - `traces_sample_rate` and `profiles_sample_rate` env-tunable.
+   - `.env.example` templates added for both mobile + backend.
+
+8. **P1 — iOS PrivacyInfo.xcprivacy** — `/app/mobile/assets/PrivacyInfo.xcprivacy`
+   - Declares all `NSPrivacyCollectedDataTypes`: Name, Phone, Email, Address,
+     Photos/Videos, AudioData, CrashData, PerformanceData, ProductInteraction.
+   - `NSPrivacyTracking = false` (no cross-app IDFA tracking).
+   - Required-reason API declarations: FileTimestamp (C617.1), UserDefaults
+     (CA92.1), DiskSpace (E174.1), SystemBootTime (35F9.1).
+   - Wired into `app.json` via `ios.privacyManifests.NSPrivacyManifestFile`.
+
+**Deferred:**
+- G31–G33 (physical device / iPad / airplane-mode testing) — user responsibility.
+- P1 EAS project ID / privacy policy URL / App Store screenshots — user-provided.
+- F26 (first-launch onboarding walkthrough) — larger UX feature.
+
+### Store submission checklist status
+- [x] iOS PrivacyInfo.xcprivacy
+- [x] Crash reporting (Sentry) — needs DSN from user
+- [x] Structured logging
+- [x] Load-test suite
+- [x] E2E scaffold
+- [ ] EAS project ID (`eas init` requires user credentials)
+- [ ] Privacy policy URL + Terms of Service URL
+- [ ] Google Play Data Safety form
+- [ ] App Store screenshots (6.7", 6.5", 5.5")
+- [ ] Sentry DSN + `SENTRY_AUTH_TOKEN` for source-map upload
+- [ ] POSTHOG_API_KEY (still open P1)
+
+
+

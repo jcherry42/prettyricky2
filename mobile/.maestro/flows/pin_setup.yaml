@@ -1,0 +1,38 @@
+appId: ${APP_ID}
+name: PIN Setup (first launch)
+tags:
+  - full
+  - auth
+---
+# WARNING: this flow wipes local app state — do NOT run against a device
+# that already has a PIN configured unless you plan to re-set it.
+- launchApp:
+    clearState: true
+- assertVisible: "Create your 5-digit PIN"
+
+# Enter a fresh 5-digit PIN
+- tapOn: "9"
+- tapOn: "8"
+- tapOn: "7"
+- tapOn: "6"
+- tapOn: "5"
+
+# Confirm the PIN
+- assertVisible: "Confirm your PIN"
+- tapOn: "9"
+- tapOn: "8"
+- tapOn: "7"
+- tapOn: "6"
+- tapOn: "5"
+
+# Master reset code should be displayed exactly once
+- assertVisible: "SAVE THIS CODE"
+- assertVisible: "Your Master Reset Code"
+
+# Dismiss the reset-code card
+- tapOn: "I'VE SAVED MY RESET CODE"
+
+# Should now be on the main app
+- assertVisible:
+    id: "home-screen-root"
+    timeout: 5000

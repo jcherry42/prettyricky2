@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+name: PIN Login (returning user)
+tags:
+  - smoke
+  - auth
+---
+- launchApp:
+    clearState: false
+- assertVisible: "Enter your PIN"
+
+# Enter the test PIN one digit at a time — matches /app/memory/test_credentials.md
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+- tapOn: "1"
+
+# Should transition to the main app (HomeScreen) within 3 seconds
+- assertVisible:
+    id: "home-screen-root"
+    timeout: 5000

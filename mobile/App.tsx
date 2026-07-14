@@ -6,6 +6,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Constants from 'expo-constants';
 import { enableScreens } from 'react-native-screens';
+import { initSentry, wrap as sentryWrap } from './src/lib/sentry';
+
+// Sentry MUST init before any other module that might throw during boot.
+// No-op when EXPO_PUBLIC_SENTRY_DSN is unset.
+initSentry();
+
+// Startup timing — captured at the earliest possible module-load moment.
+// Used by useFontsReady + AuthGate to log time-to-first-interactive to
+// telemetry once the PIN screen or MainApp renders. Aim < 2.0s cold-start.
+const _APP_START_MS = Date.now();
+export function getAppStartMs(): number { return _APP_START_MS; }
 import { InfotainmentShell } from './src/components/InfotainmentShell';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
@@ -66,6 +77,24 @@ function ComposeProviders({ providers, children }: { providers: React.ComponentT
 function AuthGate() {
   const { isAuthenticated, isLoading, needsSetup } = useAuth();
 
+  // Fire once when the first real UI paints — measures cold-start TTI.
+  const loggedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (isLoading || loggedRef.current) return;
+    loggedRef.current = true;
+    const ttiMs = Date.now() - getAppStartMs();
+    // Fire-and-forget telemetry. Import inline to keep AuthGate lightweight.
+    import('./src/lib/telemetry').then(({ track }) => {
+      track('perf', 'app_cold_start', {
+        latency_ms: ttiMs,
+        first_screen: !isAuthenticated || needsSetup ? 'pin' : 'main',
+      });
+    }).catch(() => { /* telemetry is best-effort */ });
+    if (__DEV__) {
+      console.log(`[perf] app cold start ${ttiMs}ms → ${!isAuthenticated || needsSetup ? 'PinScreen' : 'MainApp'}`);
+    }
+  }, [isLoading, isAuthenticated, needsSetup]);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#040608', justifyContent: 'center', alignItems: 'center' }}>
@@ -116,7 +145,7 @@ function MainApp() {
   );
 }
 
-export default function App() {
+export default sentryWrap(function App() {
   const fontsReady = useFontsReady();
 
   // Hard lock to portrait mode
@@ -137,4 +166,4 @@ export default function App() {
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
-}
+});

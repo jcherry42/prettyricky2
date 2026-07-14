@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+name: Backend Diagnostic — reset override + probe
+tags:
+  - smoke
+  - network
+---
+- launchApp:
+    clearState: false
+
+# Wait for the PIN screen (or main app) — either way, the wifi FAB is visible
+- assertVisible:
+    id: "pin-diag-fab"
+    timeout: 5000
+
+# Open diagnostic modal
+- tapOn:
+    id: "pin-diag-fab"
+- assertVisible: "Connection Diagnostic"
+- assertVisible:
+    id: "pin-diag-url-display"
+
+# Force reset to .env default
+- tapOn:
+    id: "pin-diag-reset-btn"
+
+# Probe should auto-fire; verify TEST button is present + tap it explicitly
+- tapOn:
+    id: "pin-diag-test-btn"
+
+# Either "Backend reachable" (green) or "Backend unreachable" (red) is a valid
+# outcome — the assertion is that the modal is functioning, not the network.
+- assertVisible:
+    text: ".*Backend (reachable|unreachable).*"
+    timeout: 10000
