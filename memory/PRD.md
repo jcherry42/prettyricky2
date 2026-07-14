@@ -580,15 +580,69 @@ license, auth, network-recovery — and produced 9 findings. All fixed.
 ### Store submission checklist status
 - [x] iOS PrivacyInfo.xcprivacy
 - [x] Crash reporting (Sentry) — needs DSN from user
+- [x] Sentry source-map pipeline (Metro plugin + Expo plugin wired)
 - [x] Structured logging
 - [x] Load-test suite
 - [x] E2E scaffold
-- [ ] EAS project ID (`eas init` requires user credentials)
+- [x] EAS project ID (`6777087a-7aae-4de1-a4f7-7469586fe16d`)
+- [x] EAS build profiles (dev / device / staging / preview / production) with per-env Sentry sampling
+- [x] Backend env templates (dev, staging, production)
+- [x] Ops runbook — Mongo backups
+- [x] Ops runbook — Uptime monitoring
+- [x] Ops runbook — Sentry source-map upload
+- [x] PostHog backend integration (waiting on API key)
 - [ ] Privacy policy URL + Terms of Service URL
 - [ ] Google Play Data Safety form
 - [ ] App Store screenshots (6.7", 6.5", 5.5")
 - [ ] Sentry DSN + `SENTRY_AUTH_TOKEN` for source-map upload
 - [ ] POSTHOG_API_KEY (still open P1)
+
+
+### Feb 2026 iter25 — Observability + Multi-Env + Ops Runbooks
+
+**Delivered (#40–#42 + #74–#76 from pre-submission checklist):**
+
+1. **#41 Sentry source-map plugin** — `@sentry/react-native/expo` added to
+   `app.json` plugins; `metro.config.js` upgraded to use
+   `getSentryExpoConfig`. Source-maps emit at build time and auto-upload
+   when `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT` are present as
+   EAS secrets. No-op fallback when missing — build never fails.
+
+2. **#40 SENTRY_AUTH_TOKEN workflow** — documented at
+   `/app/docs/ops/sentry-source-maps.md` with the exact `eas secret:create`
+   commands, verification steps, and a test-crash procedure.
+
+3. **#42 PostHog** — backend telemetry service (`services/telemetry_service.py`)
+   already fully wired; `posthog==7.16.2` in `requirements.txt`. Set
+   `POSTHOG_API_KEY` in prod `.env` to activate the sink. No code changes
+   needed on our side — just the key.
+
+4. **#75 Multi-env config** — added:
+   - `/app/backend/.env.staging.example`
+   - `/app/backend/.env.production.example`
+   - `eas.json` extended with `staging` build profile + `env.EXPO_PUBLIC_SENTRY_ENVIRONMENT`
+     + `env.EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` per profile (production=0.05,
+     staging/dev=1.0). `cli.appVersionSource: local` added for deterministic
+     version numbering.
+
+5. **#74 Mongo backup runbook** — `/app/docs/ops/mongo-backups.md`
+   - Atlas Cloud Backup config + PITR enable steps
+   - Self-hosted `mongodump` cron script with GPG encryption + S3 upload
+   - Restore drill procedure
+   - Encryption key handling
+   - Monitoring alerts (`MongoBackupOverdue` Prometheus rule)
+   - Restore-drill sign-off template
+
+6. **#76 Uptime monitoring runbook** — `/app/docs/ops/uptime-monitoring.md`
+   - Coverage matrix for `/api/health`, `/api/ready`, `/api/metrics`, auth synthetic
+   - Uptime Kuma deploy + monitor configuration
+   - Synthetic auth check design (with dedicated monitoring PIN)
+   - Alert routing (P0/P1/P2 severity tiers)
+   - Status page recommendations
+   - Kubernetes livenessProbe/readinessProbe config (correct
+     separation: `/health` for liveness, `/ready` for readiness)
+   - Incident escalation matrix
+
 
 
 
