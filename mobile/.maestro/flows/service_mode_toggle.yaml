@@ -1,0 +1,87 @@
+appId: ${APP_ID}
+name: Service Mode Toggle — Sales ↔ Service persona swap
+tags:
+  - smoke
+  - mode
+---
+# Verifies the dual-persona system: Command Center → Settings → Service Mode
+# toggle flips the entire app between Sales and Service labels/lingo.
+
+- launchApp:
+    clearState: false
+
+# Log in if the PIN screen is showing
+- runFlow:
+    when:
+      visible: "Enter your PIN"
+    commands:
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+
+# Precondition: on Home
+- assertVisible:
+    id: "cluster-command-center-btn"
+    timeout: 5000
+
+# ────────────────────────────────────────────────────────
+# STAGE A — Enable Service Mode from Command Center → Settings
+# ────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "cluster-command-center-btn"
+- tapOn:
+    id: "cc-tab-settings"
+
+- assertVisible: "Service Mode"
+
+# Toggle to SERVICE (start state should be SALES by default)
+- tapOn:
+    id: "service-mode-toggle"
+
+# Confirm the toggle label reflects SERVICE
+- assertVisible:
+    text: "SERVICE"
+    timeout: 3000
+
+# ────────────────────────────────────────────────────────
+# STAGE B — Verify dashboard lingo flipped (Guests vs Customers)
+# ────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "cc-tab-dashboard"
+
+# Wait for dashboard skeleton → real data
+- assertVisible:
+    id: "dashboard-persona-badge"
+    timeout: 8000
+
+# In Service mode, the RO Pipeline replaces Lead Status
+- assertVisible: "RO Pipeline"
+
+# ────────────────────────────────────────────────────────
+# STAGE C — Toggle back to SALES and verify labels reset
+# ────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "cc-tab-settings"
+- tapOn:
+    id: "service-mode-toggle"
+
+- assertVisible:
+    text: "SALES"
+    timeout: 3000
+
+# Dashboard should now show Lead Status again
+- tapOn:
+    id: "cc-tab-dashboard"
+- assertVisible: "Lead Status"
+
+# ────────────────────────────────────────────────────────
+# Cleanup — close Command Center
+# ────────────────────────────────────────────────────────
+
+- tapOn:
+    id: "cc-close-btn"

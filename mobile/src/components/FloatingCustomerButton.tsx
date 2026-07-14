@@ -26,6 +26,7 @@ export function FloatingCustomerButton({ onPress, disabled }: { onPress?: () => 
         accessibilityHint="Opens the customer intake and directory"
         accessibilityState={{ disabled: !!disabled }}
         hitSlop={12}
+        testID="floating-customer-btn"
         style={({ pressed }) => [
           styles.btn,
           pressed && !disabled && { transform: [{ scale: 0.955 }], opacity: 0.92 },

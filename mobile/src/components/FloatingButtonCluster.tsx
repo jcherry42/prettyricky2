@@ -15,9 +15,10 @@ interface GlassButtonProps {
   tintColors: [string, string, string];
   onPress?: () => void;
   accessibilityLabel?: string;
+  testID?: string;
 }
 
-function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessibilityLabel }: GlassButtonProps) {
+function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessibilityLabel, testID }: GlassButtonProps) {
   return (
     <Pressable
       onPress={() => { impactMedium(); onPress?.(); }}
@@ -28,6 +29,7 @@ function GlassButton({ icon, iconColor, glowColor, tintColors, onPress, accessib
       ]}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      testID={testID}
     >
       {/* Outer glow halo */}
       <View style={[styles.halo, { shadowColor: glowColor }]} />
@@ -82,6 +84,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }: { onChe
           tintColors={['rgba(48,209,88,0.30)', 'rgba(48,209,88,0.08)', 'rgba(0,0,0,0.20)']}
           onPress={onCheck}
           accessibilityLabel="Command Center"
+          testID="cluster-command-center-btn"
         />
         {/* Print Center — orange */}
         <GlassButton
@@ -91,6 +94,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }: { onChe
           tintColors={['rgba(255,140,0,0.30)', 'rgba(255,140,0,0.08)', 'rgba(0,0,0,0.20)']}
           onPress={onEject}
           accessibilityLabel="Print Center"
+          testID="cluster-print-center-btn"
         />
         {/* Tower Talk — red */}
         <GlassButton
@@ -100,6 +104,7 @@ export function FloatingButtonCluster({ onCheck, onEject, onTowerTalk }: { onChe
           tintColors={['rgba(255,59,48,0.30)', 'rgba(255,59,48,0.08)', 'rgba(0,0,0,0.20)']}
           onPress={onTowerTalk}
           accessibilityLabel="Tower Talk AI Assistant"
+          testID="cluster-tower-talk-btn"
         />
       </View>
     </View>

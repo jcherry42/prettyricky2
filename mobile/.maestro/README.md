@@ -32,13 +32,22 @@ maestro record .maestro/flows/new_flow.yaml
 
 ## Flow inventory
 
-| File | Coverage |
-| --- | --- |
-| `flows/pin_setup.yaml` | First-launch PIN creation + master reset code display |
-| `flows/pin_login.yaml` | Returning-user PIN login |
-| `flows/backend_diagnostic.yaml` | Connection diagnostic modal → reset override → probe |
-| `flows/customer_manual_create.yaml` | Manual customer entry from Command Center |
-| `flows/service_mode_toggle.yaml` | Sales ↔ Service persona switch + lingo swap |
+| File | Coverage | Tags |
+| --- | --- | --- |
+| `flows/pin_setup.yaml` | First-launch PIN creation + master reset code display | `full`, `auth` |
+| `flows/pin_login.yaml` | Returning-user PIN login | `smoke`, `auth` |
+| `flows/backend_diagnostic.yaml` | Connection diagnostic modal → reset override → probe | `smoke`, `network` |
+| `flows/customer_manual_create.yaml` | Add new customer via Floating button → verify in Command Center | `smoke`, `customer` |
+| `flows/service_mode_toggle.yaml` | Sales ↔ Service persona swap + lingo verification | `smoke`, `mode` |
+
+### Suggested smoke bundle (< 90s total)
+
+```bash
+maestro test .maestro/flows/pin_login.yaml \
+             .maestro/flows/backend_diagnostic.yaml \
+             .maestro/flows/customer_manual_create.yaml \
+             .maestro/flows/service_mode_toggle.yaml
+```
 
 ## Environment
 

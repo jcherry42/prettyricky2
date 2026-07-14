@@ -1,0 +1,78 @@
+appId: ${APP_ID}
+name: Customer Manual Create — from Home
+tags:
+  - smoke
+  - customer
+---
+# Assumes the app is already unlocked (PIN entered) and on the Home screen.
+# If not, chain this after pin_login.yaml.
+
+- launchApp:
+    clearState: false
+
+# If PIN screen is still visible, log in first
+- runFlow:
+    when:
+      visible: "Enter your PIN"
+    commands:
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+      - tapOn: "1"
+
+# 1. Tap the floating Bluetooth-customer button (bottom-left)
+- assertVisible:
+    id: "floating-customer-btn"
+    timeout: 5000
+- tapOn:
+    id: "floating-customer-btn"
+
+# 2. The CustomerFormModal opens
+- assertVisible: "First Name *"
+- assertVisible: "Last Name *"
+- assertVisible: "Phone *"
+
+# 3. Fill required fields
+- tapOn:
+    id: "customer-first-name-input"
+- inputText: "Maestro"
+
+- tapOn:
+    id: "customer-last-name-input"
+- inputText: "Regression"
+
+- tapOn:
+    id: "customer-phone-input"
+- inputText: "5551234567"
+
+# Dismiss keyboard so Save button is reachable
+- hideKeyboard
+
+# 4. Preferred language selection (verifies P2 form) — pick Spanish
+- tapOn:
+    id: "preferred-language-es"
+
+# 5. Save
+- tapOn:
+    id: "customer-form-save-btn"
+
+# 6. Modal should dismiss and return to Home within 5s
+- assertNotVisible:
+    id: "customer-form-save-btn"
+    timeout: 5000
+
+# 7. Open Command Center → Customers tab to verify the record persists
+- tapOn:
+    id: "cluster-command-center-btn"
+- tapOn:
+    id: "cc-tab-customers"
+
+# Search for the new record we just created
+- assertVisible:
+    text: "Maestro Regression"
+    timeout: 5000
+
+# Close Command Center
+- tapOn:
+    id: "cc-close-btn"

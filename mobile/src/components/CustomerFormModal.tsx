@@ -170,6 +170,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
                   returnKeyType="next"
                   onSubmitEditing={() => lastNameRef.current?.focus()}
                   blurOnSubmit={false}
+                  testID="customer-first-name-input"
                 />
               </View>
               <View style={styles.halfInput}>
@@ -188,6 +189,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
                   returnKeyType="next"
                   onSubmitEditing={() => phoneRef.current?.focus()}
                   blurOnSubmit={false}
+                  testID="customer-last-name-input"
                 />
               </View>
             </View>
@@ -206,6 +208,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
               editable={!saving}
               onSubmitEditing={() => emailRef.current?.focus()}
               blurOnSubmit={false}
+              testID="customer-phone-input"
             />
 
             <Text style={styles.label}>Email</Text>
@@ -344,6 +347,7 @@ export function CustomerFormModal({ visible, customer, onClose, onSave }: { visi
             <Pressable
               onPress={handleSave}
               disabled={saving}
+              testID="customer-form-save-btn"
               style={({ pressed }) => [
                 styles.saveButton,
                 (pressed || saving) && styles.saveButtonPressed,

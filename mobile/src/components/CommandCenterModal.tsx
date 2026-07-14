@@ -29,7 +29,14 @@ const TABS = [
 
 function TabButton({ label, icon, active, onPress }: { label: string; icon: string; active: boolean; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}>
+    <Pressable
+      onPress={onPress}
+      testID={`cc-tab-${label.toLowerCase()}`}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`${label} tab`}
+      style={({ pressed }) => [styles.tabBtn, active && styles.tabBtnActive, pressed && { opacity: 0.9, transform: [{ scale: 0.97 }] }]}
+    >
       {/* Glass base */}
       <View style={[StyleSheet.absoluteFill, { borderRadius: 16, backgroundColor: active ? 'rgba(18,14,6,0.88)' : 'rgba(20,24,32,0.80)' }]} />
       {/* Gradient tint — richer gold when active */}
@@ -338,7 +345,14 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               <Ionicons name="settings" size={16} color={colors.gold} />
               <Text style={styles.headerTitle}>COMMAND CENTER</Text>
             </View>
-            <Pressable onPress={onClose} style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.85 }]}>
+            <Pressable
+              onPress={onClose}
+              testID="cc-close-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Close Command Center"
+              hitSlop={8}
+              style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.85 }]}
+            >
               <Ionicons name="close" size={16} color={colors.text} />
             </Pressable>
           </View>
