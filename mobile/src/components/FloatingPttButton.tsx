@@ -33,6 +33,11 @@ export function FloatingPttButton({ onPress, recording, disabled, flagLabel, bad
       <Pressable
         disabled={disabled}
         onPress={() => { impactHeavy(); onPress?.(); }}
+        accessibilityRole="button"
+        accessibilityLabel={recording ? 'Stop voice translation' : 'Start voice translation'}
+        accessibilityHint="Push-to-talk translator between English and the customer's language"
+        accessibilityState={{ disabled: !!disabled, busy: !!recording }}
+        hitSlop={12}
         style={({ pressed }) => [
           styles.btn,
           { shadowColor: glowColor },

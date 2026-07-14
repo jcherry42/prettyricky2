@@ -17,6 +17,7 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { loadJson, saveJson } from '../lib/storage';
 import { GlassCard } from '../components/GlassCard';
+import { EmptyState } from '../components/EmptyState';
 
 const STORAGE_KEY = 'sc_v1_driver_license_scans';
 
@@ -186,7 +187,13 @@ export function CustomerListModal({ visible, onClose }: { visible: boolean; onCl
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 ListEmptyComponent={
-                  <Text style={styles.emptyText}>No scans yet</Text>
+                  <EmptyState
+                    icon="scan-outline"
+                    title="No license scans yet"
+                    description="Scan a driver's license from the home screen to see it here."
+                    compact
+                    testID="license-scan-empty-state"
+                  />
                 }
                 nestedScrollEnabled
               />

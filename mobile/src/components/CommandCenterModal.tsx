@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
+import { EmptyState } from './EmptyState';
+import { SkeletonLine } from './LoadingSkeleton';
 import { BackendUrlSection } from './BackendUrlSection';
 import { useAppSettings, type Printer } from '../context/AppSettingsContext';
 // Vehicle row shape used inside CommandCenterModal
@@ -355,10 +357,29 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
           {activeTab === 'dashboard' ? (
             <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
               {loadingStats ? (
-                <View style={styles.centerContent}>
-                  <ActivityIndicator color={colors.gold} size="large" />
-                  <Text style={styles.loadingText}>Loading dashboard...</Text>
-                </View>
+                <>
+                  <GlassCard style={{ marginTop: 14 }}>
+                    <SkeletonLine width="35%" height={12} style={{ marginBottom: 14 }} />
+                    <View style={styles.statsGrid}>
+                      <View style={styles.statCard}>
+                        <SkeletonLine width={24} height={24} style={{ borderRadius: 12, marginBottom: 8 }} />
+                        <SkeletonLine width="60%" height={22} style={{ marginBottom: 6 }} />
+                        <SkeletonLine width="45%" height={10} />
+                      </View>
+                      <View style={styles.statCard}>
+                        <SkeletonLine width={24} height={24} style={{ borderRadius: 12, marginBottom: 8 }} />
+                        <SkeletonLine width="60%" height={22} style={{ marginBottom: 6 }} />
+                        <SkeletonLine width="45%" height={10} />
+                      </View>
+                    </View>
+                  </GlassCard>
+                  <GlassCard style={{ marginTop: 14 }}>
+                    <SkeletonLine width="30%" height={12} style={{ marginBottom: 14 }} />
+                    <SkeletonLine width="65%" height={13} style={{ marginBottom: 10 }} />
+                    <SkeletonLine width="55%" height={13} style={{ marginBottom: 10 }} />
+                    <SkeletonLine width="70%" height={13} />
+                  </GlassCard>
+                </>
               ) : stats ? (
                 <>
                   {/* Persona indicator badge */}
@@ -451,7 +472,14 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                 </>
               ) : (
                 <GlassCard style={{ marginTop: 14 }}>
-                  <Text style={styles.emptyText}>No data available</Text>
+                  <EmptyState
+                    icon="cloud-offline-outline"
+                    title="Dashboard offline"
+                    description="Couldn't load stats. Pull down to retry, or check your connection."
+                    actionLabel="RETRY"
+                    onAction={loadDashboardStats}
+                    testID="dashboard-empty-state"
+                  />
                 </GlassCard>
               )}
             </ScrollView>
@@ -497,12 +525,17 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                     <ActivityIndicator color={colors.gold} />
                   </View>
                 ) : filteredCustomers.length === 0 ? (
-                  <View style={styles.emptyBox}>
-                    <Ionicons name="people-outline" size={32} color={colors.textMute} />
-                    <Text style={styles.emptyText}>
-                      {customerSearch ? 'No customers found' : 'No customers yet'}
-                    </Text>
-                  </View>
+                  <EmptyState
+                    icon="people-outline"
+                    title={customerSearch ? 'No matching customers' : `No ${lingo.customerPlural.toLowerCase()} yet`}
+                    description={
+                      customerSearch
+                        ? 'Try a different name, phone, or email.'
+                        : `Scan a driver${'\u2019'}s license or add a ${lingo.customerSingular.toLowerCase()} manually to get started.`
+                    }
+                    compact
+                    testID="customers-empty-state"
+                  />
                 ) : (
                   <FlatList
                     data={filteredCustomers.slice(0, 10)}
@@ -578,15 +611,17 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                     <ActivityIndicator color={colors.gold} />
                   </View>
                 ) : filteredVehicles.length === 0 ? (
-                  <View style={styles.emptyBox}>
-                    <Ionicons name="car-sport-outline" size={32} color={colors.textMute} />
-                    <Text style={styles.emptyText}>
-                      {inventorySearch ? 'No vehicles found' : 'No vehicles in inventory'}
-                    </Text>
-                    <Text style={styles.emptySubtext}>
-                      {inventorySearch ? 'Try a different search' : 'Scan VINs to add vehicles'}
-                    </Text>
-                  </View>
+                  <EmptyState
+                    icon="car-sport-outline"
+                    title={inventorySearch ? 'No matching vehicles' : `No ${lingo.vehiclePlural.toLowerCase()} yet`}
+                    description={
+                      inventorySearch
+                        ? 'Try VIN, year, make, or model.'
+                        : 'Scan a VIN barcode or windshield to add your first vehicle.'
+                    }
+                    compact
+                    testID="inventory-empty-state"
+                  />
                 ) : (
                   <FlatList
                     data={filteredVehicles}

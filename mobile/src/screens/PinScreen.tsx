@@ -305,6 +305,9 @@ export function PinScreen() {
       <Pressable
         onPress={openDiagnostic}
         hitSlop={16}
+        accessibilityRole="button"
+        accessibilityLabel="Network diagnostics"
+        accessibilityHint="Check the backend connection and reset the server URL"
         style={({ pressed }) => [
           styles.diagFab,
           { top: insets.top + 16 },
@@ -360,10 +363,21 @@ export function PinScreen() {
       </Animated.View>
 
       {/* ── Keypad ── */}
-      <View style={[styles.keypad, isLocked && styles.keypadLocked]}>
+      <View
+        style={[styles.keypad, isLocked && styles.keypadLocked]}
+        accessibilityRole="keyboardkey"
+        accessibilityLabel="PIN keypad"
+      >
         {KEYS.map((key, idx) => (
           <Pressable
             key={idx}
+            accessibilityRole="button"
+            accessibilityLabel={
+              key === '' ? undefined :
+              key === '⌫' ? 'Delete last digit' :
+              `Enter digit ${key}`
+            }
+            accessibilityState={{ disabled: key === '' || processing || isLocked }}
             style={({ pressed }) => [
               styles.key,
               key === '' && styles.keyInvisible,
@@ -392,6 +406,9 @@ export function PinScreen() {
       ) : (
         <Pressable
           onPress={() => { setShowForgot(true); setResetError(''); setResetCode(''); }}
+          accessibilityRole="button"
+          accessibilityLabel="Forgot PIN"
+          accessibilityHint="Opens the PIN recovery flow"
           style={({ pressed }) => [styles.forgotBtn, pressed && { opacity: 0.7 }]}
           hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
         >

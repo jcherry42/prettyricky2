@@ -51,9 +51,11 @@ from ai_gateway import gateway as ai_gateway
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# Configure structured logging for production
-LOG_FORMAT = '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+# Configure structured logging — respects LOG_FORMAT env (text | json)
+# and LOG_LEVEL env (default INFO). Call BEFORE any logger.* usage below.
+from lib.logging_config import configure_logging
+configure_logging()
+
 logger = logging.getLogger(__name__)
 
 # Startup timing

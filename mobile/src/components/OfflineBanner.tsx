@@ -130,6 +130,17 @@ export function OfflineBanner() {
       <Pressable
         testID="offline-banner-action"
         onPress={hasPending ? triggerSync : undefined}
+        accessibilityRole={hasPending ? 'button' : 'summary'}
+        accessibilityLabel={
+          offline
+            ? `Offline. ${queueCount} request${queueCount === 1 ? '' : 's'} queued`
+            : syncing
+            ? `Syncing ${queueCount} queued request${queueCount === 1 ? '' : 's'}`
+            : done
+            ? 'All queued requests synced'
+            : `${queueCount} pending request${queueCount === 1 ? '' : 's'} — tap to sync now`
+        }
+        accessibilityHint={hasPending ? 'Retries any queued network calls' : undefined}
         style={styles.inner}
         android_ripple={hasPending ? { color: colors.goldGlow } : undefined}
       >

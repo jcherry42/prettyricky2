@@ -24,7 +24,18 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { WebSocketProvider } from './src/context/WebSocketContext';
 import { SessionPersistenceProvider } from './src/context/SessionContext';
 import { PinScreen } from './src/screens/PinScreen';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text, TextInput } from 'react-native';
+
+// Cap Dynamic Type at 1.4x — beyond this, our fixed-height buttons and
+// tab-bar labels start clipping. Anyone with iOS "Larger Accessibility Sizes"
+// or Android "Huge" font still gets a meaningful bump without a broken layout.
+// Individual <Text allowFontScaling={false}/> overrides (brand wordmark) still win.
+interface WithDefaultProps<P> { defaultProps?: Partial<P> }
+type TextDefaults = { maxFontSizeMultiplier?: number; allowFontScaling?: boolean };
+(Text as unknown as WithDefaultProps<TextDefaults>).defaultProps =
+  { ...((Text as unknown as WithDefaultProps<TextDefaults>).defaultProps || {}), maxFontSizeMultiplier: 1.4 };
+(TextInput as unknown as WithDefaultProps<TextDefaults>).defaultProps =
+  { ...((TextInput as unknown as WithDefaultProps<TextDefaults>).defaultProps || {}), maxFontSizeMultiplier: 1.4 };
 
 // Disable native screens (RNSScreen Fabric component) to prevent a Codegen
 // TypeSpec boolean/string mismatch that crashes Expo Go during tab navigator

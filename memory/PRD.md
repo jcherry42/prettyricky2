@@ -444,3 +444,83 @@ license, auth, network-recovery — and produced 9 findings. All fixed.
 - Optional: consider migrating in-process rate-limit store to Redis for
   multi-instance deployments.
 
+
+### P2 UX Polish + Backend Hardening (Feb 2026, iter23) — Store-Readiness Sweep
+
+**Delivered — P2(F) UX Polish + P2(H) Backend Hardening:**
+
+1. **F24 — Skeleton shimmer for dashboard load**
+   - Replaced bare `<ActivityIndicator/>` on the Command Center dashboard
+     with two glass-card skeletons that mirror the real layout (stats grid
+     + status rows). Perceived load-in feels instant.
+
+2. **F25 — Shared `<EmptyState>` component** (`/app/mobile/src/components/EmptyState.tsx`)
+   - Reusable placeholder with icon, title, description, and optional CTA.
+   - Wired into: Command Center dashboard (retry action on failure),
+     customers tab, inventory tab, license-scan list.
+   - Copy is persona-aware via `useLingo()` (Customer/Guest, Vehicle/RO).
+
+3. **F27 — Offline queue visibility** — already fully surfaced via
+   `<OfflineBanner/>` at the app root: shows `N queued` badge, live sync
+   progress, and a manual "SYNC" button when the device is online with
+   pending items. Verified no gap.
+
+4. **F28 — Accessibility sweep** — added `accessibilityRole` +
+   `accessibilityLabel` + `accessibilityHint` + `accessibilityState` to
+   the highest-traffic controls:
+   - PIN keypad (per-digit labels + backspace + keyboardkey role)
+   - PIN diagnostic FAB + "Forgot PIN" link
+   - `<FloatingCustomerButton/>` + `<FloatingPttButton/>` (main-screen CTAs)
+   - `<OfflineBanner/>` action button
+   - Global `hitSlop={12}` on the two floating buttons for reliable touch targets.
+
+5. **F29 — Dynamic Type cap** — set `Text.defaultProps.maxFontSizeMultiplier = 1.4`
+   and `TextInput.defaultProps.maxFontSizeMultiplier = 1.4` in `App.tsx`.
+   iOS "Larger Accessibility Sizes" and Android "Huge" font still bump
+   readability without breaking fixed-height buttons or the tab bar.
+   Brand wordmark keeps `allowFontScaling={false}` for pixel-perfect logo.
+
+6. **F30 (dark-mode forced)** — documented as intentional; no code change.
+
+7. **H39 — Structured JSON logging** (`/app/backend/lib/logging_config.py`)
+   - New `configure_logging()` bootstraps at server startup.
+   - `LOG_FORMAT=json` env → newline-delimited JSON records with
+     `timestamp`, `level`, `logger`, `message` + any `extra={}` fields
+     (compatible with Datadog / Loki / CloudWatch / Splunk out of the box).
+   - `LOG_FORMAT` unset or `text` → classic human-readable format (dev default).
+   - Falls back to text formatter if `python-json-logger` is missing —
+     never breaks startup.
+   - Added `python-json-logger==4.1.0` to `requirements.txt`.
+
+8. **H41 — Legacy `/api/customers` route hardening**
+   - Rejects totally-empty submissions with HTTP 422 (previously
+     silently defaulted to a phantom "License Scan" customer).
+   - Requires at least ONE of: `first_name`/`last_name`/`name`,
+     `phone`, `email`, or `license_image` — matches how the mobile
+     app actually calls it.
+   - Validates `lead_status` against the enum
+     `{new|contacted|appointment|sold|service|lost}` — 422 on unknown.
+   - `notes` field now persists (was being dropped due to a bug).
+   - License-image-only intake still allowed (name defaults to
+     "License Scan" ONLY when an image is attached — legitimate flow).
+   - Verified end-to-end: empty→422, bad status→422, valid→201,
+     image-only→201.
+
+**Deferred (infra/ops decisions, not code):**
+- H36 (Redis rate-limit) — single-instance backend doesn't need it yet.
+- H37 (Mongo backups) — production infra concern.
+- H38 (dev/staging/prod env split) — deployment infra concern.
+- H40 (health monitor hookup) — `/api/ready` is already honest, just needs
+  Uptime Kuma / Pingdom / Datadog wiring at deploy time.
+- F26 (first-launch onboarding) — bigger UX feature, worth a dedicated pass.
+
+### P1 (High) — remaining
+- Real `POSTHOG_API_KEY` in backend `.env` to activate PostHog forwarding.
+
+### Next / Backlog
+- F26 (first-launch onboarding walkthrough for VIN scanner, DL scanner, Tower Talk).
+- Store-ready items: EAS project ID, privacy policy URL, iOS PrivacyInfo.xcprivacy,
+  Play Store data-safety form, App Store screenshots, Sentry crash reporting.
+- Optional: Redis rate-limit backend for multi-instance deployments.
+
+

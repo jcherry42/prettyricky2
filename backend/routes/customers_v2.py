@@ -237,20 +237,39 @@ async def create_customer_legacy(payload: LegacyCustomerCreateRequest):
         first_name = parts[0] if parts else ""
         last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
 
+    # Reject totally-empty submissions instead of silently defaulting to
+    # "License Scan" — a store-ready API must fail fast on ambiguous input.
+    # An attached license_image OR a phone/email is enough to prove intent.
+    has_identity = bool(first_name or last_name or payload.phone or payload.email or payload.license_image)
+    if not has_identity:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one of first_name/last_name/name, phone, email, or license_image is required.",
+        )
+
+    # Validate lead_status if provided (Literal-style)
+    lead_status = (payload.lead_status or payload.leadStatus or "new").strip().lower()
+    if lead_status not in {"new", "contacted", "appointment", "sold", "service", "lost"}:
+        raise HTTPException(
+            status_code=422,
+            detail=f"lead_status must be one of new|contacted|appointment|sold|service|lost, got '{lead_status}'.",
+        )
+
     phone = (payload.phone or "").strip() or None
     email = (payload.email or "").strip() or None
 
     customer_id = str(uuid.uuid4())
     customer_doc: Dict[str, Any] = {
         "id": customer_id,
-        "first_name": first_name or "License",
-        "last_name": last_name or "Scan",
+        # Fallbacks kept for license-only scans (image supplied, name pending OCR)
+        "first_name": first_name or ("License" if payload.license_image else ""),
+        "last_name": last_name or ("Scan" if payload.license_image else ""),
         "phone": phone or "",
         "email": email,
         "address": payload.address,
         "lead_source": payload.source or "manual",
-        "lead_status": payload.lead_status or payload.leadStatus or "new",
-        "notes": None,
+        "lead_status": lead_status,
+        "notes": payload.notes,
         "vehicle_interests": [],
         "trade_in_vehicle_id": None,
         "interactions": [],
