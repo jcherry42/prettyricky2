@@ -261,7 +261,7 @@ export function EmergencyInquiryModal({ visible, onClose }: { visible: boolean; 
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
       <LinearGradient colors={[colors.bg0, '#0A0205', '#050708']} style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Math.max(insets.top + 12, 20) }]}>
           <View style={styles.headerIcon}>
             <Ionicons name="alert-circle" size={24} color="#FF2D2D" />
           </View>
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingTop: 60,
+    paddingTop: 20, // overridden inline with `insets.top + 12` for notch/DynamicIsland clearance
     paddingBottom: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,

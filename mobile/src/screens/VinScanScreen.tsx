@@ -569,9 +569,26 @@ export function VinScanScreen() {
   const zoomPanResponder = useMemo(
     () =>
       PanResponder.create({
+        // Claim gestures that start on the hit band AND those already in progress
+        // (matters when the finger starts on the track and moves — RN needs both
+        // Start* and Move* to be true to reliably intercept the gesture).
         onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: () => {
+        onStartShouldSetPanResponderCapture: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponderCapture: () => true,
+        // Refuse to release the gesture to a parent (e.g., pageSheet's
+        // drag-to-dismiss) once we've started controlling zoom.
+        onPanResponderTerminationRequest: () => false,
+        onShouldBlockNativeResponder: () => true,
+        onPanResponderGrant: (e) => {
           zoomOffset.current = zoom * SLIDER_TRACK_W;
+          // Handle single-tap: jump the thumb to the tapped x-position.
+          const locationX = e.nativeEvent.locationX;
+          if (typeof locationX === 'number' && locationX >= 0 && locationX <= SLIDER_TRACK_W) {
+            const newZoom = parseFloat((locationX / SLIDER_TRACK_W).toFixed(2));
+            setZoom(newZoom);
+            zoomOffset.current = newZoom * SLIDER_TRACK_W;
+          }
         },
         onPanResponderMove: (_, gs) => {
           const raw = zoomOffset.current + gs.dx;
@@ -1259,9 +1276,22 @@ export function VinScanScreen() {
                   {/* Zoom slider */}
                   <View style={styles.zoomSliderWrap}>
                     <Ionicons name="remove" size={16} color={colors.textMute} />
-                    <View style={styles.zoomSliderTrack} {...zoomPanResponder.panHandlers}>
-                      <View style={[styles.zoomSliderFill, { width: `${zoom * 100}%` }]} />
-                      <View style={[styles.zoomThumb, { left: zoom * SLIDER_TRACK_W - 10 }]} />
+                    {/*
+                      Hit-area wrapper: 28px-tall invisible band around the 4px
+                      visible track so the fingers can grab the thumb without
+                      needing to hit a 4px sliver. The PanResponder lives here.
+                    */}
+                    <View
+                      style={styles.zoomSliderHit}
+                      {...zoomPanResponder.panHandlers}
+                      accessibilityRole="adjustable"
+                      accessibilityLabel="Camera zoom"
+                      accessibilityValue={{ min: 0, max: 100, now: Math.round(zoom * 100) }}
+                    >
+                      <View style={styles.zoomSliderTrack}>
+                        <View style={[styles.zoomSliderFill, { width: `${zoom * 100}%` }]} />
+                        <View style={[styles.zoomThumb, { left: zoom * SLIDER_TRACK_W - 10 }]} />
+                      </View>
                     </View>
                     <Ionicons name="add" size={16} color={colors.textMute} />
                     <Text style={styles.zoomLabel}>{Math.round(zoom * 100)}%</Text>
@@ -2110,6 +2140,15 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
+  },
+  // Invisible 28px hit band around the 4px visible track — the actual
+  // PanResponder target. Fingers can grab the thumb without needing to
+  // hit a 4px sliver, and the panResponder captures moves that begin
+  // anywhere within this band.
+  zoomSliderHit: {
+    flex: 1,
+    height: 28,
+    justifyContent: 'center',
   },
   zoomSliderTrack: {
     flex: 1,

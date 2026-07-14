@@ -165,7 +165,7 @@ export function CustomerDetailModal({ visible, customer, onClose, onEdit, onDele
           colors={['rgba(20,14,8,0.95)', 'rgba(12,8,4,0.95)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.header}
+          style={[styles.header, { paddingTop: Math.max(insets.top + 12, 20) }]}
         >
           <Pressable onPress={handleClose} style={styles.closeButton} accessibilityLabel="Close">
             <Ionicons name="close" size={28} color={colors.text} />
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 60,
+    paddingTop: 20, // overridden inline with `insets.top + 12` for notch/DynamicIsland clearance
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
