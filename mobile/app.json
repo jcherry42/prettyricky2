@@ -91,6 +91,11 @@
       },
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6777087a-7aae-4de1-a4f7-7469586fe16d"
+      }
     }
   }
 }
