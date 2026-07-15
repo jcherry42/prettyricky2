@@ -1,0 +1,116 @@
+# ─────────────────────────────────────────────────────────────
+# Automated MongoDB backup — Kubernetes CronJob
+# Runs daily at 03:00 UTC, dumps + GPG-encrypts + uploads to S3
+# ─────────────────────────────────────────────────────────────
+#
+# Prerequisites in your cluster:
+#   1. Secret: mongo-backup-secrets (see below)
+#   2. ServiceAccount with S3 IAM role (or use AWS access keys in secret)
+#
+# Apply:
+#   kubectl apply -f deploy/k8s/mongo-backup-cronjob.yaml
+#
+# Verify:
+#   kubectl get cronjob -n superchargd
+#   kubectl logs -n superchargd $(kubectl get pod -n superchargd -l job-name -o name | head -1)
+# ─────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-backup-secrets
+  namespace: superchargd
+type: Opaque
+stringData:
+  # Full mongo connection string with backup-scoped role (readAnyDatabase + backup)
+  MONGO_URL: "mongodb+srv://backup-user:REPLACE_ME@prod-cluster.mongodb.net"
+  # GPG symmetric encryption passphrase — rotate annually
+  GPG_PASSPHRASE: "REPLACE_ME_WITH_STRONG_PASSPHRASE"
+  # AWS S3 target bucket (must already exist)
+  S3_BUCKET: "superchargd-mongo-backups"
+  S3_PREFIX: "prod"
+  AWS_ACCESS_KEY_ID: "REPLACE_ME"
+  AWS_SECRET_ACCESS_KEY: "REPLACE_ME"
+  AWS_DEFAULT_REGION: "us-east-1"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mongo-backup-daily
+  namespace: superchargd
+  labels:
+    app.kubernetes.io/name: mongo-backup
+    app.kubernetes.io/part-of: superchargd
+spec:
+  # 03:00 UTC every day
+  schedule: "0 3 * * *"
+  timeZone: "Etc/UTC"
+  concurrencyPolicy: Forbid              # Never let two backups run concurrently
+  successfulJobsHistoryLimit: 3          # Keep last 3 successful runs for audit
+  failedJobsHistoryLimit: 5              # Keep last 5 failed runs for post-mortem
+  startingDeadlineSeconds: 3600          # Skip missed runs older than 1 hour
+  jobTemplate:
+    spec:
+      backoffLimit: 2                    # Retry up to 2 times on failure
+      activeDeadlineSeconds: 3600        # Kill jobs that run longer than 1h
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: mongo-backup
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: mongo-backup
+              image: mongo:7.0
+              imagePullPolicy: IfNotPresent
+              envFrom:
+                - secretRef:
+                    name: mongo-backup-secrets
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 2Gi
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  TS=$(date -u +%Y%m%dT%H%M%SZ)
+                  WORK=/tmp/backup-${TS}
+                  mkdir -p "$WORK"
+
+                  echo "[$(date -u -Iseconds)] Installing tools..."
+                  apt-get update -qq >/dev/null
+                  apt-get install -y -qq --no-install-recommends gnupg awscli >/dev/null
+
+                  echo "[$(date -u -Iseconds)] Running mongodump..."
+                  mongodump \
+                    --uri="$MONGO_URL" \
+                    --out "$WORK" \
+                    --gzip \
+                    --oplog \
+                    --numParallelCollections=4 \
+                    --quiet
+
+                  echo "[$(date -u -Iseconds)] Compressing..."
+                  tar cf - -C /tmp "backup-${TS}" | \
+                    gpg --batch --yes --passphrase "$GPG_PASSPHRASE" \
+                        --symmetric --cipher-algo AES256 \
+                        --compress-algo zlib --compress-level 9 \
+                        -o "/tmp/backup-${TS}.tar.gpg"
+
+                  SIZE=$(du -h "/tmp/backup-${TS}.tar.gpg" | cut -f1)
+                  echo "[$(date -u -Iseconds)] Archive size: $SIZE"
+
+                  echo "[$(date -u -Iseconds)] Uploading to s3://${S3_BUCKET}/${S3_PREFIX}/${TS}.tar.gpg ..."
+                  aws s3 cp "/tmp/backup-${TS}.tar.gpg" \
+                    "s3://${S3_BUCKET}/${S3_PREFIX}/${TS}.tar.gpg" \
+                    --storage-class STANDARD_IA \
+                    --only-show-errors
+
+                  echo "[$(date -u -Iseconds)] Backup complete."
+
+                  # Cleanup local (pod is ephemeral but be tidy)
+                  rm -rf "$WORK" "/tmp/backup-${TS}.tar.gpg"

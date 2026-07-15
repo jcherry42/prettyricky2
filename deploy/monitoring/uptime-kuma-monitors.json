@@ -1,0 +1,98 @@
+{
+  "_comment": "Uptime Kuma monitor bundle for Supercharg'd. Import via Settings → Backup → Import. Update `_host` to your production API URL before importing.",
+  "_host_placeholder": "https://api.superchargd.com",
+  "version": "1.23.11",
+  "notificationList": [
+    {
+      "name": "Discord — #alerts-prod",
+      "type": "discord",
+      "isDefault": true,
+      "applyExisting": true,
+      "config": {
+        "discordUsername": "Uptime Kuma",
+        "discordWebhookUrl": "REPLACE_WITH_DISCORD_WEBHOOK_URL"
+      }
+    },
+    {
+      "name": "Slack — #alerts-prod",
+      "type": "slack",
+      "isDefault": false,
+      "config": {
+        "slackwebhookURL": "REPLACE_WITH_SLACK_WEBHOOK_URL",
+        "slackchannel": "#alerts-prod",
+        "slackusername": "Uptime Kuma"
+      }
+    }
+  ],
+  "monitorList": [
+    {
+      "name": "API Health (/api/health)",
+      "type": "http",
+      "url": "https://api.superchargd.com/api/health",
+      "method": "GET",
+      "interval": 30,
+      "retryInterval": 20,
+      "resendInterval": 0,
+      "maxretries": 3,
+      "keyword": "\"status\":\"healthy\"",
+      "accepted_statuscodes": ["200"],
+      "expiryNotification": true,
+      "ignoreTls": false,
+      "tags": [{ "name": "prod", "color": "#f59e0b" }, { "name": "critical", "color": "#ef4444" }]
+    },
+    {
+      "name": "API Ready (/api/ready)",
+      "type": "http",
+      "url": "https://api.superchargd.com/api/ready",
+      "method": "GET",
+      "interval": 60,
+      "retryInterval": 20,
+      "resendInterval": 0,
+      "maxretries": 2,
+      "keyword": "\"ready\":true",
+      "accepted_statuscodes": ["200"],
+      "expiryNotification": true,
+      "tags": [{ "name": "prod", "color": "#f59e0b" }]
+    },
+    {
+      "name": "Auth Login (synthetic)",
+      "type": "http",
+      "url": "https://api.superchargd.com/api/auth/login",
+      "method": "POST",
+      "interval": 300,
+      "retryInterval": 60,
+      "resendInterval": 0,
+      "maxretries": 2,
+      "body": "{\"pin\":\"REPLACE_WITH_MONITORING_PIN\"}",
+      "headers": "{\"Content-Type\":\"application/json\"}",
+      "keyword": "access_token",
+      "accepted_statuscodes": ["200"],
+      "tags": [{ "name": "prod", "color": "#f59e0b" }, { "name": "e2e", "color": "#3b82f6" }]
+    },
+    {
+      "name": "Landing Page",
+      "type": "http",
+      "url": "https://superchargd.com",
+      "method": "GET",
+      "interval": 300,
+      "maxretries": 2,
+      "accepted_statuscodes": ["200"],
+      "tags": [{ "name": "prod", "color": "#f59e0b" }]
+    },
+    {
+      "name": "MongoDB Port",
+      "type": "port",
+      "hostname": "prod-mongo.internal",
+      "port": 27017,
+      "interval": 60,
+      "maxretries": 3,
+      "tags": [{ "name": "prod", "color": "#f59e0b" }, { "name": "infra", "color": "#8b5cf6" }]
+    }
+  ],
+  "_setup_notes": [
+    "1. Create a dedicated 'monitor' PIN in Mongo (see /app/docs/ops/uptime-monitoring.md §4).",
+    "2. Replace REPLACE_WITH_MONITORING_PIN + webhook URLs before importing.",
+    "3. After import, edit each monitor to attach both notification channels.",
+    "4. Configure a status page at Settings → Status Pages → New."
+  ]
+}

@@ -179,6 +179,10 @@ class VehicleCreate(BaseModel):
     color: Optional[str] = None
     stock_number: Optional[str] = None
     notes: Optional[str] = None
+    # Vehicle history — set to True when the seller has verified a clean CARFAX
+    # (no accidents, single owner, clean title, etc). Rendered as a bright-green
+    # "CLEAN CARFAX" badge on the vehicle profile when true.
+    carfax_clean: Optional[bool] = None
     # For trade-ins
     customer_id: Optional[str] = None  # Links trade-in to customer
     trade_in_value: Optional[float] = None
@@ -197,6 +201,7 @@ class VehicleUpdate(BaseModel):
     color: Optional[str] = None
     stock_number: Optional[str] = None
     notes: Optional[str] = None
+    carfax_clean: Optional[bool] = None
     customer_id: Optional[str] = None
     trade_in_value: Optional[float] = None
     condition: Optional[str] = None
@@ -228,6 +233,8 @@ class Vehicle(BaseModel):
     transmission: Optional[str] = None
     assembly_location: Optional[str] = None
     safety_features: List[str] = Field(default_factory=list)
+    # Vehicle history — see VehicleCreate for semantics.
+    carfax_clean: Optional[bool] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(__import__('datetime').timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(__import__('datetime').timezone.utc))
     source_id: Optional[str] = None

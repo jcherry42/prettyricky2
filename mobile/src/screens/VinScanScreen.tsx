@@ -175,10 +175,11 @@ function HistoryItem({ item, onPress, onSaveToInventory, isAtLimit, category }: 
 // ═══════════════════════════════════════════════════════════════════════
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item: any; onClose: () => void; onSaveToInventory: (item: any) => void; insets: any }) {
+function VehicleDetailModal({ item, onClose, onSaveToInventory, onToggleCarfax, insets }: { item: any; onClose: () => void; onSaveToInventory: (item: any) => void; onToggleCarfax: (nextValue: boolean) => Promise<void>; insets: any }) {
   const d = item.decoded?.vehicle || item.decoded || {};
   const validation = item.decoded?.validation || {};
   const isSaved = Boolean(item.savedToInventoryAt);
+  const carfaxClean = item.carfax_clean === true;
 
   const year = d.year || item.decoded?.year || '';
   const make = d.make || item.decoded?.make || '';
@@ -233,6 +234,15 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
             <Text style={vdStyles.confText}>{validation.confidence_score}%</Text>
           </View>
         )}
+
+        {/* CLEAN CARFAX badge — bright green, only shown when the vehicle is in
+            inventory AND has been marked with a clean CARFAX. */}
+        {isSaved && carfaxClean ? (
+          <View style={vdStyles.carfaxBadge}>
+            <Ionicons name="ribbon" size={13} color="#39FF6A" />
+            <Text style={vdStyles.carfaxBadgeText}>CLEAN CARFAX</Text>
+          </View>
+        ) : null}
       </LinearGradient>
 
       <ScrollView
@@ -321,10 +331,44 @@ function VehicleDetailModal({ item, onClose, onSaveToInventory, insets }: { item
             </LinearGradient>
           </Pressable>
         ) : (
-          <View style={vdStyles.savedBadge}>
-            <Ionicons name="checkmark-circle" size={22} color={colors.green} />
-            <Text style={vdStyles.savedBadgeText}>SAVED TO INVENTORY</Text>
-          </View>
+          <>
+            <View style={vdStyles.savedBadge}>
+              <Ionicons name="checkmark-circle" size={22} color={colors.green} />
+              <Text style={vdStyles.savedBadgeText}>SAVED TO INVENTORY</Text>
+            </View>
+
+            {/* Clean CARFAX toggle — only meaningful for inventory vehicles.
+                Uses PATCH /api/vehicles/{id} via updateVehicle. Optimistic UI. */}
+            <Pressable
+              onPress={() => onToggleCarfax(!carfaxClean)}
+              accessibilityRole="switch"
+              accessibilityLabel="Toggle Clean CARFAX"
+              accessibilityState={{ checked: carfaxClean }}
+              style={({ pressed }) => [
+                vdStyles.carfaxToggle,
+                carfaxClean && vdStyles.carfaxToggleActive,
+                pressed && { opacity: 0.85 },
+              ]}
+              testID="vehicle-detail-carfax-toggle"
+            >
+              <Ionicons
+                name={carfaxClean ? 'checkmark-circle' : 'ellipse-outline'}
+                size={20}
+                color={carfaxClean ? '#39FF6A' : colors.textMute}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={[vdStyles.carfaxToggleTitle, carfaxClean && { color: '#39FF6A' }]}>
+                  {carfaxClean ? 'CLEAN CARFAX' : 'Mark as Clean CARFAX'}
+                </Text>
+                <Text style={vdStyles.carfaxToggleSub}>
+                  {carfaxClean
+                    ? 'Verified: no accidents, clean title. Displayed to sales floor.'
+                    : 'Tap if you\u2019ve verified a clean CARFAX report for this vehicle.'}
+                </Text>
+              </View>
+              <Ionicons name="ribbon" size={18} color={carfaxClean ? '#39FF6A' : colors.textMute} />
+            </Pressable>
+          </>
         )}
       </ScrollView>
     </LinearGradient>
@@ -425,6 +469,57 @@ const vdStyles = StyleSheet.create({
   },
   confText: { fontSize: 11, fontWeight: '800', color: colors.green },
 
+  // CLEAN CARFAX header badge — bright green pill positioned like confBadge
+  carfaxBadge: {
+    position: 'absolute',
+    top: 68,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(57,255,106,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(57,255,106,0.55)',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  carfaxBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#39FF6A',
+    letterSpacing: 1.2,
+  },
+
+  // Clean CARFAX toggle block (below SAVED TO INVENTORY)
+  carfaxToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  carfaxToggleActive: {
+    backgroundColor: 'rgba(57,255,106,0.08)',
+    borderColor: 'rgba(57,255,106,0.45)',
+  },
+  carfaxToggleTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: colors.text,
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  carfaxToggleSub: {
+    fontSize: 11,
+    color: colors.textMute,
+    lineHeight: 15,
+  },
+
   section: { marginBottom: 12 },
   sectionHdr: {
     flexDirection: 'row', alignItems: 'center', gap: 7,
@@ -494,7 +589,7 @@ const vdStyles = StyleSheet.create({
 
 export function VinScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const { addVehicle, isAtLimit, maxInventory } = useInventory();
+  const { addVehicle, updateVehicle, isAtLimit, maxInventory } = useInventory();
   const insets = useSafeAreaInsets();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -772,8 +867,15 @@ export function VinScanScreen() {
       const vehicleData = item.decoded?.vehicle || item.decoded;
       // Preserve source tag so the Intake Hub badge shows SCAN vs MANUAL
       const sourceTag = item.source === 'manual' ? 'manual' : 'scan';
-      await addVehicle({ vin: item.vin, ...vehicleData, category: item.category, _source: sourceTag });
-      const entry = { ...item, savedToInventoryAt: new Date().toISOString() };
+      const created = await addVehicle({ vin: item.vin, ...vehicleData, category: item.category, _source: sourceTag });
+      const entry = {
+        ...item,
+        savedToInventoryAt: new Date().toISOString(),
+        // Persist the DB id so subsequent updates (e.g. Clean CARFAX toggle) can PATCH the correct record.
+        inventoryVehicleId: created?.id ?? null,
+        // Mirror the initial carfax_clean state on the local entry (null = unset)
+        carfax_clean: created?.carfax_clean ?? null,
+      };
       const currentList = isTrade ? tradeInHistory : dealerHistory;
       const maxItems = isTrade ? MAX_TRADEIN : MAX_DEALER_HISTORY;
       const next = [entry, ...currentList.filter((h) => h.id !== item.id)].slice(0, maxItems);
@@ -1501,12 +1603,48 @@ export function VinScanScreen() {
               onClose={() => setVehicleDetailItem(null)}
               onSaveToInventory={async () => {
                 await saveToInventory(vehicleDetailItem);
-                // Refresh from history so the save badge updates
+                // Refresh from history so the save badge updates.
+                // Pull latest local history entry to capture new inventoryVehicleId and carfax_clean defaults.
+                const list = vehicleDetailItem.category === CATEGORY.TRADEIN ? tradeInHistory : dealerHistory;
+                const latest = list.find((h) => h.id === vehicleDetailItem.id);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 setVehicleDetailItem((prev: any) => ({
                   ...prev,
                   savedToInventoryAt: new Date().toISOString(),
+                  inventoryVehicleId: latest?.inventoryVehicleId ?? prev.inventoryVehicleId ?? null,
+                  carfax_clean: latest?.carfax_clean ?? prev.carfax_clean ?? null,
                 }));
+              }}
+              onToggleCarfax={async (nextValue: boolean) => {
+                const vehicleId = vehicleDetailItem?.inventoryVehicleId;
+                if (!vehicleId) {
+                  Alert.alert(
+                    'Not in Inventory Yet',
+                    'Save this vehicle to inventory first, then mark its CARFAX status.'
+                  );
+                  return;
+                }
+                // Optimistic UI: flip the badge immediately, revert on error.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                setVehicleDetailItem((prev: any) => ({ ...prev, carfax_clean: nextValue }));
+                try {
+                  await updateVehicle(vehicleId, { carfax_clean: nextValue });
+                  impactMedium();
+                  // Persist to local history so the badge survives reload
+                  const isTrade = vehicleDetailItem.category === CATEGORY.TRADEIN;
+                  const list = isTrade ? tradeInHistory : dealerHistory;
+                  const updated = list.map((h) =>
+                    h.id === vehicleDetailItem.id ? { ...h, carfax_clean: nextValue } : h
+                  );
+                  if (isTrade) setTradeInHistory(updated);
+                  else setDealerHistory(updated);
+                  await persistHistory(vehicleDetailItem.category, updated);
+                } catch (e: unknown) {
+                  // Revert on failure
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  setVehicleDetailItem((prev: any) => ({ ...prev, carfax_clean: !nextValue }));
+                  Alert.alert('Update Failed', errorMessage(e));
+                }
               }}
               insets={insets}
             />

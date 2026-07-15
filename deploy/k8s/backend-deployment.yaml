@@ -1,0 +1,196 @@
+# ─────────────────────────────────────────────────────────────
+# Supercharg'd Backend — Kubernetes Deployment
+# Includes production-ready liveness + readiness probes
+# ─────────────────────────────────────────────────────────────
+#
+# Apply:
+#   kubectl apply -f deploy/k8s/backend-deployment.yaml
+#
+# Verify probes:
+#   kubectl describe pod -n superchargd -l app=superchargd-api | grep -A 4 -E "Liveness|Readiness"
+#
+# Roll a new image:
+#   kubectl set image -n superchargd deploy/superchargd-api api=<new-image-tag>
+#   kubectl rollout status -n superchargd deploy/superchargd-api
+# ─────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: superchargd
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: superchargd-api-secrets
+  namespace: superchargd
+type: Opaque
+stringData:
+  MONGO_URL: "REPLACE_WITH_MONGO_CONNECTION_STRING"
+  DB_NAME: "superchargd_prod"
+  JWT_SECRET_KEY: "REPLACE_WITH_128_CHAR_HEX"
+  EMERGENT_LLM_KEY: "REPLACE_WITH_EMERGENT_KEY"
+  POSTHOG_API_KEY: ""                           # optional
+  SENTRY_DSN_BACKEND: ""                        # optional
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superchargd-api-config
+  namespace: superchargd
+data:
+  CORS_ORIGINS: "https://app.superchargd.com,https://superchargd.com"
+  LOG_FORMAT: "json"
+  LOG_LEVEL: "WARNING"
+  SENTRY_ENVIRONMENT: "production"
+  SENTRY_TRACES_SAMPLE_RATE: "0.05"
+  POSTHOG_HOST: "https://us.i.posthog.com"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: superchargd-api
+  namespace: superchargd
+  labels:
+    app: superchargd-api
+    app.kubernetes.io/name: superchargd-api
+    app.kubernetes.io/part-of: superchargd
+spec:
+  replicas: 2                                   # 2+ for zero-downtime deploys
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: superchargd-api
+  template:
+    metadata:
+      labels:
+        app: superchargd-api
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: api
+          image: your-registry.example.com/superchargd/api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8001
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: superchargd-api-config
+            - secretRef:
+                name: superchargd-api-secrets
+
+          # ── Liveness probe ──────────────────────────────────────
+          # Cheap, cached 5-second endpoint. K8s restarts the pod if 3
+          # consecutive probes fail. Do NOT use /api/ready for liveness —
+          # a brief DB blip would cause a restart storm.
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # ── Readiness probe ─────────────────────────────────────
+          # Explicit DB ping. On failure, K8s stops sending traffic to
+          # this pod but does NOT restart it. Correct behavior for a
+          # brief upstream (Mongo) hiccup.
+          readinessProbe:
+            httpGet:
+              path: /api/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+            successThreshold: 1
+
+          # ── Startup probe ───────────────────────────────────────
+          # Gives the app up to 90s to start before liveness kicks in.
+          # Prevents flapping restarts during slow-cold-start scenarios.
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 18                # 18 * 5s = 90s max startup
+
+          # ── Resources ──────────────────────────────────────────
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          # ── Security hardening ─────────────────────────────────
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: false       # FastAPI writes temp files; set true only if you verify
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+
+          # Graceful shutdown — let in-flight requests finish
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: superchargd-api
+  namespace: superchargd
+  labels:
+    app: superchargd-api
+spec:
+  type: ClusterIP
+  selector:
+    app: superchargd-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+---
+# HorizontalPodAutoscaler — optional but recommended for prod
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: superchargd-api
+  namespace: superchargd
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: superchargd-api
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300           # Don't scale down too aggressively

@@ -2,12 +2,19 @@
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
 from fastapi import HTTPException, Security, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 import logging
+
+# Ensure .env is loaded before we read secrets. Idempotent — safe to call
+# repeatedly. Required here because this module can be imported by test
+# runners or subcommands that don't go through server.py's load_dotenv.
+load_dotenv(Path(__file__).resolve().parent.parent / '.env')
 
 logger = logging.getLogger(__name__)
 

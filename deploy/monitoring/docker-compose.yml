@@ -1,0 +1,37 @@
+# Uptime Kuma — self-hosted uptime monitoring
+#
+# Deploy:
+#   cd deploy/monitoring
+#   docker compose up -d
+#
+# Access:
+#   http://<your-host>:3001
+#   On first login, create an admin account and import monitors.json (below).
+#
+# Persistence:
+#   All monitor state + notifications + status pages live in the ./data volume.
+#   Back this up alongside your Mongo backups.
+#
+# TLS:
+#   For a public status page, front this with Traefik/nginx or use Kuma's
+#   built-in Cloudflare Tunnel integration.
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "extra/healthcheck"]
+      interval: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 90s
+    environment:
+      - UPTIME_KUMA_PORT=3001
+      # Optional: force HTTPS + set behind-proxy config
+      # - UPTIME_KUMA_TRUST_PROXY=1
