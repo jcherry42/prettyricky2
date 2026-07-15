@@ -1,0 +1,98 @@
+name: EAS Build — Manual
+
+# On-demand full native rebuild. Use when:
+#   • You added a native module (new expo-* package with iOS/Android code)
+#   • You changed permission strings, bundle ID, or app.json plugin config
+#   • You changed EXPO_PUBLIC_* env vars (they're baked at build time)
+#   • Testers report crashes and you need fresh dSYMs / mapping files
+#
+# For JavaScript-only changes, use eas-update-demo.yml instead — it's ~20x
+# faster and doesn't consume EAS build credits.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: true
+        default: 'demo'
+        type: choice
+        options:
+          - development
+          - device
+          - demo
+          - staging
+          - preview
+          - production
+      platform:
+        description: 'Target platform'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      auto_submit:
+        description: 'Submit to App Store / Play Store after build (production only)'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: eas-build-${{ github.event.inputs.profile }}-${{ github.event.inputs.platform }}
+  cancel-in-progress: false  # Don't cancel builds mid-flight — waste of credits
+
+jobs:
+  build:
+    name: Build ${{ github.event.inputs.profile }} for ${{ github.event.inputs.platform }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: mobile/yarn.lock
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Kick off EAS build (non-blocking — link posted below)
+        run: |
+          eas build \
+            --profile ${{ github.event.inputs.profile }} \
+            --platform ${{ github.event.inputs.platform }} \
+            --non-interactive \
+            --no-wait
+
+      - name: Show build links
+        run: |
+          echo "Build kicked off. Watch progress at https://expo.dev/accounts/YOUR_ORG/projects/superchargd/builds"
+          echo "Or run locally: eas build:list --limit 3"
+
+      - name: Submit to stores
+        if: ${{ github.event.inputs.auto_submit == 'true' && github.event.inputs.profile == 'production' }}
+        run: |
+          # Wait for the just-triggered build to finish, then submit.
+          # This may take 15-20 min — the job will hang on this step.
+          eas submit \
+            --profile production \
+            --platform ${{ github.event.inputs.platform }} \
+            --latest \
+            --non-interactive

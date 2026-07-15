@@ -1,0 +1,74 @@
+name: EAS Update — Demo Channel
+
+# Pushes an over-the-air JavaScript update to the `demo` OTA channel on
+# every merge to main. Users of the demo build receive the update within
+# ~30 seconds of reopening the app. No native rebuild required.
+#
+# For native-module changes (new dependencies, permission strings, etc.),
+# use the `eas-build-demo.yml` workflow instead — OTA updates cannot ship
+# native changes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Only trigger when mobile code actually changes.
+      - 'mobile/**'
+      - '.github/workflows/eas-update-demo.yml'
+  # Also allow manual triggering for hotfixes
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Update message (shown in Expo dashboard)'
+        required: false
+        default: 'Manual demo update'
+
+concurrency:
+  # Cancel any in-flight update job if a newer commit lands
+  group: eas-update-demo
+  cancel-in-progress: true
+
+jobs:
+  update:
+    name: Publish OTA update to demo channel
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # needed for accurate commit messages in update metadata
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: mobile/yarn.lock
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx eslint 'src/**/*.{ts,tsx}' --max-warnings=0
+
+      - name: Publish update
+        run: |
+          MSG="${{ github.event.inputs.message || github.event.head_commit.message }}"
+          # Trim to first line + max 100 chars — EAS update messages have a limit
+          MSG=$(echo "$MSG" | head -n 1 | cut -c1-100)
+          eas update \
+            --channel demo \
+            --message "$MSG" \
+            --non-interactive

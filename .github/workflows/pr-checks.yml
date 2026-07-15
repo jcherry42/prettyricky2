@@ -1,0 +1,81 @@
+name: PR Checks
+
+# Runs on every PR to main. Fails the PR if any check fails, preventing
+# a broken mobile bundle from being auto-shipped to demo devices.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - 'backend/**'
+      - '.github/workflows/pr-checks.yml'
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-checks:
+    name: Mobile — TypeScript + Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: mobile/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: ESLint (zero warnings)
+        run: npx eslint 'src/**/*.{ts,tsx}' --max-warnings=0
+
+  backend-checks:
+    name: Backend — Ruff + Pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mongo:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest pytest-asyncio httpx
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Pytest
+        env:
+          MONGO_URL: mongodb://localhost:27017
+          DB_NAME: superchargd_test
+          JWT_SECRET_KEY: test_secret_dont_use_in_prod_ever_1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+          CORS_ORIGINS: '*'
+        run: pytest tests/ -x --tb=short
