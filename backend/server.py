@@ -34,17 +34,7 @@ from middleware.auth_deps import require_auth, init_auth_deps
 # LLM Integration
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
-# Data Integration
-from data_integration import (
-    ImportProcessor,
-    DataSourceConfig,
-    DataSourceType,
-    RefreshSchedule,
-    init_scheduler,
-    get_scheduler,
-    shutdown_scheduler,
-)
-from repositories import CustomerRepository, VehicleRepository, DataSourceRepository
+from repositories import CustomerRepository, VehicleRepository
 from ai_gateway import gateway as ai_gateway
 
 
@@ -135,13 +125,6 @@ db = client[os.environ['DB_NAME']]
 # Repositories
 customer_repo = CustomerRepository(db)
 vehicle_repo = VehicleRepository(db)
-source_repo = DataSourceRepository(db)
-
-# Import processor
-import_processor = ImportProcessor()
-
-# A/B Testing Service
-from ab_testing_service import ab_testing_service, Experiment, DEFAULT_EXPERIMENTS
 
 
 # ── Performance indexes (created once at startup) ──────────────────────
@@ -269,44 +252,17 @@ async def lifespan(app: FastAPI):
         audit_logger.create_indexes(),
         customer_repo.create_indexes(),
         vehicle_repo.create_indexes(),
-        source_repo.create_indexes(),
         ensure_tts_indexes(),
         _ensure_perf_indexes(),
         _ensure_ttl_indexes(),
     )
     logger.info("All indexes created (parallel)")
 
-    # ── Phase 2: Integration layer (depends on db, parallel where possible) ──
-    from integrations import IntegrationManager
-    from integrations.webhooks import FortifiedWebhookReceiver
-    from integrations.profiles import ProfileManager
-    
-    integration_mgr = IntegrationManager(db)
-    webhook_recv = FortifiedWebhookReceiver(db)
-    profile_mgr = ProfileManager(db)
-    
-    await asyncio.gather(
-        integration_mgr.create_indexes(),
-        webhook_recv.create_indexes(),
-        profile_mgr.create_indexes(),
-    )
-    await profile_mgr.ensure_builtin_profiles()
-    logger.info("Integration layer initialized")
-
-    # ── Phase 3: Services (some depend on each other) ──
-    await ab_testing_service.initialize(db)
-    for exp in DEFAULT_EXPERIMENTS:
-        await ab_testing_service.create_experiment(Experiment(**exp))
-    
+    # ── Phase 2: Services ──
     from conversation_history import ConversationHistoryService
     _conv_svc = ConversationHistoryService(db)
     await _conv_svc.initialize()
     app.state.conversation_service = _conv_svc
-    
-    from analytics_service import AnalyticsService
-    app.state.analytics_service = AnalyticsService(db)
-    
-    await init_scheduler(db)
 
     # Initialize AI Gateway with DB for telemetry
     ai_gateway.init(db=db)
@@ -360,7 +316,6 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down...")
     app.state.ready = False
-    shutdown_scheduler()
     # Close shared httpx client in VIN routes
     from routes.vin_v2 import _http_client as vin_http_client
     if vin_http_client and not vin_http_client.is_closed:
@@ -400,8 +355,7 @@ from routes.vin_v2 import router as vin_router_v2, init_vin_routes as init_vin_r
 # Phase 2 refactor: extracted domain modules
 from routes.tts_voice import router as tts_voice_router, init_tts_voice_routes, ensure_tts_indexes
 from routes.ai_features import router as ai_features_router, init_ai_features_routes
-from routes.data_management import router as data_mgmt_router, init_data_management_routes
-from routes.integrations_routes import router as integrations_router, init_integrations_routes
+from routes.dashboard import router as dashboard_router, init_dashboard_routes
 from routes.pin_auth import router as pin_auth_router, init_pin_auth_routes
 from routes.license import router as license_router, init_license_routes
 from routes.knowledge import router as knowledge_router
@@ -420,9 +374,8 @@ init_tower_talk_routes_v2(os.environ.get('EMERGENT_LLM_KEY', ''))
 init_customer_routes_v2(db, customer_repo)
 init_vin_routes_v2(db, ai_gateway)
 init_tts_voice_routes(db)
-init_ai_features_routes(db, ab_testing_service=ab_testing_service)
-init_data_management_routes(db, customer_repo, vehicle_repo, source_repo, import_processor, get_scheduler)
-init_integrations_routes(db)
+init_ai_features_routes(db)
+init_dashboard_routes(db)
 init_pin_auth_routes(db)
 
 # License routes — need ai_gateway + uploads dir
@@ -447,8 +400,7 @@ api_router.include_router(customers_router_v2, dependencies=_auth_dep)
 api_router.include_router(vin_router_v2, dependencies=_auth_dep)
 api_router.include_router(tts_voice_router, dependencies=_auth_dep)
 api_router.include_router(ai_features_router, dependencies=_auth_dep)
-api_router.include_router(data_mgmt_router, dependencies=_auth_dep)
-api_router.include_router(integrations_router, dependencies=_auth_dep)
+api_router.include_router(dashboard_router, dependencies=_auth_dep)
 api_router.include_router(license_router, dependencies=_auth_dep)
 api_router.include_router(knowledge_router, dependencies=_auth_dep)
 api_router.include_router(telemetry_router, dependencies=_auth_dep)
@@ -477,16 +429,10 @@ async def health_check():
     if _health_cache["data"] is not None and (now - _health_cache["ts"]) < _HEALTH_CACHE_TTL:
         return _health_cache["data"]
 
-    scheduler = get_scheduler()
-    scheduler_status = scheduler.get_status() if scheduler else {"isRunning": False}
-    source_health = await source_repo.get_health_summary()
-
     result = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "2.1.0",
-        "scheduler": scheduler_status,
-        "dataSources": source_health,
     }
     _health_cache["ts"] = now
     _health_cache["data"] = result
