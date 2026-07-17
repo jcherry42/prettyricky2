@@ -22,18 +22,23 @@ from services.intelligence.prompts import (
     build_user_prompt,
 )
 from services.intelligence.schemas import (
+    ALL_OBJECTION_CATEGORIES,
     CHANNEL_MAX_CHARS,
     NextBestAction,
     OBJECTION_CATEGORIES,
     ObjectionAnalysis,
+    REPAIR_STAGES,
     RESPONSE_STRATEGIES,
     ResponseVariants,
     SALES_INTENTS,
     SALES_STAGES,
     SERVICE_ESCALATION_TRIGGERS,
     SERVICE_INTENTS,
+    SERVICE_OBJECTION_CATEGORIES,
     SERVICE_STAGES,
+    SERVICE_URGENCY_LEVELS,
     SentimentAnalysis,
+    ServiceFramework,
     AutomotiveInteractionInput,
     AutomotiveInteractionOutput,
 )
@@ -137,13 +142,14 @@ def _validate_and_normalize(
     stage = _pick_enum(raw.get("conversationStage"), stages, stages[0])
     strategy = _pick_enum(raw.get("recommendedStrategy"), RESPONSE_STRATEGIES, "answer_directly")
 
-    # Objection normalization
+    # Objection normalization — mode-aware category acceptance
+    allowed_objections = SERVICE_OBJECTION_CATEGORIES + OBJECTION_CATEGORIES if is_service else OBJECTION_CATEGORIES
     obj_raw = raw.get("objection") or {}
     obj_detected = bool(obj_raw.get("detected"))
     obj_category = obj_raw.get("category")
     if not obj_detected:
         obj_category = None
-    elif obj_category not in OBJECTION_CATEGORIES:
+    elif obj_category not in allowed_objections:
         obj_category = None
     objection = ObjectionAnalysis(
         detected=obj_detected,
@@ -203,6 +209,52 @@ def _validate_and_normalize(
     else:
         risk_flags = model_flags
 
+    # ── Service-mode-only enrichment fields ─────────────────────────
+    repair_stage = None
+    urgency = None
+    guest_concern = None
+    service_framework: ServiceFramework | None = None
+    if is_service:
+        # repairStage: honor the model output, then fall back to input hint,
+        # then default to "diagnosis" (safest neutral stage).
+        rs_raw = raw.get("repairStage")
+        if isinstance(rs_raw, str) and rs_raw in REPAIR_STAGES:
+            repair_stage = rs_raw
+        elif inp.repairStage in REPAIR_STAGES:
+            repair_stage = inp.repairStage
+        else:
+            repair_stage = "diagnosis"
+
+        # urgencyClassification
+        u_raw = raw.get("urgencyClassification")
+        if isinstance(u_raw, str) and u_raw in SERVICE_URGENCY_LEVELS:
+            urgency = u_raw
+        elif "safety_concern" in risk_flags:
+            urgency = "safety_critical"
+        else:
+            urgency = "routine_maintenance"
+
+        # guestConcern — free-form advisor summary
+        gc_raw = raw.get("guestConcern")
+        if isinstance(gc_raw, str) and gc_raw.strip():
+            guest_concern = gc_raw.strip()[:400]
+
+        # serviceFramework 4-phase block
+        sf_raw = raw.get("serviceFramework") or {}
+        if isinstance(sf_raw, dict):
+            ack = str(sf_raw.get("acknowledge", "")).strip()
+            vfs = str(sf_raw.get("verifiedFactsStatement", "")).strip()
+            impact = str(sf_raw.get("impact", "")).strip()
+            nxt = str(sf_raw.get("nextStep", "")).strip()
+            # Only build the block if at least the acknowledge + nextStep are present.
+            if ack and nxt:
+                service_framework = ServiceFramework(
+                    acknowledge=ack[:500],
+                    verifiedFactsStatement=(vfs or "We are confirming the details with the technician.")[:500],
+                    impact=(impact or "We will make sure this is handled cleanly.")[:500],
+                    nextStep=nxt[:500],
+                )
+
     return AutomotiveInteractionOutput(
         detectedLanguage=str(raw.get("detectedLanguage") or inp.customerLanguage or "en")[:8],
         translatedCustomerMeaning=(raw.get("translatedCustomerMeaning") or None),
@@ -217,6 +269,10 @@ def _validate_and_normalize(
         nextBestAction=nba,
         missingInformation=missing,
         riskFlags=risk_flags,
+        repairStage=repair_stage,
+        urgencyClassification=urgency,
+        guestConcern=guest_concern,
+        serviceFramework=service_framework,
         prompt_version=PROMPT_VERSION,
     )
 

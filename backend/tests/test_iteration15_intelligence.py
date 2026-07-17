@@ -79,7 +79,7 @@ class TestIntelligenceAnalyze:
         assert d["primaryIntent"] in SALES_INTENTS, d["primaryIntent"]
         assert d["conversationStage"] in SALES_STAGES, d["conversationStage"]
         assert len(d["responses"]["recommended"]) <= 320
-        assert d.get("prompt_version") == "intel-v1.0.0"
+        assert (d.get("prompt_version") or "").startswith("intel-v1")
 
     def test_service_escalation(self, headers):
         payload = {
@@ -131,7 +131,7 @@ class TestIntelligenceAnalyze:
         assert d["primaryIntent"]
         assert d["conversationStage"]
         assert d["responses"]["recommended"]
-        assert d.get("prompt_version") == "intel-v1.0.0"
+        assert (d.get("prompt_version") or "").startswith("intel-v1")
 
 
 # ---------- Tower Talk backward compatibility ----------

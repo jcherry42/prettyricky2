@@ -29,10 +29,13 @@ import {
   AnalyzeOutput,
   INTENT_LABELS,
   OBJECTION_LABELS,
+  REPAIR_STAGE_LABELS,
   RISK_FLAG_LABELS,
   SENTIMENT_COLOR,
   SENTIMENT_LABEL,
   STRATEGY_LABELS,
+  URGENCY_COLOR,
+  URGENCY_LABELS,
 } from '../lib/intelligence';
 
 interface Props {
@@ -212,6 +215,74 @@ export function IntelligenceInsight({ data, pending = false }: Props) {
           </View>
         </View>
       )}
+
+      {/* ── Service-mode-only extensions (iter26) ─────────────────── */}
+      {data.mode === 'service' && (data.urgencyClassification || data.repairStage) ? (
+        <View style={styles.serviceStagesRow} data-testid="intelligence-service-stages">
+          {data.urgencyClassification ? (
+            <View
+              style={[
+                styles.urgencyPill,
+                {
+                  backgroundColor: URGENCY_COLOR[data.urgencyClassification] + '20',
+                  borderColor: URGENCY_COLOR[data.urgencyClassification],
+                },
+              ]}
+              data-testid="intelligence-urgency"
+            >
+              <View
+                style={[
+                  styles.urgencyDot,
+                  { backgroundColor: URGENCY_COLOR[data.urgencyClassification] },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.urgencyText,
+                  { color: URGENCY_COLOR[data.urgencyClassification] },
+                ]}
+              >
+                {URGENCY_LABELS[data.urgencyClassification]}
+              </Text>
+            </View>
+          ) : null}
+          {data.repairStage ? (
+            <View style={styles.stageChip} data-testid="intelligence-repair-stage">
+              <Ionicons name="git-branch" size={11} color="#00E5FF" />
+              <Text style={styles.stageChipText}>{REPAIR_STAGE_LABELS[data.repairStage]}</Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+
+      {data.mode === 'service' && data.guestConcern ? (
+        <View style={styles.concernBlock} data-testid="intelligence-guest-concern">
+          <Text style={styles.blockLabel}>Guest Concern</Text>
+          <Text style={styles.blockSubtext}>{data.guestConcern}</Text>
+        </View>
+      ) : null}
+
+      {data.mode === 'service' && data.serviceFramework ? (
+        <View style={styles.frameworkBlock} data-testid="intelligence-service-framework">
+          <Text style={styles.blockLabel}>Service Response Framework</Text>
+          <View style={styles.frameworkRow}>
+            <Text style={styles.frameworkPhase}>1. Acknowledge</Text>
+            <Text style={styles.frameworkText}>{data.serviceFramework.acknowledge}</Text>
+          </View>
+          <View style={styles.frameworkRow}>
+            <Text style={styles.frameworkPhase}>2. Verified Facts</Text>
+            <Text style={styles.frameworkText}>{data.serviceFramework.verifiedFactsStatement}</Text>
+          </View>
+          <View style={styles.frameworkRow}>
+            <Text style={styles.frameworkPhase}>3. Impact</Text>
+            <Text style={styles.frameworkText}>{data.serviceFramework.impact}</Text>
+          </View>
+          <View style={styles.frameworkRow}>
+            <Text style={styles.frameworkPhase}>4. Next Step</Text>
+            <Text style={styles.frameworkText}>{data.serviceFramework.nextStep}</Text>
+          </View>
+        </View>
+      ) : null}
 
       {/* Next Best Action */}
       <Pressable
@@ -393,6 +464,55 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   translatedText: { color: '#FFFFFF', fontSize: 11, flex: 1, lineHeight: 15, fontStyle: 'italic' },
+  // ── Service Mode Extension (iter26) ──
+  serviceStagesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  urgencyPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  urgencyDot: { width: 7, height: 7, borderRadius: 4 },
+  urgencyText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
+  stageChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,229,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.35)',
+  },
+  stageChipText: { color: '#00E5FF', fontSize: 11, fontWeight: '700' },
+  concernBlock: {
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,183,77,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,183,77,0.15)',
+  },
+  frameworkBlock: {
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,229,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.15)',
+    gap: 8,
+  },
+  frameworkRow: { gap: 2 },
+  frameworkPhase: {
+    color: '#00E5FF',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  frameworkText: { color: '#FFFFFF', fontSize: 12, lineHeight: 16 },
   // Skeleton shimmer while analyze() is in-flight
   skeletonPill: {
     width: 72,

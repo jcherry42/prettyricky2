@@ -27,7 +27,7 @@ import { impactMedium, notificationSuccess, notificationError, selectionTap, imp
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
-import { analyzeInteraction, type AnalyzeOutput, type ChannelType } from '../lib/intelligence';
+import { analyzeInteraction, type AnalyzeOutput, type ChannelType, type RepairStage, REPAIR_STAGES, REPAIR_STAGE_LABELS } from '../lib/intelligence';
 import { IntelligenceInsight } from './IntelligenceInsight';
 
 function friendlyBackendError(e: unknown) {
@@ -211,6 +211,10 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const [vehicle, setVehicle] = useState(savedTT?.vehicle || '');
   const [tradeVin, setTradeVin] = useState('');
   const [tradeMileage, setTradeMileage] = useState('');
+  // Service Mode only: current stage of the repair order.
+  // Sent as `repairStage` to /api/intelligence/analyze so the AI grounds its
+  // response in the actual pipeline position. Ignored in sales mode.
+  const [repairStage, setRepairStage] = useState<RepairStage>('diagnosis');
 
   const [state, setState] = useState<{ status: string; error: string | null }>({ status: 'idle', error: null });
   const [reply, setReply] = useState(savedTT?.reply || '');
@@ -385,6 +389,7 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
           customerMessage: situation.trim(),
           vehicle: vehicle.trim() ? { model: vehicle.trim() } : undefined,
           employee: { role: isServiceMode ? 'service_advisor' : 'salesperson' },
+          repairStage: isServiceMode ? repairStage : undefined,
         },
         !!settings.performanceMode,
       )
@@ -926,6 +931,38 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
 
                 <View style={{ height: 18 }} />
 
+                {/* Service-mode: repair-stage picker (compact chip row).
+                    Placed BEFORE the Generate button so the AI can ground
+                    its response in the correct pipeline stage. Only visible
+                    in Service Mode. */}
+                {isServiceMode ? (
+                  <View style={styles.stageRow} data-testid="tower-talk-repair-stage-row">
+                    <Text style={styles.stageRowLabel}>REPAIR STAGE</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.stageChipRow}
+                    >
+                      {REPAIR_STAGES.map((s) => {
+                        const active = s === repairStage;
+                        return (
+                          <Pressable
+                            key={s}
+                            onPress={() => { selectionTap(); setRepairStage(s); }}
+                            data-testid={`repair-stage-chip-${s}`}
+                            style={[styles.stageChip, active && styles.stageChipActive]}
+                          >
+                            <Text style={[styles.stageChipText, active && styles.stageChipTextActive]}>
+                              {REPAIR_STAGE_LABELS[s]}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                    <View style={{ height: 12 }} />
+                  </View>
+                ) : null}
+
                 {/* Generate button */}
                 <Pressable
                   onPress={() => { selectionTap(); runTowerTalk(); }}
@@ -1393,6 +1430,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     paddingHorizontal: 0,
+  },
+
+  // Service-mode: repair-stage chip picker
+  stageRow: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.15)',
+    backgroundColor: 'rgba(0,229,255,0.04)',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  stageRowLabel: {
+    color: '#00E5FF',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  stageChipRow: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingBottom: 4,
+  },
+  stageChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  stageChipActive: {
+    borderColor: '#00E5FF',
+    backgroundColor: 'rgba(0,229,255,0.15)',
+  },
+  stageChipText: {
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  stageChipTextActive: {
+    color: '#00E5FF',
   },
 
   // Generate button

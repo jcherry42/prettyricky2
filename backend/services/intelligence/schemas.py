@@ -70,6 +70,28 @@ class UserPreferences(BaseModel):
     appointmentStyle: Optional[Literal["soft", "balanced", "direct"]] = "balanced"
 
 
+# Repair pipeline stages a service RO passes through.
+# `post_service_followup` is intentionally the final stage — the user
+# specifically asked for a post-service follow-up phase.
+RepairStageType = Literal[
+    "intake",
+    "diagnosis",
+    "estimate_approval",
+    "in_repair",
+    "quality_control",
+    "ready_for_pickup",
+    "post_service_followup",
+]
+
+# Urgency classification for recommended service work.
+ServiceUrgencyType = Literal[
+    "safety_critical",
+    "due_soon",
+    "routine_maintenance",
+    "optional",
+]
+
+
 class AutomotiveInteractionInput(BaseModel):
     mode: Literal["sales", "service"] = "sales"
     channel: Literal["sms", "email", "chat", "in_person"] = "sms"
@@ -82,6 +104,8 @@ class AutomotiveInteractionInput(BaseModel):
     employee: Optional[EmployeeContext] = None
     verifiedFacts: Optional[VerifiedFacts] = None
     userPreferences: Optional[UserPreferences] = None
+    # Service-mode only: current stage of the RO. Ignored in sales mode.
+    repairStage: Optional[RepairStageType] = None
 
     @field_validator("customerMessage")
     @classmethod
@@ -116,6 +140,22 @@ class NextBestAction(BaseModel):
     reason: str
 
 
+class ServiceFramework(BaseModel):
+    """Service Advisor Response Framework (service mode only).
+
+    Structures every service reply into 4 phases so nothing invented and
+    every guest interaction covers the ground the advisor needs:
+      1. Acknowledge — validate what the guest is feeling / asking.
+      2. State verified facts — ONLY what appears in verifiedFacts.
+      3. Explain impact — what the confirmed facts mean for the guest.
+      4. Offer next step — the concrete next action for the guest.
+    """
+    acknowledge: str
+    verifiedFactsStatement: str
+    impact: str
+    nextStep: str
+
+
 class AutomotiveInteractionOutput(BaseModel):
     detectedLanguage: str = "en"
     translatedCustomerMeaning: Optional[str] = None
@@ -130,6 +170,11 @@ class AutomotiveInteractionOutput(BaseModel):
     nextBestAction: NextBestAction
     missingInformation: List[str] = Field(default_factory=list)
     riskFlags: List[str] = Field(default_factory=list)
+    # ── Service-mode-only fields (populated only when mode == "service") ──
+    repairStage: Optional[RepairStageType] = None
+    urgencyClassification: Optional[ServiceUrgencyType] = None
+    guestConcern: Optional[str] = None
+    serviceFramework: Optional[ServiceFramework] = None
     # instrumentation (populated by the pipeline, not the model)
     latency_ms: Optional[Dict[str, int]] = None
     prompt_version: Optional[str] = None
@@ -167,6 +212,42 @@ OBJECTION_CATEGORIES = [
     "not_ready", "needs_spouse_or_partner", "credit_concern", "trade_value_concern",
     "distance_or_schedule", "vehicle_feature_concern", "trust_concern",
     "availability_uncertainty", "negative_previous_experience",
+]
+
+# Service-mode-only objection / concern categories. Kept isolated so sales
+# validation doesn't accept them and vice-versa.
+SERVICE_OBJECTION_CATEGORIES = [
+    "parts_availability_delay",
+    "wait_time_too_long",
+    "cost_transparency_concern",
+    "warranty_coverage_dispute",
+    "second_opinion_wanted",
+    "tech_expertise_concern",
+    "declined_recommended_service",
+    "loaner_unavailable",
+    "unclear_diagnosis",
+    "prior_visit_dissatisfaction",
+]
+
+# All valid objection categories across modes (union). The validator uses
+# the mode to decide which subset to accept.
+ALL_OBJECTION_CATEGORIES = OBJECTION_CATEGORIES + SERVICE_OBJECTION_CATEGORIES
+
+REPAIR_STAGES = [
+    "intake",
+    "diagnosis",
+    "estimate_approval",
+    "in_repair",
+    "quality_control",
+    "ready_for_pickup",
+    "post_service_followup",
+]
+
+SERVICE_URGENCY_LEVELS = [
+    "safety_critical",
+    "due_soon",
+    "routine_maintenance",
+    "optional",
 ]
 
 RESPONSE_STRATEGIES = [

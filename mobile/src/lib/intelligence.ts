@@ -12,6 +12,21 @@ import { apiFetch } from './api';
 export type ChannelType = 'sms' | 'email' | 'chat' | 'voice' | 'in_person';
 export type AppModeType = 'sales' | 'service';
 
+export type RepairStage =
+  | 'intake'
+  | 'diagnosis'
+  | 'estimate_approval'
+  | 'in_repair'
+  | 'quality_control'
+  | 'ready_for_pickup'
+  | 'post_service_followup';
+
+export type ServiceUrgency =
+  | 'safety_critical'
+  | 'due_soon'
+  | 'routine_maintenance'
+  | 'optional';
+
 export interface AnalyzeInput {
   mode: AppModeType;
   channel: ChannelType;
@@ -33,6 +48,8 @@ export interface AnalyzeInput {
   };
   conversationHistory?: { role: 'customer' | 'employee'; text: string; timestamp?: string }[];
   agentNotes?: string;
+  /** Service mode only — current stage of the RO. */
+  repairStage?: RepairStage;
 }
 
 export interface AnalyzeOutput {
@@ -61,6 +78,16 @@ export interface AnalyzeOutput {
   nextBestAction: { action: string; reason: string };
   missingInformation: string[];
   riskFlags: string[];
+  /** Service-mode-only fields. Null in sales mode. */
+  repairStage?: RepairStage | null;
+  urgencyClassification?: ServiceUrgency | null;
+  guestConcern?: string | null;
+  serviceFramework?: {
+    acknowledge: string;
+    verifiedFactsStatement: string;
+    impact: string;
+    nextStep: string;
+  } | null;
   prompt_version: string;
   latency_ms?: Record<string, number>;
   fallback_used?: boolean;
@@ -123,7 +150,116 @@ export const OBJECTION_LABELS: Record<string, string> = {
   service_price: 'Service price',
   wait_time: 'Wait time',
   loaner_availability: 'Loaner availability',
+  // Service-only objection categories (iter26)
+  parts_availability_delay: 'Parts availability / delay',
+  wait_time_too_long: 'Wait time too long',
+  cost_transparency_concern: 'Cost transparency',
+  warranty_coverage_dispute: 'Warranty coverage',
+  second_opinion_wanted: 'Wants second opinion',
+  tech_expertise_concern: 'Tech expertise concern',
+  declined_recommended_service: 'Declined recommended service',
+  loaner_unavailable: 'Loaner unavailable',
+  unclear_diagnosis: 'Unclear diagnosis',
+  prior_visit_dissatisfaction: 'Prior visit dissatisfaction',
 };
+
+/** Service-only human-facing repair-stage labels. */
+export const REPAIR_STAGE_LABELS: Record<RepairStage, string> = {
+  intake: 'Intake',
+  diagnosis: 'Diagnosis',
+  estimate_approval: 'Estimate Approval',
+  in_repair: 'In Repair',
+  quality_control: 'Quality Control',
+  ready_for_pickup: 'Ready for Pickup',
+  post_service_followup: 'Post-Service Follow-Up',
+};
+
+/** Repair-stage picker order (matches shop flow). */
+export const REPAIR_STAGES: RepairStage[] = [
+  'intake',
+  'diagnosis',
+  'estimate_approval',
+  'in_repair',
+  'quality_control',
+  'ready_for_pickup',
+  'post_service_followup',
+];
+
+/** Service urgency label + display color. */
+export const URGENCY_LABELS: Record<ServiceUrgency, string> = {
+  safety_critical: 'Safety Critical',
+  due_soon: 'Due Soon',
+  routine_maintenance: 'Routine Maintenance',
+  optional: 'Optional',
+};
+
+export const URGENCY_COLOR: Record<ServiceUrgency, string> = {
+  safety_critical: '#E53935',
+  due_soon: '#FFB74D',
+  routine_maintenance: '#00E5FF',
+  optional: '#B0BEC5',
+};
+
+/** 6 service quick-action chips shown in Tower Talk when in Service Mode.
+ *  Each chip templates a starter `situation` string that seeds analysis. */
+export interface ServiceQuickAction {
+  id:
+    | 'waiter_update'
+    | 'parts_eta'
+    | 'estimate_approval'
+    | 'loaner_request'
+    | 'comeback_ticket'
+    | 'pickup_notice';
+  label: string;
+  icon: string;
+  template: string;
+  suggestedStage: RepairStage;
+}
+
+export const SERVICE_QUICK_ACTIONS: ServiceQuickAction[] = [
+  {
+    id: 'waiter_update',
+    label: 'Waiter Update',
+    icon: 'time',
+    template: 'Guest is waiting in the lounge and asked for a status update.',
+    suggestedStage: 'in_repair',
+  },
+  {
+    id: 'parts_eta',
+    label: 'Parts ETA',
+    icon: 'cube',
+    template: 'Guest is asking when the parts will arrive for their repair.',
+    suggestedStage: 'in_repair',
+  },
+  {
+    id: 'estimate_approval',
+    label: 'Estimate Approval',
+    icon: 'checkmark-done',
+    template: 'Guest needs to approve the recommended repair estimate.',
+    suggestedStage: 'estimate_approval',
+  },
+  {
+    id: 'loaner_request',
+    label: 'Loaner Request',
+    icon: 'car-sport',
+    template: 'Guest is asking about loaner availability while their vehicle is here.',
+    suggestedStage: 'diagnosis',
+  },
+  {
+    id: 'comeback_ticket',
+    label: 'Comeback Ticket',
+    icon: 'refresh-circle',
+    template: 'Guest returned with the same concern from a previous visit.',
+    suggestedStage: 'diagnosis',
+  },
+  {
+    id: 'pickup_notice',
+    label: 'Pickup Notice',
+    icon: 'flag',
+    template: 'Vehicle is ready — need to notify the guest for pickup and payment.',
+    suggestedStage: 'ready_for_pickup',
+  },
+];
 
 export const SENTIMENT_COLOR: Record<AnalyzeOutput['customerSentiment']['label'], string> = {
   positive: '#00E676',

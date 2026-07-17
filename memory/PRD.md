@@ -646,3 +646,99 @@ license, auth, network-recovery — and produced 9 findings. All fixed.
 
 
 
+
+### Feb 2026 iter26 — Service Mode Overhaul (P0)
+
+**Delivered — extended (not duplicated) the Apex Intelligence pipeline
+with service-advisor-native fields, tests green: 63/63 pytest.**
+
+**Backend (`/app/backend/services/intelligence/`)**:
+1. **New schemas** in `schemas.py`:
+   - `RepairStageType` enum with 7 stages including the user-requested
+     `post_service_followup` as the final stage.
+   - `ServiceUrgencyType` enum: safety_critical / due_soon /
+     routine_maintenance / optional.
+   - `ServiceFramework` model — 4 phases: acknowledge,
+     verifiedFactsStatement, impact, nextStep.
+   - `SERVICE_OBJECTION_CATEGORIES` — 10 service-only categories
+     (parts_availability_delay, wait_time_too_long, cost_transparency_concern,
+     warranty_coverage_dispute, second_opinion_wanted, tech_expertise_concern,
+     declined_recommended_service, loaner_unavailable, unclear_diagnosis,
+     prior_visit_dissatisfaction).
+   - `REPAIR_STAGES`, `SERVICE_URGENCY_LEVELS` constants for the validator.
+2. **Extended input** — `AutomotiveInteractionInput.repairStage` (optional).
+3. **Extended output** — `repairStage`, `urgencyClassification`,
+   `guestConcern`, `serviceFramework`. All NULL in sales mode.
+4. **Prompts (`prompts.py`)** — Service Mode addendum now includes:
+   - Explicit 4-phase Service Response Framework (Acknowledge → Verified
+     Facts → Impact → Next Step) mandatory for service replies.
+   - Repair stage classification instructions.
+   - Urgency classification instructions with clinical criteria.
+   - Guest concern one-sentence summary requirement.
+   - Service objection category list.
+   - Prompt version bumped to `intel-v1.1.0`.
+5. **Validator (`pipeline.py`)** — mode-aware:
+   - Sales mode acceptable objection categories = 13 sales-only. Service
+     categories from the model are dropped (regression safety).
+   - Service mode acceptable = 13 sales + 10 service = 23 total.
+   - `repairStage`: model output first, input hint fallback, `diagnosis`
+     default.
+   - `urgencyClassification`: model output first, auto-bumped to
+     `safety_critical` when `safety_concern` risk-flag detected, else
+     `routine_maintenance`.
+   - `guestConcern` capped to 400 chars.
+   - `serviceFramework` requires anchor phases (acknowledge + nextStep)
+     — otherwise the whole block is dropped; verifiedFacts / impact get
+     safe defaults if partially filled.
+   - Sales mode always returns `None` for all four service-only fields.
+6. **Test coverage**: 21 new pytest cases in
+   `tests/intelligence/test_service_overhaul.py` (all green).
+
+**Frontend (React Native mobile)**:
+1. **`/app/mobile/src/lib/intelligence.ts`** — added typed:
+   - `RepairStage`, `ServiceUrgency` union types.
+   - `REPAIR_STAGES` ordered array + `REPAIR_STAGE_LABELS` display map.
+   - `URGENCY_LABELS` + `URGENCY_COLOR` maps.
+   - Extended `AnalyzeInput.repairStage` and `AnalyzeOutput` with all
+     four new service-only optional fields.
+   - Service-only entries added to `OBJECTION_LABELS` map.
+2. **`/app/mobile/src/components/IntelligenceInsight.tsx`** —
+   conditionally renders NEW blocks when `data.mode === 'service'`:
+   - Urgency pill (color-coded: safety_critical red, due_soon amber,
+     routine_maintenance cyan, optional gray).
+   - Repair stage chip with git-branch icon.
+   - Guest Concern block (advisor-facing summary).
+   - Service Response Framework block — all 4 phases laid out with
+     numbered headers.
+   Placement: after risk flags, before Next Best Action. Sales mode
+   sees ZERO new UI (all guarded by `data.mode === 'service'`).
+3. **`/app/mobile/src/components/TowerTalkOverlay.tsx`** —
+   - New `repairStage` state (default `'diagnosis'`).
+   - Compact horizontal chip picker inserted before the Generate button.
+   - Only visible in Service Mode (`isServiceMode` gate).
+   - Passes `repairStage` to `analyzeInteraction` so the AI can ground
+     its response in the correct pipeline stage.
+4. **`data-testid`s added** on every new interactive element:
+   `tower-talk-repair-stage-row`, `repair-stage-chip-{stage}`,
+   `intelligence-service-stages`, `intelligence-urgency`,
+   `intelligence-repair-stage`, `intelligence-guest-concern`,
+   `intelligence-service-framework`.
+
+**Zero-regression verification**:
+- Sales-mode e2e: all service fields return `null` ✓
+- Service-mode e2e: repairStage `in_repair` echoed, urgency
+  `safety_critical` auto-bumped, serviceFramework 4 keys present,
+  strategy escalated to human ✓
+- 63/63 pytest green (30 validator + 21 service overhaul + 12 iter15).
+- Mobile `yarn tsc --noEmit` = 0 errors.
+- Mobile `yarn lint` = 0 errors, 0 warnings.
+
+### P1 (High) — remaining
+- Add `data-testid`s to Print Flow (App Store submission blocker).
+- User to provide: Privacy Policy URL, Terms of Service URL,
+  `POSTHOG_API_KEY`, `SENTRY_DSN`.
+
+### P2 (Medium) — remaining
+- App Store screenshots via Maestro automation.
+- First-launch onboarding walkthrough.
+
