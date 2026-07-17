@@ -793,3 +793,54 @@ library. It now behaves as a verified-fact-driven advisor tool.**
 - App Store screenshots via Maestro automation.
 - First-launch onboarding walkthrough.
 
+
+### Jun 2026 iter28 — Sentry Boot-Crash Root Fix + Full Dead-Code Elimination
+
+**1. Expo Go / iOS boot crash ROOT-CAUSED and fixed** (`/app/mobile/src/lib/sentry.ts`)
+- The previous fix never worked: `_initialized` was set to `true` BEFORE the
+  DSN check, so with no `EXPO_PUBLIC_SENTRY_DSN` (dev/Expo Go default),
+  `wrap()` still called the real `Sentry.wrap` on an uninitialized SDK →
+  `NativeSharedObjectNotFoundException` at boot.
+- Now split into `_called` (idempotence) vs `_initialized` (only true after
+  `Sentry.init` actually runs). No DSN → wrap/captureException are pure no-ops.
+
+**2. Dead-code elimination — ~16,000 lines removed, verified zero breakage**
+- Backend: deleted 7 backward-compat shim modules (root-level ai_gateway.py,
+  audio_pipeline.py, conversation_history.py, sales_knowledge_base.py,
+  telemetry_service.py, vector_search.py, vision_extraction_service.py) and
+  rewired all 16 import sites to `services.*`. Deleted shadowed `models.py`,
+  unused `security/rbac.py` + `security/validation.py`.
+- Backend lint: ruff F401 (45 unused imports) + F541 auto-fixed; E712 in tests
+  converted to `is True/False`; new `ruff.toml` per-file-ignores E402 for
+  server.py's structural late imports. `ruff check .` = clean (CI green).
+- Deleted 10 stale pre-auth-era pytest files (never sent Bearer tokens, dead
+  since iter7 auth enforcement). Fixed 3 tests in test_deployment_hardening.py
+  to assert 401-protection instead.
+- Deleted dead legacy suite `/app/tests/` (CLOSR-era) + 16 ad-hoc root test
+  scripts/JSON results + ARCHITECTURE_AUDIT_REPORT.md.
+- Mobile: deleted 6 fully-unimported files (lib/customers.ts, lib/image.ts,
+  lib/inventory.ts, lib/upload.ts, theme/picasso.ts, utils/chunkedUpload.ts)
+  + unused favicon.png. Trimmed unused exports: DesignoTextures (kept only
+  ChromeAccent), designoTexturePatterns, SERVICE_QUICK_ACTIONS, healthCheck,
+  buildApiUrl, isSmsAvailable, getAutomotiveHints, NOISE_SUPPRESSION_CONFIG,
+  scaleFont, getLayoutMetrics, clearQueue, removeFromQueue, and 20 orphan
+  types in types/index.ts.
+
+**3. Pre-existing bug fixed**: `GET /api/customers/stats` 500 —
+`CustomerRepository.get_status_counts()` didn't accept the `source_id` the
+route passed. Now `get_status_counts(source_id: Optional[str] = None)`.
+
+**Verification**: mobile `tsc --noEmit` = 0 errors, `eslint --max-warnings=0`
+= clean. Backend unit suites 89/89. Testing agent iteration_22: **23/23 e2e
+pass, zero critical/minor issues** across every route group touched by the
+rewiring. New stateless smoke suite kept at
+`tests/test_iteration22_regression.py`.
+
+### P1 (High) — remaining after iter28
+- Add `data-testid`s to Print Flow (App Store submission blocker).
+- User to provide: Privacy Policy URL, Terms of Service URL,
+  `POSTHOG_API_KEY`, `SENTRY_DSN`.
+
+### P2 (Medium) — remaining after iter28
+- App Store screenshots via Maestro automation.
+- First-launch onboarding walkthrough.
