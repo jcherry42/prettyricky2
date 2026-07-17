@@ -68,4 +68,17 @@ export const setUser = (id: string | null): void => {
   Sentry.setUser(id ? { id } : null);
 };
 
-export const wrap = Sentry.wrap;
+/**
+ * Safe wrapper around Sentry.wrap.
+ *
+ * When Sentry is NOT initialized (dev / DSN not configured), calling the
+ * real `Sentry.wrap` throws `NativeSharedObjectNotFoundException` on
+ * boot because it tries to `.get()` the App Start Span shared object
+ * that only exists after `Sentry.init`. So when we're not initialized,
+ * return the component untouched — no wrapping needed.
+ */
+export function wrap<T>(RootComponent: T): T {
+  if (!_initialized) return RootComponent;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (Sentry.wrap as any)(RootComponent);
+}
