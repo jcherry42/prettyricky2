@@ -742,3 +742,54 @@ with service-advisor-native fields, tests green: 63/63 pytest.**
 - App Store screenshots via Maestro automation.
 - First-launch onboarding walkthrough.
 
+
+### Feb 2026 iter27 — Advisor-Workflow Rebuild (P0)
+
+**Delivered — the service side no longer feels like a canned-response
+library. It now behaves as a verified-fact-driven advisor tool.**
+
+**Backend (`intelligence/schemas.py`, `prompts.py`, `pipeline.py`)**:
+1. Four required advisor context fields on input:
+   - `customerConcern` (chip pick, 10 options).
+   - `desiredNextAction` (chip pick, 10 options).
+   - `repairStage` (iter26).
+   - `verifiedFactGates` — 6 keys (price, warrantyCoverage,
+     completionTime, partsArrival, loanerAvailability, diagnosis).
+2. Separated facts from interpretation: `confirmedInformation`
+   (AI may state as fact) vs `advisorNotes` (context only).
+3. Three service response styles: `concise` / `explainClearly` /
+   `deEscalate` (replacing generic professional / friendly labels).
+4. Verified-fact gate enforced deterministically in the validator:
+   `unverifiedTopics` is computed from actual gate values, not from
+   the model. LLM instructed to say "being verified" for anything
+   unverified. NEVER invents values.
+5. Prompt version bumped to `intel-v1.2.0`.
+6. 18 new pytest cases in `test_verified_fact_gate.py`. Total 69/69
+   intelligence tests green.
+
+**Frontend (React Native)**:
+1. TowerTalkOverlay (service-mode-only): concern chip row, next-action
+   chip row, 6-topic verified-fact-gate grid with inline editor, plus
+   two color-coded textareas (green "may state as fact", amber "context
+   only").
+2. IntelligenceInsight: new `ServiceAdvisorCard` at the top with 4
+   labeled sections — CONCERN / RECOMMENDED (with 3-tab style picker)
+   / BEING VERIFIED / NEXT ACTION / RISK FLAG. Feels like an advisor
+   tool, not a writing assistant.
+3. Full `data-testid` coverage on every new interactive element.
+
+**Zero-regression verified**:
+- Sales mode unaffected (all service fields null).
+- Live e2e: advisor note "hesitant about price" NEVER leaked into
+  guest reply; AI said "confirming the cost" instead of guessing.
+- 0 TS errors, 0 ESLint warnings.
+
+### P1 (High) — remaining
+- Add `data-testid`s to Print Flow (App Store submission blocker).
+- User to provide: Privacy Policy URL, Terms of Service URL,
+  `POSTHOG_API_KEY`, `SENTRY_DSN`.
+
+### P2 (Medium) — remaining
+- App Store screenshots via Maestro automation.
+- First-launch onboarding walkthrough.
+

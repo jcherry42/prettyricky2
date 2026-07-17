@@ -27,7 +27,7 @@ import { impactMedium, notificationSuccess, notificationError, selectionTap, imp
 import { flagFor } from '../utils/language';
 import { sendTowerTalkSms } from '../lib/sms';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
-import { analyzeInteraction, type AnalyzeOutput, type ChannelType, type RepairStage, REPAIR_STAGES, REPAIR_STAGE_LABELS } from '../lib/intelligence';
+import { analyzeInteraction, type AnalyzeOutput, type ChannelType, type RepairStage, REPAIR_STAGES, REPAIR_STAGE_LABELS, CUSTOMER_CONCERN_OPTIONS, NEXT_ACTION_OPTIONS, VERIFIED_FACT_GATE_KEYS, VERIFIED_FACT_GATE_LABELS, type ServiceCustomerConcern, type ServiceNextAction, type VerifiedFactGateKey, type VerifiedFactGates } from '../lib/intelligence';
 import { IntelligenceInsight } from './IntelligenceInsight';
 
 function friendlyBackendError(e: unknown) {
@@ -215,6 +215,19 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   // Sent as `repairStage` to /api/intelligence/analyze so the AI grounds its
   // response in the actual pipeline position. Ignored in sales mode.
   const [repairStage, setRepairStage] = useState<RepairStage>('diagnosis');
+  // ── Service Mode advisor context (iter27) ──
+  // Chip picks — 2 of the 4 required context fields.
+  const [customerConcern, setCustomerConcern] = useState<ServiceCustomerConcern | null>(null);
+  const [desiredNextAction, setDesiredNextAction] = useState<ServiceNextAction | null>(null);
+  // Two separate text inputs — facts vs interpretation.
+  const [confirmedInformation, setConfirmedInformation] = useState('');
+  const [advisorNotes, setAdvisorNotes] = useState('');
+  // 6-topic verified-fact gate. Each key holds an advisor-confirmed value
+  // (string) or is absent (unverified — forces "being verified" in reply).
+  const [verifiedFactGates, setVerifiedFactGates] = useState<VerifiedFactGates>({});
+  // Which gate topic is being edited right now (null = none).
+  const [gateEditKey, setGateEditKey] = useState<VerifiedFactGateKey | null>(null);
+  const [gateEditValue, setGateEditValue] = useState('');
 
   const [state, setState] = useState<{ status: string; error: string | null }>({ status: 'idle', error: null });
   const [reply, setReply] = useState(savedTT?.reply || '');
@@ -390,6 +403,17 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
           vehicle: vehicle.trim() ? { model: vehicle.trim() } : undefined,
           employee: { role: isServiceMode ? 'service_advisor' : 'salesperson' },
           repairStage: isServiceMode ? repairStage : undefined,
+          confirmedInformation: isServiceMode && confirmedInformation.trim()
+            ? confirmedInformation.trim()
+            : undefined,
+          advisorNotes: isServiceMode && advisorNotes.trim()
+            ? advisorNotes.trim()
+            : undefined,
+          customerConcern: isServiceMode && customerConcern ? customerConcern : undefined,
+          desiredNextAction: isServiceMode && desiredNextAction ? desiredNextAction : undefined,
+          verifiedFactGates: isServiceMode && Object.keys(verifiedFactGates).length > 0
+            ? verifiedFactGates
+            : undefined,
         },
         !!settings.performanceMode,
       )
@@ -963,6 +987,213 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
                   </View>
                 ) : null}
 
+                {/* Service-mode: customer concern chip picker */}
+                {isServiceMode ? (
+                  <>
+                    <View style={{ height: 10 }} />
+                    <View style={styles.stageRow} data-testid="tower-talk-concern-row">
+                      <Text style={styles.stageRowLabel}>CUSTOMER CONCERN</Text>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.stageChipRow}
+                      >
+                        {CUSTOMER_CONCERN_OPTIONS.map((opt) => {
+                          const active = customerConcern === opt.id;
+                          return (
+                            <Pressable
+                              key={opt.id}
+                              onPress={() => {
+                                selectionTap();
+                                setCustomerConcern(active ? null : opt.id);
+                              }}
+                              data-testid={`concern-chip-${opt.id}`}
+                              style={[styles.stageChip, active && styles.stageChipActive]}
+                            >
+                              <Text style={[styles.stageChipText, active && styles.stageChipTextActive]}>
+                                {opt.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                      <View style={{ height: 12 }} />
+                    </View>
+                  </>
+                ) : null}
+
+                {/* Service-mode: desired next action chip picker */}
+                {isServiceMode ? (
+                  <>
+                    <View style={{ height: 10 }} />
+                    <View style={styles.stageRow} data-testid="tower-talk-next-action-row">
+                      <Text style={styles.stageRowLabel}>DESIRED NEXT ACTION</Text>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.stageChipRow}
+                      >
+                        {NEXT_ACTION_OPTIONS.map((opt) => {
+                          const active = desiredNextAction === opt.id;
+                          return (
+                            <Pressable
+                              key={opt.id}
+                              onPress={() => {
+                                selectionTap();
+                                setDesiredNextAction(active ? null : opt.id);
+                              }}
+                              data-testid={`next-action-chip-${opt.id}`}
+                              style={[styles.stageChip, active && styles.stageChipActive]}
+                            >
+                              <Text style={[styles.stageChipText, active && styles.stageChipTextActive]}>
+                                {opt.label}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                      <View style={{ height: 12 }} />
+                    </View>
+                  </>
+                ) : null}
+
+                {/* Service-mode: verified-fact gate — 6 topic chips.
+                    Tap to enter the confirmed value (or clear it). Gray =
+                    unverified (AI will say "being verified"), green with
+                    inline value = advisor-confirmed (AI may state as fact). */}
+                {isServiceMode ? (
+                  <>
+                    <View style={{ height: 10 }} />
+                    <View style={styles.stageRow} data-testid="tower-talk-verified-gates">
+                      <Text style={styles.stageRowLabel}>VERIFIED FACT GATE — TAP TO CONFIRM</Text>
+                      <View style={styles.gateGrid}>
+                        {VERIFIED_FACT_GATE_KEYS.map((key) => {
+                          const confirmed = (verifiedFactGates[key] || '').trim();
+                          const isConfirmed = confirmed.length > 0;
+                          return (
+                            <Pressable
+                              key={key}
+                              onPress={() => {
+                                selectionTap();
+                                setGateEditKey(key);
+                                setGateEditValue(confirmed);
+                              }}
+                              data-testid={`gate-chip-${key}`}
+                              style={[styles.gateChip, isConfirmed && styles.gateChipConfirmed]}
+                            >
+                              <Ionicons
+                                name={isConfirmed ? 'checkmark-circle' : 'ellipse-outline'}
+                                size={12}
+                                color={isConfirmed ? '#00E676' : 'rgba(255,255,255,0.45)'}
+                              />
+                              <View style={{ flex: 1 }}>
+                                <Text style={[styles.gateChipLabel, isConfirmed && { color: '#00E676' }]}>
+                                  {VERIFIED_FACT_GATE_LABELS[key]}
+                                </Text>
+                                {isConfirmed ? (
+                                  <Text style={styles.gateChipValue} numberOfLines={1}>{confirmed}</Text>
+                                ) : (
+                                  <Text style={styles.gateChipValueMuted}>being verified</Text>
+                                )}
+                              </View>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+
+                      {/* Inline editor row appears when a gate chip is tapped */}
+                      {gateEditKey ? (
+                        <View style={styles.gateEditRow} data-testid="gate-edit-row">
+                          <Text style={styles.gateEditLabel}>
+                            {VERIFIED_FACT_GATE_LABELS[gateEditKey]}
+                          </Text>
+                          <TextInput
+                            value={gateEditValue}
+                            onChangeText={setGateEditValue}
+                            placeholder={`Enter the confirmed ${VERIFIED_FACT_GATE_LABELS[gateEditKey].toLowerCase()}`}
+                            placeholderTextColor={colors.textMute}
+                            style={styles.gateEditInput}
+                            autoFocus
+                            data-testid="gate-edit-input"
+                          />
+                          <View style={styles.gateEditActions}>
+                            <Pressable
+                              onPress={() => {
+                                selectionTap();
+                                setVerifiedFactGates((prev) => {
+                                  const next = { ...prev };
+                                  if (gateEditKey) delete next[gateEditKey];
+                                  return next;
+                                });
+                                setGateEditKey(null);
+                                setGateEditValue('');
+                              }}
+                              style={styles.gateEditClearBtn}
+                              data-testid="gate-edit-clear"
+                            >
+                              <Text style={styles.gateEditClearText}>Clear</Text>
+                            </Pressable>
+                            <Pressable
+                              onPress={() => {
+                                selectionTap();
+                                if (gateEditKey && gateEditValue.trim()) {
+                                  setVerifiedFactGates((prev) => ({
+                                    ...prev,
+                                    [gateEditKey]: gateEditValue.trim(),
+                                  }));
+                                }
+                                setGateEditKey(null);
+                                setGateEditValue('');
+                              }}
+                              style={styles.gateEditSaveBtn}
+                              data-testid="gate-edit-save"
+                            >
+                              <Text style={styles.gateEditSaveText}>Confirm</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      ) : null}
+                    </View>
+                  </>
+                ) : null}
+
+                {/* Service-mode: separated Confirmed Information vs Advisor Notes */}
+                {isServiceMode ? (
+                  <>
+                    <View style={{ height: 12 }} />
+                    <View style={[styles.fieldWrap, styles.confirmedInfoWrap]} data-testid="confirmed-info-wrap">
+                      <Text style={[styles.fieldLabel, { color: '#00E676' }]}>CONFIRMED INFORMATION — AI MAY STATE AS FACT</Text>
+                      <TextInput
+                        value={confirmedInformation}
+                        onChangeText={setConfirmedInformation}
+                        placeholder="e.g. Technician measured front pads at 2mm."
+                        placeholderTextColor={colors.textMute}
+                        style={[styles.fieldInput, styles.multilineInput]}
+                        multiline
+                        numberOfLines={2}
+                        maxLength={500}
+                        data-testid="confirmed-info-input"
+                      />
+                    </View>
+                    <View style={{ height: 8 }} />
+                    <View style={[styles.fieldWrap, styles.advisorNotesWrap]} data-testid="advisor-notes-wrap">
+                      <Text style={[styles.fieldLabel, { color: '#FFB74D' }]}>ADVISOR NOTES — CONTEXT ONLY, NEVER STATED AS FACT</Text>
+                      <TextInput
+                        value={advisorNotes}
+                        onChangeText={setAdvisorNotes}
+                        placeholder="e.g. Guest sounded hesitant about price."
+                        placeholderTextColor={colors.textMute}
+                        style={[styles.fieldInput, styles.multilineInput]}
+                        multiline
+                        numberOfLines={2}
+                        maxLength={500}
+                        data-testid="advisor-notes-input"
+                      />
+                    </View>
+                    <View style={{ height: 12 }} />
+                  </>
+                ) : null}
+
                 {/* Generate button */}
                 <Pressable
                   onPress={() => { selectionTap(); runTowerTalk(); }}
@@ -1473,6 +1704,111 @@ const styles = StyleSheet.create({
   },
   stageChipTextActive: {
     color: '#00E5FF',
+  },
+
+  // Verified-fact-gate grid (2 columns x 3 rows)
+  gateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingBottom: 8,
+  },
+  gateChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    width: '48%',
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  gateChipConfirmed: {
+    borderColor: 'rgba(0,230,118,0.45)',
+    backgroundColor: 'rgba(0,230,118,0.08)',
+  },
+  gateChipLabel: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  gateChipValue: {
+    color: '#00E676',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  gateChipValueMuted: {
+    color: 'rgba(255,183,77,0.85)',
+    fontSize: 10,
+    fontStyle: 'italic',
+    marginTop: 1,
+  },
+  // Inline gate-editor row (appears when a gate chip is tapped)
+  gateEditRow: {
+    marginTop: 4,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.30)',
+    backgroundColor: 'rgba(0,229,255,0.06)',
+    gap: 8,
+  },
+  gateEditLabel: {
+    color: '#00E5FF',
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  gateEditInput: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    minHeight: 36,
+  },
+  gateEditActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
+  gateEditClearBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  gateEditClearText: { color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: '700' },
+  gateEditSaveBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#00E5FF',
+  },
+  gateEditSaveText: { color: '#001519', fontSize: 12, fontWeight: '800' },
+
+  // Confirmed information / advisor notes wraps (accent borders make
+  // the split visually obvious)
+  confirmedInfoWrap: {
+    borderColor: 'rgba(0,230,118,0.30)',
+    backgroundColor: 'rgba(0,230,118,0.04)',
+  },
+  advisorNotesWrap: {
+    borderColor: 'rgba(255,183,77,0.30)',
+    backgroundColor: 'rgba(255,183,77,0.04)',
+  },
+  multilineInput: {
+    minHeight: 48,
+    height: undefined,
+    paddingVertical: 4,
+    textAlignVertical: 'top',
   },
 
   // Generate button

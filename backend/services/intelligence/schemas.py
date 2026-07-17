@@ -92,6 +92,52 @@ ServiceUrgencyType = Literal[
 ]
 
 
+class VerifiedFactGate(BaseModel):
+    """Advisor-confirmed status for the 6 high-risk service topics.
+
+    For each key the value is either the confirmed information (which
+    the AI may state as fact) or None/empty (which forces the AI to
+    say "being verified" instead of guessing).
+    """
+    price: Optional[str] = None
+    warrantyCoverage: Optional[str] = None
+    completionTime: Optional[str] = None
+    partsArrival: Optional[str] = None
+    loanerAvailability: Optional[str] = None
+    diagnosis: Optional[str] = None
+
+
+# Advisor-selectable customer concern categories (chip picker in UI).
+# Kept broad so advisors don't have to guess exact wording.
+ServiceCustomerConcernType = Literal[
+    "cost",
+    "wait_time",
+    "trust",
+    "safety",
+    "warranty",
+    "loaner_transport",
+    "parts_delay",
+    "repeat_issue",
+    "clarity",
+    "other",
+]
+
+# Advisor-selectable desired next action (chip picker in UI).
+# These are outcomes the advisor wants the message to drive toward.
+ServiceNextActionType = Literal[
+    "request_approval",
+    "schedule_appointment",
+    "confirm_pickup",
+    "escalate_to_manager",
+    "explain_and_reassure",
+    "offer_loaner",
+    "await_parts",
+    "decline_service",
+    "provide_status_update",
+    "other",
+]
+
+
 class AutomotiveInteractionInput(BaseModel):
     mode: Literal["sales", "service"] = "sales"
     channel: Literal["sms", "email", "chat", "in_person"] = "sms"
@@ -106,6 +152,21 @@ class AutomotiveInteractionInput(BaseModel):
     userPreferences: Optional[UserPreferences] = None
     # Service-mode only: current stage of the RO. Ignored in sales mode.
     repairStage: Optional[RepairStageType] = None
+    # ── Service-mode advisor context (iter27) ──
+    # Free-text confirmed information. The AI is instructed to treat this
+    # as verified fact — anything present may be stated authoritatively.
+    confirmedInformation: Optional[str] = None
+    # Free-text advisor notes. The AI treats this as context ONLY —
+    # never presents it to the guest as fact.
+    advisorNotes: Optional[str] = None
+    # Advisor-selected customer concern category (chip pick).
+    customerConcern: Optional[ServiceCustomerConcernType] = None
+    # Advisor-selected desired next action (chip pick).
+    desiredNextAction: Optional[ServiceNextActionType] = None
+    # Advisor confirmation gate for the 6 highest-risk topics. If a key
+    # is missing/empty, the AI must say it is "being verified" rather
+    # than invent a value.
+    verifiedFactGates: Optional[VerifiedFactGate] = None
 
     @field_validator("customerMessage")
     @classmethod
@@ -133,6 +194,26 @@ class ResponseVariants(BaseModel):
     recommended: str
     direct: str
     empathetic: str
+
+
+class ServiceResponseStyles(BaseModel):
+    """Service-mode response styles (replaces generic tone variants).
+
+    Advisors think in SITUATIONS not writing styles, so these three
+    style options map to real service situations rather than generic
+    tone labels like "professional" or "friendly":
+
+      - concise:       For waiter guests / busy customers — as short
+                       as possible while covering the required facts.
+      - explainClearly: For guests who need to understand the WHY —
+                       teaches the guest what the tech found and why
+                       the repair matters.
+      - deEscalate:    For frustrated / angry guests — leads with
+                       ownership, empathy, and clarity, then facts.
+    """
+    concise: str
+    explainClearly: str
+    deEscalate: str
 
 
 class NextBestAction(BaseModel):
@@ -175,6 +256,13 @@ class AutomotiveInteractionOutput(BaseModel):
     urgencyClassification: Optional[ServiceUrgencyType] = None
     guestConcern: Optional[str] = None
     serviceFramework: Optional[ServiceFramework] = None
+    # Three service-situation response styles (Concise / Explain Clearly /
+    # De-escalate). Null in sales mode.
+    serviceResponses: Optional[ServiceResponseStyles] = None
+    # Which of the 6 verified-fact topics were left unverified by the
+    # advisor. The AI must NOT invent values for these — echoed here so
+    # the UI can badge them "being verified".
+    unverifiedTopics: Optional[List[str]] = None
     # instrumentation (populated by the pipeline, not the model)
     latency_ms: Optional[Dict[str, int]] = None
     prompt_version: Optional[str] = None
@@ -248,6 +336,28 @@ SERVICE_URGENCY_LEVELS = [
     "due_soon",
     "routine_maintenance",
     "optional",
+]
+
+SERVICE_CUSTOMER_CONCERNS = [
+    "cost", "wait_time", "trust", "safety", "warranty",
+    "loaner_transport", "parts_delay", "repeat_issue", "clarity", "other",
+]
+
+SERVICE_NEXT_ACTIONS = [
+    "request_approval", "schedule_appointment", "confirm_pickup",
+    "escalate_to_manager", "explain_and_reassure", "offer_loaner",
+    "await_parts", "decline_service", "provide_status_update", "other",
+]
+
+# The 6 topics that require advisor verification before the AI may
+# state them as fact. Missing / empty values force "being verified".
+VERIFIED_FACT_GATE_KEYS = [
+    "price",
+    "warrantyCoverage",
+    "completionTime",
+    "partsArrival",
+    "loanerAvailability",
+    "diagnosis",
 ]
 
 RESPONSE_STRATEGIES = [

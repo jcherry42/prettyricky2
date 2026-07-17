@@ -27,6 +27,42 @@ export type ServiceUrgency =
   | 'routine_maintenance'
   | 'optional';
 
+export type ServiceCustomerConcern =
+  | 'cost'
+  | 'wait_time'
+  | 'trust'
+  | 'safety'
+  | 'warranty'
+  | 'loaner_transport'
+  | 'parts_delay'
+  | 'repeat_issue'
+  | 'clarity'
+  | 'other';
+
+export type ServiceNextAction =
+  | 'request_approval'
+  | 'schedule_appointment'
+  | 'confirm_pickup'
+  | 'escalate_to_manager'
+  | 'explain_and_reassure'
+  | 'offer_loaner'
+  | 'await_parts'
+  | 'decline_service'
+  | 'provide_status_update'
+  | 'other';
+
+/** The 6 topics that require advisor verification. Missing/empty = forced
+ *  to say "being verified" in the response. */
+export type VerifiedFactGateKey =
+  | 'price'
+  | 'warrantyCoverage'
+  | 'completionTime'
+  | 'partsArrival'
+  | 'loanerAvailability'
+  | 'diagnosis';
+
+export type VerifiedFactGates = Partial<Record<VerifiedFactGateKey, string>>;
+
 export interface AnalyzeInput {
   mode: AppModeType;
   channel: ChannelType;
@@ -50,6 +86,17 @@ export interface AnalyzeInput {
   agentNotes?: string;
   /** Service mode only — current stage of the RO. */
   repairStage?: RepairStage;
+  /** Service mode only — advisor-verified free-text (AI MAY state as fact). */
+  confirmedInformation?: string;
+  /** Service mode only — background context (AI must NOT state as fact). */
+  advisorNotes?: string;
+  /** Service mode only — advisor-selected customer concern chip. */
+  customerConcern?: ServiceCustomerConcern;
+  /** Service mode only — advisor-selected desired next action chip. */
+  desiredNextAction?: ServiceNextAction;
+  /** Service mode only — per-topic advisor verification. Empty/missing
+   *  keys force the response to say "being verified". */
+  verifiedFactGates?: VerifiedFactGates;
 }
 
 export interface AnalyzeOutput {
@@ -88,6 +135,17 @@ export interface AnalyzeOutput {
     impact: string;
     nextStep: string;
   } | null;
+  /** Service mode only — three situation-style variants (Concise / Explain
+   *  Clearly / De-escalate). Replaces the generic tone labels. */
+  serviceResponses?: {
+    concise: string;
+    explainClearly: string;
+    deEscalate: string;
+  } | null;
+  /** Service mode only — deterministic list of the 6 verified-fact-gate
+   *  topics that were NOT confirmed by the advisor. UI badges these
+   *  "being verified" and the AI never invented values for them. */
+  unverifiedTopics?: VerifiedFactGateKey[] | null;
   prompt_version: string;
   latency_ms?: Record<string, number>;
   fallback_used?: boolean;
@@ -199,6 +257,62 @@ export const URGENCY_COLOR: Record<ServiceUrgency, string> = {
   routine_maintenance: '#00E5FF',
   optional: '#B0BEC5',
 };
+
+/** Chip-picker options for the customer-concern input (service mode). */
+export const CUSTOMER_CONCERN_OPTIONS: Array<{ id: ServiceCustomerConcern; label: string; icon: string }> = [
+  { id: 'cost',              label: 'Cost',           icon: 'cash' },
+  { id: 'wait_time',         label: 'Wait Time',      icon: 'time' },
+  { id: 'trust',             label: 'Trust',          icon: 'shield-half' },
+  { id: 'safety',            label: 'Safety',         icon: 'warning' },
+  { id: 'warranty',          label: 'Warranty',       icon: 'shield-checkmark' },
+  { id: 'loaner_transport',  label: 'Loaner',         icon: 'car-sport' },
+  { id: 'parts_delay',       label: 'Parts Delay',    icon: 'cube' },
+  { id: 'repeat_issue',      label: 'Repeat Issue',   icon: 'refresh-circle' },
+  { id: 'clarity',           label: 'Clarity',        icon: 'help-circle' },
+  { id: 'other',             label: 'Other',          icon: 'ellipsis-horizontal' },
+];
+
+/** Chip-picker options for the desired-next-action input (service mode). */
+export const NEXT_ACTION_OPTIONS: Array<{ id: ServiceNextAction; label: string; icon: string }> = [
+  { id: 'request_approval',       label: 'Request Approval',     icon: 'checkmark-done' },
+  { id: 'schedule_appointment',   label: 'Schedule Appt',        icon: 'calendar' },
+  { id: 'confirm_pickup',         label: 'Confirm Pickup',       icon: 'flag' },
+  { id: 'escalate_to_manager',    label: 'Escalate to Manager',  icon: 'alert-circle' },
+  { id: 'explain_and_reassure',   label: 'Explain & Reassure',   icon: 'chatbubbles' },
+  { id: 'offer_loaner',           label: 'Offer Loaner',         icon: 'car-sport' },
+  { id: 'await_parts',            label: 'Await Parts',          icon: 'hourglass' },
+  { id: 'decline_service',        label: 'Decline Service',      icon: 'close-circle' },
+  { id: 'provide_status_update',  label: 'Status Update',        icon: 'megaphone' },
+  { id: 'other',                  label: 'Other',                icon: 'ellipsis-horizontal' },
+];
+
+/** Ordered list of the 6 verified-fact-gate topics + display labels. */
+export const VERIFIED_FACT_GATE_KEYS: VerifiedFactGateKey[] = [
+  'price',
+  'warrantyCoverage',
+  'completionTime',
+  'partsArrival',
+  'loanerAvailability',
+  'diagnosis',
+];
+
+export const VERIFIED_FACT_GATE_LABELS: Record<VerifiedFactGateKey, string> = {
+  price: 'Price',
+  warrantyCoverage: 'Warranty',
+  completionTime: 'Completion Time',
+  partsArrival: 'Parts Arrival',
+  loanerAvailability: 'Loaner',
+  diagnosis: 'Diagnosis',
+};
+
+/** Response-style options for the service-mode output card. Replaces
+ *  the generic "professional / friendly / direct" tone labels — advisors
+ *  think in situations, not writing styles. */
+export const SERVICE_STYLE_OPTIONS: Array<{ id: 'concise' | 'explainClearly' | 'deEscalate'; label: string; icon: string; hint: string }> = [
+  { id: 'concise',        label: 'Concise',        icon: 'flash',       hint: 'Shortest reply that covers the facts' },
+  { id: 'explainClearly', label: 'Explain Clearly', icon: 'book',        hint: 'Teach the guest what was found and why' },
+  { id: 'deEscalate',     label: 'De-escalate',    icon: 'heart',       hint: 'Ownership + empathy for upset guests' },
+];
 
 /** 6 service quick-action chips shown in Tower Talk when in Service Mode.
  *  Each chip templates a starter `situation` string that seeds analysis. */

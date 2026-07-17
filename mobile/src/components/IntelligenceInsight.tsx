@@ -11,7 +11,7 @@
  *   - Pulsing halo around the sentiment pill when the customer is frustrated/angry.
  *   - Shimmer skeleton while pending.
  */
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
@@ -33,15 +33,163 @@ import {
   RISK_FLAG_LABELS,
   SENTIMENT_COLOR,
   SENTIMENT_LABEL,
+  SERVICE_STYLE_OPTIONS,
   STRATEGY_LABELS,
   URGENCY_COLOR,
   URGENCY_LABELS,
+  VERIFIED_FACT_GATE_LABELS,
+  type VerifiedFactGateKey,
 } from '../lib/intelligence';
 
 interface Props {
   data: AnalyzeOutput | null;
   pending?: boolean;
 }
+
+/**
+ * ServiceAdvisorCard — the primary output surface in Service Mode.
+ *
+ * Renders four labeled sections modeled on how an advisor thinks:
+ *   1. Concern      — the guest's underlying concern (from `guestConcern`).
+ *   2. Recommended  — the message to send, with 3-tab style picker
+ *                     (Concise / Explain Clearly / De-escalate).
+ *   3. Next Action  — one concrete next step for the advisor.
+ *   4. Risk Flag    — any escalation triggers (or "None").
+ *
+ * Also badges "being verified" for every topic in `unverifiedTopics` so
+ * the advisor sees exactly which facts still need confirmation.
+ */
+function ServiceAdvisorCard({ data }: { data: AnalyzeOutput }) {
+  const [style, setStyle] = useState<'concise' | 'explainClearly' | 'deEscalate'>('concise');
+  const serviceReplies = data.serviceResponses;
+  const currentReply = useMemo(() => {
+    if (serviceReplies) {
+      return serviceReplies[style];
+    }
+    return data.responses.recommended;
+  }, [serviceReplies, style, data.responses.recommended]);
+
+  const hasRisk = data.riskFlags && data.riskFlags.length > 0;
+  const unverified: VerifiedFactGateKey[] = (data.unverifiedTopics || []) as VerifiedFactGateKey[];
+
+  return (
+    <View style={styles.advisorCard} data-testid="advisor-card">
+      {/* 1. Customer Concern */}
+      <View style={styles.advisorSection}>
+        <View style={styles.advisorSectionHeader}>
+          <Ionicons name="ear" size={13} color="#00E5FF" />
+          <Text style={styles.advisorSectionLabel}>CONCERN</Text>
+        </View>
+        <Text style={styles.advisorConcern} data-testid="advisor-concern">
+          {data.guestConcern || 'General service inquiry.'}
+        </Text>
+      </View>
+
+      {/* 2. Recommended Message with style picker */}
+      <View style={styles.advisorSection}>
+        <View style={styles.advisorSectionHeader}>
+          <Ionicons name="chatbubble-ellipses" size={13} color="#00E5FF" />
+          <Text style={styles.advisorSectionLabel}>RECOMMENDED MESSAGE</Text>
+        </View>
+        {serviceReplies ? (
+          <View style={styles.styleTabRow} data-testid="advisor-style-tabs">
+            {SERVICE_STYLE_OPTIONS.map((opt) => {
+              const active = style === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setStyle(opt.id);
+                  }}
+                  data-testid={`advisor-style-tab-${opt.id}`}
+                  style={[styles.styleTab, active && styles.styleTabActive]}
+                >
+                  <Ionicons
+                    name={opt.icon as keyof typeof Ionicons.glyphMap}
+                    size={11}
+                    color={active ? '#00E5FF' : 'rgba(255,255,255,0.55)'}
+                  />
+                  <Text style={[styles.styleTabText, active && styles.styleTabTextActive]}>
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+        <Text style={styles.advisorMessage} data-testid="advisor-message">
+          {currentReply}
+        </Text>
+      </View>
+
+      {/* Verified-fact gate — "being verified" badges */}
+      {unverified.length > 0 ? (
+        <View style={styles.advisorSection} data-testid="advisor-unverified">
+          <View style={styles.advisorSectionHeader}>
+            <Ionicons name="hourglass" size={13} color="#FFB74D" />
+            <Text style={[styles.advisorSectionLabel, { color: '#FFB74D' }]}>BEING VERIFIED</Text>
+          </View>
+          <View style={styles.unverifiedChipRow}>
+            {unverified.map((key) => (
+              <View
+                key={key}
+                style={styles.unverifiedChip}
+                data-testid={`advisor-unverified-${key}`}
+              >
+                <Text style={styles.unverifiedChipText}>{VERIFIED_FACT_GATE_LABELS[key]}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {/* 3. Next Action */}
+      <View style={styles.advisorSection}>
+        <View style={styles.advisorSectionHeader}>
+          <Ionicons name="arrow-forward-circle" size={13} color="#00E5FF" />
+          <Text style={styles.advisorSectionLabel}>NEXT ACTION</Text>
+        </View>
+        <Text style={styles.advisorNextAction} data-testid="advisor-next-action">
+          {data.nextBestAction.action}
+        </Text>
+      </View>
+
+      {/* 4. Risk Flag */}
+      <View style={styles.advisorSection}>
+        <View style={styles.advisorSectionHeader}>
+          <Ionicons
+            name={hasRisk ? 'alert-circle' : 'checkmark-circle'}
+            size={13}
+            color={hasRisk ? '#FF7043' : '#00E676'}
+          />
+          <Text
+            style={[
+              styles.advisorSectionLabel,
+              { color: hasRisk ? '#FF7043' : '#00E676' },
+            ]}
+          >
+            RISK FLAG
+          </Text>
+        </View>
+        {hasRisk ? (
+          <View style={styles.advisorRiskRow} data-testid="advisor-risk">
+            {data.riskFlags.map((flag) => (
+              <View key={flag} style={styles.advisorRiskChip}>
+                <Text style={styles.advisorRiskChipText}>
+                  {RISK_FLAG_LABELS[flag] || flag}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.advisorRiskNone} data-testid="advisor-risk-none">None</Text>
+        )}
+      </View>
+    </View>
+  );
+}
+
 
 export function IntelligenceInsight({ data, pending = false }: Props) {
   const lingo = useLingo();
@@ -165,6 +313,15 @@ export function IntelligenceInsight({ data, pending = false }: Props) {
           <Text style={styles.escalateText}>ESCALATE — bring in a manager NOW</Text>
         </View>
       )}
+
+      {/* ── Service-mode Advisor Card (iter27) ────────────────────
+          THIS is the primary output surface for service mode.
+          Redesigned to feel like an advisor tool, not a writing
+          assistant. Shows Concern, Recommended Message with 3-tab
+          style picker, Next Action, and Risk Flags. */}
+      {data.mode === 'service' ? (
+        <ServiceAdvisorCard data={data} />
+      ) : null}
 
       {/* Intent + Strategy row */}
       <View style={styles.chipRow}>
@@ -513,6 +670,103 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   frameworkText: { color: '#FFFFFF', fontSize: 12, lineHeight: 16 },
+  // ── Service Advisor Card (iter27) ──
+  advisorCard: {
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,229,255,0.30)',
+    backgroundColor: 'rgba(0,229,255,0.08)',
+    gap: 14,
+  },
+  advisorSection: { gap: 6 },
+  advisorSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  advisorSectionLabel: {
+    color: '#00E5FF',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  advisorConcern: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    lineHeight: 19,
+  },
+  advisorMessage: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    lineHeight: 19,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  advisorNextAction: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 19,
+  },
+  advisorRiskRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  advisorRiskChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,112,67,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,112,67,0.40)',
+  },
+  advisorRiskChipText: {
+    color: '#FFAB91',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  advisorRiskNone: {
+    color: '#00E676',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  // Style picker tabs (Concise / Explain / De-escalate)
+  styleTabRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 6,
+  },
+  styleTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  styleTabActive: {
+    borderColor: '#00E5FF',
+    backgroundColor: 'rgba(0,229,255,0.15)',
+  },
+  styleTabText: {
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  styleTabTextActive: { color: '#00E5FF' },
+  // Being-verified badges
+  unverifiedChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  unverifiedChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,183,77,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,183,77,0.35)',
+  },
+  unverifiedChipText: { color: '#FFB74D', fontSize: 11, fontWeight: '700' },
   // Skeleton shimmer while analyze() is in-flight
   skeletonPill: {
     width: 72,

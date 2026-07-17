@@ -39,6 +39,8 @@ from services.intelligence.schemas import (
     SERVICE_URGENCY_LEVELS,
     SentimentAnalysis,
     ServiceFramework,
+    ServiceResponseStyles,
+    VERIFIED_FACT_GATE_KEYS,
     AutomotiveInteractionInput,
     AutomotiveInteractionOutput,
 )
@@ -214,6 +216,8 @@ def _validate_and_normalize(
     urgency = None
     guest_concern = None
     service_framework: ServiceFramework | None = None
+    service_responses: ServiceResponseStyles | None = None
+    unverified_topics: list[str] | None = None
     if is_service:
         # repairStage: honor the model output, then fall back to input hint,
         # then default to "diagnosis" (safest neutral stage).
@@ -234,10 +238,13 @@ def _validate_and_normalize(
         else:
             urgency = "routine_maintenance"
 
-        # guestConcern — free-form advisor summary
+        # guestConcern — free-form advisor summary, fall back to
+        # the advisor-picked customerConcern chip when the model didn't.
         gc_raw = raw.get("guestConcern")
         if isinstance(gc_raw, str) and gc_raw.strip():
             guest_concern = gc_raw.strip()[:400]
+        elif inp.customerConcern:
+            guest_concern = f"Guest concern: {inp.customerConcern.replace('_', ' ')}."
 
         # serviceFramework 4-phase block
         sf_raw = raw.get("serviceFramework") or {}
@@ -246,7 +253,6 @@ def _validate_and_normalize(
             vfs = str(sf_raw.get("verifiedFactsStatement", "")).strip()
             impact = str(sf_raw.get("impact", "")).strip()
             nxt = str(sf_raw.get("nextStep", "")).strip()
-            # Only build the block if at least the acknowledge + nextStep are present.
             if ack and nxt:
                 service_framework = ServiceFramework(
                     acknowledge=ack[:500],
@@ -254,6 +260,38 @@ def _validate_and_normalize(
                     impact=(impact or "We will make sure this is handled cleanly.")[:500],
                     nextStep=nxt[:500],
                 )
+
+        # serviceResponses — three service-situation styles
+        sr_raw = raw.get("serviceResponses") or {}
+        if isinstance(sr_raw, dict):
+            concise = str(sr_raw.get("concise", "")).strip()
+            explain = str(sr_raw.get("explainClearly", "")).strip()
+            deesc = str(sr_raw.get("deEscalate", "")).strip()
+            # Fall back to the primary recommended response if the model
+            # skipped a style — never leave a variant blank.
+            if not concise:
+                concise = recommended
+            if not explain:
+                explain = direct or recommended
+            if not deesc:
+                deesc = empathetic or recommended
+            service_responses = ServiceResponseStyles(
+                concise=_clamp_response_length(concise, inp.channel),
+                explainClearly=_clamp_response_length(explain, inp.channel),
+                deEscalate=_clamp_response_length(deesc, inp.channel),
+            )
+
+        # unverifiedTopics — deterministic, NOT trusting the model:
+        # a topic is unverified whenever `verifiedFactGates.<topic>` is
+        # missing or empty. The advisor UI badges these.
+        gates = None
+        if inp.verifiedFactGates is not None:
+            gates = inp.verifiedFactGates.model_dump(exclude_none=False)
+        unverified_topics = []
+        for key in VERIFIED_FACT_GATE_KEYS:
+            val = (gates or {}).get(key)
+            if not (isinstance(val, str) and val.strip()):
+                unverified_topics.append(key)
 
     return AutomotiveInteractionOutput(
         detectedLanguage=str(raw.get("detectedLanguage") or inp.customerLanguage or "en")[:8],
@@ -273,6 +311,8 @@ def _validate_and_normalize(
         urgencyClassification=urgency,
         guestConcern=guest_concern,
         serviceFramework=service_framework,
+        serviceResponses=service_responses,
+        unverifiedTopics=unverified_topics,
         prompt_version=PROMPT_VERSION,
     )
 
