@@ -294,7 +294,6 @@ class TestBackendFileReorganization:
         expected_files = [
             "ai_gateway.py",
             "telemetry_service.py",
-            "analytics_service.py",
             "conversation_history.py",
             "vector_search.py",
         ]

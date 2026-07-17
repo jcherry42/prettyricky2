@@ -16,8 +16,6 @@ class HealthResponse(BaseModel):
     status: str = Field(description="Server health status: 'healthy' or 'degraded'")
     timestamp: str = Field(description="ISO 8601 timestamp")
     version: str = Field(description="API version string")
-    scheduler: Dict[str, Any] = Field(default_factory=dict)
-    dataSources: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ReadyResponse(BaseModel):
