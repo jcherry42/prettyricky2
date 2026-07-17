@@ -10,8 +10,8 @@ interface GlassCardProps {
 /**
  * GlassCard — Ferrari-infotainment-grade surface panel.
  * Multi-layer depth with anisotropic shimmer, warm gold micro-tint,
- * and precision top-edge specular highlight. Static/memoized to prevent
- * re-renders from ambient lighting cycles.
+ * and precision top-edge specular highlight. Static/memoized to keep
+ * scroll performance smooth in long lists.
  */
 export const GlassCard = memo(function GlassCard({ children, style }: GlassCardProps) {
   return (

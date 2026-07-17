@@ -39,25 +39,6 @@ export const designoColors = {
       ivory: '#F5F1E8',
     },
   },
-
-  // Ambient Lighting - 64 color spectrum
-  ambient: [
-    '#FF0000', '#FF1A00', '#FF3300', '#FF4D00', // Reds
-    '#FF6600', '#FF8000', '#FF9900', '#FFB300', // Oranges
-    '#FFCC00', '#FFE600', '#FFFF00', '#E6FF00', // Yellows
-    '#CCFF00', '#B3FF00', '#99FF00', '#80FF00', // Yellow-Greens
-    '#66FF00', '#4DFF00', '#33FF00', '#1AFF00', // Greens
-    '#00FF00', '#00FF1A', '#00FF33', '#00FF4D', // Pure Greens
-    '#00FF66', '#00FF80', '#00FF99', '#00FFB3', // Cyan-Greens
-    '#00FFCC', '#00FFE6', '#00FFFF', '#00E6FF', // Cyans
-    '#00CCFF', '#00B3FF', '#0099FF', '#0080FF', // Light Blues
-    '#0066FF', '#004DFF', '#0033FF', '#001AFF', // Blues
-    '#0000FF', '#1A00FF', '#3300FF', '#4D00FF', // Deep Blues
-    '#6600FF', '#8000FF', '#9900FF', '#B300FF', // Purples
-    '#CC00FF', '#E600FF', '#FF00FF', '#FF00E6', // Magentas
-    '#FF00CC', '#FF00B3', '#FF0099', '#FF0080', // Pinks
-    '#FF0066', '#FF004D', '#FF0033', '#FF001A', // Pink-Reds
-  ],
 };
 
 export const designoTexturePatterns = {
@@ -75,11 +56,4 @@ export const designoTexturePatterns = {
   brushedMetal: {
     backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.05) 1px, rgba(255,255,255,0.05) 2px)',
   },
-};
-
-// Ambient lighting intensity levels
-export const ambientIntensity = {
-  subtle: 0.04,
-  medium: 0.08,
-  vivid: 0.12,
 };

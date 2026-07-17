@@ -23,7 +23,6 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { OfflineBanner } from './src/components/OfflineBanner';
 import { AppSettingsProvider } from './src/context/AppSettingsContext';
 import { ModeProvider } from './src/context/ModeContext';
-import { AmbientLightingProvider } from './src/context/AmbientLightingContext';
 import { PttProvider } from './src/context/PttContext';
 import { TaillightFlashProvider } from './src/context/TaillightFlashContext';
 import { CustomerProvider } from './src/context/CustomerContext';
@@ -116,7 +115,7 @@ function AuthGate() {
 function MainApp() {
   // Provider order matters: outermost first, innermost last.
   // Network/Toast/Settings must be before Customer/Inventory (data deps).
-  // AmbientLighting/TaillightFlash are visual-only — innermost.
+  // TaillightFlash is visual-only — innermost so it can consume any provider.
   const providers = [
     ErrorBoundary,
     NetworkProvider,
@@ -128,7 +127,6 @@ function MainApp() {
     CustomerProvider,
     InventoryProvider,
     PttProvider,
-    AmbientLightingProvider,
     TaillightFlashProvider,
   ];
 

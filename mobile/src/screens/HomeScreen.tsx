@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { errorMessage } from '../lib/errors';
-import { View, Text, StyleSheet, Pressable, FlatList, Animated, TextInput, RefreshControl, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList, TextInput, RefreshControl, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,35 +24,6 @@ import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import { TAB_BAR_CONTENT_HEIGHT } from '../navigation/layout';
 
-/* ---------- Ambient light strip ---------- */
-function AmbientStrip({ active, color, serviceMode }: { active: boolean; color: string; serviceMode: boolean }) {
-  const anim = useRef(new Animated.Value(0.12)).current;
-
-  useEffect(() => {
-    if (serviceMode) {
-      // Eco mode: static low-opacity strip, no animation to save battery
-      anim.stopAnimation();
-      anim.setValue(0.06);
-      return;
-    }
-    if (active) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(anim, { toValue: 0.45, duration: 2200, useNativeDriver: true }),
-          Animated.timing(anim, { toValue: 0.12, duration: 2200, useNativeDriver: true }),
-        ])
-      ).start();
-    } else {
-      anim.stopAnimation();
-      anim.setValue(0.06);
-    }
-  }, [active, anim, serviceMode]);
-
-  return (
-    <Animated.View style={[styles.ambientStrip, { backgroundColor: color, opacity: anim }]} />
-  );
-}
-
 /* --------------------------------------------------------------------------
  * HomeListHeader — defined OUTSIDE HomeScreen so its identity is STABLE.
  * Only contains static/slow-changing content (branding, SPORT button,
@@ -60,11 +31,9 @@ function AmbientStrip({ active, color, serviceMode }: { active: boolean; color: 
  * keyboard dismissal on every keystroke (a known React Native issue when
  * a TextInput lives inside ListHeaderComponent).
  * -------------------------------------------------------------------------- */
-const HomeListHeader = memo(function HomeListHeader({ stripColor, serviceMode }: { stripColor: string; serviceMode: boolean }) {
+const HomeListHeader = memo(function HomeListHeader({ serviceMode: _serviceMode }: { serviceMode: boolean }) {
   return (
     <View>
-      <AmbientStrip active color={stripColor} serviceMode={serviceMode} />
-
       {/* SPORT button with subtle top branding */}
       <View style={styles.sportRow}>
         <View style={styles.brandMark}>
@@ -75,8 +44,6 @@ const HomeListHeader = memo(function HomeListHeader({ stripColor, serviceMode }:
         <View style={{ height: 16 }} />
         <SportModeButton />
       </View>
-
-      <AmbientStrip active color={stripColor} serviceMode={serviceMode} />
 
       {/* Chrome accent divider */}
       <ChromeAccent style={{ marginHorizontal: 16, marginBottom: 10 }} />
@@ -114,10 +81,6 @@ export function HomeScreen() {
   }, [session]);
   // Emergency modal state now lives in RootNavigator
 
-  // Remove ambient lighting subscription from HomeScreen \u2014 AmbientLightingSystem
-  // overlay handles the visual effect. HomeScreen stays fully memoized.
-  const sportActive = Boolean(settings.sportMode);
-  const stripColor = sportActive ? 'rgba(255,80,0,0.60)' : 'rgba(0,212,255,0.40)';
   // Load customers on mount
   useEffect(() => {
     fetchCustomers().catch(() => {});
@@ -199,10 +162,10 @@ export function HomeScreen() {
 
   const serviceMode = Boolean(settings.serviceMode);
 
-  // renderHeader depends on stripColor and serviceMode — stable identity
+  // renderHeader — stable identity, only re-created when serviceMode flips
   const renderHeader = useCallback(() => (
-    <HomeListHeader stripColor={stripColor} serviceMode={serviceMode} />
-  ), [stripColor, serviceMode]);
+    <HomeListHeader serviceMode={serviceMode} />
+  ), [serviceMode]);
 
   const renderEmpty = () => {
     if (loading) {
@@ -390,11 +353,6 @@ const styles = StyleSheet.create({
     color: colors.gold,
     letterSpacing: 3,
     opacity: 0.7,
-  },
-  ambientStrip: {
-    width: '100%',
-    height: 1,
-    borderRadius: 1,
   },
   searchContainer: {
     marginHorizontal: 16,

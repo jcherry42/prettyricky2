@@ -17,7 +17,6 @@ import { useCustomers, type CustomerRecord } from '../context/CustomerContext';
 import { useInventory } from '../context/InventoryContext';
 import { useLingo, useMode } from '../context/ModeContext';
 import { apiFetch } from '../lib/api';
-import { designoColors } from '../theme/designo';
 
 const TABS = [
   { key: 'dashboard', label: 'DASHBOARD', icon: 'stats-chart' },
@@ -138,7 +137,7 @@ function PrinterRow({ item, active, onSetActive, onRemove }: { item: Printer; ac
 }
 
 export function CommandCenterModal({ visible, onClose, initialTab = null, initialSection = null }: { visible: boolean; onClose: () => void; initialTab?: string | null; initialSection?: string | null }) {
-  const { settings, setDefaultTargetLanguage, setServiceMode, setPerformanceMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, toggleAmbientLighting, setAmbientLightingIntensity, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
+  const { settings, setDefaultTargetLanguage, setServiceMode, setPerformanceMode, upsertPrinter, removePrinter, setActivePrinter, activePrinter, setSoundProfile, setSalesRepName, setDealershipName, setDealershipAddress } = useAppSettings();
   const { customers, loading: customersLoading, fetchCustomers } = useCustomers();
   const { vehicles, loading: vehiclesLoading, isAtLimit, maxInventory, deleteVehicle, fetchInventory } = useInventory();
   const lingo = useLingo();
@@ -878,69 +877,6 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
                   <View style={[styles.toggleDot, settings.performanceMode && styles.toggleDotPerformanceOn]} />
                   <Text style={[styles.toggleText, settings.performanceMode && { color: '#00E5FF' }]}>{settings.performanceMode ? 'MAX QUALITY' : 'BALANCED'}</Text>
                 </Pressable>
-              </GlassCard>
-
-              {/* Ambient Lighting Section */}
-              <GlassCard style={{ marginTop: 14 }}>
-                <View style={styles.ambientHeader}>
-                  <SectionTitle>Ambient Lighting</SectionTitle>
-                  <View style={[styles.ambientPreview, { backgroundColor: settings.ambientLightingEnabled ? (designoColors.ambient[0] || '#FF0000') : 'rgba(255,255,255,0.10)' }]} />
-                </View>
-                <View style={{ height: 12 }} />
-
-                {/* Enable/Disable Toggle */}
-                <Pressable
-                  onPress={() => { impactLight(); toggleAmbientLighting(); }}
-                  style={({ pressed }) => [styles.toggle, settings.ambientLightingEnabled && styles.toggleAmbientOn, pressed && { opacity: 0.9 }]}
-                >
-                  <View style={[styles.toggleDot, settings.ambientLightingEnabled && styles.toggleDotAmbientOn]} />
-                  <Text style={[styles.toggleText, settings.ambientLightingEnabled && { color: '#00FFCC' }]}>
-                    {settings.ambientLightingEnabled ? '64-COLOR ACTIVE' : 'OFF'}
-                  </Text>
-                </Pressable>
-
-                {/* Intensity Selector (only shown when enabled) */}
-                {settings.ambientLightingEnabled && (
-                  <>
-                    <View style={{ height: 14 }} />
-                    <Text style={styles.ambientLabel}>INTENSITY</Text>
-                    <View style={{ height: 8 }} />
-                    <View style={styles.intensityRow}>
-                      {[
-                        { key: 'subtle', label: 'SUBTLE', pct: '4%' },
-                        { key: 'medium', label: 'MEDIUM', pct: '8%' },
-                        { key: 'vivid', label: 'VIVID', pct: '12%' },
-                      ].map((level) => {
-                        const active = settings.ambientLightingIntensity === level.key;
-                        return (
-                          <Pressable
-                            key={level.key}
-                            onPress={() => { impactLight(); setAmbientLightingIntensity(level.key); }}
-                            style={({ pressed }) => [
-                              styles.intensityBtn,
-                              active && styles.intensityBtnActive,
-                              pressed && { opacity: 0.85 },
-                            ]}
-                          >
-                            <Text style={[styles.intensityLabel, active && styles.intensityLabelActive]}>{level.label}</Text>
-                            <Text style={[styles.intensityPct, active && styles.intensityPctActive]}>{level.pct}</Text>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-
-                    {/* Color spectrum preview */}
-                    <View style={{ height: 14 }} />
-                    <Text style={styles.ambientLabel}>SPECTRUM PREVIEW</Text>
-                    <View style={{ height: 8 }} />
-                    <View style={styles.spectrumRow}>
-                      {designoColors.ambient.filter((_, i) => i % 4 === 0).map((color, i) => (
-                        <View key={i} style={[styles.spectrumDot, { backgroundColor: color }]} />
-                      ))}
-                    </View>
-                    <Text style={styles.ambientSubtext}>30-second full spectrum cycle</Text>
-                  </>
-                )}
               </GlassCard>
 
               {/* Sound Profile Section */}
@@ -1731,26 +1667,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  // Ambient Lighting styles
-  ambientHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  ambientPreview: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-  },
-  toggleAmbientOn: {
-    borderColor: 'rgba(0,255,204,0.50)',
-    backgroundColor: 'rgba(0,255,204,0.08)',
-  },
-  toggleDotAmbientOn: {
-    backgroundColor: '#00FFCC',
-  },
   togglePerformanceOn: {
     borderColor: 'rgba(0,229,255,0.55)',
     backgroundColor: 'rgba(0,229,255,0.10)',
@@ -1780,19 +1696,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
-  ambientLabel: {
-    color: colors.textMute,
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1.5,
-  },
-  ambientSubtext: {
-    color: colors.textMute,
-    fontSize: 10,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 8,
-  },
+  // Intensity selector (reused by Sound Profile section)
   intensityRow: {
     flexDirection: 'row',
     gap: 8,
@@ -1828,17 +1732,6 @@ const styles = StyleSheet.create({
   },
   intensityPctActive: {
     color: 'rgba(0,255,204,0.70)',
-  },
-  spectrumRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  spectrumDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   // Sound Profile styles
   soundProfileBtn: {

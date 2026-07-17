@@ -17,8 +17,6 @@ interface AppSettings {
   pttDirection: string;
   printers: Printer[];
   activePrinterId: string | null;
-  ambientLightingEnabled: boolean;
-  ambientLightingIntensity: string;
   soundProfile: string;
   salesRepName: string;
   dealershipName: string;
@@ -33,8 +31,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   pttDirection: 'en_to_target',
   printers: [],
   activePrinterId: null,
-  ambientLightingEnabled: true,
-  ambientLightingIntensity: 'medium',
   soundProfile: 'merica',
   salesRepName: '',
   dealershipName: '',
@@ -56,9 +52,6 @@ interface AppSettingsContextValue {
   upsertPrinter: (p: { id?: string; name?: string; ip?: string }) => Promise<string>;
   removePrinter: (id: string) => Promise<void>;
   setActivePrinter: (id: string | null) => Promise<void>;
-  setAmbientLightingEnabled: (v: boolean) => Promise<void>;
-  setAmbientLightingIntensity: (v: string) => Promise<void>;
-  toggleAmbientLighting: () => Promise<void>;
   setSoundProfile: (v: string) => Promise<void>;
   setSalesRepName: (v: string) => Promise<void>;
   setDealershipName: (v: string) => Promise<void>;
@@ -161,19 +154,6 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
     await persist({ ...settingsRef.current, activePrinterId: id });
   }, [persist]);
 
-  const setAmbientLightingEnabled = useCallback(async (enabled: boolean) => {
-    await persist({ ...settingsRef.current, ambientLightingEnabled: !!enabled });
-  }, [persist]);
-
-  const setAmbientLightingIntensity = useCallback(async (intensity: string) => {
-    const valid = ['subtle', 'medium', 'vivid'];
-    await persist({ ...settingsRef.current, ambientLightingIntensity: valid.includes(intensity) ? intensity : 'medium' });
-  }, [persist]);
-
-  const toggleAmbientLighting = useCallback(async () => {
-    await persist({ ...settingsRef.current, ambientLightingEnabled: !settingsRef.current.ambientLightingEnabled });
-  }, [persist]);
-
   const setSoundProfile = useCallback(async (profile: string) => {
     const valid = ['merica', 'euro', 'jdm'];
     await persist({ ...settingsRef.current, soundProfile: valid.includes(profile) ? profile : 'merica' });
@@ -216,9 +196,6 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
       upsertPrinter,
       removePrinter,
       setActivePrinter,
-      setAmbientLightingEnabled,
-      setAmbientLightingIntensity,
-      toggleAmbientLighting,
       setSoundProfile,
       setSalesRepName,
       setDealershipName,

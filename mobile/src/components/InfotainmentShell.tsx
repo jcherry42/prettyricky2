@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
-import { AmbientLightingSystem } from './AmbientLightingSystem';
 
 export function InfotainmentShell({ children }: { children: React.ReactNode }) {
   return (
@@ -23,9 +22,6 @@ export function InfotainmentShell({ children }: { children: React.ReactNode }) {
         end={{ x: 1.0, y: 1.0 }}
         pointerEvents="none"
       />
-
-      {/* 64-color ambient lighting system */}
-      <AmbientLightingSystem />
 
       <View style={styles.content}>{children}</View>
     </View>
