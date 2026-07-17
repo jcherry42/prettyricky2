@@ -63,10 +63,10 @@ class CustomerRepository(BaseRepository):
         ).sort([("score", {"$meta": "textScore"})]).limit(limit).to_list(limit)
         return [self._convert_doc(doc) for doc in docs]
 
-    async def get_status_counts(self) -> Dict[str, int]:
+    async def get_status_counts(self, source_id: Optional[str] = None) -> Dict[str, int]:
         """Get count of customers by status."""
         pipeline = [
-            {"$match": {}},
+            {"$match": {"source_id": source_id} if source_id else {}},
             {"$group": {"_id": "$lead_status", "count": {"$sum": 1}}},
         ]
         results = await self.collection.aggregate(pipeline).to_list(10)

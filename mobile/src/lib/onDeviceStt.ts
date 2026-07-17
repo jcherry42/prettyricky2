@@ -261,29 +261,3 @@ async function _nativeSpeechRecognition(
     });
   });
 }
-
-/**
- * Get automotive-optimized hints for speech recognition.
- */
-export function getAutomotiveHints(): string[] {
-  return [...AUTOMOTIVE_HINTS];
-}
-
-/**
- * Noise suppression configuration for native audio sessions.
- */
-export const NOISE_SUPPRESSION_CONFIG = {
-  ios: {
-    allowsRecordingIOS: true,
-    playsInSilentModeIOS: true,
-    sampleRate: 16000,
-    numberOfChannels: 1,
-    bitRate: 128000,
-  },
-  android: {
-    allowsRecordingIOS: false,
-    sampleRate: 16000,
-    numberOfChannels: 1,
-    bitRate: 128000,
-  },
-};

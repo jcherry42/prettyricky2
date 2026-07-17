@@ -15,14 +15,13 @@ import re
 import time
 from typing import Any, Dict, Tuple
 
-from ai_gateway import gateway as ai_gateway
+from services.ai_gateway import gateway as ai_gateway
 from services.intelligence.prompts import (
     PROMPT_VERSION,
     build_system_prompt,
     build_user_prompt,
 )
 from services.intelligence.schemas import (
-    ALL_OBJECTION_CATEGORIES,
     CHANNEL_MAX_CHARS,
     NextBestAction,
     OBJECTION_CATEGORIES,

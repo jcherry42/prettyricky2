@@ -3,7 +3,7 @@
 DO NOT modify these types without version-bumping the pipeline. They form
 the contract between mobile clients, the AI gateway, and the validator.
 """
-from typing import List, Optional, Literal, Dict, Any
+from typing import List, Optional, Literal, Dict
 from pydantic import BaseModel, Field, field_validator
 
 

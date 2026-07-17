@@ -13,17 +13,20 @@
 
 import * as Sentry from '@sentry/react-native';
 
+let _called = false;
 let _initialized = false;
 
 export function initSentry(): void {
-  if (_initialized) return;
-  _initialized = true;
+  if (_called) return;
+  _called = true;
 
   const dsn = process.env.EXPO_PUBLIC_SENTRY_DSN;
   if (!dsn) {
     // Silent no-op in dev / when DSN not configured.
+    // _initialized stays false so wrap()/capture* remain pure no-ops.
     return;
   }
+  _initialized = true;
 
   Sentry.init({
     dsn,

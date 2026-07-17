@@ -58,7 +58,7 @@ eas build --profile demo --platform all
 
 EAS will:
 1. Upload your source to the build service
-2. Compile a native `.ipa` (iOS) and `.apk` (Android) with `EXPO_PUBLIC_BACKEND_URL=https://vin-scanner-audit.preview.emergentagent.com` baked in
+2. Compile a native `.ipa` (iOS) and `.apk` (Android) with `EXPO_PUBLIC_BACKEND_URL=https://apex-service-advisor.preview.emergentagent.com` baked in
 3. Return two install links (one per platform) that expire in ~30 days
 
 **Install on device:**

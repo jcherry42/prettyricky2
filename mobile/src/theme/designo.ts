@@ -40,20 +40,3 @@ export const designoColors = {
     },
   },
 };
-
-export const designoTexturePatterns = {
-  // Diamond-quilted leather pattern (for backgrounds)
-  quiltedLeather: {
-    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 40px)',
-  },
-
-  // Wood grain (horizontal lines for bezel effect)
-  woodGrain: {
-    backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.15) 1px, rgba(0,0,0,0.15) 2px)',
-  },
-
-  // Brushed aluminum (fine horizontal brushing)
-  brushedMetal: {
-    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.05) 1px, rgba(255,255,255,0.05) 2px)',
-  },
-};

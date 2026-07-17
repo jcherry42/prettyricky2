@@ -24,7 +24,7 @@ import time
 import os
 
 # Base URL from environment or default
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vin-scanner-audit.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://apex-service-advisor.preview.emergentagent.com').rstrip('/')
 
 # Test PIN
 TEST_PIN = "11111"
@@ -36,14 +36,14 @@ def auth_token():
     # Factory reset to clear any existing PIN state
     reset_response = requests.post(f"{BASE_URL}/api/auth/factory-reset")
     if reset_response.status_code == 200:
-        print(f"Factory reset successful")
+        print("Factory reset successful")
 
     # Setup PIN
     setup_response = requests.post(f"{BASE_URL}/api/auth/setup-pin", json={"pin": TEST_PIN})
     if setup_response.status_code in [200, 201]:
-        print(f"PIN setup successful")
+        print("PIN setup successful")
     elif setup_response.status_code == 409:
-        print(f"PIN already set, continuing with existing PIN")
+        print("PIN already set, continuing with existing PIN")
 
     # Login to get token
     login_response = requests.post(f"{BASE_URL}/api/auth/login", json={"pin": TEST_PIN})
@@ -53,7 +53,7 @@ def auth_token():
     data = login_response.json()
     token = data.get("access_token")
     assert token, "No access_token in login response"
-    print(f"Login successful, got access_token")
+    print("Login successful, got access_token")
     return token
 
 
@@ -92,8 +92,8 @@ class TestSessionSave:
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert data.get("success") == True, f"Expected success:true, got {data}"
-        print(f"PASS: POST /api/sessions/save returns success:true")
+        assert data.get("success") is True, f"Expected success:true, got {data}"
+        print("PASS: POST /api/sessions/save returns success:true")
 
     def test_session_save_minimal_payload(self, auth_headers):
         """POST /api/sessions/save with minimal payload - should work"""
@@ -109,8 +109,8 @@ class TestSessionSave:
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert data.get("success") == True
-        print(f"PASS: POST /api/sessions/save with minimal payload works")
+        assert data.get("success") is True
+        print("PASS: POST /api/sessions/save with minimal payload works")
 
 
 class TestSessionRestore:
@@ -141,12 +141,12 @@ class TestSessionRestore:
         
         assert restore_response.status_code == 200, f"Expected 200, got {restore_response.status_code}: {restore_response.text}"
         data = restore_response.json()
-        assert data.get("success") == True, f"Expected success:true, got {data}"
+        assert data.get("success") is True, f"Expected success:true, got {data}"
         
         session = data.get("session")
         assert session is not None, "Expected session data in response"
         assert session.get("search_query") == test_search, f"Expected search_query={test_search}, got {session.get('search_query')}"
-        print(f"PASS: GET /api/sessions/restore returns saved session data")
+        print("PASS: GET /api/sessions/restore returns saved session data")
 
     def test_session_restore_includes_age_seconds(self, auth_headers):
         """GET /api/sessions/restore - should include age_seconds field"""
@@ -196,8 +196,8 @@ class TestSessionAutoSave:
         
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert data.get("success") == True, f"Expected success:true, got {data}"
-        print(f"PASS: POST /api/sessions/auto-save returns success:true")
+        assert data.get("success") is True, f"Expected success:true, got {data}"
+        print("PASS: POST /api/sessions/auto-save returns success:true")
 
     def test_auto_save_merges_delta_into_existing_session(self, auth_headers):
         """POST /api/sessions/auto-save - delta merges into existing session"""
@@ -246,7 +246,7 @@ class TestSessionAutoSave:
         assert session.get("active_customer_id") == "cust_autosave_test", \
             f"Expected active_customer_id='cust_autosave_test', got {session.get('active_customer_id')}"
         
-        print(f"PASS: auto-save delta merges into existing session, preserving other fields")
+        print("PASS: auto-save delta merges into existing session, preserving other fields")
 
 
 class TestSessionDelete:
@@ -270,8 +270,8 @@ class TestSessionDelete:
         
         assert delete_response.status_code == 200, f"Expected 200, got {delete_response.status_code}: {delete_response.text}"
         data = delete_response.json()
-        assert data.get("success") == True, f"Expected success:true, got {data}"
-        print(f"PASS: DELETE /api/sessions returns success:true")
+        assert data.get("success") is True, f"Expected success:true, got {data}"
+        print("PASS: DELETE /api/sessions returns success:true")
 
     def test_session_restore_after_delete_returns_null(self, auth_headers):
         """GET /api/sessions/restore after DELETE - returns session:null"""
@@ -298,11 +298,11 @@ class TestSessionDelete:
         
         assert restore_response.status_code == 200
         data = restore_response.json()
-        assert data.get("success") == True
+        assert data.get("success") is True
         assert data.get("session") is None, f"Expected session:null after delete, got {data.get('session')}"
         assert "No saved session" in data.get("message", ""), \
             f"Expected 'No saved session' message, got {data.get('message')}"
-        print(f"PASS: GET /api/sessions/restore after DELETE returns session:null, message:'No saved session'")
+        print("PASS: GET /api/sessions/restore after DELETE returns session:null, message:'No saved session'")
 
 
 class TestSessionAuthRequired:
@@ -315,13 +315,13 @@ class TestSessionAuthRequired:
             json={"search_query": "test"}
         )
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-        print(f"PASS: POST /api/sessions/save returns 401 without auth")
+        print("PASS: POST /api/sessions/save returns 401 without auth")
 
     def test_session_restore_requires_auth(self):
         """GET /api/sessions/restore - returns 401 without auth"""
         response = requests.get(f"{BASE_URL}/api/sessions/restore")
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-        print(f"PASS: GET /api/sessions/restore returns 401 without auth")
+        print("PASS: GET /api/sessions/restore returns 401 without auth")
 
     def test_session_auto_save_requires_auth(self):
         """POST /api/sessions/auto-save - returns 401 without auth"""
@@ -330,13 +330,13 @@ class TestSessionAuthRequired:
             json={"delta": {"search_query": "test"}}
         )
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-        print(f"PASS: POST /api/sessions/auto-save returns 401 without auth")
+        print("PASS: POST /api/sessions/auto-save returns 401 without auth")
 
     def test_session_delete_requires_auth(self):
         """DELETE /api/sessions - returns 401 without auth"""
         response = requests.delete(f"{BASE_URL}/api/sessions")
         assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-        print(f"PASS: DELETE /api/sessions returns 401 without auth")
+        print("PASS: DELETE /api/sessions returns 401 without auth")
 
 
 # ============== REGRESSION TESTS ==============
@@ -350,7 +350,7 @@ class TestRegressionHealth:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        print(f"PASS: /api/health returns 200 (public)")
+        print("PASS: /api/health returns 200 (public)")
 
 
 class TestRegressionCustomerCRUD:
@@ -360,7 +360,7 @@ class TestRegressionCustomerCRUD:
         """GET /api/customers - list customers with auth"""
         response = requests.get(f"{BASE_URL}/api/customers", headers=auth_headers)
         assert response.status_code == 200
-        print(f"PASS: GET /api/customers returns 200")
+        print("PASS: GET /api/customers returns 200")
 
 
 class TestRegressionVINDecode:
@@ -373,7 +373,7 @@ class TestRegressionVINDecode:
         assert response.status_code == 200
         data = response.json()
         assert data.get("make", "").upper() == "HONDA"
-        print(f"PASS: VIN decode returns Honda Accord")
+        print("PASS: VIN decode returns Honda Accord")
 
 
 class TestRegressionAnomalyDetection:
@@ -383,7 +383,7 @@ class TestRegressionAnomalyDetection:
         """POST /api/anomalies/scan - should work with auth"""
         response = requests.post(f"{BASE_URL}/api/anomalies/scan", headers=auth_headers)
         assert response.status_code == 200
-        print(f"PASS: POST /api/anomalies/scan returns 200")
+        print("PASS: POST /api/anomalies/scan returns 200")
 
 
 class TestRegressionAIModelRouting:
@@ -398,7 +398,7 @@ class TestRegressionAIModelRouting:
         license_ocr_route = model_routes.get("license_ocr", {})
         assert license_ocr_route.get("primary") == "gpt-4o-mini", \
             f"Expected license_ocr primary=gpt-4o-mini, got {license_ocr_route.get('primary')}"
-        print(f"PASS: AI Gateway license_ocr uses gpt-4o-mini")
+        print("PASS: AI Gateway license_ocr uses gpt-4o-mini")
 
 
 # ============== MAIN ==============

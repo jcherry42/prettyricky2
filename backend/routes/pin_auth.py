@@ -18,11 +18,10 @@ Refresh-token security:
   - POST /auth/logout revokes the supplied refresh token immediately.
   - Refresh attempts with a revoked or replayed jti return 401.
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timedelta, timezone
-import os
 import uuid
 import secrets
 import logging
@@ -285,7 +284,7 @@ async def login(request: LoginRequest):
         if new_failed >= MAX_FAILED_ATTEMPTS:
             detail = f"Too many failed attempts. Locked for {LOCKOUT_SECONDS} seconds."
         elif remaining == 1:
-            detail = f"Invalid PIN. 1 attempt remaining before lockout."
+            detail = "Invalid PIN. 1 attempt remaining before lockout."
         elif remaining > 1:
             detail = f"Invalid PIN. {remaining} attempts remaining."
 

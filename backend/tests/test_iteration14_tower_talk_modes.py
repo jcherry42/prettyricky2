@@ -15,7 +15,7 @@ import time
 import pytest
 import requests
 
-BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL") or "https://vin-scanner-audit.preview.emergentagent.com"
+BASE_URL = os.environ.get("EXPO_PUBLIC_BACKEND_URL") or "https://apex-service-advisor.preview.emergentagent.com"
 BASE_URL = BASE_URL.rstrip("/")
 PIN = "11111"
 

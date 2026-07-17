@@ -22,7 +22,7 @@ import requests
 # Backend URL — mobile app uses EXPO_PUBLIC_BACKEND_URL; fall back to mobile env value.
 BASE_URL = os.environ.get(
     "REACT_APP_BACKEND_URL",
-    os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://vin-scanner-audit.preview.emergentagent.com"),
+    os.environ.get("EXPO_PUBLIC_BACKEND_URL", "https://apex-service-advisor.preview.emergentagent.com"),
 ).rstrip("/")
 
 TEST_PIN = "11111"

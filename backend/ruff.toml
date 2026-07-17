@@ -1,0 +1,4 @@
+[lint.per-file-ignores]
+# server.py wires routers/middleware after app + env bootstrap — late imports are structural.
+"server.py" = ["E402"]
+"routes/tower_talk_v2.py" = ["E402"]

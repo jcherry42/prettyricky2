@@ -1,0 +1,146 @@
+<analysis>**original_problem_statement:** The user is building a highly structured, strict-TypeScript native mobile application (React Native/Expo + FastAPI) for the automotive industry. Key product requirements include a dual-persona system (Sales Mode vs. Service Mode), offline-first architecture, high-accuracy scanners (VIN/DL), and an Apex Intelligence Framework acting as an AI brain to handle multilingual intent, state, and objections. PRODUCT REQUIREMENTS demand zero TS/ESLint warnings and regression-free precision.
+
+**User's preferred language**: English
+(INSTRUCT next agent to respond in English only)
+
+**what currently exists?** 
+A heavily optimized full-stack application featuring a React Native (Expo) frontend and FastAPI backend. The Apex Intelligence Framework has just been completely overhauled for Service Mode to function as a verified-fact-driven advisor workflow rather than a generic writing assistant. It now includes strict data gates (confirmed facts, repair stage, next action) and three distinct service response styles (Concise, Explain clearly, De-escalate). The codebase maintains strict TypeScript/ESLint rules (0 warnings) and utilizes EAS OTA updates, Sentry, and PostHog.
+
+**Last working item**:
+- Last item agent was working: Assisting the user with customer support escalation. The user was blocked by a recurring cant connect" connection error on the iOS build that they feel is severely impacting their productivity. The agent patched a `Sentry.wrap` initialization crash that was causing boot failures (`NativeSharedObjectNotFoundException`), but the user remained frustrated and explicitly requested customer support instead of further technical troubleshooting.
+- Status: BLOCKED
+- Agent Testing Done: N/A
+- Which testing method agent to use?: NA
+- User Testing Done: N
+
+**All Pending/In progress Issue list**:
+  Issue 1: Recurring Connection Error / iOS App Boot Failure ("cant connect) (P0)
+     - Attempted fixes: Agent fixed a bug where  was being called before  when the Sentry DSN was missing in dev mode, which triggered a native iOS crash (). Verified  and backend connectivity are functional via terminal.
+     - Next debug checklist: Await user feedback post-customer support intervention. If technical debugging resumes, check  for stale  URL overrides causing 404s, or investigate Expo Go / EAS caching anomalies.
+     - Why fix this issue and what will be achieved with the fix?: User is completely blocked and highly frustrated; resolving this restores their ability to test the app.
+     - Status: BLOCKED (User requested support intervention)
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix?: Frontend
+     - Blocked on other issue: User feedback/Support resolution.
+
+**In progress Task List**:
+ None. All active feature development was halted due to the user's connection issue blocker.
+
+**Upcoming and Future Tasks**:
+  - Upcoming Tasks:
+    - Add s to the Print Flow (P1) (Required for testing_agent e2e flow verification).
+    - Insert Privacy Policy URL and Terms of Service URL (P1) (Blocked on user input).
+    - Provide/Inject PostHog API Key and Sentry DSN into environment variables (P1) (Blocked on user input).
+    - Generate App Store Screenshots via Maestro test automation (P2).
+
+**Completed work in this session**:
+- **Service Mode Overhaul (Phase 1)**: Added repair-stage selection, urgency classification, objection categories, and 6 service quick actions into  natively. (DONE)
+- **Verified-Fact-Driven Advisor Workflow (Phase 2)**: Rebuilt Service Mode to act as an advisor tool instead of a writing assistant. Added 4 context field gates (Stage, Confirmed Facts, Concern, Next Action), unverified-fact blocking logic, and 3 response styles (Concise, Explain Clearly, De-escalate). Added the  UI component. (DONE)
+- **Sentry Boot Crash Fix**: Repaired  causing  on iOS when the Sentry SDK was uninitialized. (DONE)
+- Updated Backend Pytest suite (now passing 81/81 tests including verified-fact gates). (DONE)
+- Updated  with Iteration 26 and Iteration 27 changes. (DONE)
+
+**Earlier issues found/mentioned but not fixed**:
+   Issue 1: Print Flow Verification
+   - Debug checklist: Print buttons lack . Add them to allow the E2E print workflow tests to run.
+   - Why to solve this issue and what will be achieved with this?: A P0 App Store blocker on the user's pre-submission checklist.
+   - Should Test frontend/backend/both after fix: Frontend
+   - Is recurring issue? N
+
+**Known issue recurrence from previous fork**:
+  - Issue recurrence in previous fork: Stale JS bundle caching causing connection drops (404s) / Cant connect" connection error.
+  - Recurrence count: 4
+  - Status: BLOCKED (User requested support)
+
+**Code Architecture**:
+```
+/app
+├── backend/
+│   ├── routes/
+│   ├── services/
+│   │   ├── intelligence/       # Apex Framework (Heavily modified this session for Service Mode)
+│   ├── tests/                  # Pytest suite (81 tests)
+├── mobile/
+│   ├── src/
+│   │   ├── components/         # TowerTalkOverlay.tsx, IntelligenceInsight.tsx
+│   │   ├── lib/                # sentry.ts, api.ts, intelligence.ts
+│   │   ├── config/             # backend.ts, backendOverride.ts
+```
+
+**Key Technical Concepts**:
+React Native (Expo), iOS EAS builds, FastAPI, Maestro E2E testing, PostHog, Sentry Crash Reporting, Apex Intelligence Framework (strict JSON LLM prompting with deterministic fallback).
+
+**key DB schema**:
+  - `customers`: {preferred_language, ...}
+  - `vehicles`: {carfax_clean, ...}
+  - `revoked_families`: {TTL indexes for JWTs}
+
+**changes in tech stack**:
+  - None this session.
+
+**All files of reference**:
+  - `/app/backend/services/intelligence/schemas.py`, `prompts.py`, `pipeline.py` (Core logic for Service Mode verified-fact gates and response styles)
+  - `/app/mobile/src/components/TowerTalkOverlay.tsx` (Contains all the new Service Advisor inputs and pickers)
+  - `/app/mobile/src/components/IntelligenceInsight.tsx` (Contains the new `ServiceAdvisorCard`)
+  - `/app/mobile/src/lib/sentry.ts` (Sentry init crash fix location)
+  - `/app/memory/PRD.md` (Updated)
+
+**Areas that need refactoring**:
+  - The codebase is remarkably clean (0 TS warnings, 0 ESLint warnings). Ensure it stays this way. Do not introduce any sloppy typings or `any` declarations.
+
+**key api endpoints**:
+  - `POST /api/intelligence/analyze` (Extended with massive service mode payload changes)
+  - `GET /api/health` (Used by mobile app to check connection)
+
+**Critical Info for New Agent**:
+- **USER STATE ALERT**: The user ended the session extremely frustrated by iOS app connection/boot errors and explicitly requested customer support. **DO NOT begin coding or implementing new features right away.** When interacting with the user, validate their frustration, confirm if customer support was able to assist them, and ask how they would like to proceed.
+- If debugging the connection issue resumes, be aware that the frontend `.env` logic, `AsyncStorage` override logic (`getBackendUrlOverride`), and `Sentry` wrapper can all independently cause app crashes or 404s at boot.
+- Continue to adhere strictly to the "0 TS/ESLint warnings" rule.
+
+**documents and test reports created in this job**:
+  - `/app/memory/PRD.md`
+  - `/app/backend/tests/intelligence/test_service_overhaul.py`
+  - `/app/backend/tests/intelligence/test_verified_fact_gate.py`
+
+**Last 10 User Messages and any pending HUMAN messages**: 
+ - 1. **(PENDING)** "I need customer support you are inadequate" (User was handed over to support via support_agent).
+ - 2. "Credits Recharged. Please Continue."
+ - 3. "I need customer service this connection error is killing my productivity I have asked you several times to remedy this"
+ - 4. "now I need the errors resolved, still cant connect. this constant connection issue is tiresome... [Sentry.wrap / NativeSharedObjectNotFoundException error log]
+ - 5. The service side is built as a library of polished canned responses, it needs to function as a verified-fact-driven advisor workflow... Add four required context fields... Separate facts from interpretation... Change the output card... Add three service response styles... Add a verified-facts gate (Completed)
+ - 6. The service mode needs work. Implement these changes surgically with no regression... Add repair-stage selection, confirmed facts... (Completed)
+ - 7. Fully remove ambient lighting from the build with the same regression free precision (Completed)
+ - 8. I want the following things fully removed... A/B experimentation controls, raw analytics dashboards... (Completed)
+ - 9. Add the GitHub workflow (Completed)
+ - 10. We need a stable demo environment... Let’s start using EAS builds for testing (Completed)
+
+**Project Health Check:**
+- Broken: Mobile App Connectivity (Pending user feedback/support resolution)
+- Mocked: None
+
+**3rd Party Integrations**:
+- OpenAI GPT-4o / GPT-4o-mini (Emergent LLM Key)
+- TTS tts-1-hd (Emergent LLM Key)
+- PostHog (Requires User API Key)
+- Sentry (Requires User API Key)
+
+**Testing status**:
+- Testing agent used after significant changes: NO (Backend thoroughly tested via 81 Pytest cases).
+- Troubleshoot agent used after agent stuck in loop: NO (Support agent used instead).
+- Test files created: Yes (Pytest backend test additions).
+- Known regressions: iOS boot sequence / connection reliability.
+
+**Credentials to test flow:**
+Check . (PIN: 11111).
+
+**What agent forgot to execute**:
+Adding s to the print flow buttons (User pivoted to service mode overhaul and subsequently hit blocker).
+
+**Debugging checklist for current issue**
+    Issue: Recurring Connection Error / iOS Boot Failure
+    Frontend files to check: 
+    -  (Network stack logic)
+    -  (Check if a stale backend URL is cached in AsyncStorage causing a 404)
+    -  (Ensure no other native modules are crashing before the app renders)
+    Backend files to check:
+    - N/A - The backend is confirmed healthy and accessible via .</analysis>

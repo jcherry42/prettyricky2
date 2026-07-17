@@ -16,7 +16,7 @@ import requests
 from jose import jwt
 
 BASE_URL = os.environ.get(
-    "BACKEND_TEST_URL", "https://vin-scanner-audit.preview.emergentagent.com"
+    "BACKEND_TEST_URL", "https://apex-service-advisor.preview.emergentagent.com"
 ).rstrip("/")
 PIN = "11111"
 

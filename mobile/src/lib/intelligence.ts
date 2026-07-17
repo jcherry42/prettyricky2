@@ -316,65 +316,6 @@ export const SERVICE_STYLE_OPTIONS: Array<{ id: 'concise' | 'explainClearly' | '
 
 /** 6 service quick-action chips shown in Tower Talk when in Service Mode.
  *  Each chip templates a starter `situation` string that seeds analysis. */
-export interface ServiceQuickAction {
-  id:
-    | 'waiter_update'
-    | 'parts_eta'
-    | 'estimate_approval'
-    | 'loaner_request'
-    | 'comeback_ticket'
-    | 'pickup_notice';
-  label: string;
-  icon: string;
-  template: string;
-  suggestedStage: RepairStage;
-}
-
-export const SERVICE_QUICK_ACTIONS: ServiceQuickAction[] = [
-  {
-    id: 'waiter_update',
-    label: 'Waiter Update',
-    icon: 'time',
-    template: 'Guest is waiting in the lounge and asked for a status update.',
-    suggestedStage: 'in_repair',
-  },
-  {
-    id: 'parts_eta',
-    label: 'Parts ETA',
-    icon: 'cube',
-    template: 'Guest is asking when the parts will arrive for their repair.',
-    suggestedStage: 'in_repair',
-  },
-  {
-    id: 'estimate_approval',
-    label: 'Estimate Approval',
-    icon: 'checkmark-done',
-    template: 'Guest needs to approve the recommended repair estimate.',
-    suggestedStage: 'estimate_approval',
-  },
-  {
-    id: 'loaner_request',
-    label: 'Loaner Request',
-    icon: 'car-sport',
-    template: 'Guest is asking about loaner availability while their vehicle is here.',
-    suggestedStage: 'diagnosis',
-  },
-  {
-    id: 'comeback_ticket',
-    label: 'Comeback Ticket',
-    icon: 'refresh-circle',
-    template: 'Guest returned with the same concern from a previous visit.',
-    suggestedStage: 'diagnosis',
-  },
-  {
-    id: 'pickup_notice',
-    label: 'Pickup Notice',
-    icon: 'flag',
-    template: 'Vehicle is ready — need to notify the guest for pickup and payment.',
-    suggestedStage: 'ready_for_pickup',
-  },
-];
-
 export const SENTIMENT_COLOR: Record<AnalyzeOutput['customerSentiment']['label'], string> = {
   positive: '#00E676',
   neutral: '#B0BEC5',

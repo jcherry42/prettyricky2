@@ -11,17 +11,3 @@ const scaleFactor = Math.min(width / BASE_WIDTH, height / BASE_HEIGHT);
 export function scaleSize(size: number): number {
   return Math.round(PixelRatio.roundToNearestPixel(size * scaleFactor));
 }
-
-export function scaleFont(size: number): number {
-  // Slightly dampen font scaling so text doesn't explode on tablets
-  const fontScale = 0.85 + scaleFactor * 0.15;
-  return Math.round(PixelRatio.roundToNearestPixel(size * fontScale));
-}
-
-export function getLayoutMetrics() {
-  return {
-    width,
-    height,
-    scaleFactor,
-  };
-}

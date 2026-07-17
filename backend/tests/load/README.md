@@ -11,7 +11,7 @@ pip install locust
 ## Run
 
 ```bash
-export API=https://vin-scanner-audit.preview.emergentagent.com
+export API=https://apex-service-advisor.preview.emergentagent.com
 export TEST_PIN=11111
 
 # Headless — quick sanity check

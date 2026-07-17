@@ -15,7 +15,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vin-scanner-audit.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://apex-service-advisor.preview.emergentagent.com').rstrip('/')
 
 # Test PIN for login
 TEST_PIN = "11111"
@@ -37,7 +37,7 @@ class TestPublicEndpoints:
         response = requests.get(f"{BASE_URL}/api/ready")
         assert response.status_code == 200, f"Ready endpoint should be public: {response.text}"
         data = response.json()
-        assert data["ready"] == True
+        assert data["ready"] is True
     
     def test_root_endpoint_public(self):
         """GET /api/ should be public"""
@@ -145,7 +145,7 @@ class TestAuthFlow:
         response = requests.post(f"{BASE_URL}/api/auth/login", json={"pin": TEST_PIN})
         assert response.status_code == 200, f"Login failed: {response.text}"
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "access_token" in data
         assert "refresh_token" in data
         assert data["token_type"] == "bearer"
@@ -167,7 +167,7 @@ class TestAuthFlow:
         response = requests.post(f"{BASE_URL}/api/auth/refresh", json={"refresh_token": refresh_token})
         assert response.status_code == 200, f"Refresh failed: {response.text}"
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "access_token" in data
         assert data["token_type"] == "bearer"
     
@@ -184,7 +184,7 @@ class TestAuthFlow:
         )
         assert response.status_code == 200, f"Verify failed: {response.text}"
         data = response.json()
-        assert data["valid"] == True
+        assert data["valid"] is True
         assert "user_id" in data
 
 

@@ -1,0 +1,25 @@
+{
+  "summary": "Iteration 22 post-cleanup regression — 23/23 tests PASS. Verified zero breakage after deletion of 7 backward-compat shim modules (ai_gateway, audio_pipeline, conversation_history, sales_knowledge_base, telemetry_service, vector_search, vision_extraction_service) and rewiring of all importers to services.*. All endpoint groups exercised: auth (login/refresh-rotation/logout), health/ready, customers CRUD + /stats (previously 500 bug — now returns {total, byStatus, ...}), AI (translate, tower-talk, tts, /ai/stats with model_routes/cache/circuit_breakers), intelligence pipeline (sales AND service mode with repairStage+verifiedFactGates), knowledge base search, VIN decode + inventory + trade-in-count, license scan-direct (uses services.vision_extraction_service), dashboard stats (customers/vehicles/intelligence_24h), telemetry track+summary, and voice-translate 422 validation. Ruff check clean.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iteration22_regression.py",
+    "/app/test_reports/pytest/iteration22.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Rewiring is clean — no dangling imports found; ruff check backend/ passes with zero warnings.",
+    "GET /api/customers/stats bug fix verified — get_status_counts(source_id: Optional[str]=None) now callable both with and without source_id from routes/customers_v2.py L137.",
+    "Note: /api/knowledge/search is POST (body: {query, top_k}), not GET — endpoint spec in review request had wrong verb. Not a bug, just doc mismatch.",
+    "Note: /api/vin/decode is GET /api/vin/decode/{vin}, not POST — endpoint spec in review request had wrong verb. Not a bug.",
+    "Pre-existing hardening gaps from iter21 (Literal enums on preferred_language, EmailStr on legacy /customers, /ready DB-honest 503, rate limiting on LLM endpoints, translate whitelist, logout idempotency) are UNCHANGED and out of scope for this cleanup-verification pass."
+  ],
+  "updated_files": ["/app/backend/tests/test_iteration22_regression.py (new)"],
+  "success_rate": {"backend": "100% (23/23)", "frontend": "N/A (native mobile — no web UI)"},
+  "test_credentials": "PIN=11111",
+  "seed_data_creation": "One TEST_iter22 customer created + fully cleaned up via DELETE within TestCustomers class. Telemetry event with sess-iter22-* session_id (90-day TTL, auto-cleans).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "test_iteration22_regression.py is a stateless, fast (~25s) end-to-end smoke suite covering every route group touched by the services.* rewiring — keep in regression. Correct payload shapes to remember: POST /api/customers/create needs {first_name, last_name, phone, lead_status in [new|contacted|appointment|sold|service|lost]}. POST /api/tower-talk needs {situation, context:{}, mode, inquiryType}. POST /api/intelligence/analyze needs {input:{mode, channel, customerMessage, ...}}. GET (not POST) /api/vin/decode/{vin}. POST (not GET) /api/knowledge/search with body {query, top_k}. Single-login discipline enforced to avoid brute-force lockout.",
+  "rca of the issue": "N/A — no bugs found. The major cleanup (7 shim deletions + import rewire) is verified surgically clean at the API surface."
+}

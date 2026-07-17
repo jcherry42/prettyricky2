@@ -51,13 +51,6 @@ export async function getQueue(): Promise<QueueItem[]> {
 }
 
 /**
- * Clear queue
- */
-export async function clearQueue(): Promise<void> {
-  await saveJson(QUEUE_KEY, []);
-}
-
-/**
  * Process offline queue
  */
 export async function syncQueue(onProgress?: (_current: number, _total: number) => void) {
@@ -107,13 +100,4 @@ export async function syncQueue(onProgress?: (_current: number, _total: number) 
   } finally {
     syncInProgress = false;
   }
-}
-
-/**
- * Remove item from queue
- */
-export async function removeFromQueue(itemId: string): Promise<void> {
-  const queue = await loadJson<QueueItem[]>(QUEUE_KEY, []);
-  const filtered = queue.filter((item: QueueItem) => item.id !== itemId);
-  await saveJson(QUEUE_KEY, filtered);
 }

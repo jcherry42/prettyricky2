@@ -25,7 +25,7 @@ import requests
 
 BASE_URL = os.environ.get(
     "BACKEND_TEST_URL",
-    "https://vin-scanner-audit.preview.emergentagent.com",
+    "https://apex-service-advisor.preview.emergentagent.com",
 ).rstrip("/")
 PIN = "11111"
 

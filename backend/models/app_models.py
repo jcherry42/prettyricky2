@@ -4,7 +4,7 @@ Supports full CRM functionality with interaction tracking
 """
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from typing import List, Literal, Optional, Dict, Any
+from typing import List, Literal, Optional
 from datetime import datetime
 from enum import Enum
 

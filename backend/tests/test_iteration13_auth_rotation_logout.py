@@ -15,7 +15,7 @@ BASE_URL = os.environ.get(
     "REACT_APP_BACKEND_URL",
     os.environ.get(
         "EXPO_PUBLIC_BACKEND_URL",
-        "https://vin-scanner-audit.preview.emergentagent.com",
+        "https://apex-service-advisor.preview.emergentagent.com",
     ),
 ).rstrip("/")
 

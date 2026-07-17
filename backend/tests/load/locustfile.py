@@ -10,7 +10,7 @@ Targets the four most-hit endpoints in production traffic:
   4. POST /api/translate                — LLM translation (rate-limited 40/min/user)
 
 Usage:
-    export API=https://vin-scanner-audit.preview.emergentagent.com
+    export API=https://apex-service-advisor.preview.emergentagent.com
     export TEST_PIN=11111
     locust -f backend/tests/load/locustfile.py \\
            --host $API \\

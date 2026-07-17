@@ -28,7 +28,7 @@ import time
 import os
 
 # Base URL from environment or default
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vin-scanner-audit.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://apex-service-advisor.preview.emergentagent.com').rstrip('/')
 
 # Test PIN
 TEST_PIN = "11111"
@@ -43,39 +43,39 @@ class TestPublicEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
-        print(f"PASS: /api/health returns 200 with status=healthy")
+        print("PASS: /api/health returns 200 with status=healthy")
 
     def test_ready_endpoint(self):
         """GET /api/ready - public, should return 200"""
         response = requests.get(f"{BASE_URL}/api/ready")
         assert response.status_code == 200
         data = response.json()
-        assert data["ready"] == True
-        print(f"PASS: /api/ready returns 200 with ready=True")
+        assert data["ready"] is True
+        print("PASS: /api/ready returns 200 with ready=True")
 
     def test_auth_status_endpoint(self):
         """GET /api/auth/status - public, should return 200"""
         response = requests.get(f"{BASE_URL}/api/auth/status")
         assert response.status_code == 200
-        print(f"PASS: /api/auth/status returns 200")
+        print("PASS: /api/auth/status returns 200")
 
     def test_diagnostics_endpoint(self):
         """GET /api/diagnostics - public, should return 200"""
         response = requests.get(f"{BASE_URL}/api/diagnostics")
         assert response.status_code == 200
-        print(f"PASS: /api/diagnostics returns 200")
+        print("PASS: /api/diagnostics returns 200")
 
     def test_metrics_endpoint(self):
         """GET /api/metrics - public, should return 200"""
         response = requests.get(f"{BASE_URL}/api/metrics")
         assert response.status_code == 200
-        print(f"PASS: /api/metrics returns 200")
+        print("PASS: /api/metrics returns 200")
 
     def test_ai_stats_endpoint(self):
         """GET /api/ai/stats - public, should return 200"""
         response = requests.get(f"{BASE_URL}/api/ai/stats")
         assert response.status_code == 200
-        print(f"PASS: /api/ai/stats returns 200")
+        print("PASS: /api/ai/stats returns 200")
 
 
 class TestProtectedEndpointsNoAuth:
@@ -85,19 +85,19 @@ class TestProtectedEndpointsNoAuth:
         """GET /api/customers - protected, should return 401 without auth"""
         response = requests.get(f"{BASE_URL}/api/customers")
         assert response.status_code == 401
-        print(f"PASS: /api/customers returns 401 without auth")
+        print("PASS: /api/customers returns 401 without auth")
 
     def test_vehicles_requires_auth(self):
         """GET /api/vehicles - protected, should return 401 without auth"""
         response = requests.get(f"{BASE_URL}/api/vehicles")
         assert response.status_code == 401
-        print(f"PASS: /api/vehicles returns 401 without auth")
+        print("PASS: /api/vehicles returns 401 without auth")
 
     def test_anomalies_summary_requires_auth(self):
         """GET /api/anomalies/summary - protected, should return 401 without auth"""
         response = requests.get(f"{BASE_URL}/api/anomalies/summary")
         assert response.status_code == 401
-        print(f"PASS: /api/anomalies/summary returns 401 without auth")
+        print("PASS: /api/anomalies/summary returns 401 without auth")
 
 
 class TestAuthFlow:
@@ -115,9 +115,9 @@ class TestAuthFlow:
         # Setup PIN
         setup_response = requests.post(f"{BASE_URL}/api/auth/setup-pin", json={"pin": TEST_PIN})
         if setup_response.status_code in [200, 201]:
-            print(f"PIN setup successful")
+            print("PIN setup successful")
         elif setup_response.status_code == 409:
-            print(f"PIN already set, continuing with existing PIN")
+            print("PIN already set, continuing with existing PIN")
 
         yield
 
@@ -128,13 +128,13 @@ class TestAuthFlow:
         data = response.json()
         assert "access_token" in data
         assert "refresh_token" in data
-        print(f"PASS: Login with valid PIN returns access_token and refresh_token")
+        print("PASS: Login with valid PIN returns access_token and refresh_token")
 
     def test_login_with_invalid_pin(self):
         """POST /api/auth/login - login with invalid PIN returns 401"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={"pin": "99999"})
         assert response.status_code == 401
-        print(f"PASS: Login with invalid PIN returns 401")
+        print("PASS: Login with invalid PIN returns 401")
 
 
 class TestTokenRefresh:
@@ -158,7 +158,7 @@ class TestTokenRefresh:
         assert refresh_response.status_code == 200
         data = refresh_response.json()
         assert "access_token" in data
-        print(f"PASS: Token refresh returns new access_token")
+        print("PASS: Token refresh returns new access_token")
 
 
 class TestVINDecodePerformance:
@@ -291,7 +291,7 @@ class TestAIGatewayModelRouting:
 
         assert license_ocr_route.get("primary") == "gpt-4o-mini", \
             f"Expected license_ocr primary to be gpt-4o-mini, got {license_ocr_route.get('primary')}"
-        print(f"PASS: license_ocr uses gpt-4o-mini as primary model")
+        print("PASS: license_ocr uses gpt-4o-mini as primary model")
 
     def test_translate_uses_gpt4o_mini(self):
         """AI Gateway: translate should use gpt-4o-mini as primary model"""
@@ -304,7 +304,7 @@ class TestAIGatewayModelRouting:
 
         assert translate_route.get("primary") == "gpt-4o-mini", \
             f"Expected translate primary to be gpt-4o-mini, got {translate_route.get('primary')}"
-        print(f"PASS: translate uses gpt-4o-mini as primary model")
+        print("PASS: translate uses gpt-4o-mini as primary model")
 
 
 class TestTranslationCacheVerification:
@@ -317,7 +317,7 @@ class TestTranslationCacheVerification:
         data = response.json()
         # Check that database metrics are available
         assert "database" in data
-        print(f"PASS: Metrics endpoint returns database info")
+        print("PASS: Metrics endpoint returns database info")
 
 
 class TestCustomerCRUDWithAuth:
@@ -336,7 +336,7 @@ class TestCustomerCRUDWithAuth:
         """GET /api/customers - list customers with auth"""
         response = requests.get(f"{BASE_URL}/api/customers", headers=auth_headers)
         assert response.status_code == 200
-        print(f"PASS: List customers with auth returns 200")
+        print("PASS: List customers with auth returns 200")
 
     def test_create_customer(self, auth_headers):
         """POST /api/customers/create - create customer with auth"""
@@ -380,7 +380,7 @@ class TestCustomerCRUDWithAuth:
             headers=auth_headers
         )
         assert get_response.status_code == 200
-        print(f"PASS: Get customer by ID with auth returns 200")
+        print("PASS: Get customer by ID with auth returns 200")
 
 
 class TestVINBatchDecode:
@@ -406,7 +406,7 @@ class TestVINBatchDecode:
         assert response.status_code == 200
         data = response.json()
         assert "results" in data or isinstance(data, list)
-        print(f"PASS: VIN batch decode with auth returns 200")
+        print("PASS: VIN batch decode with auth returns 200")
 
 
 # Run tests with pytest

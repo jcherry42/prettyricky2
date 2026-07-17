@@ -15,8 +15,6 @@ from services.intelligence.schemas import (
     OBJECTION_CATEGORIES,
     RESPONSE_STRATEGIES,
     SALES_INTENTS,
-    SALES_STAGES,
-    SERVICE_INTENTS,
     SERVICE_STAGES,
 )
 from services.intelligence.pipeline import (

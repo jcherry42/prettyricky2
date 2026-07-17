@@ -193,7 +193,7 @@ async def text_to_speech(request: TTSRequest):
             logger.info(f"TTS cache hit: {len(text)} chars, voice={voice}")
             return TTSResponse(audio_base64=cached_audio, format="mp3", voice_used=voice, cached=True)
 
-        from ai_gateway import gateway as ai_gateway
+        from services.ai_gateway import gateway as ai_gateway
 
         start_time = datetime.now(timezone.utc)
         audio_base64 = await ai_gateway.tts(
@@ -253,7 +253,7 @@ async def voice_translate(
         # Skip expensive FFT denoising for short clips — mobile mics are good enough
         if len(audio_data) > _PREPROCESS_THRESHOLD:
             try:
-                from audio_pipeline import preprocess_audio
+                from services.audio_pipeline import preprocess_audio
                 processed_audio, processed_ext, stats = preprocess_audio(
                     audio_data, file_ext, enable_denoise=True
                 )
@@ -285,7 +285,7 @@ async def voice_translate(
         # === WHISPER STT (with automotive prompt biasing) ===
         t_stt = time.monotonic()
         try:
-            from audio_pipeline import AUTOMOTIVE_WHISPER_PROMPT
+            from services.audio_pipeline import AUTOMOTIVE_WHISPER_PROMPT
             response = await stt.transcribe(
                 file=audio_file, model="whisper-1",
                 language=whisper_lang, response_format="json",
@@ -347,7 +347,7 @@ async def voice_translate(
             f"Preserve car terminology. Output ONLY the translation, nothing else."
         )
 
-        from ai_gateway import gateway as ai_gateway
+        from services.ai_gateway import gateway as ai_gateway
 
         t_translate = time.monotonic()
         translated_text = (await ai_gateway.chat(

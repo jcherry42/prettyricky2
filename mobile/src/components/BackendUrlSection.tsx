@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://vin-scanner-audit.preview.emergentagent.com',
+        'Backend URL must start with https://apex-service-advisor.preview.emergentagent.com',
       );
       return;
     }

@@ -3,7 +3,7 @@ Closr API Server - FEDERAL-GRADE SECURITY
 Sales automation tool with CRM-agnostic data integration
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Request
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 from dotenv import load_dotenv
@@ -14,13 +14,12 @@ import os
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any
 from datetime import datetime, timezone
 
 # Response models for contract stability
 from models.responses import (
     HealthResponse, ReadyResponse, RootResponse,
-    MetricsResponse, ProcessMetrics, DatabaseMetrics,
+    MetricsResponse,
 )
 
 # FEDERAL SECURITY IMPORTS
@@ -32,10 +31,9 @@ from fastapi import Depends
 from middleware.auth_deps import require_auth, init_auth_deps
 
 # LLM Integration
-from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 from repositories import CustomerRepository, VehicleRepository
-from ai_gateway import gateway as ai_gateway
+from services.ai_gateway import gateway as ai_gateway
 
 
 ROOT_DIR = Path(__file__).parent
@@ -259,7 +257,7 @@ async def lifespan(app: FastAPI):
     logger.info("All indexes created (parallel)")
 
     # ── Phase 2: Services ──
-    from conversation_history import ConversationHistoryService
+    from services.conversation_history import ConversationHistoryService
     _conv_svc = ConversationHistoryService(db)
     await _conv_svc.initialize()
     app.state.conversation_service = _conv_svc
@@ -268,8 +266,8 @@ async def lifespan(app: FastAPI):
     ai_gateway.init(db=db)
 
     # Initialize Vector Search + Sales Knowledge Base
-    from vector_search import VectorSearchService
-    from sales_knowledge_base import seed_knowledge_base
+    from services.vector_search import VectorSearchService
+    from services.sales_knowledge_base import seed_knowledge_base
     vector_svc = VectorSearchService(db)
     await vector_svc.ensure_indexes()
     app.state.vector_search = vector_svc
@@ -284,7 +282,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(_seed_kb())
 
     # Initialize Telemetry Service
-    from telemetry_service import TelemetryService
+    from services.telemetry_service import TelemetryService
     telemetry_svc = TelemetryService(db)
     await telemetry_svc.ensure_indexes()
     telemetry_svc._init_posthog()
@@ -552,7 +550,7 @@ async def add_security_headers(request: Request, call_next):
 # 3. SECURE CORS - Whitelist only trusted domains
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://vin-scanner-audit.preview.emergentagent.com",
+    "https://apex-service-advisor.preview.emergentagent.com",
     os.environ.get('FRONTEND_URL', '')
 ]
 # Filter out empty strings

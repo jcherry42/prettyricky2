@@ -9,18 +9,6 @@ import { errorMessage } from './errors';
 import { Alert, Linking, Platform } from 'react-native';
 
 /**
- * Check if SMS is available on the device.
- * @returns {Promise<boolean>}
- */
-export async function isSmsAvailable() {
-  try {
-    return await SMS.isAvailableAsync();
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Open native SMS composer with pre-filled message.
  * Uses expo-sms which opens iMessage on iOS or the default SMS app on Android.
  *

@@ -16,7 +16,7 @@ import time
 import uuid
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter
 

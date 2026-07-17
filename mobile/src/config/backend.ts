@@ -10,7 +10,7 @@ import { getBackendUrlOverride } from './backendOverride';
  *
  * Updated on each deployment. EXPO_PUBLIC_BACKEND_URL in .env takes priority.
  */
-const FALLBACK_BACKEND_URL = 'https://vin-scanner-audit.preview.emergentagent.com';
+const FALLBACK_BACKEND_URL = 'https://apex-service-advisor.preview.emergentagent.com';
 
 /**
  * Sanitize a backend base URL.
@@ -65,13 +65,6 @@ export async function getBackendUrlAsync() {
 
 export async function buildApiUrlAsync(path: string): Promise<string> {
   const base = await getBackendUrlAsync();
-  if (!base) return '';
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${base}${cleanPath}`;
-}
-
-export function buildApiUrl(path: string): string {
-  const base = getBackendUrl();
   if (!base) return '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${cleanPath}`;

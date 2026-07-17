@@ -11,7 +11,6 @@ Analyzes VIN scan data for suspicious patterns:
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
-from collections import Counter
 
 logger = logging.getLogger("anomaly_detection")
 

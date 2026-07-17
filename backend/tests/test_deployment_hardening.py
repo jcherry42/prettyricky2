@@ -100,13 +100,10 @@ class TestORJSONSerialization:
             assert "application/json" in r.headers.get("content-type", "")
 
     @pytest.mark.asyncio
-    async def test_customers_with_orjson(self):
+    async def test_customers_requires_auth(self):
         async with httpx.AsyncClient() as client:
             r = await client.get(f"{BASE}/api/customers?limit=2")
-            assert r.status_code == 200
-            data = r.json()
-            assert "customers" in data
-            assert "count" in data
+            assert r.status_code == 401
 
 
 class TestExistingEndpointRegression:
@@ -119,19 +116,16 @@ class TestExistingEndpointRegression:
             assert r.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_vin_trade_in_count(self):
+    async def test_vin_trade_in_count_requires_auth(self):
         async with httpx.AsyncClient() as client:
             r = await client.get(f"{BASE}/api/vin/trade-in-count")
-            assert r.status_code == 200
-            data = r.json()
-            assert "count" in data
-            assert "cap" in data
+            assert r.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_customers_stats(self):
+    async def test_customers_stats_requires_auth(self):
         async with httpx.AsyncClient() as client:
             r = await client.get(f"{BASE}/api/customers/stats")
-            assert r.status_code == 200
+            assert r.status_code == 401
 
     @pytest.mark.asyncio
     async def test_ai_gateway_stats(self):

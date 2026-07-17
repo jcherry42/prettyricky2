@@ -5,11 +5,10 @@ Covers:
 - Backward compat for /api/tower-talk & /api/translate with/without performanceMode
 - Regression: auth login/refresh/logout, health/ready
 """
-import os
 import pytest
 import requests
 
-BASE_URL = "https://vin-scanner-audit.preview.emergentagent.com"
+BASE_URL = "https://apex-service-advisor.preview.emergentagent.com"
 PIN = "11111"
 TIMEOUT = 30
 

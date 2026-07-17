@@ -8,10 +8,10 @@ import os
 import base64
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from dotenv import load_dotenv
 
-from ai_gateway import gateway as ai_gateway
+from services.ai_gateway import gateway as ai_gateway
 
 load_dotenv()
 

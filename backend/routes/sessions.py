@@ -77,7 +77,6 @@ async def save_session(body: SessionSaveRequest, authorization: str = ""):
         raise HTTPException(status_code=503, detail="Session service not initialized")
 
     # Extract user_id from auth (injected by require_auth dependency)
-    from middleware.auth_deps import require_auth
     # User ID comes from the route-level dependency — we get it from the header
     user_id = _extract_user_id(authorization)
     if not user_id:

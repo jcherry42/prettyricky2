@@ -13,7 +13,7 @@ To enforce auth on an entire router when including it:
   api_router.include_router(some_router, dependencies=[Depends(require_auth)])
 """
 import logging
-from fastapi import Depends, HTTPException, Header, Request
+from fastapi import HTTPException, Header, Request
 from typing import Optional
 
 from security.auth import verify_token

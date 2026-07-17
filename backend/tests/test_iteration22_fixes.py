@@ -13,7 +13,6 @@ NOTE: LLM rate-limit tests are placed LAST (they exhaust the endpoint budget).
 from __future__ import annotations
 
 import os
-import time
 import uuid
 import pytest
 import requests

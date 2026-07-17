@@ -4,9 +4,9 @@ Handles all driver's license image upload, OCR, customer creation,
 and chunked upload endpoints.
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, timezone, timedelta

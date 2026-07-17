@@ -3,7 +3,7 @@ Repository Base Class
 Provides common database operations
 """
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Dict, Any, Optional, TypeVar, Generic
 from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from bson import ObjectId

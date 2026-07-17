@@ -23,10 +23,8 @@ from fastapi import Request as FastAPIRequest
 
 from security.llm_rate_limit import enforce as enforce_llm_rate
 from datetime import datetime, timezone
-import os
-import uuid
 
-from ai_gateway import gateway as ai_gateway
+from services.ai_gateway import gateway as ai_gateway
 
 router = APIRouter()
 
@@ -170,11 +168,7 @@ async def tower_talk(request: TowerTalkRequest, http_request: FastAPIRequest):
         knowledge_context = ""
         similar_responses_context = ""
         try:
-            from fastapi import Request as _Req
-            from starlette.requests import Request as _StReq
             # Access vector search from app state via module-level ref
-            import importlib
-            import sys
             # Try to get vector search service
             if hasattr(router, '_app_state_vector_search'):
                 vs = router._app_state_vector_search

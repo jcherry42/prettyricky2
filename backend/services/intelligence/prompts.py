@@ -7,7 +7,6 @@ Contract:
   - Prompts DO NOT allow the AI to modify itself — production prompts are
     read-only at runtime.
 """
-from typing import Any
 from services.intelligence.schemas import AutomotiveInteractionInput
 
 

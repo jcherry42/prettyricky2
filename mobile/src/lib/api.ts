@@ -18,28 +18,6 @@ export function invalidateUrlCache() {
   _urlCache = null;
 }
 
-/**
- * Health check — pings /api/health to verify backend connectivity.
- */
-export async function healthCheck() {
-  const start = Date.now();
-  try {
-    const url = await getBaseUrl('/api/health');
-    if (!url) return { ok: false, url: '', error: 'No backend URL configured' };
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(url, { method: 'GET', signal: controller.signal });
-    clearTimeout(timer);
-    const latencyMs = Date.now() - start;
-    if (res.ok) {
-      return { ok: true, url, latencyMs };
-    }
-    return { ok: false, url, error: `HTTP ${res.status}`, latencyMs };
-  } catch (e: unknown) {
-    return { ok: false, url: _urlCache || '', error: e instanceof Error ? e.message : String(e), latencyMs: Date.now() - start };
-  }
-}
-
 async function getBaseUrl(path: string): Promise<string | null> {
   if (_urlCache) {
     const base = _urlCache.replace(/\/$/, '');

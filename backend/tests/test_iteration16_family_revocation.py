@@ -16,7 +16,7 @@ import pytest
 import requests
 from jose import jwt
 
-BASE_URL = os.environ.get("BACKEND_TEST_URL", "https://vin-scanner-audit.preview.emergentagent.com")
+BASE_URL = os.environ.get("BACKEND_TEST_URL", "https://apex-service-advisor.preview.emergentagent.com")
 PIN = os.environ.get("TEST_PIN", "11111")
 
 # We don't verify signatures — we just want to inspect the claims.

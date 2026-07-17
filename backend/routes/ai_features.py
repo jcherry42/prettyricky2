@@ -52,7 +52,7 @@ class ConversationCreateRequest(BaseModel):
 # --- Helper to get services ---
 
 def _get_conv_service(request: Request = None):
-    from conversation_history import ConversationHistoryService
+    from services.conversation_history import ConversationHistoryService
     if request:
         svc = getattr(request.app.state, 'conversation_service', None)
         if svc:
@@ -82,7 +82,7 @@ async def extract_vin_from_image(req: VinOcrRequest):
         # Resize for optimal OCR performance
         b64_clean = resize_base64_for_ocr(b64_clean)
 
-        from ai_gateway import gateway as ai_gateway
+        from services.ai_gateway import gateway as ai_gateway
 
         system_prompt = (
             "You are a precision VIN reader for automotive dealerships. "
@@ -144,7 +144,7 @@ async def extract_vin_from_image(req: VinOcrRequest):
 async def extract_customer_from_image(req: VisionExtractionRequest):
     """Extract customer data from image using GPT Vision."""
     try:
-        from vision_extraction_service import get_vision_service
+        from services.vision_extraction_service import get_vision_service
         vision_service = get_vision_service()
 
         if not vision_service.validate_image_format(req.image_base64):
@@ -170,13 +170,13 @@ async def extract_customer_from_image(req: VisionExtractionRequest):
 
 @router.get("/conversations/categories")
 async def get_conversation_categories():
-    from conversation_history import ConversationHistoryService
+    from services.conversation_history import ConversationHistoryService
     return {"categories": ConversationHistoryService.get_categories()}
 
 
 @router.post("/conversations")
 async def create_conversation(request: ConversationCreateRequest, req: Request = None):
-    from conversation_history import ConversationCreate
+    from services.conversation_history import ConversationCreate
     service = _get_conv_service(req)
     data = ConversationCreate(**request.model_dump())
     result = await service.create_conversation(data)

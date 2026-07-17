@@ -30,7 +30,7 @@ async def knowledge_search(request: Request, body: dict):
 @router.post("/knowledge/seed")
 async def knowledge_seed(request: Request):
     """Re-seed the sales knowledge base (idempotent)."""
-    from sales_knowledge_base import seed_knowledge_base
+    from services.sales_knowledge_base import seed_knowledge_base
     vs = request.app.state.vector_search
     count = await seed_knowledge_base(vs)
     return {"seeded": count}
