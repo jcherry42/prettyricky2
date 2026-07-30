@@ -844,3 +844,40 @@ rewiring. New stateless smoke suite kept at
 ### P2 (Medium) — remaining after iter28
 - App Store screenshots via Maestro automation.
 - First-launch onboarding walkthrough.
+
+### Jun 2026 iter29 — TRUE Root Cause of Recurring Boot Crash: SDK Version Mismatches
+
+**The `NativeSharedObjectNotFoundException` crash was NEVER Sentry logic** — the
+stack trace (`ExpoModulesCore/SyncFunctionDefinition.swift`) is Expo's native
+module system, which @sentry/react-native doesn't use. `npx expo install --check`
+exposed the real cause: **native packages from the wrong SDK generation**:
+- `@sentry/react-native@8.18.0` → SDK 54 expects **~7.2.0** (major ahead)
+- `expo-secure-store@55.0.8` → expects **~15.0.8** (an SDK-55 package! Runs at
+  boot in AuthContext → instant crash in Expo Go's SDK-54 native runtime)
+- `expo-blur@55.0.8` → expects **~15.0.8**
+- Plus expo, expo-font, expo-image-picker, expo-screen-orientation,
+  expo-build-properties, react-native-safe-area-context, @types/react, jest,
+  jest-expo all drifted.
+
+**Fixes applied**:
+1. `npx expo install --fix` — all native modules aligned to SDK 54 versions
+   (Sentry downgraded 8.18→7.2; sentry.ts API verified compatible, 0 TS errors).
+2. `expo-asset` installed (required peer of expo-audio — "may crash outside
+   Expo Go" without it).
+3. Removed invalid `@types/react-native` direct dependency.
+4. Fixed invalid app.json schema: `ios.privacyManifests.NSPrivacyManifestFile`
+   is not a valid property — the manifest content (9 collected data types +
+   4 accessed API types) is now embedded directly in
+   `app.json → ios.privacyManifests` (Expo generates PrivacyInfo.xcprivacy at
+   prebuild). Deleted the redundant assets/PrivacyInfo.xcprivacy.
+5. expo-doctor exclusions for @react-native-ml-kit/text-recognition +
+   @jamsch/expo-speech-recognition (intentional deps, metadata-only warnings).
+
+**Verification**: `npx expo install --check` = up to date ·
+`npx expo-doctor` = **18/18 checks passed** · tsc 0 errors · eslint 0 warnings ·
+`expo export` resolves all 1,818 modules (hermesc binary can't exec in this
+container — environment-only, not a code issue).
+
+**USER ACTION REQUIRED**: pull latest code onto the dev machine, run
+`yarn install`, then `npx expo start -c` (clear cache) before opening Expo Go.
+If using an EAS dev/preview build, a NEW build is required (native deps changed).
