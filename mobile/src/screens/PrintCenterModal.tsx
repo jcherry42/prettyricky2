@@ -62,11 +62,14 @@ interface Props {
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
-function ActionButton({ label, icon, onPress, disabled, loading }: {
-  label: string; icon: string; onPress: () => void; disabled?: boolean; loading?: boolean;
+function ActionButton({ label, icon, onPress, disabled, loading, testID }: {
+  label: string; icon: string; onPress: () => void; disabled?: boolean; loading?: boolean; testID?: string;
 }) {
   return (
     <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [styles.btn, (disabled || loading || pressed) && styles.btnDim]}
@@ -91,6 +94,7 @@ const CustomerItem = memo(function CustomerItem({ item, selected, onPress }: { i
   const name = `${first} ${last}`.trim() || item.name || 'Unknown';
   return (
     <Pressable
+      testID={`print-customer-item-${(item.id || item.customer_id) as string}`}
       onPress={() => onPress((item.id || item.customer_id) as string)}
       style={[styles.listItem, selected && styles.listItemSelected]}
     >
@@ -108,6 +112,7 @@ const VehicleItem = memo(function VehicleItem({ item, selected, onPress }: { ite
   const label = [item.year, item.make, item.model, item.trim].filter(Boolean).join(' ') || item.vin;
   return (
     <Pressable
+      testID={`print-vehicle-item-${item.vin || item.id}`}
       onPress={() => onPress(item)}
       style={[styles.listItem, selected && styles.listItemSelected]}
     >
@@ -271,6 +276,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         }
       />
       <ActionButton
+        testID="print-customer-btn"
         label={hasPrinter ? 'Print Customer Profile' : 'Generate PDF'}
         icon="print"
         onPress={handlePrintCustomer}
@@ -289,6 +295,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
             <Text style={styles.licensePreviewText}>License scan ready to print</Text>
           </View>
           <ActionButton
+            testID="print-license-btn"
             label={hasPrinter ? 'Print License Scan' : 'Generate PDF'}
             icon="print"
             onPress={handlePrintLicense}
@@ -329,6 +336,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
         }
       />
       <ActionButton
+        testID="print-vehicle-btn"
         label={hasPrinter ? 'Print Spec Sheet' : 'Generate PDF'}
         icon="print"
         onPress={handlePrintVehicle}
@@ -357,7 +365,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
               </Text>
             </View>
           </View>
-          <Pressable onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={styles.closeBtn}>
+          <Pressable testID="print-center-close-btn" accessibilityRole="button" accessibilityLabel="Close print center" onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={styles.closeBtn}>
             <Ionicons name="close" size={22} color={colors.text} />
           </Pressable>
         </LinearGradient>
@@ -367,6 +375,7 @@ export const PrintCenterModal = memo(function PrintCenterModal({
           {TABS.map((t) => (
             <Pressable
               key={t.key}
+              testID={`print-tab-${t.key}`}
               onPress={() => { setTab(t.key); setLastResult(null); }}
               style={[styles.tab, tab === t.key && styles.tabActive]}
             >

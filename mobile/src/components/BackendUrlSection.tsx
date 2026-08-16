@@ -51,7 +51,7 @@ export function BackendUrlSection() {
       impactMedium();
       Alert.alert(
         'Invalid URL',
-        'Backend URL must start with https://apex-service-advisor.preview.emergentagent.com',
+        'Backend URL must be a valid https:// URL (e.g. https://your-domain.com)',
       );
       return;
     }

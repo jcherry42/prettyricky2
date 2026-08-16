@@ -881,3 +881,46 @@ container — environment-only, not a code issue).
 **USER ACTION REQUIRED**: pull latest code onto the dev machine, run
 `yarn install`, then `npx expo start -c` (clear cache) before opening Expo Go.
 If using an EAS dev/preview build, a NEW build is required (native deps changed).
+
+### Jun 2026 iter30 — App Store Readiness Audit + Fixes
+
+**Audit performed; all code-level findings FIXED and verified (testing agent
+iteration_23: 32/32 pass — 9 print-flow + 23 regression, zero issues):**
+
+Fixed:
+1. **Print Flow testIDs (P1 blocker — CLOSED)**: 9 testIDs added in
+   PrintCenterModal.tsx: print-customer-btn, print-license-btn,
+   print-vehicle-btn, print-tab-{customer|license|vehicle},
+   print-center-close-btn, print-customer-item-{id}, print-vehicle-item-{vin}.
+   + accessibilityRole/Label on action buttons.
+2. **expo-updates was NEVER installed** despite eas.json channels + the
+   eas-update-demo.yml OTA workflow (OTA could never have worked — likely a
+   contributor to past "stale bundle" confusion). Installed expo-updates,
+   added `updates.url` (https://u.expo.dev/6777087a-...) + `runtimeVersion:
+   {policy: "appVersion"}` to app.json. NOTE: requires fresh EAS builds.
+3. **ITSAppUsesNonExemptEncryption=false** added to ios.infoPlist (skips the
+   export-compliance question on every App Store Connect submission).
+4. **Wrong user-facing validation message** in BackendUrlSection.tsx (said
+   URL "must start with <preview url>") → now "must be a valid https:// URL".
+5. Legacy Android READ/WRITE_EXTERNAL_STORAGE permissions removed (unused;
+   Play Store data-safety friction).
+6. console.log in sessionPersistence.ts guarded with __DEV__.
+
+Verified healthy: icon/adaptive-icon/splash 1024×1024, icon fully opaque
+(no App Store alpha rejection), privacy manifests embedded in app.json,
+expo-doctor 18/18, deps aligned, permission usage strings present, CORS
+whitelisted, JWT_SECRET persistent, print PDF endpoints generate valid PDFs.
+
+**Remaining store-submission items (need USER input/action):**
+- Privacy Policy URL + Terms of Service URL (App Store Connect requirement)
+- SENTRY_DSN (+ SENTRY_AUTH_TOKEN/ORG/PROJECT EAS secrets), POSTHOG_API_KEY
+- Production backend: eas.json production profile points to
+  https://api.superchargd.com — must be deployed/owned before prod build
+- App Store screenshots (6.7"/6.5"/5.5") — Maestro scaffold exists (P2)
+- App Store Connect metadata: description, keywords, support URL, ascAppId
+- Fresh EAS builds required (native deps changed: expo-updates, SDK-54
+  alignment from iter29)
+- Advisory: FALLBACK_BACKEND_URL in src/config/backend.ts is the preview URL
+  (harmless — env var always wins in EAS builds — but consider pointing at
+  prod API before submission). ML Kit text-recognition untested on New
+  Architecture (newArchEnabled=true) — test VIN OCR on a physical device.

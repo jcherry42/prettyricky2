@@ -129,7 +129,9 @@ export function useSessionPersistence(
       }
 
       if (session) {
-        console.log('[Session] Restored session (age:', session.saved_at ? `${Math.round((Date.now() - session.saved_at) / 1000)}s` : 'unknown', ')');
+        if (__DEV__) {
+          console.log('[Session] Restored session (age:', session.saved_at ? `${Math.round((Date.now() - session.saved_at) / 1000)}s` : 'unknown', ')');
+        }
         onRestoreRef.current(session);
       }
     } catch (e: unknown) {
