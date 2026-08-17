@@ -9,11 +9,11 @@ import * as Clipboard from 'expo-clipboard';
 import {
   setAudioModeAsync,
   requestRecordingPermissionsAsync,
-  useAudioRecorder,
   RecordingPresets,
   IOSOutputFormat,
   AudioQuality,
 } from 'expo-audio';
+import { useSafeAudioRecorder } from '../hooks/useSafeAudioRecorder';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
@@ -266,8 +266,8 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
   const [dictationStatus, setDictationStatus] = useState('idle'); // idle | requesting | recording | processing
   const dictationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // expo-audio recorder hook for voice dictation (reusable)
-  const dictationRecorder = useAudioRecorder(
+  // Safe recorder hook for voice dictation (reusable) — see useSafeAudioRecorder
+  const dictationRecorder = useSafeAudioRecorder(
     Platform.OS === 'web'
       ? RecordingPresets.HIGH_QUALITY
       : {
@@ -347,7 +347,9 @@ export function TowerTalkOverlay({ visible, onClose, onOpenSettings }: { visible
       clearTimeout(dictationTimeoutRef.current);
       dictationTimeoutRef.current = null;
     }
-    if (!dictationRecorder.isRecording) {
+    let isLive = false;
+    try { isLive = dictationRecorder.isRecording; } catch { isLive = false; }
+    if (!isLive) {
       setDictationStatus('idle');
       setIsDictating(false);
       return;

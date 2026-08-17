@@ -3,9 +3,9 @@ import {
   createAudioPlayer,
   setAudioModeAsync,
   requestRecordingPermissionsAsync,
-  useAudioRecorder,
   RecordingPresets,
 } from 'expo-audio';
+import { useSafeAudioRecorder } from '../hooks/useSafeAudioRecorder';
 import { Platform } from 'react-native';
 import { voiceTranslateUpload } from '../lib/voiceTranslate';
 import { ttsSpeak } from '../lib/tts';
@@ -70,7 +70,7 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
   const [elapsedMs, setElapsedMs] = useState(0);
 
   // expo-audio recorder hook — reusable across multiple recordings
-  const recorder = useAudioRecorder(RECORDING_OPTIONS);
+  const recorder = useSafeAudioRecorder(RECORDING_OPTIONS);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playbackRef = useRef<any | null>(null);
@@ -104,8 +104,16 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (recorder.isRecording) {
-        recorder.stop().catch(() => {});
+      // recorder.isRecording is a sync native getter on an expo SharedObject.
+      // If expo-audio's internal hook released the native object first (known
+      // upstream race, expo/expo#39427), the getter throws
+      // NativeSharedObjectNotFoundException — so read it defensively.
+      try {
+        if (recorder.isRecording) {
+          recorder.stop().catch(() => {});
+        }
+      } catch {
+        // Recorder already released natively — nothing to stop.
       }
       if (playbackRef.current) {
         try { playbackRef.current.remove(); } catch {}
@@ -187,7 +195,9 @@ export function PttProvider({ children }: { children: React.ReactNode }) {
     }
     stopTimer();
 
-    if (!recorder.isRecording) {
+    let isLive = false;
+    try { isLive = recorder.isRecording; } catch { isLive = false; }
+    if (!isLive) {
       // Recording not yet started (still in 'requesting' state).
       // pendingStopRef is set; startRecording will detect it and abort.
       return;

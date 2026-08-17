@@ -924,3 +924,27 @@ whitelisted, JWT_SECRET persistent, print PDF endpoints generate valid PDFs.
   (harmless — env var always wins in EAS builds — but consider pointing at
   prod API before submission). ML Kit text-recognition untested on New
   Architecture (newArchEnabled=true) — test VIN OCR on a physical device.
+
+### Jun 2026 iter31 — Boot-Time NativeSharedObjectNotFoundException: expo-audio Hook Bypass
+
+**User still saw the SharedObject error at startup** (app now boots — cold
+start 587ms — but the error logs right as MainApp providers mount).
+Traced INSIDE expo-audio's own `useAudioRecorder` (build/ExpoAudio.js:234):
+it evaluates `recorder.id` — a SYNC NATIVE GETTER — in a useEffect dep array
+on EVERY render, and its internal `useReleasingSharedObject` can release the
+native object early (upstream race expo/expo#39427, still open on SDK 54).
+App code cannot guard a getter inside a library hook.
+
+**Fix**: new `/app/mobile/src/hooks/useSafeAudioRecorder.ts` — drop-in
+replacement that creates the AudioRecorder ONCE in a ref (zero native getters
+during render) and releases only on true unmount (guarded try/catch).
+Swapped in at both call sites: PttContext.tsx + TowerTalkOverlay.tsx.
+Also hardened all bare `.isRecording` getter reads (PttContext cleanup+stop,
+TowerTalkOverlay stopDictation) with try/catch.
+
+Verified: 0 TS errors, 0 ESLint warnings, iOS bundle exports (1,819 modules).
+NOTE: needs user device confirmation (Expo Go reload after pull+yarn install).
+
+**REOPENED (user instruction): Print flow real-world verification** — testIDs
+are in and backend PDF endpoints pass e2e, but printing has NOT been verified
+on a physical printer/device. Keep open until user confirms a real print.
