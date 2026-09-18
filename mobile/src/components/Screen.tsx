@@ -54,6 +54,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg0,
   },
   warmVignette: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
 });

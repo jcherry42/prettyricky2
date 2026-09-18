@@ -1767,7 +1767,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   quiltedPattern: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     opacity: 0.03,
   },
   stitchingTop: {

@@ -314,7 +314,7 @@ export function CustomerListModal({ visible, onClose }: { visible: boolean; onCl
 
 const styles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.70)',
   },
   sheet: {

@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,150,150,0.05)',
   },
   innerRim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: SIZE / 2,
     borderWidth: 1,
   },
