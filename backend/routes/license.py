@@ -5,17 +5,19 @@ and chunked upload endpoints.
 """
 
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
+import asyncio
 import uuid
 import logging
 import re
 import json
 import base64
-import shutil
+
+from services.object_storage import APP_NAME, put_object, get_object
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +26,12 @@ router = APIRouter()
 # Module-level references (set by init_license_routes)
 _db = None
 _ai_gateway = None
-_uploads_dir: Path = None
-_chunks_dir: Path = None
 
 
-def init_license_routes(db, ai_gateway, uploads_dir: Path):
-    global _db, _ai_gateway, _uploads_dir, _chunks_dir
+def init_license_routes(db, ai_gateway, uploads_dir: Path = None):  # uploads_dir kept for call-site compatibility; storage is remote now
+    global _db, _ai_gateway
     _db = db
     _ai_gateway = ai_gateway
-    _uploads_dir = uploads_dir
-    _chunks_dir = uploads_dir / "chunks"
-    _chunks_dir.mkdir(exist_ok=True)
 
 
 # ─── Models ──────────────────────────────────────────────────────────
@@ -204,10 +201,9 @@ async def scan_license_direct(
         optimized_data = resize_image_for_ocr_jpeg(image_data)
         base64_image = base64.b64encode(optimized_data).decode('utf-8')
 
-        # Save optimized image to disk (async-safe, smaller file)
+        # Persist optimized image to Emergent Object Storage (smaller file)
         safe_name = f"license_{uuid.uuid4().hex[:12]}.{ext}"
-        filepath = _uploads_dir / safe_name
-        filepath.write_bytes(optimized_data)
+        await asyncio.to_thread(put_object, f"{APP_NAME}/uploads/{safe_name}", optimized_data, "image/jpeg")
         image_url = f"/api/uploads/{safe_name}"
 
         extraction_prompt = """Extract all fields from this US Driver's License image. Return ONLY a JSON object:
@@ -435,8 +431,6 @@ async def init_license_upload(request: LicenseUploadInitRequest):
             raise HTTPException(status_code=400, detail="Invalid chunk count")
 
         upload_id = uuid.uuid4().hex
-        upload_dir = _chunks_dir / upload_id
-        upload_dir.mkdir(parents=True, exist_ok=True)
 
         expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
         meta = {
@@ -445,11 +439,11 @@ async def init_license_upload(request: LicenseUploadInitRequest):
             "content_type": request.content_type,
             "total_size": request.total_size,
             "total_chunks": request.total_chunks,
+            "received_chunks": [],
             "created_at": datetime.now(timezone.utc).isoformat(),
             "expires_at": expires_at,
         }
-        with open(upload_dir / "meta.json", "w") as f:
-            json.dump(meta, f)
+        await _db.license_upload_sessions.insert_one(dict(meta))
 
         return LicenseUploadInitResponse(upload_id=upload_id, expires_at=expires_at)
     except HTTPException:
@@ -467,12 +461,10 @@ async def upload_license_chunk(
     chunk: UploadFile = File(...),
 ):
     """Upload a single chunk for a license image."""
-    upload_dir = _chunks_dir / upload_id
-    meta_path = upload_dir / "meta.json"
-    if not meta_path.exists():
+    meta = await _db.license_upload_sessions.find_one({"upload_id": upload_id}, {"_id": 0})
+    if not meta:
         raise HTTPException(status_code=404, detail="Upload session not found")
 
-    meta = json.loads(meta_path.read_text())
     expected_chunks = int(meta.get("total_chunks", 0))
     if expected_chunks <= 0:
         raise HTTPException(status_code=400, detail="Invalid upload metadata")
@@ -485,9 +477,16 @@ async def upload_license_chunk(
     if not chunk_data:
         raise HTTPException(status_code=400, detail="Empty chunk received")
 
-    chunk_path = upload_dir / f"chunk_{chunk_index:06d}.part"
-    with open(chunk_path, "wb") as f:
-        f.write(chunk_data)
+    # Chunk bytes go to Emergent Object Storage (pod-safe, multi-replica safe)
+    await asyncio.to_thread(
+        put_object,
+        f"{APP_NAME}/chunks/{upload_id}/chunk_{chunk_index:06d}",
+        chunk_data,
+        "application/octet-stream",
+    )
+    await _db.license_upload_sessions.update_one(
+        {"upload_id": upload_id}, {"$addToSet": {"received_chunks": chunk_index}}
+    )
 
     return LicenseUploadChunkResponse(
         success=True, upload_id=upload_id, received=chunk_index + 1, total_chunks=expected_chunks,
@@ -500,19 +499,17 @@ async def complete_license_upload(
     customer_id: Optional[str] = Form(None),
 ):
     """Assemble uploaded chunks into a final license image."""
-    upload_dir = _chunks_dir / upload_id
-    meta_path = upload_dir / "meta.json"
-    if not meta_path.exists():
+    meta = await _db.license_upload_sessions.find_one({"upload_id": upload_id}, {"_id": 0})
+    if not meta:
         raise HTTPException(status_code=404, detail="Upload session not found")
 
-    meta = json.loads(meta_path.read_text())
     total_chunks = int(meta.get("total_chunks", 0))
     if total_chunks <= 0:
         raise HTTPException(status_code=400, detail="Invalid upload metadata")
 
+    received = set(meta.get("received_chunks", []))
     for i in range(total_chunks):
-        chunk_path = upload_dir / f"chunk_{i:06d}.part"
-        if not chunk_path.exists():
+        if i not in received:
             raise HTTPException(status_code=400, detail=f"Missing chunk {i}")
 
     filename_source = meta.get("filename", "image.jpg")
@@ -521,16 +518,20 @@ async def complete_license_upload(
         ext = 'jpg'
 
     filename = f"license_{uuid.uuid4().hex[:12]}.{ext}"
-    filepath = _uploads_dir / filename
 
-    with open(filepath, "wb") as out:
+    def _assemble_and_store() -> None:
+        parts = []
         for i in range(total_chunks):
-            chunk_path = upload_dir / f"chunk_{i:06d}.part"
-            with open(chunk_path, "rb") as part:
-                shutil.copyfileobj(part, out)
+            data, _ct = get_object(f"{APP_NAME}/chunks/{upload_id}/chunk_{i:06d}")
+            parts.append(data)
+        mime = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}.get(ext, 'image/jpeg')
+        put_object(f"{APP_NAME}/uploads/{filename}", b"".join(parts), mime)
+
+    await asyncio.to_thread(_assemble_and_store)
 
     image_url = f"/api/uploads/{filename}"
-    shutil.rmtree(upload_dir, ignore_errors=True)
+    # Session done — chunk objects are orphaned in storage (no delete API); cheap and harmless.
+    await _db.license_upload_sessions.delete_one({"upload_id": upload_id})
 
     if customer_id:
         result = await _db.customers.find_one_and_update(
@@ -572,12 +573,11 @@ async def upload_license_image(
         if ext not in ['jpg', 'jpeg', 'png', 'webp']:
             ext = 'jpg'
         filename = f"license_{uuid.uuid4().hex[:12]}.{ext}"
-        filepath = _uploads_dir / filename
-        with open(filepath, 'wb') as f:
-            f.write(image_data)
+        mime = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}.get(ext, 'image/jpeg')
+        await asyncio.to_thread(put_object, f"{APP_NAME}/uploads/{filename}", image_data, mime)
 
         image_url = f"/api/uploads/{filename}"
-        logger.info(f"License image saved: {filepath}, URL: {image_url}")
+        logger.info(f"License image stored: {APP_NAME}/uploads/{filename}, URL: {image_url}")
 
         if customer_id:
             result = await _db.customers.find_one_and_update(
@@ -621,12 +621,13 @@ async def attach_license_to_customer(
 
 @router.get("/uploads/{filename}")
 async def get_uploaded_file(filename: str):
-    """Serve uploaded license images."""
-    filepath = _uploads_dir / filename
-    if not filepath.exists():
-        raise HTTPException(status_code=404, detail="File not found")
+    """Serve uploaded license images from Emergent Object Storage."""
     if ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
+    try:
+        data, stored_ct = await asyncio.to_thread(get_object, f"{APP_NAME}/uploads/{filename}")
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found")
     ext = filename.split('.')[-1].lower()
     content_types = {'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'webp': 'image/webp'}
-    return FileResponse(filepath, media_type=content_types.get(ext, 'application/octet-stream'))
+    return Response(content=data, media_type=content_types.get(ext, stored_ct))

@@ -948,3 +948,46 @@ NOTE: needs user device confirmation (Expo Go reload after pull+yarn install).
 **REOPENED (user instruction): Print flow real-world verification** — testIDs
 are in and backend PDF endpoints pass e2e, but printing has NOT been verified
 on a physical printer/device. Keep open until user confirms a real print.
+
+### Jun 2026 iter32 — Expo SDK 57 Upgrade (from SDK 54)
+
+**Upgraded**: expo ^57.0.0 · RN 0.86.3 (includes Hermes V1 regression fixes)
+· React 19.2.3 · Reanimated 4.5.1 (+react-native-worklets 0.10.1) ·
+TypeScript 6.0.3 · expo-audio ~57.0.5 · expo-updates ~57.0.23 ·
+@sentry/react-native ~7.11.0 · react-native-screens ~4.26 · jest-expo 57.0.5.
+
+**Migration fixes**:
+1. `ios.deploymentTarget` 16.0 → 16.4 (SDK 57 minimum).
+2. app.json schema: removed `newArchEnabled` + `android.edgeToEdgeEnabled`
+   (always-on in SDK 57); top-level `splash` migrated to the
+   `expo-splash-screen` plugin (package installed).
+3. `StyleSheet.absoluteFillObject` → `StyleSheet.absoluteFill` in 8 files
+   (removed in RN 0.86).
+4. babel.config.js: removed manual `react-native-reanimated/plugin`
+   (babel-preset-expo auto-configures worklets now).
+5. tsconfig: removed deprecated `baseUrl` (TS 6), paths made relative.
+6. useSafeAudioRecorder deep imports verified intact in expo-audio 57.
+
+**Verified (testing agent iteration_25)**: expo-doctor 21/21 ·
+`expo install --check` clean · 0 TS errors · 0 ESLint warnings · iOS bundle
+exports 1,906 modules · backend regression 23/23.
+
+**USER ACTIONS**: pull latest → `cd mobile && yarn install` →
+`npx expo start -c`. Expo Go on the device must be the SDK 57-compatible
+version (update from App Store). All EAS builds must be REBUILT (native deps
+changed). OPEN: on-device boot confirmation; print flow real-world test.
+
+### Jun 2026 iter32b — License Uploads Migrated to Emergent Object Storage
+
+Deploy blocker (pod-local upload storage) resolved:
+- New `/app/backend/services/object_storage.py` (init_storage/put_object/
+  get_object; INTEGRATION_PROXY_URL + EMERGENT_LLM_KEY; path prefix
+  `superchargd/`).
+- `routes/license.py`: scan-direct + /license/upload store images at
+  `superchargd/uploads/{filename}`; chunked upload sessions moved from disk
+  JSON to Mongo `license_upload_sessions` collection, chunk bytes stored at
+  `superchargd/chunks/{upload_id}/chunk_NNNNNN`, assembled server-side on
+  complete; GET /api/uploads/{filename} now streams from object storage
+  (URL shape unchanged — zero mobile client changes needed).
+- Verified live: single upload + fetch (200, correct bytes), chunked
+  init→chunk→complete→fetch BYTE-IDENTICAL, regression 23/23, ruff clean.
