@@ -26,7 +26,7 @@
  *     opacity with fast, irregular timing — no two flicker in sync.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Pressable, Text, Image } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -41,7 +41,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useAppSettings } from '../context/AppSettingsContext';
 import { playActivationSound, playDeactivationSound, SOUND_PROFILES } from '../lib/soundProfiles';
-import { SportModeActivation } from './SportModeActivation';
 import { flagFor } from '../utils/language';
 
 // ─── Flame GIF (transparent background) ──────────────────────────────────────
@@ -57,8 +56,6 @@ export function SportModeButton() {
   const profileId = settings.soundProfile || 'merica';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const _profile  = (SOUND_PROFILES as Record<string, any>)[profileId] || SOUND_PROFILES.merica;
-
-  const [showActivation, setShowActivation] = useState(false);
 
   const pressScale  = useSharedValue(1);
   const btnOpacity  = useSharedValue(1);
@@ -87,7 +84,6 @@ export function SportModeButton() {
       withTiming(1.0,  { duration: 220, easing: Easing.out(Easing.elastic(1.6)) })
     );
     if (!active) {
-      setShowActivation(true);
       playActivationSound(profileId);
       toggleSportMode();
     } else {
@@ -144,10 +140,6 @@ export function SportModeButton() {
           </View>
         </Pressable>
       </Animated.View>
-
-
-
-      <SportModeActivation visible={showActivation} profileId={profileId} onComplete={() => setShowActivation(false)} />
     </View>
   );
 }
