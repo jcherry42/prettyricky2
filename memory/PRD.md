@@ -991,3 +991,19 @@ Deploy blocker (pod-local upload storage) resolved:
   (URL shape unchanged — zero mobile client changes needed).
 - Verified live: single upload + fetch (200, correct bytes), chunked
   init→chunk→complete→fetch BYTE-IDENTICAL, regression 23/23, ruff clean.
+
+### Sep 2026 iter33 — Sport Mode Activation Flash Removed
+
+User: "when sport mode is engaged, I don't want the text and graphic to flash
+on the screen." Deleted the full-screen SportModeActivation overlay
+(flame-wall + "SPORT MODE ENGAGED" modal) entirely and stripped its usage from
+SportModeButton.tsx. Button glow, press animation, sounds and toggle behavior
+untouched. Verified: testing agent iteration_26 — all static checks pass,
+0 TS/lint issues, bundle builds. On-device visual confirm = user.
+
+**OPEN ISSUE (paused by user mid-investigation)**: connection error at PIN
+screen ("diagnose connection" prompt). Backend confirmed healthy externally
+(200 on /api/health via preview URL, 0.2s). Next debug steps when resumed:
+user device likely running stale bundle or stale AsyncStorage backend-URL
+override — have user run the PIN-screen diagnostic (top-right icon), check
+what URL it reports, and confirm they pulled latest code + `expo start -c`.
