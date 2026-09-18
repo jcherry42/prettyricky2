@@ -845,7 +845,9 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               <GlassCard style={{ marginTop: 14 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Ionicons name="construct" size={18} color={settings.serviceMode ? '#FFA500' : colors.textMute} />
-                  <SectionTitle>Service Mode</SectionTitle>
+                  <Text style={styles.activeModeLabel} data-testid="active-mode-label">
+                    {settings.serviceMode ? 'SERVICE MODE' : 'SALES MODE'}
+                  </Text>
                 </View>
                 <View style={{ height: 12 }} />
                 <Pressable
@@ -1326,6 +1328,15 @@ const styles = StyleSheet.create({
   },
   toggleDotOn: {
     backgroundColor: colors.gold,
+  },
+  activeModeLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 2,
+    color: '#39FF14',
+    textShadowColor: 'rgba(57,255,20,0.85)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
   toggleText: {
     marginLeft: 10,

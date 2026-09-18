@@ -1007,3 +1007,11 @@ screen ("diagnose connection" prompt). Backend confirmed healthy externally
 user device likely running stale bundle or stale AsyncStorage backend-URL
 override — have user run the PIN-screen diagnostic (top-right icon), check
 what URL it reports, and confirm they pulled latest code + `expo start -c`.
+
+### Sep 2026 iter34 — Active Mode Label in Command Center Settings
+
+Replaced the static "Service Mode" section label in Command Center → Settings
+with a live active-mode indicator: shows "SERVICE MODE" or "SALES MODE" in
+glowing green letters (#39FF14 with green text-shadow glow, letter-spaced,
+data-testid="active-mode-label"). Toggle button behavior unchanged.
+Verified: 0 TS errors, 0 ESLint warnings. On-device visual confirm = user.
