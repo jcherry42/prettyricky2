@@ -1,6 +1,7 @@
 import { errorMessage } from './errors';
 import { apiFetch } from './api';
 import { onDeviceTranscribe, isOnDeviceSttAvailable } from './onDeviceStt';
+import { asFormDataFile } from './formDataFile';
 
 /**
  * Upload recorded audio for voice translation.
@@ -50,12 +51,7 @@ export async function voiceTranslateUpload({ uri, targetLang, sourceLang = 'en',
   const filename = `ptt_recording.${ext}`;
 
   const form = new FormData();
-  form.append('audio', {
-    uri,
-    name: filename,
-    type: mime,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  form.append('audio', asFormDataFile(uri, filename, mime));
   form.append('source_lang', sourceLang);
   form.append('target_lang', targetLang);
 

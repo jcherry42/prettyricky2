@@ -39,6 +39,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadJson, saveJson } from '../lib/storage';
 import { useCustomers } from '../context/CustomerContext';
 import { apiFetch } from '../lib/api';
+import { asFormDataFile } from '../lib/formDataFile';
 import { colors } from '../theme/colors';
 import { type } from '../theme/typography';
 import {
@@ -339,12 +340,7 @@ export function DlScanScreen() {
 
       // Build FormData with image + ML Kit pre-extracted text hint
       const formData = new FormData();
-      formData.append('image', {
-        uri,
-        type: 'image/jpeg',
-        name: `license_${Date.now()}.jpg`,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      formData.append('image', asFormDataFile(uri, `license_${Date.now()}.jpg`, 'image/jpeg'));
 
       // Send ML Kit text as a hint to help GPT-4o parse faster
       if (mlText.length > 10) {
