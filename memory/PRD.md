@@ -1015,3 +1015,21 @@ with a live active-mode indicator: shows "SERVICE MODE" or "SALES MODE" in
 glowing green letters (#39FF14 with green text-shadow glow, letter-spaced,
 data-testid="active-mode-label"). Toggle button behavior unchanged.
 Verified: 0 TS errors, 0 ESLint warnings. On-device visual confirm = user.
+
+### Sep 2026 iter35 — PTT Upload Fix: "Unsupported FormDataPart Implementation"
+
+SDK 57's global fetch is expo's WinterCG fetch; its convertFormDataAsync
+rejects RN-style {uri,name,type} FormData parts (accepts only strings, Blob,
+or objects with name/type/bytes()). PTT voice-translate and DL scan uploads
+were both broken.
+
+Fix: new `/app/mobile/src/lib/formDataFile.ts` — asFormDataFile(uri,name,type)
+wraps expo-file-system's File (bytes()) with explicit filename+mime. Swapped
+in at both file-part sites: voiceTranslate.ts (audio) + DlScanScreen.tsx
+(image). expo-file-system installed (SDK 57-aligned).
+
+Verified (testing agent iteration_27): static checks all pass; e2e multipart
+emulation (byte-exact convertFormDataAsync encoding) → /api/voice-translate
+200 with transcript+translation; /api/license/scan-direct parses cleanly.
+0 TS errors, 0 lint warnings, deps aligned. On-device PTT press = user confirm.
+Test file kept: /app/backend/tests/test_formdata_emulation.py.

@@ -1,0 +1,23 @@
+{
+  "summary": "Verified fix for 'Unsupported FormDataPart Implementation' bug on PTT translation under Expo SDK 57. Static checks: (1) /app/mobile/src/lib/formDataFile.ts exists and returns {name, type, bytes()} shape matching expo/src/winter/fetch/convertFormData.ts accepted branch (`typeof entry === 'object' && 'bytes' in entry`). (2) grep confirms NO remaining RN-style `{uri,name,type}` FormData parts in src/ — only two .append() call sites for files (voiceTranslate.ts L54 audio, DlScanScreen.tsx L343 image), both use asFormDataFile. (3) yarn typecheck: 0 errors. (4) yarn lint:strict --max-warnings=0: clean. (5) npx expo install --check: 'Dependencies are up to date'. E2E emulation: wrote /app/backend/tests/test_formdata_emulation.py that hand-encodes multipart bytes exactly as convertFormDataAsync would given asFormDataFile output (boundary, content-disposition with filename, content-type per part, raw bytes payload), then POSTs to preview backend. voice-translate returned 200 with transcript+translated_text (multipart parsed, Whisper+translate ran end-to-end, ~2s). scan-direct returned clean 400 'Image appears too small' (multipart parsed, image reached OCR sizing check). Neither endpoint returned 422 form-parse error or 500 — confirming the wire format produced by asFormDataFile is compatible with FastAPI's multipart parser. Final on-device PTT press remains the user's confirmation step.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_formdata_emulation.py",
+    "/app/test_reports/pytest/iter27.xml"
+  ],
+  "action_items": [
+    "User to perform final on-device confirmation: real PTT press on a physical device / dev-client build to verify Expo SDK 57 client actually invokes asFormDataFile.bytes() and no 'Unsupported FormDataPart' error surfaces."
+  ],
+  "critical_code_review_comments": [
+    "formDataFile.ts casts the plain object to `Blob` via `as unknown as Blob` to satisfy React Native's FormData typing. Functionally correct (expo/fetch converter duck-types on 'bytes' in entry), but a small JSDoc note that the returned value is NOT a real Blob (only shape-compatible with expo/fetch) would prevent future dev confusion.",
+    "voiceTranslate.ts and DlScanScreen.tsx do NOT guard against expo-file-system File(uri) throwing on invalid/missing URIs — asFormDataFile currently constructs the File eagerly but bytes() is only awaited later. Any thrown IO error would surface as the fetch failure inside the try/catch which currently only fallbacks on 'Network request failed'/'fetch' substrings. Consider broadening fallback trigger."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (2/2 emulation tests)", "frontend": "100% (static — typecheck+lint+expo-check clean)"},
+  "seed_data_creation": "None — used PIN 11111 login only.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "iteration_27 verified the SDK 57 FormData fix at both static and wire-protocol levels. The reusable test file /app/backend/tests/test_formdata_emulation.py encodes multipart the exact same way expo/fetch does — use it as a regression guard whenever asFormDataFile or the two endpoints (voice-translate, license/scan-direct) change. Auth: PIN 11111 login, reuse access_token. Rate-limit note: voice-translate is LLM-backed — keep to 1-2 calls per run.",
+  "rca of the issue": "RCA: Expo SDK 57 replaced RN's classic fetch with expo/fetch (WinterCG). Its convertFormDataAsync() rejects the RN-native `{uri, name, type}` FormData part shape (throws 'Unsupported FormDataPart implementation'). Fix: asFormDataFile(uri,name,type) wraps expo-file-system's File (which exposes bytes()) and returns a duck-typed object {name, type, bytes: () => file.bytes()} — matching convertFormDataAsync's accepted branch. Both file uploads in the app (audio for voice-translate, image for scan-direct) now use this wrapper. Wire-level emulation confirms FastAPI parses the resulting multipart cleanly."
+}
