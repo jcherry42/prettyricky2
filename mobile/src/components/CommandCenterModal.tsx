@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { impactLight, impactMedium, notificationSuccess } from '../lib/haptics';
 import { colors } from '../theme/colors';
 import { GlassCard } from './GlassCard';
+import { ChromeAccent } from './DesignoTextures';
 import { EmptyState } from './EmptyState';
 import { SkeletonLine } from './LoadingSkeleton';
 import { BackendUrlSection } from './BackendUrlSection';
@@ -365,6 +366,9 @@ export function CommandCenterModal({ visible, onClose, initialTab = null, initia
               }} />
             ))}
           </View>
+
+          {/* Thin chrome bezel — visual boundary between tabs and scrolling content */}
+          <ChromeAccent style={styles.tabsBezel} />
 
           {/* DASHBOARD */}
           {activeTab === 'dashboard' ? (
@@ -1108,6 +1112,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     flexWrap: 'wrap',
+  },
+  tabsBezel: {
+    marginTop: 12,
   },
   tabBtn: {
     flex: 1,

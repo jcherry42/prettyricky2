@@ -1033,3 +1033,9 @@ emulation (byte-exact convertFormDataAsync encoding) → /api/voice-translate
 200 with transcript+translation; /api/license/scan-direct parses cleanly.
 0 TS errors, 0 lint warnings, deps aligned. On-device PTT press = user confirm.
 Test file kept: /app/backend/tests/test_formdata_emulation.py.
+
+### Sep 2026 iter36 — Command Center Tab Bezel
+
+Added a thin chrome bezel (reused ChromeAccent designo divider) directly
+below the five Command Center tab buttons — gives scrolling content a crisp
+boundary. 0 TS errors, 0 lint warnings. On-device visual = user.
