@@ -1039,3 +1039,8 @@ Test file kept: /app/backend/tests/test_formdata_emulation.py.
 Added a thin chrome bezel (reused ChromeAccent designo divider) directly
 below the five Command Center tab buttons — gives scrolling content a crisp
 boundary. 0 TS errors, 0 lint warnings. On-device visual = user.
+
+### Sep 2026 iter36b — Home Screen Customers Bezel
+
+Same thin ChromeAccent bezel added beneath the "CUSTOMERS" list header row on
+the home page (inset 16px to match header margins). 0 TS/lint issues.

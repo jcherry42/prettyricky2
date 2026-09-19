@@ -277,6 +277,9 @@ export function HomeScreen() {
           </View>
         </View>
 
+        {/* Thin chrome bezel — boundary beneath the Customers label */}
+        <ChromeAccent style={styles.listHeaderBezel} />
+
         <FlatList
           data={filteredCustomers}
           renderItem={renderCustomerMemo}
@@ -397,8 +400,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 10,
     marginTop: 8,
+  },
+  listHeaderBezel: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    width: undefined,
   },
   listTitleRow: {
     flexDirection: 'row',
